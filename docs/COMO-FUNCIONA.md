@@ -1,6 +1,6 @@
 # Next Journey — como o projeto funciona
 
-Atualizado em 2026-10-03 (após a Fase 1, passos 8 a 10). Este documento descreve **o que existe hoje** no repositório e **como as peças vão conversar** quando estiverem prontas. Onde algo ainda não existe, está marcado como **(planejado)** com a fase do plano. Fontes: [PLAN_TODO_APP.md](./PLAN_TODO_APP.md) (fases), [REQUISITOS.MD](./REQUISITOS.MD) (especificação), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design) e [TURBOREPO.md](./TURBOREPO.md) (ferramenta de build).
+Atualizado em 2026-10-03 (após a Fase 1, passos 8 a 10). Este documento descreve **o que existe hoje** no repositório e **como as peças vão conversar** quando estiverem prontas. Onde algo ainda não existe, está marcado como **(planejado)** com a fase do plano. Fontes: plano de implementação (documento local, fora do Git) (fases), [REQUISITOS.MD](./REQUISITOS.MD) (especificação), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design) e [TURBOREPO.md](./TURBOREPO.md) (ferramenta de build).
 
 ## 1. O produto em uma frase
 
@@ -123,7 +123,7 @@ A versão do pnpm está fixada em 11.28.3 (e não na mais nova, 12.8.1) porque o
 
 ## 9. Como o trabalho é conduzido
 
-- Plano em 9 fases (0 a 8) e 3 marcos, com critério de pronto por fase. Estado em `docs/PLAN_TODO_APP.md` (tabela de Andamento).
+- Plano em 9 fases (0 a 8) e 3 marcos, com critério de pronto por fase. Estado na tabela de Andamento do plano (documento local, fora do Git).
 - Cada passo numerado vira um PR pequeno com Conventional Commits (`feat(mobile): ...`, `chore: ...`). PR só entra com lint, typecheck e testes verdes no CI (o CI chega no passo 12 da Fase 1).
 - Decisões difíceis de reverter viram ADR em `docs/adr/`. O diário do projeto fica em `docs/DIARIO.md` (a criar). Datas sempre em ISO 8601.
 - Regra de ouro do plano: se uma decisão, mudança de escopo ou desvio não está escrito com data, ele não aconteceu.

@@ -27,7 +27,7 @@ context: |
 
 rules:
   proposal:
-    - Cite a fase e o passo do docs/PLAN_TODO_APP.md quando existir
+    - Cite a fase e o passo do plano de implementação (documento local) quando existir
     - Sempre declare o que está fora do escopo
   tasks:
     - Quebre em tarefas de no máximo 2 horas, com teste junto da regra nova

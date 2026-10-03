@@ -22,7 +22,8 @@
 ## Segurança (obrigatório em todo PR)
 
 - [ ] Lembrei que o repositório é público: nada do que está neste PR (código, docs, commits, descrição) pode expor segredo ou infraestrutura real
-- [ ] `pnpm run security` passou (segredos, IP/hosts, histórico novo e `pnpm audit`)
+- [ ] Revisado e aprovado pelo Pedro antes de subir
+- [ ] `pnpm run security:full` passou (segredos, IP/hosts, histórico inteiro, autoria dos commits e `pnpm audit`)
 - [ ] Nenhum token, senha, chave, `.env`, certificado, IP ou host de infraestrutura no código, docs, testes, commit ou descrição do PR
 - [ ] Checklist de segurança do `AGENTS.md` percorrido para o que mudou (API, app/banner ou dependências)
 - [ ] Rotas novas nascem protegidas e devolvem só os campos necessários (sem model do ORM inteiro)
