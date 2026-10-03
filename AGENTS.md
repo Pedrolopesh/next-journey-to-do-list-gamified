@@ -61,6 +61,8 @@ Resumo; a versão completa e o histórico de auditorias estão em `docs/SEGURANC
 
 ### Sempre
 
+- **Este repositório é público de propósito.** Assuma que o atacante lê todo o código; nada do que for commitado pode ser apagado depois. Nunca commitar dados de infraestrutura real (IP, host, porta, inventário) nem achados de auditoria.
+
 - **Segredos:** nada de token, senha, chave, `.env`, certificado ou IP/host de infraestrutura em código, docs, testes, commit ou PR. `pnpm run security` precisa passar.
 - **Exposição excessiva:** nunca devolver o model do ORM inteiro.
 - **IDOR/BOLA:** receber `id` do cliente exige validar que o solicitante pode acessar **aquele objeto**.

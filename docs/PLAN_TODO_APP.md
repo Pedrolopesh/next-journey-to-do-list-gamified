@@ -59,7 +59,7 @@ Objetivo: ter tudo que depende de burocracia externa (aprovação da Apple, veri
 2. Criar a conta Apple Developer Program (paga, anual) e aguardar a aprovação. Se for como empresa, o D-U-N-S pode levar dias; se for pessoa física, costuma ser mais rápido.
 3. Criar a conta Google Play Console (taxa única). Contas pessoais novas exigem teste fechado com um número mínimo de testadores por um período antes de produção; confira a regra vigente no console e planeje a Fase 8 em cima dela.
 4. Criar a conta Expo (EAS) e o projeto no plano gratuito. Guardar o EXPO_TOKEN para o CI.
-5. Criar o repositório no GitHub (privado), com branch main protegida: PR obrigatório, CI verde obrigatório, sem push direto.
+5. Criar o repositório no GitHub (público, projeto aberto), com branch main protegida: PR obrigatório, CI verde obrigatório, sem push direto. Ativar secret scanning, push protection, Dependabot e reporte privado de vulnerabilidades. Por ser público, seguir as premissas de `docs/SEGURANCA.md` (seção 2).
 6. Criar os projetos OAuth: um no Google Cloud (clientes iOS, Android e Web) e o Sign in with Apple (App ID + Service ID + chave). Anotar os client ids; segredos vão só para o gerenciador de segredos, nunca para o repositório.
 7. Hospedagem: a API e o Postgres rodam na VPS própria, em Docker. Antes de subir, concluir a auditoria de segurança da VPS (registrada fora do repositório), seguir a seção "Hospedagem na VPS" abaixo e registrar a decisão no ADR-001, sem endereços nem dados de infraestrutura.
 8. Criar a conta Sentry (um projeto por app: api, mobile, banner) e a conta Resend (e-mail de recuperação de senha), verificando o domínio de envio.
