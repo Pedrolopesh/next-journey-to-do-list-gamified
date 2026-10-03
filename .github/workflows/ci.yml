@@ -27,3 +27,5 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm exec turbo run lint typecheck test build
+
+      - run: bash scripts/security-scan.sh

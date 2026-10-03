@@ -13,7 +13,8 @@
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "dev": "turbo dev",
-    "prepare": "husky"
+    "prepare": "husky",
+    "security": "bash scripts/security-scan.sh"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",

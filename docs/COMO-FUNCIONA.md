@@ -18,7 +18,7 @@ Um to-do list de uso pessoal para iOS e Android em que cada item marcado rende E
 | Prettier, Husky, lint-staged, commitlint | Funcionando: `pre-commit` (ESLint `--fix` e Prettier nos arquivos staged), `commit-msg` (Conventional Commits), `pre-push` (typecheck e test dos pacotes alterados) |
 | CI no GitHub Actions | Planejado (Fase 1, passo 12) |
 | `apps/api`, `apps/banner`, `apps/mobile` | Planejado (Fases 2 e 4) |
-| Hospedagem | Decidida: VPS We Party, em Docker. Ainda sem deploy |
+| Hospedagem | Decidida: VPS própria, em Docker. Ainda sem deploy |
 
 Nenhuma funcionalidade do app existe ainda. Hoje o repositório só prova que instalação, build, lint, typecheck e os hooks de qualidade funcionam.
 
@@ -115,8 +115,8 @@ A versão do pnpm está fixada em 11.28.3 (e não na mais nova, 12.8.1) porque o
 ## 8. Ambientes e hospedagem
 
 - **Desenvolvimento:** Postgres local via `docker compose` (arquivo na raiz, Fase 4), app em development build contra a API local ou de staging.
-- **Staging e produção:** VPS We Party (187.77.34.215), Ubuntu 24.04, 2 vCPU, 7,8 GB de RAM, 89 GB livres (medido em 2026-10-02), em Docker, com nginx no host (80/443) e certbot. Regras de convivência com o We Party: Postgres próprio do Next Journey em compose project separado, portas publicadas só em `127.0.0.1`, limites de memória e CPU por container, staging e produção em projetos e portas distintos, backup diário do Postgres com 7 dias de retenção, monitor externo no `/health`.
-- **Pré-requisito de segurança:** as portas 5432 e 8000 do We Party estavam abertas para a internet (o Docker ignora o UFW para portas publicadas). A correção e a auditoria estão registradas no Obsidian (`IA/outputs/2026-10-02 - VPS We Party - correcoes e auditoria de seguranca.md`) e precisam acontecer antes do deploy do Next Journey.
+- **Staging e produção:** uma VPS própria da We Tech Hub (Ubuntu 24.04), em Docker, com nginx no host (80/443) e certbot. Capacidade medida em 2026-10-02: cabe o Next Journey com folga. Regras: Postgres próprio do Next Journey em compose project separado, portas publicadas só em `127.0.0.1`, limites de memória e CPU por container, staging e produção em projetos e portas distintos, backup diário do Postgres com 7 dias de retenção, monitor externo no `/health`. Endereço, inventário e achados da auditoria ficam fora do repositório (Obsidian do Pedro).
+- **Pré-requisito de segurança:** concluir a auditoria da VPS (registrada fora do repositório) antes do primeiro deploy.
 - **Builds do app:** EAS Build e EAS Submit, perfis `development`, `preview` e `production`; OTA (EAS Update) para correções de JavaScript e do banner.
 - **E-mail:** Resend, só para recuperação de senha.
 - **Identidade:** nome Next Journey; bundle id `br.com.wetechhub.app` (dev: `br.com.wetechhub.app.dev`), imutável a partir do primeiro build iOS com credenciais Apple.
@@ -137,11 +137,11 @@ A versão do pnpm está fixada em 11.28.3 (e não na mais nova, 12.8.1) porque o
 - Sem limite de checks por hábito.
 - Escolhas narrativas e escolha de mapa: backlog (fora da v1).
 - Excluir conta: sem tela dedicada, linha em Configurações › Conta com diálogo de confirmação (exigência das lojas).
-- Hospedagem na VPS We Party; e-mail com Resend; monorepo único.
+- Hospedagem em VPS própria, em Docker;
 
 ## 11. Pendências conhecidas
 
-- Corrigir a exposição das portas 5432 e 8000 na VPS e fazer a auditoria de segurança.
+- Concluir a auditoria de segurança da VPS antes do primeiro deploy.
 - Confirmar as "Regras complementares" propostas em REQUISITOS.MD.
 - Desenhar no Figma: Conquistas, modal de conquista, Minha história, Categorias, Configurações, Termos no cadastro e Créditos.
 - Escrever o ADR do pnpm 11 e os ADR-001 (hospedagem) e ADR-002 (monorepo com pnpm + Turborepo).
