@@ -1,0 +1,14 @@
+node_modules/
+.turbo/
+dist/
+build/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+# Expo (Continuous Native Generation)
+ios/
+android/
+.expo/
