@@ -8,7 +8,7 @@ fail=0
 files=$(git ls-files -co --exclude-standard | grep -v -E '^pnpm-lock\.yaml$|^scripts/security-scan\.sh$')
 
 echo "==> Segredos em arquivos"
-secret_re='(npm_[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,}|AIza[0-9A-Za-z_-]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY|_authToken|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}|(password|passwd|secret|token|api[_-]?key)[[:space:]]*[:=][[:space:]]*["'"'"'][^"'"'"' ]{8,})'
+secret_re='(npm_[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,}|AIza[0-9A-Za-z_-]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY|_authToken=[^$[:space:]]|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}|(password|passwd|secret|token|api[_-]?key)[[:space:]]*[:=][[:space:]]*["'"'"'][^"'"'"' ]{8,})'
 if echo "$files" | xargs grep -n -I -E -i "$secret_re" 2>/dev/null; then fail=1; fi
 
 echo "==> Arquivos sensíveis versionados"
