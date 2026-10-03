@@ -848,6 +848,6 @@ Decisões em aberto
 [x] Sem limite de checks por hábito: decidido em 2026-10-02.
 [ ] Capítulos por história na v1 (5 sugeridos): são 25 textos e 25 cenários no total; dá para reaproveitar biomas entre capítulos da mesma história.
 [x] Escolhas narrativas (RF-31): fora da v1, no backlog (2026-10-02). Na v1 a cena do banner só muda conforme o capítulo avança.
-[x] Hospedagem: VPS própria, em Docker, com Postgres próprio (decidido em 2026-10-02). Provedor de e-mail: Resend.
+[x] Hospedagem: VPS própria, em Docker, com Postgres próprio (decidido em 2026-10-02; medições e regras no plano). Provedor de e-mail: Resend.
 [x] Monorepo único: decidido em 2026-10-02.
 [ ] Confirmar as regras complementares propostas acima.

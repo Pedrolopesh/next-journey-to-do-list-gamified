@@ -137,7 +137,7 @@ A versão do pnpm está fixada em 11.28.3 (e não na mais nova, 12.8.1) porque o
 - Sem limite de checks por hábito.
 - Escolhas narrativas e escolha de mapa: backlog (fora da v1).
 - Excluir conta: sem tela dedicada, linha em Configurações › Conta com diálogo de confirmação (exigência das lojas).
-- Hospedagem em VPS própria, em Docker; e-mail com Resend; monorepo único.
+- Hospedagem em VPS própria, em Docker;
 
 ## 11. Pendências conhecidas
 

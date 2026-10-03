@@ -30,7 +30,7 @@ Decisões fechadas em 2026-10-02
 • Rota do check: POST /v1/items/:id/checks (e DELETE /v1/items/:id/checks/:checkId). O arquivo do banner no app é banner.html.
 • Nome do app: Next Journey. Bundle id: br.com.wetechhub.app (dev: br.com.wetechhub.app.dev), definidos em 2026-10-02; passam a ser imutáveis no primeiro build iOS com credenciais Apple (Fase 2, passo 5).
 • Monorepo único, com pnpm + Turborepo.
-• Hospedagem: VPS própria, em Docker; cabe o Next Journey com folga. Ver "Hospedagem na VPS".
+• Hospedagem: VPS própria, em Docker; cabe o Next Journey com folga (capacidade medida em 2026-10-02). Ver "Hospedagem na VPS".
 • Escolhas narrativas (RF-31) e escolha de mapa ficam no backlog. Na v1 o capítulo só avança e a cena do banner muda conforme a história progride.
 • Sem limite de checks por hábito: todo check rende EXP, moedas e um passo do capítulo. E-mail transacional: Resend.
 pnpm e Turborepo em 2 minutos
@@ -232,11 +232,11 @@ Objetivo: colocar o app na mão de pessoas reais, calibrar as regras do jogo com
 12. Escrever a retrospectiva do MVP e a lista de candidatos para a v1.1 (por exemplo, o +/− dos hábitos, que ficou fora da v1).
 Critério de pronto (Marco 3): app aprovado e disponível nas duas lojas, rollout iniciado, monitoramento ativo, retrospectiva registrada.
 Hospedagem na VPS
-A VPS tem folga de CPU, memória e disco para o Next Journey (prod e staging). Regras para convivência com o outro projeto hospedado na mesma máquina:
-• Não compartilhar o Postgres do We Party. Criar um container Postgres próprio, com volume próprio, em um compose project separado (nome next-journey), e limites de memória e CPU por container (mem_limit, cpus).
+A VPS tem folga de CPU, memória e disco para o Next Journey (prod e staging), medida em 2026-10-02 com a carga atual em repouso. Regras para convivência com o outro projeto hospedado na mesma máquina:
+• Não compartilhar o Postgres do outro projeto. Criar um container Postgres próprio, com volume próprio, em um compose project separado (nome next-journey), e limites de memória e CPU por container (mem_limit, cpus).
 • Publicar as portas da API e do Postgres só em 127.0.0.1 (ex.: "127.0.0.1:8100:8100"). O nginx do host recebe 80/443 e faz proxy para a API, com um server block novo e certificado do certbot para o subdomínio da API.
-• Backup diário do Postgres com retenção de 7 dias (RNF de disponibilidade) em job próprio, com cópia fora da VPS e teste de restauração (Fase 7, passo 6). Não encontrei rotina de backup em /etc/cron.d nem em /root; confirmar se o We Party já tem uma.
-• Staging e produção na mesma VPS, em projetos compose distintos e portas distintas. Se o uso crescer, o primeiro passo é migrar o We Party ou o Next Journey para outra máquina, sem reescrever nada.
+• Backup diário do Postgres com retenção de 7 dias (RNF de disponibilidade) em job próprio, com cópia fora da VPS e teste de restauração (Fase 7, passo 6).
+• Staging e produção na mesma VPS, em projetos compose distintos e portas distintas. Se o uso crescer, o primeiro passo é migrar o outro projeto ou o Next Journey para outra máquina, sem reescrever nada.
 • A VPS é ponto único de falha para os dois projetos. A meta de 99,5% ao mês exige monitoramento externo simples (ex.: UptimeRobot em GET /health).
 Cobertura dos requisitos (RF → fase)
 • RF-01, 02, 06, 07 → Fase 4. RF-03, 04 → Fase 5 (passo 1). RF-05 → Fase 5 (passo 17). RF-08 → Fase 7 (passo 4).
