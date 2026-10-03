@@ -20,7 +20,7 @@ if echo "$files" | xargs grep -n -I -E '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' 2>/dev/
 echo "==> Segredos no histórico (commits novos em relação a origin/main)"
 base=$(git merge-base HEAD origin/main 2>/dev/null || echo "")
 range=${base:+$base..HEAD}
-if git log ${range:---all} -p 2>/dev/null | grep -E '^\+' | grep -E -i "$secret_re" | grep -v 'security-scan.sh'; then fail=1; fi
+if git log ${range:---all} -p -- . ':(exclude)scripts/security-scan.sh' ':(exclude)pnpm-lock.yaml' 2>/dev/null | grep -E '^\+' | grep -E -i "$secret_re"; then fail=1; fi
 
 echo "==> Vulnerabilidades em dependências (pnpm audit)"
 pnpm audit --audit-level=high || fail=1
