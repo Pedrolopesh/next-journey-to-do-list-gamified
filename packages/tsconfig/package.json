@@ -2,5 +2,9 @@
   "name": "@nextjourney/tsconfig",
   "version": "0.0.0",
   "private": true,
-  "files": ["base.json", "node.json", "react-native.json"]
+  "files": [
+    "base.json",
+    "node.json",
+    "react-native.json"
+  ]
 }

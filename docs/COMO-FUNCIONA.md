@@ -1,6 +1,6 @@
 # Next Journey — como o projeto funciona
 
-Atualizado em 2026-10-03. Este documento descreve **o que existe hoje** no repositório e **como as peças vão conversar** quando estiverem prontas. Onde algo ainda não existe, está marcado como **(planejado)** com a fase do plano. Fontes: [PLAN_TODO_APP.md](./PLAN_TODO_APP.md) (fases), [REQUISITOS.MD](./REQUISITOS.MD) (especificação), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design) e [TURBOREPO.md](./TURBOREPO.md) (ferramenta de build).
+Atualizado em 2026-10-03 (após a Fase 1, passos 8 a 10). Este documento descreve **o que existe hoje** no repositório e **como as peças vão conversar** quando estiverem prontas. Onde algo ainda não existe, está marcado como **(planejado)** com a fase do plano. Fontes: [PLAN_TODO_APP.md](./PLAN_TODO_APP.md) (fases), [REQUISITOS.MD](./REQUISITOS.MD) (especificação), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design) e [TURBOREPO.md](./TURBOREPO.md) (ferramenta de build).
 
 ## 1. O produto em uma frase
 
@@ -13,14 +13,14 @@ Um to-do list de uso pessoal para iOS e Android em que cada item marcado rende E
 | Plano, especificação e registro do Figma | Prontos, em `docs/` |
 | Monorepo pnpm + Turborepo | Funcionando (Fase 1, passos 1 a 7) |
 | `packages/tsconfig` | Pronto: `base.json`, `node.json`, `react-native.json` |
-| `packages/contracts` | Esqueleto: `src/index.ts` vazio, `build` ainda é um `echo` (tsup entra na Fase 3) |
-| `packages/eslint-config` | Só o `package.json`; as regras entram no passo 8 |
-| Husky, lint-staged, commitlint, Prettier | Planejado (Fase 1, passos 9 e 10) |
+| `packages/contracts` | Esqueleto: `src/index.ts` vazio; `build` ainda é um `echo` (tsup entra na Fase 3); já tem `lint` e `typecheck` reais |
+| `packages/eslint-config` | Pronto: `base.js`, `node.js`, `react.js` (ESLint 9 flat config, regras type-checked, imports ordenados, `no-console`) |
+| Prettier, Husky, lint-staged, commitlint | Funcionando: `pre-commit` (ESLint `--fix` e Prettier nos arquivos staged), `commit-msg` (Conventional Commits), `pre-push` (typecheck e test dos pacotes alterados) |
 | CI no GitHub Actions | Planejado (Fase 1, passo 12) |
 | `apps/api`, `apps/banner`, `apps/mobile` | Planejado (Fases 2 e 4) |
 | Hospedagem | Decidida: VPS We Party, em Docker. Ainda sem deploy |
 
-Nenhuma funcionalidade do app existe ainda. Hoje o repositório só prova que `pnpm install` e `pnpm run build` funcionam em todos os pacotes.
+Nenhuma funcionalidade do app existe ainda. Hoje o repositório só prova que instalação, build, lint, typecheck e os hooks de qualidade funcionam.
 
 ## 3. Estrutura de pastas
 
@@ -102,9 +102,13 @@ pnpm install
 pnpm run build        # roda o build de todos os pacotes que têm esse script (via Turbo)
 ```
 
-`pnpm run lint`, `typecheck`, `test` e `dev` já existem como scripts da raiz, mas ainda não há pacote com esses scripts, então o Turbo responde "No tasks were executed".
+`pnpm run lint` e `pnpm run typecheck` já rodam no `contracts`. `test` e `dev` existem como scripts da raiz, mas nenhum pacote tem esses scripts ainda, então o Turbo responde "No tasks were executed".
+
+Git hooks (instalados pelo `pnpm install`, via script `prepare`): commit com mensagem fora do padrão é rejeitado; arquivo `.ts` staged passa por ESLint com `--fix` e Prettier, e o commit é barrado se sobrar erro que não tem correção automática (ex.: `console.log`). O `pre-push` roda `turbo run typecheck test --filter="...[origin/main]"`.
 
 Observação do ambiente do Pedro: o hook do `rtk` reescreve `pnpm lint` para `eslint`. Use `pnpm run lint` com `rtk proxy` na frente (`rtk proxy pnpm run lint`) para testar.
+
+O TypeScript está fixado em `~5.9` (e não na 7.x, que é a mais nova no npm) porque o `typescript-eslint` 8.71 só aceita versões abaixo de 6.1; Expo e Nest também seguem a linha 5.x.
 
 A versão do pnpm está fixada em 11.28.3 (e não na mais nova, 12.8.1) porque o corepack não conseguiu ativar a 12.8.1 nesta máquina em 2026-10-02.
 

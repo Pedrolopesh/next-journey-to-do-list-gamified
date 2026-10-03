@@ -133,9 +133,9 @@ Saída real de `turbo ls`:
 
 | Pacote | Scripts | Papel |
 |---|---|---|
-| `@nextjourney/contracts` | `build` (placeholder com `echo`) | Futuros schemas Zod. Já exporta `main`, `module`, `types` e `exports` apontando para `dist/` |
+| `@nextjourney/contracts` | `build` (placeholder com `echo`), `lint` (`eslint .`), `typecheck` (`tsc --noEmit`) | Futuros schemas Zod. Já exporta `main`, `module`, `types` e `exports` apontando para `dist/` |
 | `@nextjourney/tsconfig` | nenhum | Configs de TypeScript reaproveitadas: `base.json` (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, ES2022), `node.json` (NodeNext) e `react-native.json` |
-| `@nextjourney/eslint-config` | nenhum | Receberá as regras de lint (passo 8) |
+| `@nextjourney/eslint-config` | nenhum | Regras de lint exportadas como `@nextjourney/eslint-config/base`, `/node` e `/react` |
 
 `apps/` está vazia. Os apps nascem nas Fases 2 e 4, porque os geradores (`create-expo-app`, Nest CLI) exigem um diretório novo.
 
@@ -148,14 +148,13 @@ Saída real de `turbo ls`:
 
 Aviso esperado: `no output files found for task @nextjourney/contracts#build`. O `build` declara `outputs: ["dist/**"]`, mas o placeholder não gera `dist/`. Some quando o `tsup` entrar (Fase 3).
 
-`pnpm run lint`, `typecheck` e `test` retornam "No tasks were executed", porque ainda nenhum pacote tem esses scripts. Isso é correto, não é erro.
+`pnpm run lint` e `pnpm run typecheck` executam no `contracts` (o `typecheck` primeiro espera o `build`, por causa do `^build`, se houver dependências). `pnpm run test` retorna "No tasks were executed", porque nenhum pacote tem esse script ainda. Isso é correto, não é erro.
 
 ### 2.4 O que vai mudar nas próximas fases
 
 | Fase | Mudança no Turbo |
 |---|---|
-| 1, passo 8 | `eslint-config` ganha as regras; cada pacote ganha `lint` com `eslint .` |
-| 1, passos 9 e 10 | Husky: `pre-commit` com lint-staged; `pre-push` com `turbo run typecheck test --filter="...[origin/main]"` |
+| 1, passos 8 a 10 (feito) | `eslint-config` com as regras; `contracts` com `lint` e `typecheck`; Husky: `pre-commit` com lint-staged e `pre-push` com `turbo run typecheck test --filter="...[origin/main]"` |
 | 1, passo 12 | CI (GitHub Actions) com `pnpm turbo lint typecheck test build` |
 | 2 | `apps/banner` e `apps/mobile` entram. O banner gera `dist/index.html` e um script copia para `apps/mobile/assets/banner/banner.html`. O mobile precisa depender do build do banner: declarando o banner em `devDependencies` do mobile (e o `^build` cuida disso) ou com `dependsOn: ["@nextjourney/banner#build"]` |
 | 3 | `contracts` passa a compilar com `tsup`; o aviso de outputs some |
@@ -182,4 +181,6 @@ No ambiente do Pedro, comandos como `pnpm lint` são reescritos pelo `rtk`. Para
 - **pnpm 12.8.1 não ativa via corepack** nesta máquina (2026-10-02, erro `Cannot find module ... pnpm.cjs`). Por isso o `packageManager` está em 11.28.3.
 - **`pnpm init` grava a versão mais nova** no `packageManager` e em `devEngines`; o `package.json` foi reescrito à mão com a versão fixada.
 - **`rtk` e `pnpm lint`.** Ver 2.5.
+- **ESLint 9 resolve o `eslint.config.js` a partir da pasta atual**, não do arquivo. No lint-staged (que roda da raiz) isso quebraria, então o comando usa `--flag v10_config_lookup_from_file`, que faz o ESLint procurar a config perto de cada arquivo (comportamento padrão do ESLint 10). O `eslint` também precisa estar nas `devDependencies` da raiz para o lint-staged achar o binário.
+- **TypeScript 5.9, não 7.** O `typescript-eslint` 8.71 aceita `typescript <6.1`. Como o `npm` já oferece a 7.x, o `pnpm add` instala a 7 se você não fixar a faixa.
 - **O aviso "no output files found"** é normal enquanto o `build` do `contracts` for um `echo`.
