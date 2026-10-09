@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseNotifyTime } from './notify-time';
+import { parseNotifyTime, splitTime } from './notify-time';
 
 describe('parseNotifyTime', () => {
   it('normaliza horários válidos', () => {
@@ -15,5 +15,12 @@ describe('parseNotifyTime', () => {
     for (const bad of ['24:00', '12:60', 'abc', '1:5', '99']) {
       expect(parseNotifyTime(bad)).toEqual({ ok: false });
     }
+  });
+});
+
+describe('splitTime', () => {
+  it('separa hora e minuto', () => {
+    expect(splitTime('08:30')).toEqual({ hour: 8, minute: 30 });
+    expect(splitTime('23:05')).toEqual({ hour: 23, minute: 5 });
   });
 });

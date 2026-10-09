@@ -39,6 +39,7 @@ const config: ExpoConfig = {
     'expo-router',
     'expo-secure-store',
     'expo-apple-authentication',
+    'expo-notifications',
     [
       'expo-splash-screen',
       {

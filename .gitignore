@@ -13,3 +13,7 @@ ios/
 android/
 .expo/
 apps/api/src/generated/
+
+# Backups locais do banco
+backups/
+*.dump

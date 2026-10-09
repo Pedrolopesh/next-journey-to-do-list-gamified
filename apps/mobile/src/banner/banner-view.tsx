@@ -7,12 +7,13 @@ import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, AppState, StyleSheet, Text, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { colors } from '@/theme';
 
 import bannerAsset from '../../assets/banner/banner.html';
+import { shouldPlay } from './playback';
 
 /** Banner 390 x 180 (cena Mapa das abas) */
 const ASPECT_RATIO = 390 / 180;
@@ -72,6 +73,30 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
     };
   }, []);
 
+  // Pausa o banner em segundo plano e quando o sistema pede para reduzir movimento
+  const reduceMotionRef = useRef(false);
+  const syncPlayback = useCallback(() => {
+    if (!readyRef.current) return;
+    const play = shouldPlay(AppState.currentState, reduceMotionRef.current);
+    send({ v: 1, type: play ? 'RESUME' : 'PAUSE' });
+  }, [send]);
+
+  useEffect(() => {
+    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
+      reduceMotionRef.current = enabled;
+      syncPlayback();
+    });
+    const motion = AccessibilityInfo.addEventListener('reduceMotionChanged', (enabled) => {
+      reduceMotionRef.current = enabled;
+      syncPlayback();
+    });
+    const appState = AppState.addEventListener('change', syncPlayback);
+    return () => {
+      motion.remove();
+      appState.remove();
+    };
+  }, [syncPlayback]);
+
   // Se o INIT mudar depois do READY (ex.: o GET /me chegou), posiciona de novo, sem animação
   useEffect(() => {
     if (readyRef.current) send(initMessage);
@@ -98,10 +123,11 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
         setFailed(false);
         // O app só envia INIT depois do READY
         send(initRef.current);
+        syncPlayback();
       }
       onMessage?.(message);
     },
-    [onMessage, send],
+    [onMessage, send, syncPlayback],
   );
 
   return (
