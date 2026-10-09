@@ -12,21 +12,21 @@ To-do list gamificado (diários, tarefas e hábitos rendem EXP e moedas e fazem 
 - `packages/contracts`: schemas Zod compartilhados (API, app, banner)
 - `packages/tsconfig`, `packages/eslint-config`: configuração compartilhada
 
-Docs: `docs/COMO-FUNCIONA.md`, `docs/TURBOREPO.md`, `docs/PLAN_TODO_APP.md` (fases), `docs/REQUISITOS.MD` (especificação), `docs/SEGURANCA.md`.
+Docs: `docs/COMO-FUNCIONA.md`, `docs/TURBOREPO.md`, o plano de implementação em fases (documento local do Pedro, fora do Git), `docs/REQUISITOS.MD` (especificação), `docs/SEGURANCA.md`.
 
 ## Stack (FATO, não alterar sem confirmar)
 
 - Node 24 (`.nvmrc`), **pnpm 11.28.3** (campo `packageManager`), Turborepo 2.x, TypeScript **~5.9** (a 7.x quebra o `typescript-eslint`)
 - ESLint 9 (flat config), Prettier, Husky, lint-staged, commitlint
 - **NUNCA** usar `npm` ou `yarn` neste repo, só `pnpm`
-- Decisões em `docs/PLAN_TODO_APP.md` (seção "Decisões fechadas") e nos ADRs em `docs/adr/`
+- Decisões nos ADRs em `docs/adr/` e no plano de implementação (documento local do Pedro, fora do Git)
 
 ## Comandos
 
 - `pnpm install`
 - `pnpm run build | lint | typecheck | test | dev` (todos via Turbo)
 - `pnpm --filter @nextjourney/<pacote> <script>`: um pacote só
-- `pnpm run security`: varredura de dados sensíveis e `pnpm audit` (rodar antes de todo PR)
+- `pnpm run security`: varredura rápida de dados sensíveis e `pnpm audit`; `pnpm run security:full`: varredura completa com o histórico inteiro (obrigatória antes de todo PR)
 - Ambiente do Pedro: o hook do `rtk` reescreve `pnpm lint`; use `rtk proxy pnpm run lint`
 
 ### O que a CI verifica em todo PR
@@ -94,10 +94,39 @@ Resumo; a versão completa e o histórico de auditorias estão em `docs/SEGURANC
 - `pnpm audit` limpo para severidade alta ou crítica.
 - Ação nova no GitHub Actions: fixar versão e preferir ações oficiais.
 
+## Antes de subir qualquer PR (OBRIGATÓRIO)
+
+Vale para pessoas e para agentes de IA. **Nenhuma branch é enviada ao GitHub e nenhum PR é aberto sem os dois passos abaixo.**
+
+### 1. Revisão e aprovação do Pedro
+
+- Deixe o trabalho **só local** (branch + commits) e pare. Não rode `git push` nem `gh pr create` ainda.
+- Apresente ao Pedro: o que mudou e por quê, em linguagem simples; a lista de arquivos; o resultado de `lint`, `typecheck`, `test` e `build`; e o resultado da varredura de segredos (item 2).
+- Só suba depois de uma aprovação **explícita** ("pode subir", "aprovado"). Aprovação de um PR não vale para o próximo.
+- Mudou algo depois da aprovação? Apresente de novo.
+
+### 2. Verificação completa de chaves, tokens e segredos
+
+Rode `pnpm run security:full` e só prossiga com `OK`. Ele cobre: padrões de segredo em todos os arquivos versionados e novos; arquivos sensíveis (`.env`, `.pem`, keystores, chaves SSH); endereços IP; o **histórico inteiro** de todas as branches; arquivos ignorados que parecem sensíveis; autor e mensagens dos commits (sem atribuição a ferramentas de IA); e `pnpm audit`.
+
+Além do script, confira à mão:
+
+- `git status --ignored` e `git diff --cached`: nenhum arquivo inesperado entra (`.env`, dumps, logs, capturas de tela com dados, arquivos de pessoa ou de servidor).
+- A descrição do PR e as mensagens de commit: sem token, IP, host, caminho de servidor ou achado de auditoria.
+- Docs e testes novos: sem credenciais "de exemplo" que pareçam reais; exemplos usam valores obviamente falsos (`<token>`, `exemplo.com`).
+- Dependência nova: nome exato conferido, lockfile junto, `pnpm audit` limpo.
+
+Se achar um segredo (mesmo antigo), **pare**: não faça push, avise o Pedro, revogue o segredo e só então remova do código e, se já foi commitado, do histórico.
+
+## Comunicação durante o trabalho
+
+- Ao executar um passo do plano, diga **o que o passo significa** (o que é e para que serve), com fase e número (ex.: "Fase 1, passo 8: configurar o ESLint, a ferramenta que aponta erros de código"), antes ou junto do resultado. O Pedro não conhece todos os termos; números soltos não bastam.
+- Diga o que foi verificado de fato e o que não foi.
+
 ## Safety
 
 - NUNCA commitar `.env` com valores reais; só `.env.example`.
-- NUNCA push direto em `main` — sempre branch + PR.
+- NUNCA push direto em `main` — sempre branch + PR, e o PR só sobe depois da revisão e aprovação do Pedro e da varredura completa (seção acima).
 - NUNCA editar migrations já aplicadas.
 - **NUNCA colocar atribuição ao Claude/IA em commits ou PRs.** Sem `Co-Authored-By`, sem `Claude-Session`, sem "Generated with". O autor é só o Pedro.
 - Sempre `git pull origin main` antes de começar.

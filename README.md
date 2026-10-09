@@ -20,7 +20,6 @@ Se `pnpm run lint` falhar com "eslint not found" no ambiente do Pedro, é o hook
 
 - [Como o projeto funciona](docs/COMO-FUNCIONA.md)
 - [Turborepo: conceitos e configuração](docs/TURBOREPO.md)
-- [Plano de implementação](docs/PLAN_TODO_APP.md)
 - [Especificação do MVP](docs/REQUISITOS.MD)
 - [Design no Figma](docs/FIGMA-INTERA.md)
 
