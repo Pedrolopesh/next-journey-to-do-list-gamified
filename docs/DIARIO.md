@@ -2,6 +2,13 @@
 
 Uma entrada por dia, a mais recente no topo. Datas em ISO 8601.
 
+## 2026-10-09
+
+- Feito: Fase 2, passos 1 a 15. App Expo com rotas base e development build rodando no emulador Android; banner em Vite com a cena em CSS (placeholders); protocolo de mensagens em `packages/contracts` (Zod, com testes); o banner responde `READY` e `INIT`, e o build copia o HTML para o app; `BannerView` com WebView nas 5 abas e botões de simulação. Validado no emulador pelo Pedro.
+- Decisões: vulnerabilidades altas do Expo aceitas de forma documentada (revisão em 2026-11-03); `lint` passa a depender do build das dependências no Turbo.
+- Bloqueios: passos 16 e 17 (medição de desempenho e ADR-003) adiados; precisam de Android intermediário real e iPhone e **devem ser validados antes de concluir todas as implementações**. Conta/time de desenvolvimento da Apple pendente (Fase 0).
+- Próximo: refinar o idle do banner (futuro); seguir o plano para a Fase 3 (regras de progressão) mantendo o gate do spike em aberto.
+
 ## 2026-10-03
 
 - Feito: Fase 1, passos 8 a 14. ESLint, Prettier, Husky, lint-staged e commitlint; AGENTS.md, CI, README e LICENSE; template de PR, OpenSpec e política de segurança; varredura de segredos; proteção da `main`. Documentos do plano e da especificação reorganizados para leitura. ADRs 0001, 0002, 0005 e 0006 e registro de conclusão da Fase 1.
