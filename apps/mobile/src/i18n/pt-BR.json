@@ -14,5 +14,13 @@
   },
   "placeholder": {
     "comingSoon": "Em construção"
+  },
+  "banner": {
+    "fallback": "Banner indisponível"
+  },
+  "debug": {
+    "lastEvent": "Último evento do banner: {{event}}",
+    "simulateCheck": "Simular check",
+    "simulateChapter": "Simular fim de capítulo"
   }
 }
