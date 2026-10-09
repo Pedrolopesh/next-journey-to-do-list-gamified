@@ -1,13 +1,16 @@
 import { randomUUID } from 'node:crypto';
 
 import { Module } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { Logger, LoggerModule } from 'nestjs-pino';
 
 import { AllExceptionsFilter } from './common/all-exceptions.filter.js';
 import { ENV, type Env } from './config/env.js';
 import { CoreModule } from './core.module.js';
 import { AchievementsModule } from './modules/achievements/achievements.module.js';
+import { AuthController } from './modules/auth/auth.controller.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CategoriesModule } from './modules/categories/categories.module.js';
 import { HealthModule } from './modules/health/health.module.js';
@@ -23,6 +26,22 @@ const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
   imports: [
     CoreModule,
     PrismaModule,
+    ScheduleModule.forRoot(),
+    // Dois limites por IP/minuto: geral e, só nas rotas de autenticação, um mais rígido
+    ThrottlerModule.forRootAsync({
+      inject: [ENV],
+      useFactory: (env: Env) => ({
+        throttlers: [
+          { name: 'default', ttl: 60_000, limit: env.THROTTLE_LIMIT },
+          {
+            name: 'auth',
+            ttl: 60_000,
+            limit: env.THROTTLE_AUTH_LIMIT,
+            skipIf: (context) => context.getClass() !== AuthController,
+          },
+        ],
+      }),
+    }),
     LoggerModule.forRootAsync({
       inject: [ENV],
       useFactory: (env: Env) => ({
@@ -76,6 +95,7 @@ const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
     HealthModule,
   ],
   providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     {
       provide: APP_FILTER,
       inject: [Logger],

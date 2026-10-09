@@ -79,6 +79,7 @@
     "settings": "Configurações"
   },
   "feedback": {
+    "queuedOffline": "Sem conexão: o check será enviado quando a internet voltar.",
     "expToast": "+{{exp}} EXP",
     "alreadyDone": "Este item já foi marcado hoje.",
     "checkFailed": "Não foi possível marcar. Tente de novo.",
@@ -251,6 +252,11 @@
     "saved": "Salvo.",
     "saveFailed": "Não foi possível salvar.",
     "categories": "Categorias",
+    "delete": "Excluir conta",
+    "deleteTitle": "Excluir conta?",
+    "deleteBody": "Seus dados pessoais são apagados agora e o restante é removido de vez em até 30 dias. Não dá para desfazer.",
+    "deleteConfirm": "Excluir",
+    "deleteFailed": "Não foi possível excluir a conta. Tente de novo.",
     "about": "{{name}} versão {{version}}"
   },
   "credits": {

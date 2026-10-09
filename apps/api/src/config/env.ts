@@ -19,6 +19,18 @@ const envSchema = z.object({
   // Login social: client ids públicos (não são segredos). Vazios = recurso indisponível.
   GOOGLE_CLIENT_IDS: z.string().default(''),
   APPLE_CLIENT_ID: z.string().default(''),
+  // Origens web permitidas (CORS), separadas por vírgula. Vazio = CORS desligado (o app nativo não precisa).
+  CORS_ORIGINS: z.string().default(''),
+  /** Ligue atrás de proxy reverso (nginx) para o rate limit enxergar o IP real. */
+  TRUST_PROXY: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  /** Requisições por minuto por IP, no geral e nas rotas de autenticação. */
+  THROTTLE_LIMIT: z.coerce.number().int().positive().default(120),
+  THROTTLE_AUTH_LIMIT: z.coerce.number().int().positive().default(10),
+  /** Dias até a remoção definitiva dos dados de uma conta excluída. */
+  ACCOUNT_PURGE_DAYS: z.coerce.number().int().positive().default(30),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -73,6 +73,11 @@ export async function fetchMe(): Promise<MeResponse> {
   return meResponseSchema.parse(data);
 }
 
+/** Exclui a conta (anonimiza agora, apaga de vez depois do prazo de retenção). */
+export async function deleteAccount(): Promise<void> {
+  await http.delete('/me');
+}
+
 export async function patchMe(body: PatchMeRequest): Promise<MeResponse> {
   const { data } = await http.patch<unknown>('/me', body);
   return meResponseSchema.parse(data);

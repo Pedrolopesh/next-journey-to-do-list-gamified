@@ -1,5 +1,5 @@
 import type { CheckResult, Item, ItemType, MeResponse } from '@nextjourney/contracts';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useSessionStore } from '@/auth/session-store';
 
@@ -21,6 +21,7 @@ import {
   updateCategory,
   updateItem,
 } from './endpoints';
+import { isRetryableError } from './errors';
 
 export const queryKeys = {
   me: ['me'] as const,
@@ -78,15 +79,20 @@ export const useCosmetics = () => {
 };
 
 /** Depois de qualquer mudança de jogo, estes dados podem ter mudado. */
+/** Recarrega tudo que depende do progresso (itens, perfil, home, história, conquistas). */
+export function refreshGameData(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: ['items'] });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.me });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.home });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.timeline });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.stories });
+}
+
 function useRefreshGameData() {
   const queryClient = useQueryClient();
   return () => {
-    void queryClient.invalidateQueries({ queryKey: ['items'] });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.me });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.home });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.timeline });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.stories });
+    refreshGameData(queryClient);
   };
 }
 
@@ -118,7 +124,9 @@ export function useCheckItem(type: ItemType) {
       );
       return { previous };
     },
-    onError: (_error, _variables, context) => {
+    onError: (error, _variables, context) => {
+      // Sem rede o check vai para a fila offline: o item continua marcado até sincronizar
+      if (isRetryableError(error)) return;
       if (context?.previous) queryClient.setQueryData(queryKeys.items(type), context.previous);
     },
     onSettled: refresh,

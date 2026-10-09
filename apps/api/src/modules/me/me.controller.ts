@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Patch, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Patch, Put } from '@nestjs/common';
 import {
   type Character,
   characterSchema,
@@ -12,6 +12,7 @@ import { AppError } from '../../common/app-error.js';
 import { CurrentUserId } from '../../common/current-user.decorator.js';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { AccountService } from '../account/account.service.js';
 import {
   ACHIEVEMENT_CATALOG,
   checksParaCapitulo,
@@ -34,6 +35,7 @@ export class MeController {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(GameConfigService) private readonly gameConfig: GameConfigService,
     @Inject(StoriesService) private readonly stories: StoriesService,
+    @Inject(AccountService) private readonly account: AccountService,
   ) {}
 
   /** Perfil e estado de jogo do usuário autenticado (sem hash de senha nem dados de terceiros). */
@@ -128,6 +130,13 @@ export class MeController {
       },
     });
     return this.me(userId);
+  }
+
+  /** Exclui a conta: anonimiza agora e apaga de vez depois do prazo de retenção. */
+  @Delete()
+  @HttpCode(204)
+  async deleteAccount(@CurrentUserId() userId: string): Promise<void> {
+    await this.account.requestDeletion(userId);
   }
 
   /** Cria ou edita o personagem. Cosméticos de conquista só podem ser usados se liberados. */
