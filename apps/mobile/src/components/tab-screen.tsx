@@ -14,13 +14,15 @@ type Props = {
   title: string;
   /** O dono da tela pode enviar mensagens ao banner (ex.: ITEM_CHECKED depois de um check). */
   bannerRef?: RefObject<BannerViewHandle | null>;
+  /** Mensagens do banner (ex.: CHAPTER_TRANSITION_DONE abre o modal do capítulo). */
+  onBannerMessage?: (message: BannerToAppMessage) => void;
   /** Botões de simulação (só em desenvolvimento) para exercitar o banner sem a API. */
   debug?: boolean;
   children?: ReactNode;
 };
 
 /** Tela das abas: banner no topo (posição real do capítulo) e o conteúdo da aba embaixo. */
-export function TabScreen({ title, bannerRef, debug = true, children }: Props) {
+export function TabScreen({ title, bannerRef, onBannerMessage, debug = true, children }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const ownRef = useRef<BannerViewHandle>(null);
@@ -45,9 +47,13 @@ export function TabScreen({ title, bannerRef, debug = true, children }: Props) {
     [me],
   );
 
-  const handleBannerMessage = useCallback((message: BannerToAppMessage) => {
-    setLastEvent(message.type);
-  }, []);
+  const handleBannerMessage = useCallback(
+    (message: BannerToAppMessage) => {
+      setLastEvent(message.type);
+      onBannerMessage?.(message);
+    },
+    [onBannerMessage],
+  );
 
   const simulateCheck = (): void => {
     const next = Math.min(1, simProgress + CHECK_STEP);

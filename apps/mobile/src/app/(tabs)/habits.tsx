@@ -1,9 +1,16 @@
 import { useTranslation } from 'react-i18next';
 
-import { TabScreen } from '@/components/tab-screen';
+import { ItemListScreen } from '@/components/item-list-screen';
 
 export default function HabitsScreen() {
   const { t } = useTranslation();
-
-  return <TabScreen title={t('tabs.habits')} />;
+  return (
+    <ItemListScreen
+      type="habit"
+      counters
+      title={t('habits.title')}
+      emptyTitle={t('habits.empty')}
+      emptyHint={t('habits.emptyHint')}
+    />
+  );
 }

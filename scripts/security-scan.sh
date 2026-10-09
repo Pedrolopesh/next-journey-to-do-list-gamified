@@ -16,7 +16,7 @@ echo "==> Arquivos sensíveis versionados"
 if echo "$files" | grep -E '(^|/)\.env($|\.)|\.pem$|\.p12$|\.keystore$|\.jks$|id_rsa|id_ed25519|credentials|service-account' | grep -v -E '\.env\.example$'; then fail=1; fi
 
 echo "==> Endereços IP e hosts de infraestrutura"
-if echo "$files" | xargs grep -n -I -E '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' 2>/dev/null | grep -v -E '127\.0\.0\.1|0\.0\.0\.0|localhost'; then fail=1; fi
+if echo "$files" | xargs grep -n -I -E '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' 2>/dev/null | grep -v -E '127\.0\.0\.1|0\.0\.0\.0|localhost|10\.0\.2\.2'; then fail=1; fi
 
 echo "==> Segredos no histórico (commits novos em relação a origin/main)"
 base=$(git merge-base HEAD origin/main 2>/dev/null || echo "")

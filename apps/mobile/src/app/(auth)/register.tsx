@@ -19,6 +19,7 @@ import { isNetworkError, toApiError } from '@/api/errors';
 import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
 import { PasswordChecklist } from '@/components/password-checklist';
+import { SocialButtons } from '@/components/social-buttons';
 import { TextField } from '@/components/text-field';
 import { colors, space } from '@/theme';
 
@@ -169,6 +170,7 @@ export default function RegisterScreen() {
           onPress={() => void onSubmit()}
           loading={isSubmitting}
         />
+        <SocialButtons />
         <Link href="/login" style={styles.link}>
           {t('auth.goToLogin')}
         </Link>
