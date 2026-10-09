@@ -96,6 +96,13 @@ export default function SettingsScreen() {
           router.push('/settings/categories');
         }}
       />
+      <Button
+        label={t('credits.title')}
+        variant="secondary"
+        onPress={() => {
+          router.push('/settings/credits');
+        }}
+      />
       <Text style={styles.about}>
         {t('settings.about', {
           name: 'Next Journey',

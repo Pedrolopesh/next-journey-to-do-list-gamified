@@ -253,6 +253,10 @@
     "categories": "Categorias",
     "about": "{{name}} versão {{version}}"
   },
+  "credits": {
+    "title": "Créditos",
+    "intro": "A arte e as licenças usadas no Next Journey."
+  },
   "categories": {
     "title": "Categorias",
     "name": "Nome",
