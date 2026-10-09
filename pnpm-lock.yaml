@@ -161,6 +161,9 @@ importers:
       '@nextjourney/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: ^24.19.1
+        version: 24.19.1
       eslint:
         specifier: ^9
         version: 9.39.5(jiti@2.6.1)(supports-color@8.1.1)
