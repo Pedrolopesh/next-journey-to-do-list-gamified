@@ -30,6 +30,7 @@ Dados de infraestrutura (endereços, portas, nomes de servidor) **nunca** entram
 | [0001](./0001-hospedagem-em-vps-propria.md) | Hospedagem da API e do banco em VPS própria, com Docker | Aceita |
 | [0002](./0002-monorepo-com-pnpm-e-turborepo.md) | Monorepo com pnpm + Turborepo | Aceita |
 | 0003 | WebView para o banner | Reservada (Fase 2, depende do spike) |
-| 0004 | Regras de jogo ambíguas e como foram resolvidas | Reservada (Fase 3) |
+| [0004](./0004-regras-de-jogo-ambiguas.md) | Regras de jogo ambíguas e como foram resolvidas | Proposta (implementada; aguarda confirmação) |
 | [0005](./0005-versoes-pnpm-typescript-e-eslint.md) | Versões de pnpm, TypeScript e configuração do ESLint | Aceita |
 | [0006](./0006-repositorio-publico-e-seguranca.md) | Repositório público de propósito e proteções de segurança | Aceita |
+| [0007](./0007-api-nestjs-12-esm-e-vitest.md) | API em NestJS 12, ESM e Vitest | Aceita |
