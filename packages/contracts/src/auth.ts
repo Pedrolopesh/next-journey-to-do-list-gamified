@@ -60,3 +60,18 @@ export const authTokensSchema = z.object({
   expiresIn: z.number().int().positive(),
 });
 export type AuthTokens = z.infer<typeof authTokensSchema>;
+
+export const userSummarySchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  email: z.email(),
+  timezone: timezoneSchema,
+});
+export type UserSummary = z.infer<typeof userSummarySchema>;
+
+/** Resposta de cadastro, login e login social. */
+export const authResponseSchema = z.object({
+  tokens: authTokensSchema,
+  user: userSummarySchema,
+});
+export type AuthResponse = z.infer<typeof authResponseSchema>;

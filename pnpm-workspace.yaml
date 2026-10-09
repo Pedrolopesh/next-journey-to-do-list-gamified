@@ -5,6 +5,13 @@ allowBuilds:
   # Scripts de instalação ignorados de propósito: os binários vêm dos pacotes opcionais por plataforma.
   esbuild: false
   unrs-resolver: false
+  argon2: false
+  '@swc/core': false
+  # Telemetria de terceiros: nunca
+  '@scarf/scarf': false
+  # Precisam rodar: baixam o motor de migrations do Prisma
+  prisma: true
+  '@prisma/engines': true
 
 # Vulnerabilidades ALTAS aceitas de forma documentada (sem correção publicada pelo upstream).
 # Ambas vêm só de ferramentas de desenvolvimento do Expo/Metro (CLI e empacotador), que rodam na
@@ -14,3 +21,8 @@ auditConfig:
   ignoreGhsas:
     - GHSA-86w9-cpqp-85rv # node-forge (via @expo/code-signing-certificates)
     - GHSA-vfj7-8cjw-p6xm # braces (via metro / micromatch)
+
+# Correções de vulnerabilidades em dependências transitivas do CLI do Prisma (só ferramenta de desenvolvimento).
+overrides:
+  mysql2: '>=3.23.1'
+  deepmerge-ts: '>=8.0.0'

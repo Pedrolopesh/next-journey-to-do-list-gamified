@@ -21,3 +21,18 @@ export const playerStateSchema = z.object({
   story: storyProgressSchema,
 });
 export type PlayerState = z.infer<typeof playerStateSchema>;
+
+/** GET /me: o usuário e o estado de jogo, já com o EXP necessário para o próximo nível. */
+export const meResponseSchema = z.object({
+  user: z.object({
+    id: z.uuid(),
+    name: z.string(),
+    email: z.email(),
+    timezone: z.string(),
+  }),
+  player: playerStateSchema.extend({
+    expForNextLevel: z.number().int().positive(),
+    requiredChecksInChapter: z.number().int().positive(),
+  }),
+});
+export type MeResponse = z.infer<typeof meResponseSchema>;
