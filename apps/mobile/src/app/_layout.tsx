@@ -13,6 +13,7 @@ import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
 import { ProgressionModalHost } from '@/components/progression-modal-host';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
+import { useCheckSync } from '@/features/offline/use-check-sync';
 import { isOnboardingComplete } from '@/features/onboarding/next-step';
 import { colors, space } from '@/theme';
 
@@ -36,6 +37,7 @@ function Gate() {
   const status = useSessionStore((state) => state.status);
   const me = useMe();
   const signedIn = status === 'signedIn';
+  useCheckSync();
 
   if (status === 'loading') return <Splash />;
   if (signedIn && me.isPending) return <Splash />;

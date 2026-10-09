@@ -3,14 +3,16 @@ import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
-import { patchMe } from '@/api/endpoints';
+import { deleteAccount, patchMe } from '@/api/endpoints';
 import { queryKeys, useMe } from '@/api/queries';
+import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
 import { Pills } from '@/components/pills';
 import { ScreenFrame } from '@/components/screen-frame';
 import { TextField } from '@/components/text-field';
+import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { parseNotifyTime } from '@/features/settings/notify-time';
 import { timezoneOptions } from '@/features/settings/timezones';
 import { colors, space } from '@/theme';
@@ -39,6 +41,29 @@ export default function SettingsScreen() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const confirmDelete = (): void => {
+    Alert.alert(t('settings.deleteTitle'), t('settings.deleteBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('settings.deleteConfirm'),
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            try {
+              await deleteAccount();
+            } catch {
+              setMessage(t('settings.deleteFailed'));
+              return;
+            }
+            queryClient.clear();
+            useFeedbackStore.getState().clear();
+            await useSessionStore.getState().clear();
+          })();
+        },
+      },
+    ]);
   };
 
   const notifyValue = notify ?? me?.user.notifyAt ?? '';
@@ -103,6 +128,7 @@ export default function SettingsScreen() {
           router.push('/settings/credits');
         }}
       />
+      <Button label={t('settings.delete')} variant="secondary" onPress={confirmDelete} />
       <Text style={styles.about}>
         {t('settings.about', {
           name: 'Next Journey',

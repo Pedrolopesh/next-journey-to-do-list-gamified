@@ -1,14 +1,16 @@
 import type { BannerToAppMessage, Item, ItemType } from '@nextjourney/contracts';
+import { useQueryClient } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 import * as Haptics from 'expo-haptics';
 import { type RefObject, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { toApiError } from '@/api/errors';
+import { isRetryableError, toApiError } from '@/api/errors';
 import { chapterProgress, useCheckItem, useMe, useUndoCheck } from '@/api/queries';
 import type { BannerViewHandle } from '@/banner/banner-view';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { buildModalQueue, type ModalEntry } from '@/features/feedback/modal-queue';
+import { useOfflineStore } from '@/features/offline/offline-store';
 
 /** Se o banner não confirmar a transição de capítulo, o modal abre mesmo assim depois deste prazo. */
 const CHAPTER_MODAL_FALLBACK_MS = 3500;
@@ -21,6 +23,7 @@ type Options = { type: ItemType; bannerRef: RefObject<BannerViewHandle | null> }
  */
 export function useCheckFlow({ type, bannerRef }: Options) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { data: me } = useMe();
   const check = useCheckItem(type);
   const undo = useUndoCheck();
@@ -102,6 +105,15 @@ export function useCheckFlow({ type, bannerRef }: Options) {
             }
           },
           onError: (cause) => {
+            // Sem rede: guarda na fila e segue (sincroniza sozinho ao voltar a conexão)
+            if (isRetryableError(cause)) {
+              useOfflineStore
+                .getState()
+                .add({ itemId: item.id, type, checkId, queuedAt: Date.now() });
+              useFeedbackStore.getState().rememberCheck(item.id, checkId);
+              setToast(t('feedback.queuedOffline'));
+              return;
+            }
             const code = toApiError(cause)?.code;
             setError(
               code === 'ALREADY_CHECKED' || code === 'ALREADY_COMPLETED'
@@ -113,12 +125,20 @@ export function useCheckFlow({ type, bannerRef }: Options) {
         },
       );
     },
-    [bannerRef, check, me, releaseChapterModal, resetBanner, t],
+    [bannerRef, check, me, releaseChapterModal, resetBanner, t, type],
   );
 
   const handleUndo = useCallback(
     (item: Item, checkId: string) => {
       setError(null);
+      // Check ainda na fila (nunca chegou ao servidor): basta tirar da fila
+      if (useOfflineStore.getState().queue.some((queued) => queued.checkId === checkId)) {
+        useOfflineStore.getState().remove([checkId]);
+        useFeedbackStore.getState().forgetCheck(item.id, checkId);
+        void queryClient.invalidateQueries({ queryKey: ['items'] });
+        resetBanner();
+        return;
+      }
       undo.mutate(
         { itemId: item.id, checkId },
         {
@@ -140,7 +160,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
         },
       );
     },
-    [resetBanner, t, undo],
+    [queryClient, resetBanner, t, undo],
   );
 
   return { handleCheck, handleUndo, onBannerMessage, toast, setToast, error, setError };
