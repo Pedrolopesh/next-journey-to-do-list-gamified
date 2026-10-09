@@ -177,6 +177,8 @@ No ambiente do Pedro, comandos como `pnpm lint` são reescritos pelo `rtk`. Para
 
 ### 2.6 Pegadinhas já encontradas
 
+- **`generate` é uma tarefa do Turbo.** O cliente do Prisma é gerado em `apps/api/src/generated` (ignorado pelo Git). Quando `build`, `typecheck` e `lint` chamavam `prisma generate` cada um, rodavam em paralelo e brigavam pela mesma pasta (falhas intermitentes). Agora `apps/api/turbo.json` declara a tarefa `generate` (com `inputs` no schema e `outputs` na pasta gerada) e as demais dependem dela. Para rodar à mão: `pnpm --filter @nextjourney/api generate`.
+- **Variáveis de ambiente em modo estrito.** O Turbo só repassa às tarefas as variáveis declaradas. `DATABASE_URL` e `TEST_DATABASE_URL` estão em `globalPassThroughEnv` (repassadas sem entrar no hash do cache), porque o Prisma 7 lê `DATABASE_URL` até para `prisma generate`, que roda no `lint`, `typecheck` e `build` da API. No CI elas apontam para o Postgres efêmero do job; localmente o `prisma.config.ts` carrega o `apps/api/.env`.
 - **`AGENTS.md` na raiz.** O próprio `turbo` escreve um bloco entre `<!-- BEGIN:turborepo-agent-rules -->` e `<!-- END:turborepo-agent-rules -->` quando detecta um agente de IA. Ele foi parar no primeiro commit de pacotes. Mantenha o bloco commitado; o passo 11 da Fase 1 acrescenta o conteúdo do projeto ao redor dele. Para desligar: `"agentGuidance": false` no `turbo.json`.
 - **pnpm 12.8.1 não ativa via corepack** nesta máquina (2026-10-02, erro `Cannot find module ... pnpm.cjs`). Por isso o `packageManager` está em 11.28.3.
 - **`pnpm init` grava a versão mais nova** no `packageManager` e em `devEngines`; o `package.json` foi reescrito à mão com a versão fixada.

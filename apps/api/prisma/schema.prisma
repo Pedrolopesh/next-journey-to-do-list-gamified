@@ -1,0 +1,161 @@
+// Fonte da verdade do banco. Datas em UTC (timestamptz). "Dias locais" do usuário ficam como
+// texto AAAA-MM-DD (já calculados no fuso do perfil), para nunca depender do fuso do servidor.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ItemType {
+  daily
+  todo
+  habit
+}
+
+enum Difficulty {
+  easy
+  medium
+  hard
+}
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  name            String
+  timezone        String
+  termsAcceptedAt DateTime  @map("terms_accepted_at") @db.Timestamptz
+  termsVersion    String    @map("terms_version")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz
+
+  stats         UserStats?
+  refreshTokens RefreshToken[]
+  categories    Category[]
+  items         Item[]
+  checks        ItemCheck[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  /// sha256 do segredo do token; o token em si nunca é guardado
+  tokenHash String    @unique @map("token_hash")
+  /// Todos os tokens rotacionados a partir do mesmo login compartilham a família
+  familyId  String    @map("family_id") @db.Uuid
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+/// Estado de jogo: EXP, nível e moedas são globais; o progresso de capítulo é da história ativa.
+model UserStats {
+  userId               String  @id @map("user_id") @db.Uuid
+  level                Int     @default(1)
+  expInLevel           Int     @default(0) @map("exp_in_level")
+  expTotal             Int     @default(0) @map("exp_total")
+  coins                Int     @default(0)
+  totalChecks          Int     @default(0) @map("total_checks")
+  itemsCreated         Int     @default(0) @map("items_created")
+  storyChapter         Int     @default(1) @map("story_chapter")
+  storyChecksInChapter Int     @default(0) @map("story_checks_in_chapter")
+  storyCompleted       Boolean @default(false) @map("story_completed")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+model Category {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  name      String
+  color     String
+  position  Int       @default(0)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items Item[]
+
+  @@index([userId])
+  @@map("categories")
+}
+
+model Item {
+  id            String     @id @default(uuid()) @db.Uuid
+  userId        String     @map("user_id") @db.Uuid
+  categoryId    String     @map("category_id") @db.Uuid
+  type          ItemType
+  title         String
+  notes         String?
+  difficulty    Difficulty
+  /// Dias agendados (0 = domingo ... 6 = sábado); só para diários
+  scheduleDays  Int[]      @map("schedule_days")
+  dueAt         DateTime?  @map("due_at") @db.Timestamptz
+  completedAt   DateTime?  @map("completed_at") @db.Timestamptz
+  /// Dia local da criação (AAAA-MM-DD)
+  createdOn     String     @map("created_on") @db.VarChar(10)
+  /// Último dia local com check ativo (AAAA-MM-DD)
+  lastCheckedOn String?    @map("last_checked_on") @db.VarChar(10)
+  streakCurrent Int        @default(0) @map("streak_current")
+  streakBest    Int        @default(0) @map("streak_best")
+  position      Int        @default(0)
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  /// Exclusão lógica: mantém o histórico de EXP
+  deletedAt     DateTime?  @map("deleted_at") @db.Timestamptz
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category    @relation(fields: [categoryId], references: [id])
+  checks   ItemCheck[]
+
+  @@index([userId, type])
+  @@index([userId, deletedAt])
+  @@map("items")
+}
+
+/// Um check. O id é o checkId (UUID v4) gerado pelo app: torna o check idempotente.
+model ItemCheck {
+  id                  String    @id @db.Uuid
+  itemId              String    @map("item_id") @db.Uuid
+  userId              String    @map("user_id") @db.Uuid
+  /// Dia local do check (AAAA-MM-DD)
+  checkedOn           String    @map("checked_on") @db.VarChar(10)
+  checkedAt           DateTime  @default(now()) @map("checked_at") @db.Timestamptz
+  exp                 Int
+  coins               Int
+  countsForChapter    Boolean   @map("counts_for_chapter")
+  chapterAtCheck      Int?      @map("chapter_at_check")
+  closedChapter       Boolean   @map("closed_chapter")
+  /// Para restaurar o diário ao desmarcar
+  streakBefore        Int       @map("streak_before")
+  lastCheckedBefore   String?   @map("last_checked_before") @db.VarChar(10)
+  revertedAt          DateTime? @map("reverted_at") @db.Timestamptz
+  /// CheckResult devolvido na primeira vez; repetir o checkId devolve o mesmo resultado
+  result              Json
+
+  item Item @relation(fields: [itemId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([itemId, revertedAt])
+  @@index([userId, checkedOn])
+  @@map("item_checks")
+}
+
+model GameConfig {
+  key   String @id
+  value Json
+
+  @@map("game_config")
+}

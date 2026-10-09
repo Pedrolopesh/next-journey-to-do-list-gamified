@@ -49,6 +49,8 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
   const [html, setHtml] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const readyRef = useRef(false);
+  const initRef = useRef(initMessage);
+  initRef.current = initMessage;
 
   const send = useCallback((message: AppToBannerMessage) => {
     webViewRef.current?.postMessage(JSON.stringify(message));
@@ -70,6 +72,11 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
     };
   }, []);
 
+  // Se o INIT mudar depois do READY (ex.: o GET /me chegou), posiciona de novo, sem animação
+  useEffect(() => {
+    if (readyRef.current) send(initMessage);
+  }, [initMessage, send]);
+
   // O WebView só começa a contar depois que o HTML foi lido
   useEffect(() => {
     if (html === null) return;
@@ -90,11 +97,11 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
         readyRef.current = true;
         setFailed(false);
         // O app só envia INIT depois do READY
-        send(initMessage);
+        send(initRef.current);
       }
       onMessage?.(message);
     },
-    [initMessage, onMessage, send],
+    [onMessage, send],
   );
 
   return (

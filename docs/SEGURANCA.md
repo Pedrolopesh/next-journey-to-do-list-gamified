@@ -72,6 +72,15 @@ Exceções ao `pnpm audit --audit-level=high` são **sempre documentadas**: fica
 
 As duas moderadas que acompanham (`uuid` e `decode-uri-component`, também só em ferramentas do Expo) não bloqueiam o CI e serão resolvidas com a atualização do Expo.
 
+## 6. Limitações conhecidas (a resolver)
+
+| Tema | Situação | Quando |
+|---|---|---|
+| Cadastro revela se o e-mail já existe (`409 EMAIL_UNAVAILABLE`) | Sem verificação de e-mail ainda, não há como responder igual para e-mail novo e existente. O login e o refresh não vazam essa informação | Fase 5, com o e-mail transacional (Resend) |
+| Rate limit de login (5 tentativas por minuto por IP e e-mail) | Ainda não implementado | Fase 7 (`@nestjs/throttler`) |
+| `helmet` e CORS com allowlist | Ainda não ligados | Fase 7 |
+| HTTPS | Obrigatório em produção; o app em desenvolvimento usa HTTP para o emulador | Antes do primeiro deploy |
+
 ## 4. Próximas auditorias (checklist)
 
 - [ ] Fase 4: revisão de auth (argon2, JWT, refresh com rotação, rate limit, enumeração de contas) antes do primeiro deploy.

@@ -8,12 +8,15 @@ import {
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import { useItems } from '@/api/queries';
 import { colors, size } from '@/theme';
 
 const ICON_STROKE = 1.75;
 
 export default function TabsLayout() {
   const { t } = useTranslation();
+  const dailies = useItems('daily');
+  const pending = dailies.data?.filter((item) => !item.doneToday).length ?? 0;
 
   return (
     <Tabs
@@ -42,6 +45,7 @@ export default function TabsLayout() {
         name="dailies"
         options={{
           title: t('tabs.dailies'),
+          ...(pending > 0 ? { tabBarBadge: pending } : {}),
           tabBarIcon: ({ color }) => (
             <IconCalendarCheck color={color} size={size.iconSize} strokeWidth={ICON_STROKE} />
           ),

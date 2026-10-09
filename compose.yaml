@@ -1,0 +1,25 @@
+# Postgres local de desenvolvimento e testes. NÃO é a infraestrutura de produção.
+# A porta é publicada só em 127.0.0.1 (o Docker ignora o firewall do sistema para portas publicadas).
+name: next-journey-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nextjourney
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env da raiz (veja .env.example)}
+      POSTGRES_DB: nextjourney
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5544}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nextjourney -d nextjourney']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
