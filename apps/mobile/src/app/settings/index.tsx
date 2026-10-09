@@ -14,6 +14,7 @@ import { ScreenFrame } from '@/components/screen-frame';
 import { TextField } from '@/components/text-field';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { parseNotifyTime } from '@/features/settings/notify-time';
+import { syncDailyReminder } from '@/features/settings/reminder';
 import { timezoneOptions } from '@/features/settings/timezones';
 import { colors, space } from '@/theme';
 
@@ -103,7 +104,11 @@ export default function SettingsScreen() {
               setMessage(t('settings.notifyInvalid'));
               return;
             }
-            void apply({ notifyAt: parsed.value }, t('settings.saved'));
+            void (async () => {
+              await apply({ notifyAt: parsed.value }, t('settings.saved'));
+              const allowed = await syncDailyReminder(parsed.value, { askPermission: true });
+              if (!allowed) setMessage(t('settings.notifyDenied'));
+            })();
           }}
         />
       </View>

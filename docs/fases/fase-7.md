@@ -39,3 +39,13 @@
   reverso, ligue `TRUST_PROXY=true`, senão todos os usuários parecem ter o mesmo IP.
 - O token de acesso de uma conta excluída continua válido até expirar (15 min), mas todas as consultas
   filtram contas excluídas e as sessões de renovação são revogadas na hora.
+
+## Segunda entrega (mesma fase)
+
+| Passo | Estado |
+|---|---|
+| 2 Lembretes locais | feito: `expo-notifications`, horário em Configurações, permissão pedida só ao escolher o horário, reagendado ao abrir o app; falta testar no aparelho (exige rebuild nativo) |
+| 6 Backups | feito: `scripts/backup-db.sh`, `scripts/restore-test.sh` e `docs/BACKUP.md`; restauração testada localmente; falta agendar na VPS |
+| 9 Reduzir movimento | feito: o app pausa o banner em segundo plano e com "reduzir movimento" ativo (`PAUSE`/`RESUME`); o CSS já respeitava `prefers-reduced-motion` |
+| 11 Privacidade | mapa de dados em `docs/PRIVACIDADE.md`; falta publicar a política e preencher os formulários das lojas |
+| 7 Acessibilidade | parcial: `--text-muted` já tem contraste adequado e os controles têm rótulo; falta auditoria completa com leitor de tela e fonte maior |

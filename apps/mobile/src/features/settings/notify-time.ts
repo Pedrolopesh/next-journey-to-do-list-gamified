@@ -8,3 +8,8 @@ export function parseNotifyTime(input: string): { ok: true; value: string | null
   const padded = /^\d:\d{2}$/.test(withColon) ? `0${withColon}` : withColon;
   return HHMM.test(padded) ? { ok: true, value: padded } : { ok: false };
 }
+
+export function splitTime(hhmm: string): { hour: number; minute: number } {
+  const [hour = '0', minute = '0'] = hhmm.split(':');
+  return { hour: Number(hour), minute: Number(minute) };
+}

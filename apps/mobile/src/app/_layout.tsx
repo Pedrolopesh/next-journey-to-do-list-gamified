@@ -15,6 +15,7 @@ import { ProgressionModalHost } from '@/components/progression-modal-host';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { useCheckSync } from '@/features/offline/use-check-sync';
 import { isOnboardingComplete } from '@/features/onboarding/next-step';
+import { syncDailyReminder } from '@/features/settings/reminder';
 import { colors, space } from '@/theme';
 
 /** Splash enquanto a sessão é verificada (RF-09). */
@@ -38,6 +39,11 @@ function Gate() {
   const me = useMe();
   const signedIn = status === 'signedIn';
   useCheckSync();
+  const notifyAt = me.data?.user.notifyAt;
+  // Reagenda o lembrete ao abrir (cobre reinstalação e troca de aparelho), sem pedir permissão
+  useEffect(() => {
+    if (notifyAt !== undefined) void syncDailyReminder(notifyAt, { askPermission: false });
+  }, [notifyAt]);
 
   if (status === 'loading') return <Splash />;
   if (signedIn && me.isPending) return <Splash />;

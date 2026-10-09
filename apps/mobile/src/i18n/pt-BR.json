@@ -247,7 +247,8 @@
     "timezone": "Fuso horário",
     "timezoneHint": "A virada do dia (00:00) usa este fuso.",
     "notifyAt": "Lembrete diário (HH:MM)",
-    "notifyHint": "Deixe vazio para desligar. O aviso aparece a partir da próxima versão.",
+    "notifyHint": "Deixe vazio para desligar. O aviso usa o relógio do aparelho.",
+    "notifyDenied": "Permissão de notificações negada. Ative nas configurações do sistema.",
     "notifyInvalid": "Use um horário como 08:30.",
     "saved": "Salvo.",
     "saveFailed": "Não foi possível salvar.",
@@ -258,6 +259,11 @@
     "deleteConfirm": "Excluir",
     "deleteFailed": "Não foi possível excluir a conta. Tente de novo.",
     "about": "{{name}} versão {{version}}"
+  },
+  "reminder": {
+    "channel": "Lembrete diário",
+    "title": "Next Journey",
+    "body": "Sua jornada espera: que tal marcar suas tarefas de hoje?"
   },
   "credits": {
     "title": "Créditos",
