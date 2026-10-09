@@ -41,3 +41,6 @@ example
 # generated native folders
 /ios
 /android
+
+# Gerado pelo build do banner (apps/banner), não versionar
+assets/banner/banner.html

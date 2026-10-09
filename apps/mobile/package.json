@@ -41,7 +41,8 @@
     "@types/react": "~19.2.2",
     "eslint": "^9",
     "eslint-config-expo": "*",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "@nextjourney/banner": "workspace:*"
   },
   "scripts": {
     "start": "expo start",

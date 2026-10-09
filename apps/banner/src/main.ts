@@ -1,13 +1,29 @@
+import { listenToApp, sendToApp } from './bridge';
+import { createBannerController } from './controller';
 import { createMapScene } from './scene/map';
 
-const banner = document.getElementById('banner');
-if (!banner) throw new Error('Elemento #banner não encontrado');
+const root = document.getElementById('banner');
+if (!root) throw new Error('Elemento #banner não encontrado');
 
-const scene = createMapScene(banner);
-// Posição inicial de teste (a posição real chega do app em INIT, passo 11 da Fase 2)
-scene.setProgress(0);
+const scene = createMapScene(root);
+const controller = createBannerController({
+  scene,
+  root,
+  send: sendToApp,
+  bannerVersion: __BANNER_VERSION__,
+});
 
-// Só para o painel de debug (dev.html) no desenvolvimento
-if (import.meta.env.DEV) {
-  (window as unknown as { __scene: typeof scene }).__scene = scene;
-}
+listenToApp(
+  (message) => {
+    controller.handleMessage(message);
+  },
+  (error) => {
+    controller.handleInvalid(error);
+  },
+);
+
+// Posição inicial neutra; a posição real chega do app em INIT
+scene.setProgress(0, { animate: false });
+
+// Avisa o app que está pronto. O app só envia INIT depois disso.
+controller.start();

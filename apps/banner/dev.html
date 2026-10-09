@@ -48,7 +48,7 @@
     </style>
   </head>
   <body>
-    <h1>Banner: painel de debug</h1>
+    <h1>Banner: painel de debug (protocolo v1)</h1>
     <iframe id="frame" src="/index.html" title="banner"></iframe>
     <div class="panel">
       <label
@@ -57,24 +57,66 @@
       >
     </div>
     <div class="panel">
-      <button id="run">ITEM_CHECKED (corrida de 5 s)</button>
-      <button id="pause" class="secondary">PAUSE</button>
-      <button id="resume" class="secondary">RESUME</button>
+      <button data-send="INIT">INIT</button>
+      <button data-send="ITEM_CHECKED">ITEM_CHECKED</button>
+      <button data-send="CHAPTER_COMPLETED">CHAPTER_COMPLETED</button>
+      <button data-send="SET_TIME_OF_DAY" class="secondary">SET_TIME_OF_DAY</button>
+      <button data-send="PAUSE" class="secondary">PAUSE</button>
+      <button data-send="RESUME" class="secondary">RESUME</button>
+      <button data-send="INVALID" class="secondary">mensagem inválida</button>
     </div>
+    <pre id="log"></pre>
     <script type="module">
       const frame = document.getElementById('frame');
       const progress = document.getElementById('progress');
       const out = document.getElementById('out');
-      const scene = () => frame.contentWindow.__scene;
+      const log = document.getElementById('log');
+      const character = { skin: 'light', hair: 'short-brown', outfit: 'tunic-purple' };
+      const p = () => Number(progress.value);
+      const builders = {
+        INIT: () => ({
+          v: 1,
+          type: 'INIT',
+          payload: {
+            scene: 'map',
+            character,
+            sceneKey: 'forest-1',
+            progress: p(),
+            timeOfDay: 'night',
+          },
+        }),
+        ITEM_CHECKED: () => ({ v: 1, type: 'ITEM_CHECKED', payload: { progress: p() } }),
+        CHAPTER_COMPLETED: () => ({
+          v: 1,
+          type: 'CHAPTER_COMPLETED',
+          payload: { nextSceneKey: 'forest-2' },
+        }),
+        SET_TIME_OF_DAY: () => ({
+          v: 1,
+          type: 'SET_TIME_OF_DAY',
+          payload: { timeOfDay: 'morning' },
+        }),
+        PAUSE: () => ({ v: 1, type: 'PAUSE' }),
+        RESUME: () => ({ v: 1, type: 'RESUME' }),
+        INVALID: () => ({ v: 1, type: 'ITEM_CHECKED', payload: { progress: 7 } }),
+      };
+      const write = (dir, data) => {
+        log.textContent =
+          `${dir} ${typeof data === 'string' ? data : JSON.stringify(data)}\n` + log.textContent;
+      };
       progress.addEventListener('input', () => {
-        out.textContent = Number(progress.value).toFixed(2);
-        scene()?.setProgress(Number(progress.value));
+        out.textContent = p().toFixed(2);
       });
-      document
-        .getElementById('run')
-        .addEventListener('click', () => scene()?.run(Number(progress.value)));
-      document.getElementById('pause').addEventListener('click', () => scene()?.pause());
-      document.getElementById('resume').addEventListener('click', () => scene()?.resume());
+      document.querySelectorAll('[data-send]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const message = builders[button.dataset.send]();
+          write('app -> banner', message);
+          frame.contentWindow.postMessage(message, '*');
+        });
+      });
+      window.addEventListener('message', (event) => {
+        if (event.source === frame.contentWindow) write('banner -> app', event.data);
+      });
     </script>
   </body>
 </html>

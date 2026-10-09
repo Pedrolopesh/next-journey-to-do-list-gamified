@@ -171,3 +171,21 @@ body {
     animation: none;
   }
 }
+
+/* Troca de capítulo: fade para preto e de volta */
+.fade {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity 500ms ease-in-out;
+  pointer-events: none;
+}
+.fade.visible {
+  opacity: 1;
+}
+
+/* Posicionamento sem animação (INIT) */
+.hero.instant {
+  transition: none;
+}

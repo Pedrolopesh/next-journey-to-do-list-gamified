@@ -2,6 +2,8 @@ packages:
   - 'apps/*'
   - 'packages/*'
 allowBuilds:
+  # Scripts de instalação ignorados de propósito: os binários vêm dos pacotes opcionais por plataforma.
+  esbuild: false
   unrs-resolver: false
 
 # Vulnerabilidades ALTAS aceitas de forma documentada (sem correção publicada pelo upstream).
