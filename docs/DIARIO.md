@@ -2,6 +2,13 @@
 
 Uma entrada por dia, a mais recente no topo. Datas em ISO 8601.
 
+## 2026-10-09 (Fase 5)
+
+- Feito: Fase 5. API: histórias por usuário (progresso preservado ao trocar), personagem com cosméticos, categorias, CRUD de itens com exclusão lógica, conquistas na transação do check, Home agregada, PATCH /me, esqueci a senha e login Google/Apple (ID token validado no servidor). App: onboarding, personagem com prévia, escolha de história, Home, Diários, Tarefas por categoria, Hábitos, desfazer, fila de modais (nível, conquista, capítulo), Minha história, Conquistas, Perfil, Configurações, categorias, recuperação de senha e estados de lista. 68 e2e, 74 unitários da API, 19 do app e 6 de componente.
+- Decisões: ADR-0009. Seed versionado de 5 histórias (textos provisórios) e 10 conquistas.
+- Bloqueios: client ids do Google e da Apple (Fase 0) e API hospedada; passos 16 e 17 da Fase 2.
+- Próximo: Fase 6 (conteúdo) e Fase 7 (endurecimento).
+
 ## 2026-10-09 (Fase 4)
 
 - Feito: Fase 4, passos 2 a 14. Postgres local no Docker (só em loopback), Prisma 7 e migration, API com ambiente tipado, logs com `requestId` e redact, erros padronizados, health, Swagger, auth (argon2id, JWT, refresh rotativo com detecção de reuso), itens, check idempotente em transação e desfazer. 27 testes e2e. No app: cliente HTTP com refresh em fila, sessão no SecureStore, login, cadastro, tela de Diários com check otimista e banner reagindo, perfil com logout.
