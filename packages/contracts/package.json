@@ -14,15 +14,21 @@
     }
   },
   "scripts": {
-    "build": "echo \"contracts: build via tsup entra na Fase 3\"",
+    "build": "tsup",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "type": "module",
   "devDependencies": {
     "@nextjourney/eslint-config": "workspace:*",
     "@nextjourney/tsconfig": "workspace:*",
     "eslint": "^9.39.5",
-    "typescript": "~5.9.3"
+    "tsup": "^8.5.1",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
   }
 }

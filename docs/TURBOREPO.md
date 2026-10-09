@@ -101,7 +101,7 @@ Ou seja: `pnpm run test` na raiz vira `turbo test`, que roda o script `test` de 
   "tasks": {
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] },
     "typecheck": { "dependsOn": ["^build"] },
-    "lint": {},
+    "lint": { "dependsOn": ["^build"] },
     "test": { "dependsOn": ["^build"] },
     "dev": { "cache": false, "persistent": true }
   }
@@ -114,7 +114,7 @@ Leitura linha a linha:
 |---|---|---|
 | `build` | depende do `build` das dependências; produz `dist/**` | O `contracts` precisa estar compilado antes de quem o importa. O banner gera o `dist/index.html` que o app embute |
 | `typecheck` | depende de `^build` | O `tsc` de um pacote lê os tipos compilados (`dist/*.d.ts`) das dependências |
-| `lint` | sem dependências | Lint é por pacote e independente; roda em paralelo |
+| `lint` | depende de `^build` | O ESLint com regras que usam tipos (typescript-eslint) lê os tipos compilados (`dist/*.d.ts`) das dependências; sem o build, tudo vira "tipo não resolvido" |
 | `test` | depende de `^build` | Os testes importam o código compilado dos contratos |
 | `dev` | sem cache, persistente | Servidores de desenvolvimento (API, Vite, Metro) ficam rodando |
 
