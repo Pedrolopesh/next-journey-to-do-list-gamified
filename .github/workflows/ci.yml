@@ -12,7 +12,29 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+
+    # Postgres só para os testes e2e da API (descartado ao fim do job)
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci-senha-descartavel # scan-allow: credencial efêmera do container de teste
+          POSTGRES_DB: nextjourney_test
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d nextjourney_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # O Prisma 7 lê esta variável até para gerar o cliente; o valor aponta para o banco efêmero acima
+      DATABASE_URL: postgresql://ci:ci-senha-descartavel@127.0.0.1:5432/nextjourney_test # scan-allow: credencial efêmera
+      TEST_DATABASE_URL: postgresql://ci:ci-senha-descartavel@127.0.0.1:5432/nextjourney_test # scan-allow: credencial efêmera
+
     steps:
       - uses: actions/checkout@v4
 
@@ -27,5 +49,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm exec turbo run lint typecheck test build
+
+      - name: Testes e2e da API (Postgres de serviço)
+        run: pnpm --filter @nextjourney/api test:e2e
 
       - run: bash scripts/security-scan.sh
