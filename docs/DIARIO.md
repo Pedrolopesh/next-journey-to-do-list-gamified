@@ -2,6 +2,13 @@
 
 Uma entrada por dia, a mais recente no topo. Datas em ISO 8601.
 
+## 2026-10-09 (Fase 4)
+
+- Feito: Fase 4, passos 2 a 14. Postgres local no Docker (só em loopback), Prisma 7 e migration, API com ambiente tipado, logs com `requestId` e redact, erros padronizados, health, Swagger, auth (argon2id, JWT, refresh rotativo com detecção de reuso), itens, check idempotente em transação e desfazer. 27 testes e2e. No app: cliente HTTP com refresh em fila, sessão no SecureStore, login, cadastro, tela de Diários com check otimista e banner reagindo, perfil com logout.
+- Decisões: ADR-0008 (autenticação e sessão). `generate` do Prisma como tarefa do Turbo. Overrides para as vulnerabilidades altas do CLI do Prisma.
+- Bloqueios: teste contra a API hospedada (VPS ainda não auditada); passos 16 e 17 da Fase 2.
+- Próximo: Fase 5 (loop completo): login social, onboarding, personagem, histórias, CRUD de itens e demais telas.
+
 ## 2026-10-09 (Fase 3)
 
 - Feito: Fase 3, passos 1 a 12. Esqueleto da API NestJS (Fase 4, passo 1, antecipado para destravar), schemas Zod compartilhados (auth, item, check, jogo, personagem, história, erro) e as regras de progressão como funções puras (`aplicarCheck`, `desfazerCheck`, `expParaNivel`, `checksParaCapitulo`, `estaAtrasado`, `calcularStreak`, `diaLocal`) com 51 testes e 100% de cobertura. AGENTS.md da API e dos contratos.

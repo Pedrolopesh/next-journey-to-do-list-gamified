@@ -34,3 +34,4 @@ Dados de infraestrutura (endereços, portas, nomes de servidor) **nunca** entram
 | [0005](./0005-versoes-pnpm-typescript-e-eslint.md) | Versões de pnpm, TypeScript e configuração do ESLint | Aceita |
 | [0006](./0006-repositorio-publico-e-seguranca.md) | Repositório público de propósito e proteções de segurança | Aceita |
 | [0007](./0007-api-nestjs-12-esm-e-vitest.md) | API em NestJS 12, ESM e Vitest | Aceita |
+| [0008](./0008-autenticacao-e-sessao.md) | Autenticação, tokens e sessão | Aceita |

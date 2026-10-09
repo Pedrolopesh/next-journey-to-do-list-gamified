@@ -16,6 +16,20 @@ pnpm run lint && pnpm run typecheck   # qualidade
 
 Se `pnpm run lint` falhar com "eslint not found" no ambiente do Pedro, é o hook do `rtk`: use `rtk proxy pnpm run lint`.
 
+## Rodar tudo localmente (API + banco + app)
+
+```bash
+cp .env.example .env && cp apps/api/.env.example apps/api/.env   # troque as senhas e o segredo do JWT
+docker compose up -d                                              # Postgres local, só em 127.0.0.1
+pnpm --filter @nextjourney/api db:deploy && pnpm --filter @nextjourney/api db:seed
+pnpm --filter @nextjourney/api start:dev                          # API em http://127.0.0.1:3000 (docs em /docs)
+cp apps/mobile/.env.example apps/mobile/.env
+cd apps/mobile && npx expo run:android                            # development build + Metro
+```
+
+Testes e2e da API (usam o banco `nextjourney_test`): `pnpm --filter @nextjourney/api test:e2e`.
+Os arquivos `.env` nunca vão para o Git; só os `.env.example`.
+
 ## Documentação
 
 - [Como o projeto funciona](docs/COMO-FUNCIONA.md)
