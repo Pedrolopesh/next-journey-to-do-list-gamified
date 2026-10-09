@@ -1,0 +1,16 @@
+{
+  "extends": "@nextjourney/tsconfig/node.json",
+  "compilerOptions": {
+    "resolvePackageJsonExports": true,
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": ["src", "vitest.config.ts", "eslint.config.js"]
+}
