@@ -10,7 +10,38 @@
     "welcome": "Boas-vindas",
     "login": "Entrar",
     "register": "Criar conta",
-    "forgotPassword": "Esqueci minha senha"
+    "forgotPassword": "Esqueci minha senha",
+    "emailLabel": "E-mail",
+    "passwordLabel": "Senha",
+    "nameLabel": "Nome",
+    "confirmPasswordLabel": "Confirmar senha",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
+    "submitLogin": "Entrar",
+    "submitRegister": "Criar conta",
+    "goToRegister": "Ainda não tem conta? Criar conta",
+    "goToLogin": "Já tem conta? Entrar",
+    "terms": "Li e aceito os Termos de Uso e a Política de Privacidade",
+    "invalidCredentials": "E-mail ou senha inválidos",
+    "emailUnavailable": "Não foi possível concluir o cadastro. Tente entrar ou use outro e-mail.",
+    "networkError": "Sem conexão com o servidor. Tente de novo.",
+    "genericError": "Algo deu errado. Tente de novo.",
+    "welcomeTitle": "Next Journey",
+    "welcomeSubtitle": "Cada tarefa é um passo da sua história",
+    "logout": "Sair",
+    "passwordRules": {
+      "length": "Pelo menos 8 caracteres",
+      "uppercase": "Uma letra maiúscula",
+      "number": "Um número",
+      "special": "Um caractere especial"
+    },
+    "validation": {
+      "nameRequired": "Informe seu nome",
+      "emailInvalid": "E-mail inválido",
+      "passwordRules": "A senha não atende às regras",
+      "passwordMismatch": "As senhas não conferem",
+      "termsRequired": "É preciso aceitar os termos"
+    }
   },
   "placeholder": {
     "comingSoon": "Em construção"
@@ -22,5 +53,28 @@
     "lastEvent": "Último evento do banner: {{event}}",
     "simulateCheck": "Simular check",
     "simulateChapter": "Simular fim de capítulo"
+  },
+  "dailies": {
+    "title": "Diários",
+    "empty": "Nenhum diário ainda",
+    "emptyHint": "Crie diários para marcar todo dia.",
+    "loadError": "Não foi possível carregar os diários.",
+    "retry": "Tentar de novo",
+    "streak": "{{count}} dias seguidos",
+    "overdue": "Atrasado",
+    "checkLabel": "Marcar {{title}}",
+    "doneLabel": "{{title}} concluído hoje",
+    "alreadyChecked": "Este diário já foi marcado hoje.",
+    "checkFailed": "Não foi possível marcar. Tente de novo.",
+    "expToast": "+{{exp}} EXP",
+    "levelUp": "Nível {{level}}!"
+  },
+  "difficulty": {
+    "easy": "Fácil",
+    "medium": "Médio",
+    "hard": "Difícil"
+  },
+  "profile": {
+    "stats": "Nv. {{level}} · {{exp}}/{{next}} EXP · {{coins}} moedas"
   }
 }
