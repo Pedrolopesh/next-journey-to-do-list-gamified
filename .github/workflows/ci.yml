@@ -17,7 +17,8 @@ jobs:
     # Postgres só para os testes e2e da API (descartado ao fim do job)
     services:
       postgres:
-        image: postgres:16-alpine
+        # Espelho oficial do Docker Hub na AWS: evita o limite de downloads do Docker Hub
+        image: public.ecr.aws/docker/library/postgres:16-alpine
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci-senha-descartavel # scan-allow: credencial efêmera do container de teste
