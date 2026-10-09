@@ -9,7 +9,8 @@ files=$(git ls-files -co --exclude-standard | grep -v -E '^pnpm-lock\.yaml$|^scr
 
 echo "==> Segredos em arquivos"
 secret_re='(npm_[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,}|AIza[0-9A-Za-z_-]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY|_authToken=[^$[:space:]]|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}|(password|passwd|secret|token|api[_-]?key)[[:space:]]*[:=][[:space:]]*["'"'"'][^"'"'"' ]{8,})'
-if echo "$files" | xargs grep -n -I -E -i "$secret_re" 2>/dev/null; then fail=1; fi
+# Linhas com o marcador "scan-allow" (dado de teste obviamente falso) são ignoradas
+if echo "$files" | xargs grep -n -I -E -i "$secret_re" 2>/dev/null | grep -v "scan-allow"; then fail=1; fi
 
 echo "==> Arquivos sensíveis versionados"
 if echo "$files" | grep -E '(^|/)\.env($|\.)|\.pem$|\.p12$|\.keystore$|\.jks$|id_rsa|id_ed25519|credentials|service-account' | grep -v -E '\.env\.example$'; then fail=1; fi
@@ -21,7 +22,7 @@ echo "==> Segredos no histórico (commits novos em relação a origin/main)"
 base=$(git merge-base HEAD origin/main 2>/dev/null || echo "")
 range=${base:+$base..HEAD}
 if [ "${FULL:-0}" = "1" ]; then range=""; echo "(modo completo: histórico inteiro, todas as branches)"; fi
-if git log ${range:---all} -p -- . ':(exclude)scripts/security-scan.sh' ':(exclude)pnpm-lock.yaml' 2>/dev/null | grep -E '^\+' | grep -E -i "$secret_re"; then fail=1; fi
+if git log ${range:---all} -p -- . ':(exclude)scripts/security-scan.sh' ':(exclude)pnpm-lock.yaml' 2>/dev/null | grep -E '^\+' | grep -E -i "$secret_re" | grep -v "scan-allow"; then fail=1; fi
 
 if [ "${FULL:-0}" = "1" ]; then
   echo "==> Arquivos ignorados pelo Git que parecem sensíveis (não sobem, mas confira)"
