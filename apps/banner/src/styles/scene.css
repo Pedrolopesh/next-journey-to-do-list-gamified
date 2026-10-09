@@ -1,0 +1,173 @@
+/*
+ * Cena "Mapa" (abas): arte nativa em 195x90, exibida a 2x (390x180).
+ * Toda a animação é CSS e só usa transform e opacity (roda na GPU). Sem canvas, sem loop em JS.
+ * Quando a arte LPC final chegar, basta trocar os SVGs de src/assets e os valores de --hero-*.
+ */
+:root {
+  --scene-w: 195px;
+  --scene-h: 90px;
+  --scale: 2;
+
+  /* Personagem: tamanho de cada frame e quantidade de frames (ciclo de caminhada) */
+  --hero-frame-w: 24px;
+  --hero-frame-h: 32px;
+  --hero-frames: 9;
+  --walk-duration: 0.9s;
+
+  /* Velocidade do parallax: período do tile (px) / duração (s) */
+  --far-period: 64px;
+  --far-duration: 12.8s;
+  --mid-period: 48px;
+  --mid-duration: 4.8s;
+  --ground-period: 16px;
+  --ground-duration: 1.6s;
+
+  --run-factor: 0.35; /* durante a corrida, durações viram duração * fator */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  background: #1a1a2e;
+  overflow: hidden;
+}
+
+.banner {
+  position: relative;
+  width: calc(var(--scene-w) * var(--scale));
+  height: calc(var(--scene-h) * var(--scale));
+  max-width: 100%;
+  overflow: hidden;
+  image-rendering: pixelated;
+}
+
+.scene {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: var(--scene-w);
+  height: var(--scene-h);
+  transform: scale(var(--scale));
+  transform-origin: top left;
+  overflow: hidden;
+}
+
+.layer {
+  position: absolute;
+  left: 0;
+  width: calc(var(--scene-w) + 128px);
+  background-repeat: repeat-x;
+  image-rendering: pixelated;
+  will-change: transform;
+}
+
+.layer-sky {
+  inset: 0 auto 0 0;
+  width: 100%;
+  background: linear-gradient(#0f3460 0%, #16213e 55%, #2b2150 100%);
+  will-change: auto;
+}
+
+.layer-far {
+  bottom: 14px;
+  height: 70px;
+  background-image: url('../assets/layer-far.svg');
+  animation: scroll-far var(--far-duration) linear infinite;
+}
+
+.layer-mid {
+  bottom: 12px;
+  height: 48px;
+  background-image: url('../assets/layer-mid.svg');
+  animation: scroll-mid var(--mid-duration) linear infinite;
+}
+
+.layer-ground {
+  bottom: 0;
+  height: 16px;
+  background-image: url('../assets/layer-ground.svg');
+  background-size: var(--ground-period) var(--ground-period);
+  animation: scroll-ground var(--ground-duration) linear infinite;
+}
+
+@keyframes scroll-far {
+  to {
+    transform: translateX(calc(var(--far-period) * -1));
+  }
+}
+
+@keyframes scroll-mid {
+  to {
+    transform: translateX(calc(var(--mid-period) * -1));
+  }
+}
+
+@keyframes scroll-ground {
+  to {
+    transform: translateX(calc(var(--ground-period) * -1));
+  }
+}
+
+/*
+ * Personagem. A posição horizontal é o progresso do capítulo: 0 na borda direita, 1 na esquerda.
+ * --hero-x vem do JS (setProgress) e é aplicado por transform, com transição de 600 ms.
+ */
+.hero {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: var(--hero-frame-w);
+  height: var(--hero-frame-h);
+  overflow: hidden;
+  transform: translateX(var(--hero-x, 160px));
+  transition: transform 600ms ease-in-out;
+  will-change: transform;
+}
+
+.hero-strip {
+  width: calc(var(--hero-frame-w) * var(--hero-frames));
+  height: 100%;
+  background: url('../assets/walker-placeholder.svg') no-repeat left top / 100% 100%;
+  image-rendering: pixelated;
+  animation: walk var(--walk-duration) steps(var(--hero-frames)) infinite;
+  will-change: transform;
+}
+
+@keyframes walk {
+  to {
+    transform: translateX(calc(var(--hero-frame-w) * var(--hero-frames) * -1));
+  }
+}
+
+/* Corrida (ITEM_CHECKED): mesmas animações, mais rápidas */
+.banner.running .layer-far {
+  animation-duration: calc(var(--far-duration) * var(--run-factor));
+}
+.banner.running .layer-mid {
+  animation-duration: calc(var(--mid-duration) * var(--run-factor));
+}
+.banner.running .layer-ground {
+  animation-duration: calc(var(--ground-duration) * var(--run-factor));
+}
+.banner.running .hero-strip {
+  animation-duration: calc(var(--walk-duration) * var(--run-factor));
+}
+
+/* PAUSE: congela tudo (aba fora de foco ou app em segundo plano) */
+.banner.paused .layer,
+.banner.paused .hero-strip {
+  animation-play-state: paused;
+}
+
+/* Quem prefere menos movimento recebe a cena parada */
+@media (prefers-reduced-motion: reduce) {
+  .layer,
+  .hero-strip {
+    animation: none;
+  }
+}
