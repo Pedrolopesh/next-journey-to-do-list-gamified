@@ -61,6 +61,17 @@ Ações (2026-10-03):
 
 Observação sobre ferramentas: o `.npmrc` do usuário contém token do npm. Ele não está no repositório, mas apareceu em saída de terminal durante a sessão de 2026-10-02; recomendou-se revogar e gerar outro.
 
+## 5. Riscos aceitos (vulnerabilidades sem correção)
+
+Exceções ao `pnpm audit --audit-level=high` são **sempre documentadas**: ficam em `pnpm-workspace.yaml` (`auditConfig.ignoreGhsas`) com a justificativa, aparecem aqui e têm data de revisão. Vulnerabilidade nova, sem registro, continua barrando o CI.
+
+| Data | Gravidade | Pacote (GHSA) | Origem | Motivo da aceitação | Revisar em |
+|---|---|---|---|---|---|
+| 2026-10-03 | Alta | `node-forge` (GHSA-86w9-cpqp-85rv) | CLI do Expo (certificados de assinatura) | Só ferramenta de desenvolvimento; sem versão corrigida; não vai para o app | 2026-11-03 |
+| 2026-10-03 | Alta | `braces` (GHSA-vfj7-8cjw-p6xm) | Metro (empacotador) | Só ferramenta de desenvolvimento; sem versão corrigida; não vai para o app | 2026-11-03 |
+
+As duas moderadas que acompanham (`uuid` e `decode-uri-component`, também só em ferramentas do Expo) não bloqueiam o CI e serão resolvidas com a atualização do Expo.
+
 ## 4. Próximas auditorias (checklist)
 
 - [ ] Fase 4: revisão de auth (argon2, JWT, refresh com rotação, rate limit, enumeração de contas) antes do primeiro deploy.
