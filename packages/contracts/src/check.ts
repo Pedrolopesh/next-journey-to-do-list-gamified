@@ -9,6 +9,17 @@ export type CheckRequest = z.infer<typeof checkRequestSchema>;
 export const achievementUnlockedSchema = z.object({
   slug: z.string().min(1),
   name: z.string().min(1),
+  /** Cosmético liberado (se houver). */
+  rewardKey: z.string().nullable(),
+});
+export type AchievementUnlocked = z.infer<typeof achievementUnlockedSchema>;
+
+/** Conteúdo do modal de capítulo concluído (RF-28). */
+export const completedChapterSchema = z.object({
+  number: z.number().int().positive(),
+  title: z.string(),
+  text: z.string(),
+  storyCompleted: z.boolean(),
 });
 
 /** Resposta do check e do desmarcar (CheckResult). */
@@ -23,6 +34,8 @@ export const checkResultSchema = z.object({
     requiredChecks: z.number().int().positive(),
   }),
   chapterCompleted: z.boolean(),
+  /** Presente quando este check fechou um capítulo. */
+  completedChapter: completedChapterSchema.nullable(),
   achievementsUnlocked: z.array(achievementUnlockedSchema),
 });
 export type CheckResult = z.infer<typeof checkResultSchema>;

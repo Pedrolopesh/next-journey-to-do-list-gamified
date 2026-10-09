@@ -4,6 +4,7 @@ import {
   apiErrorSchema,
   checkRequestSchema,
   checkResultSchema,
+  createCategoryRequestSchema,
   createItemRequestSchema,
   DEFAULT_GAME_CONFIG,
   ERROR_CODES,
@@ -11,7 +12,9 @@ import {
   localDateSchema,
   loginRequestSchema,
   PASSWORD_RULES,
+  patchMeRequestSchema,
   playerStateSchema,
+  putStoryRequestSchema,
   registerRequestSchema,
   scheduleDaysSchema,
   timezoneSchema,
@@ -105,7 +108,8 @@ describe('check, jogo e erros', () => {
       leveledUp: false,
       chapterProgress: { chapter: 1, checksInChapter: 4, requiredChecks: 10 },
       chapterCompleted: false,
-      achievementsUnlocked: [{ slug: 'primeiro-passo', name: 'Primeiro passo' }],
+      completedChapter: null,
+      achievementsUnlocked: [{ slug: 'primeiro-passo', name: 'Primeiro passo', rewardKey: null }],
     };
     expect(checkResultSchema.safeParse(result).success).toBe(true);
   });
@@ -137,5 +141,38 @@ describe('check, jogo e erros', () => {
     expect(localDateSchema.safeParse('2026-02-30').success).toBe(false);
     expect(localDateSchema.safeParse('09/10/2026').success).toBe(false);
     expect(timezoneSchema.safeParse('America/Sao_Paulo').success).toBe(true);
+  });
+});
+
+describe('fase 5: categorias, perfil e histórias', () => {
+  it('categoria: nome de 1 a 30 caracteres e cor da paleta', () => {
+    expect(createCategoryRequestSchema.safeParse({ name: 'Casa', color: '#10b981' }).success).toBe(
+      true,
+    );
+    expect(createCategoryRequestSchema.safeParse({ name: '', color: '#10b981' }).success).toBe(
+      false,
+    );
+    expect(
+      createCategoryRequestSchema.safeParse({ name: 'x'.repeat(31), color: '#10b981' }).success,
+    ).toBe(false);
+    expect(createCategoryRequestSchema.safeParse({ name: 'Casa', color: '#123456' }).success).toBe(
+      false,
+    );
+  });
+
+  it('PATCH /me: fuso válido, tutorial visto e horário HH:MM', () => {
+    expect(patchMeRequestSchema.safeParse({ timezone: 'America/Sao_Paulo' }).success).toBe(true);
+    expect(patchMeRequestSchema.safeParse({ tutorialSeen: true, notifyAt: '08:30' }).success).toBe(
+      true,
+    );
+    expect(patchMeRequestSchema.safeParse({ notifyAt: null }).success).toBe(true);
+    expect(patchMeRequestSchema.safeParse({ notifyAt: '25:00' }).success).toBe(false);
+    expect(patchMeRequestSchema.safeParse({ timezone: 'Marte/Olympus' }).success).toBe(false);
+    expect(patchMeRequestSchema.safeParse({ tutorialSeen: false }).success).toBe(false);
+  });
+
+  it('escolher história exige o slug', () => {
+    expect(putStoryRequestSchema.safeParse({ slug: 'empreendedor' }).success).toBe(true);
+    expect(putStoryRequestSchema.safeParse({ slug: '' }).success).toBe(false);
   });
 });
