@@ -1,0 +1,18 @@
+{
+  "tabs": {
+    "home": "Home",
+    "dailies": "Diários",
+    "todos": "Tarefas",
+    "habits": "Hábitos",
+    "profile": "Perfil"
+  },
+  "auth": {
+    "welcome": "Boas-vindas",
+    "login": "Entrar",
+    "register": "Criar conta",
+    "forgotPassword": "Esqueci minha senha"
+  },
+  "placeholder": {
+    "comingSoon": "Em construção"
+  }
+}
