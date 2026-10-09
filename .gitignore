@@ -12,3 +12,4 @@ coverage/
 ios/
 android/
 .expo/
+apps/api/src/generated/
