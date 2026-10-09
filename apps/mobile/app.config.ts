@@ -22,6 +22,8 @@ const config: ExpoConfig = {
     bundleIdentifier: appId,
     icon: './assets/expo.icon',
     supportsTablet: false,
+    // Sign in with Apple (exigência da App Store quando há login social)
+    usesAppleSignIn: true,
   },
   android: {
     package: appId,
@@ -36,6 +38,7 @@ const config: ExpoConfig = {
   plugins: [
     'expo-router',
     'expo-secure-store',
+    'expo-apple-authentication',
     [
       'expo-splash-screen',
       {
@@ -45,6 +48,7 @@ const config: ExpoConfig = {
       },
     ],
   ],
+  // (o plugin do Google entra abaixo, só se o client id iOS estiver configurado)
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
@@ -54,5 +58,14 @@ const config: ExpoConfig = {
     appVariant: IS_PROD ? 'production' : 'development',
   },
 };
+
+// O plugin do Google Sign-In precisa do esquema de URL do client id iOS (público, não é segredo).
+const googleIosUrlScheme = process.env.GOOGLE_IOS_URL_SCHEME;
+if (googleIosUrlScheme) {
+  config.plugins = [
+    ...(config.plugins ?? []),
+    ['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosUrlScheme }],
+  ];
+}
 
 export default config;

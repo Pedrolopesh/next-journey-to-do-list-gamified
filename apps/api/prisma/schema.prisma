@@ -25,19 +25,31 @@ enum Difficulty {
 model User {
   id              String    @id @default(uuid()) @db.Uuid
   email           String    @unique
-  passwordHash    String    @map("password_hash")
+  /// Nulo para contas criadas só por login social
+  passwordHash    String?   @map("password_hash")
   name            String
   timezone        String
   termsAcceptedAt DateTime  @map("terms_accepted_at") @db.Timestamptz
   termsVersion    String    @map("terms_version")
+  /// Quando o tutorial foi visto (ou pulado)
+  tutorialSeenAt  DateTime? @map("tutorial_seen_at") @db.Timestamptz
+  /// Horário do lembrete diário (HH:MM), no fuso do perfil
+  notifyAt        String?   @map("notify_at") @db.VarChar(5)
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
   deletedAt       DateTime? @map("deleted_at") @db.Timestamptz
 
-  stats         UserStats?
-  refreshTokens RefreshToken[]
-  categories    Category[]
-  items         Item[]
-  checks        ItemCheck[]
+  stats              UserStats?
+  character          Character?
+  identities         AuthIdentity[]
+  passwordResets     PasswordReset[]
+  storyProgress      StoryProgress[]
+  chapterCompletions ChapterCompletion[]
+  achievements       UserAchievement[]
+  cosmetics          UserCosmetic[]
+  refreshTokens      RefreshToken[]
+  categories         Category[]
+  items              Item[]
+  checks             ItemCheck[]
 
   @@map("users")
 }
@@ -60,18 +72,15 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-/// Estado de jogo: EXP, nível e moedas são globais; o progresso de capítulo é da história ativa.
+/// Estado de jogo global: EXP, nível e moedas. O progresso de capítulo é por história (StoryProgress).
 model UserStats {
-  userId               String  @id @map("user_id") @db.Uuid
-  level                Int     @default(1)
-  expInLevel           Int     @default(0) @map("exp_in_level")
-  expTotal             Int     @default(0) @map("exp_total")
-  coins                Int     @default(0)
-  totalChecks          Int     @default(0) @map("total_checks")
-  itemsCreated         Int     @default(0) @map("items_created")
-  storyChapter         Int     @default(1) @map("story_chapter")
-  storyChecksInChapter Int     @default(0) @map("story_checks_in_chapter")
-  storyCompleted       Boolean @default(false) @map("story_completed")
+  userId       String @id @map("user_id") @db.Uuid
+  level        Int    @default(1)
+  expInLevel   Int    @default(0) @map("exp_in_level")
+  expTotal     Int    @default(0) @map("exp_total")
+  coins        Int    @default(0)
+  totalChecks  Int    @default(0) @map("total_checks")
+  itemsCreated Int    @default(0) @map("items_created")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -127,23 +136,25 @@ model Item {
 
 /// Um check. O id é o checkId (UUID v4) gerado pelo app: torna o check idempotente.
 model ItemCheck {
-  id                  String    @id @db.Uuid
-  itemId              String    @map("item_id") @db.Uuid
-  userId              String    @map("user_id") @db.Uuid
+  id                String    @id @db.Uuid
+  itemId            String    @map("item_id") @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
   /// Dia local do check (AAAA-MM-DD)
-  checkedOn           String    @map("checked_on") @db.VarChar(10)
-  checkedAt           DateTime  @default(now()) @map("checked_at") @db.Timestamptz
-  exp                 Int
-  coins               Int
-  countsForChapter    Boolean   @map("counts_for_chapter")
-  chapterAtCheck      Int?      @map("chapter_at_check")
-  closedChapter       Boolean   @map("closed_chapter")
+  checkedOn         String    @map("checked_on") @db.VarChar(10)
+  checkedAt         DateTime  @default(now()) @map("checked_at") @db.Timestamptz
+  exp               Int
+  coins             Int
+  countsForChapter  Boolean   @map("counts_for_chapter")
+  chapterAtCheck    Int?      @map("chapter_at_check")
+  /// História em que o check contou para o capítulo (para desfazer no progresso certo)
+  storyId           String?   @map("story_id") @db.Uuid
+  closedChapter     Boolean   @map("closed_chapter")
   /// Para restaurar o diário ao desmarcar
-  streakBefore        Int       @map("streak_before")
-  lastCheckedBefore   String?   @map("last_checked_before") @db.VarChar(10)
-  revertedAt          DateTime? @map("reverted_at") @db.Timestamptz
+  streakBefore      Int       @map("streak_before")
+  lastCheckedBefore String?   @map("last_checked_before") @db.VarChar(10)
+  revertedAt        DateTime? @map("reverted_at") @db.Timestamptz
   /// CheckResult devolvido na primeira vez; repetir o checkId devolve o mesmo resultado
-  result              Json
+  result            Json
 
   item Item @relation(fields: [itemId], references: [id])
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -158,4 +169,152 @@ model GameConfig {
   value Json
 
   @@map("game_config")
+}
+
+enum AuthProvider {
+  google
+  apple
+}
+
+/// Login social vinculado a um usuário (um provedor/conta externa só pode estar em um usuário)
+model AuthIdentity {
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @map("user_id") @db.Uuid
+  provider       AuthProvider
+  providerUserId String       @map("provider_user_id")
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("auth_identities")
+}
+
+model PasswordReset {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  /// sha256 do segredo enviado por e-mail; o segredo em si nunca é guardado
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  usedAt    DateTime? @map("used_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_resets")
+}
+
+model Character {
+  userId    String  @id @map("user_id") @db.Uuid
+  name      String
+  title     String
+  skin      String
+  hair      String
+  outfit    String
+  accessory String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("characters")
+}
+
+model Story {
+  id          String @id @default(uuid()) @db.Uuid
+  slug        String @unique
+  name        String
+  themeColor  String @map("theme_color")
+  description String
+  position    Int    @default(0)
+
+  chapters Chapter[]
+  progress StoryProgress[]
+
+  @@map("stories")
+}
+
+model Chapter {
+  id       String @id @default(uuid()) @db.Uuid
+  storyId  String @map("story_id") @db.Uuid
+  number   Int
+  title    String
+  text     String
+  sceneKey String @map("scene_key")
+
+  story       Story               @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  completions ChapterCompletion[]
+
+  @@unique([storyId, number])
+  @@map("chapters")
+}
+
+/// Progresso por história: trocar de história preserva o progresso de cada uma
+model StoryProgress {
+  userId          String   @map("user_id") @db.Uuid
+  storyId         String   @map("story_id") @db.Uuid
+  chapter         Int      @default(1)
+  checksInChapter Int      @default(0) @map("checks_in_chapter")
+  completed       Boolean  @default(false)
+  isActive        Boolean  @default(false) @map("is_active")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, storyId])
+  @@index([userId, isActive])
+  @@map("story_progress")
+}
+
+model ChapterCompletion {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  chapterId   String   @map("chapter_id") @db.Uuid
+  completedAt DateTime @default(now()) @map("completed_at") @db.Timestamptz
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chapterId])
+  @@map("chapter_completions")
+}
+
+model Achievement {
+  slug        String  @id
+  name        String
+  description String
+  iconKey     String  @map("icon_key")
+  /// Cosmético liberado ao conquistar (ex.: roupa especial)
+  rewardKey   String? @map("reward_key")
+  position    Int     @default(0)
+
+  unlocked UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  userId          String   @map("user_id") @db.Uuid
+  achievementSlug String   @map("achievement_slug")
+  unlockedAt      DateTime @default(now()) @map("unlocked_at") @db.Timestamptz
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementSlug], references: [slug], onDelete: Cascade)
+
+  @@id([userId, achievementSlug])
+  @@map("user_achievements")
+}
+
+model UserCosmetic {
+  userId      String   @map("user_id") @db.Uuid
+  cosmeticKey String   @map("cosmetic_key")
+  /// Slug da conquista que liberou
+  source      String
+  unlockedAt  DateTime @default(now()) @map("unlocked_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, cosmeticKey])
+  @@map("user_cosmetics")
 }

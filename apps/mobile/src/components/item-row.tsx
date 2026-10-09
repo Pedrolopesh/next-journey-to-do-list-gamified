@@ -5,7 +5,15 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, size, space } from '@/theme';
 
-type Props = { item: Item; onCheck: (item: Item) => void };
+type Props = {
+  item: Item;
+  onCheck: (item: Item) => void;
+  onOpen?: (item: Item) => void;
+  /** Mostra "Desfazer" (check feito hoje neste aparelho). */
+  onUndo?: (item: Item) => void;
+  /** Hábito: contador de hoje e da semana em vez de "feito". */
+  counters?: boolean;
+};
 
 const DIFFICULTY_COLOR = {
   easy: colors.status.success,
@@ -13,22 +21,24 @@ const DIFFICULTY_COLOR = {
   hard: colors.status.danger,
 } as const;
 
-/** Linha de um diário: check de 44 pt, título, dificuldade, sequência e marca de atraso. */
-export function DailyRow({ item, onCheck }: Props) {
+/** Linha de item (diário, tarefa ou hábito): o mesmo componente de check para os 3 tipos. */
+export function ItemRow({ item, onCheck, onOpen, onUndo, counters = false }: Props) {
   const { t } = useTranslation();
   const done = item.doneToday;
+  // Hábito pode ser marcado várias vezes: o check nunca fica bloqueado
+  const locked = done && item.type !== 'habit';
 
   return (
     <View style={styles.row}>
       <Pressable
         accessibilityRole="checkbox"
-        accessibilityState={{ checked: done, disabled: done }}
+        accessibilityState={{ checked: done, disabled: locked }}
         accessibilityLabel={
-          done
-            ? t('dailies.doneLabel', { title: item.title })
-            : t('dailies.checkLabel', { title: item.title })
+          locked
+            ? t('items.doneLabel', { title: item.title })
+            : t('items.checkLabel', { title: item.title })
         }
-        disabled={done}
+        disabled={locked}
         onPress={() => {
           onCheck(item);
         }}
@@ -37,28 +47,51 @@ export function DailyRow({ item, onCheck }: Props) {
         {done ? <Text style={styles.checkMark}>✓</Text> : null}
       </Pressable>
 
-      <View style={styles.body}>
-        <Text style={[styles.title, done && styles.titleDone]} numberOfLines={2}>
+      <Pressable
+        style={styles.body}
+        accessibilityRole="button"
+        accessibilityLabel={t('items.openLabel', { title: item.title })}
+        onPress={() => {
+          onOpen?.(item);
+        }}
+      >
+        <Text style={[styles.title, locked && styles.titleDone]} numberOfLines={2}>
           {item.title}
         </Text>
         <View style={styles.meta}>
           <Text style={[styles.chip, { color: DIFFICULTY_COLOR[item.difficulty] }]}>
             {t(`difficulty.${item.difficulty}`)}
           </Text>
-          {item.overdue && !done ? (
-            <Text style={styles.overdue}>{t('dailies.overdue')}</Text>
-          ) : null}
+          {item.overdue && !done ? <Text style={styles.overdue}>{t('items.overdue')}</Text> : null}
           {item.streak > 0 ? (
             <View
               style={styles.streak}
-              accessibilityLabel={t('dailies.streak', { count: item.streak })}
+              accessibilityLabel={t('items.streak', { count: item.streak })}
             >
               <IconFlame size={14} color={colors.brand.gold} strokeWidth={1.75} />
               <Text style={styles.streakText}>{item.streak}</Text>
             </View>
           ) : null}
+          {counters ? (
+            <Text style={styles.counters}>
+              {t('items.counters', { today: item.checksToday, week: item.checksThisWeek })}
+            </Text>
+          ) : null}
         </View>
-      </View>
+      </Pressable>
+
+      {onUndo ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('feedback.undo')}
+          onPress={() => {
+            onUndo(item);
+          }}
+          style={styles.undo}
+        >
+          <Text style={styles.undoText}>{t('feedback.undo')}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -85,12 +118,15 @@ const styles = StyleSheet.create({
   },
   checkDone: { backgroundColor: colors.status.success, borderColor: colors.status.success },
   checkMark: { color: colors.text.onPrimary, fontSize: 20, fontWeight: '700' },
-  body: { flex: 1, gap: space[4] },
+  body: { flex: 1, gap: space[4], minHeight: size.touchTarget, justifyContent: 'center' },
   title: { color: colors.text.primary, fontSize: 15, fontWeight: '500' },
   titleDone: { color: colors.text.secondary, textDecorationLine: 'line-through' },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: space[8], flexWrap: 'wrap' },
   chip: { fontSize: 12, fontWeight: '600' },
   overdue: { color: colors.status.danger, fontSize: 12, fontWeight: '600' },
   streak: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   streakText: { color: colors.brand.gold, fontSize: 12, fontWeight: '600' },
+  counters: { color: colors.text.muted, fontSize: 12 },
+  undo: { minHeight: size.touchTarget, justifyContent: 'center', paddingHorizontal: space[8] },
+  undoText: { color: colors.brand.primaryLight, fontSize: 12, fontWeight: '600' },
 });

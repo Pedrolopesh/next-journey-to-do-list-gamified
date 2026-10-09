@@ -6,6 +6,8 @@ import { JwtAuthGuard } from '../../common/jwt-auth.guard.js';
 import { ENV, type Env } from '../../config/env.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
+import { IdTokenVerifier, RemoteIdTokenVerifier } from './id-token-verifier.js';
+import { Mailer, ResendMailer } from './mailer.js';
 import { TokensService } from './tokens.service.js';
 
 @Module({
@@ -21,6 +23,12 @@ import { TokensService } from './tokens.service.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, TokensService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
+  providers: [
+    AuthService,
+    TokensService,
+    { provide: Mailer, useClass: ResendMailer },
+    { provide: IdTokenVerifier, useClass: RemoteIdTokenVerifier },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+  ],
 })
 export class AuthModule {}

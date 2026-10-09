@@ -44,14 +44,19 @@ export type RefreshRequest = z.infer<typeof refreshRequestSchema>;
 export const socialLoginRequestSchema = z.object({
   idToken: z.string().min(1),
   timezone: timezoneSchema.optional(),
+  /** Obrigatório só no primeiro acesso (cria a conta): aceite dos Termos e da Política. */
+  termsVersion: z.string().min(1).optional(),
 });
 export type SocialLoginRequest = z.infer<typeof socialLoginRequestSchema>;
 
 export const forgotPasswordRequestSchema = z.object({ email: z.email() });
+export type ForgotPasswordRequest = z.infer<typeof forgotPasswordRequestSchema>;
+
 export const resetPasswordRequestSchema = z.object({
   token: z.string().min(1),
   newPassword: passwordSchema,
 });
+export type ResetPasswordRequest = z.infer<typeof resetPasswordRequestSchema>;
 
 export const authTokensSchema = z.object({
   accessToken: z.string().min(1),

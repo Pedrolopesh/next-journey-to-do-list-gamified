@@ -10,6 +10,7 @@ import { login } from '@/api/endpoints';
 import { isNetworkError, toApiError } from '@/api/errors';
 import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
+import { SocialButtons } from '@/components/social-buttons';
 import { TextField } from '@/components/text-field';
 import { colors, space } from '@/theme';
 
@@ -87,6 +88,7 @@ export default function LoginScreen() {
           onPress={() => void onSubmit()}
           loading={isSubmitting}
         />
+        <SocialButtons />
         <View style={styles.links}>
           <Link href="/register" style={styles.link}>
             {t('auth.goToRegister')}

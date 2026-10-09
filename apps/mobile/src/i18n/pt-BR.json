@@ -41,7 +41,19 @@
       "passwordRules": "A senha não atende às regras",
       "passwordMismatch": "As senhas não conferem",
       "termsRequired": "É preciso aceitar os termos"
-    }
+    },
+    "or": "ou",
+    "continueGoogle": "Continuar com Google",
+    "continueApple": "Continuar com Apple",
+    "forgotIntro": "Informe seu e-mail e enviaremos um link para criar uma nova senha, válido por 30 minutos.",
+    "forgotSent": "Se o e-mail estiver cadastrado, você receberá um link em instantes.",
+    "sendLink": "Enviar link",
+    "backToLogin": "Voltar ao login",
+    "resetTitle": "Nova senha",
+    "newPasswordLabel": "Nova senha",
+    "resetSubmit": "Salvar nova senha",
+    "resetDone": "Senha alterada. Entre com a nova senha.",
+    "resetInvalid": "Link inválido ou expirado. Peça um novo."
   },
   "placeholder": {
     "comingSoon": "Em construção"
@@ -54,27 +66,205 @@
     "simulateCheck": "Simular check",
     "simulateChapter": "Simular fim de capítulo"
   },
-  "dailies": {
-    "title": "Diários",
-    "empty": "Nenhum diário ainda",
-    "emptyHint": "Crie diários para marcar todo dia.",
-    "loadError": "Não foi possível carregar os diários.",
-    "retry": "Tentar de novo",
-    "streak": "{{count}} dias seguidos",
-    "overdue": "Atrasado",
-    "checkLabel": "Marcar {{title}}",
-    "doneLabel": "{{title}} concluído hoje",
-    "alreadyChecked": "Este diário já foi marcado hoje.",
-    "checkFailed": "Não foi possível marcar. Tente de novo.",
-    "expToast": "+{{exp}} EXP",
-    "levelUp": "Nível {{level}}!"
-  },
   "difficulty": {
     "easy": "Fácil",
     "medium": "Médio",
     "hard": "Difícil"
   },
   "profile": {
-    "stats": "Nv. {{level}} · {{exp}}/{{next}} EXP · {{coins}} moedas"
+    "stats": "Nv. {{level}} · {{exp}}/{{next}} EXP · {{coins}} moedas",
+    "achievements": "Conquistas",
+    "myStory": "Minha história",
+    "customize": "Personalizar personagem",
+    "settings": "Configurações"
+  },
+  "feedback": {
+    "expToast": "+{{exp}} EXP",
+    "alreadyDone": "Este item já foi marcado hoje.",
+    "checkFailed": "Não foi possível marcar. Tente de novo.",
+    "undo": "Desfazer",
+    "undoLocked": "Não dá para desfazer: o capítulo já foi concluído.",
+    "undoOtherDay": "Só é possível desfazer no mesmo dia.",
+    "undoFailed": "Não foi possível desfazer. Tente de novo.",
+    "levelUpTitle": "Nível {{level}}!",
+    "levelUpText": "Você subiu de nível. Continue assim!",
+    "achievementTitle": "Conquista desbloqueada",
+    "achievementReward": "Recompensa liberada: {{reward}}",
+    "chapterTitle": "Capítulo {{number}} concluído",
+    "storyCompleted": "História concluída!",
+    "continue": "Continuar"
+  },
+  "items": {
+    "doneLabel": "{{title}} concluído hoje",
+    "checkLabel": "Marcar {{title}}",
+    "openLabel": "Abrir {{title}}",
+    "overdue": "Atrasado",
+    "streak": "{{count}} dias seguidos",
+    "counters": "Hoje {{today}} · Semana {{week}}",
+    "newItem": "Novo item",
+    "load": "Não foi possível carregar.",
+    "retry": "Tentar de novo"
+  },
+  "dailies": {
+    "title": "Diários",
+    "empty": "Nenhum diário ainda",
+    "emptyHint": "Crie diários para marcar todo dia."
+  },
+  "todos": {
+    "title": "Tarefas",
+    "empty": "Nenhuma tarefa pendente",
+    "emptyHint": "Toque no + para criar uma tarefa.",
+    "all": "Todas",
+    "noCategory": "Sem categoria",
+    "filter": "Categoria"
+  },
+  "habits": {
+    "title": "Hábitos",
+    "empty": "Nenhum hábito ainda",
+    "emptyHint": "Hábitos podem ser marcados quantas vezes quiser no dia."
+  },
+  "home": {
+    "greeting": "Olá, {{name}}",
+    "pendingDailies": "Diários pendentes",
+    "pendingTasks": "Tarefas abertas",
+    "bestStreak": "Maior sequência",
+    "storyCard": "História {{name}}",
+    "chapter": "Capítulo {{number}}: {{title}}",
+    "itemsToAdvance": "{{left}} itens para avançar",
+    "today": "Para hoje",
+    "todayEmpty": "Nada pendente para hoje"
+  },
+  "itemForm": {
+    "type": "Tipo",
+    "title": "Título",
+    "titleRequired": "Informe um título",
+    "category": "Categoria",
+    "noCategory": "Crie uma categoria primeiro",
+    "difficulty": "Dificuldade",
+    "days": "Dias da semana",
+    "due": "Prazo",
+    "dueNone": "Sem prazo",
+    "dueToday": "Hoje",
+    "dueTomorrow": "Amanhã",
+    "dueWeek": "Em 7 dias",
+    "notes": "Nota (opcional)",
+    "create": "Criar item",
+    "save": "Salvar",
+    "delete": "Excluir item",
+    "invalid": "Confira os campos.",
+    "saveFailed": "Não foi possível salvar. Tente de novo.",
+    "notFound": "Item não encontrado.",
+    "weekday": {
+      "0": "Dom",
+      "1": "Seg",
+      "2": "Ter",
+      "3": "Qua",
+      "4": "Qui",
+      "5": "Sex",
+      "6": "Sáb"
+    }
+  },
+  "common": {
+    "back": "Voltar",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "error": "Algo deu errado."
+  },
+  "timeline": {
+    "chapter": "Capítulo {{number}}",
+    "condition": "{{current}} de {{total}} itens para avançar",
+    "state": {
+      "completed": "concluído",
+      "current": "capítulo atual",
+      "locked": "bloqueado"
+    }
+  },
+  "achievements": {
+    "unlocked": "desbloqueada",
+    "locked": "bloqueada",
+    "reward": "Recompensa: {{reward}}"
+  },
+  "tutorial": {
+    "next": "Próximo",
+    "skip": "Pular",
+    "start": "Começar",
+    "progress": "Passo {{current}} de {{total}}",
+    "slide1": {
+      "title": "Marque, evolua",
+      "text": "Cada diário, tarefa ou hábito que você marca rende EXP e moedas."
+    },
+    "slide2": {
+      "title": "Sua história avança",
+      "text": "Seu personagem anda por uma história em capítulos conforme você conclui itens."
+    },
+    "slide3": {
+      "title": "Sem pressão",
+      "text": "Sem penalidades: o objetivo é criar o hábito, um passo de cada vez."
+    }
+  },
+  "character": {
+    "name": "Nome do personagem",
+    "title": "Título",
+    "skin": "Tom de pele",
+    "hair": "Cabelo",
+    "outfit": "Roupa",
+    "accessory": "Acessório",
+    "create": "Criar personagem",
+    "save": "Salvar personagem",
+    "lockedHint": "Itens bloqueados são liberados por conquistas.",
+    "invalid": "Dê um nome ao seu personagem.",
+    "saveFailed": "Não foi possível salvar o personagem.",
+    "options": {
+      "light": "Clara",
+      "tan": "Morena",
+      "brown": "Marrom",
+      "dark": "Escura",
+      "short-brown": "Curto castanho",
+      "long-black": "Longo preto",
+      "curly-red": "Cacheado ruivo",
+      "bald": "Careca",
+      "tunic-purple": "Túnica roxa",
+      "tunic-green": "Túnica verde",
+      "armor-iron": "Armadura de ferro",
+      "outfit-special": "Roupa especial",
+      "outfit-cape": "Capa",
+      "none": "Nenhum",
+      "hat-straw": "Chapéu de palha",
+      "scarf-red": "Cachecol vermelho",
+      "accessory-bandana": "Bandana",
+      "weapon-silver-sword": "Espada de prata",
+      "accessory-shield": "Escudo"
+    },
+    "locked": "Este item ainda não foi desbloqueado."
+  },
+  "story": {
+    "chooseTitle": "Escolha sua história",
+    "confirm": "Começar esta história",
+    "saveFailed": "Não foi possível escolher a história."
+  },
+  "settings": {
+    "timezone": "Fuso horário",
+    "timezoneHint": "A virada do dia (00:00) usa este fuso.",
+    "notifyAt": "Lembrete diário (HH:MM)",
+    "notifyHint": "Deixe vazio para desligar. O aviso aparece a partir da próxima versão.",
+    "notifyInvalid": "Use um horário como 08:30.",
+    "saved": "Salvo.",
+    "saveFailed": "Não foi possível salvar.",
+    "categories": "Categorias",
+    "about": "{{name}} versão {{version}}"
+  },
+  "categories": {
+    "title": "Categorias",
+    "name": "Nome",
+    "newName": "Nova categoria",
+    "color": "Cor",
+    "add": "Adicionar",
+    "rename": "Renomear",
+    "delete": "Excluir",
+    "moveTo": "Mover os itens para:",
+    "nameRequired": "Informe um nome.",
+    "limit": "Limite de {{max}} categorias.",
+    "last": "É preciso manter pelo menos uma categoria.",
+    "failed": "Não foi possível concluir. Tente de novo."
   }
 }

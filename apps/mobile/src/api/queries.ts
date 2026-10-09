@@ -3,25 +3,91 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useSessionStore } from '@/auth/session-store';
 
-import { checkItem, fetchItems, fetchMe } from './endpoints';
+import {
+  checkItem,
+  createCategory,
+  createItem,
+  deleteCategory,
+  deleteItem,
+  fetchAchievements,
+  fetchCategories,
+  fetchCosmetics,
+  fetchHome,
+  fetchItems,
+  fetchMe,
+  fetchStories,
+  fetchTimeline,
+  undoCheck,
+  updateCategory,
+  updateItem,
+} from './endpoints';
 
 export const queryKeys = {
   me: ['me'] as const,
+  home: ['home'] as const,
   items: (type: ItemType) => ['items', type] as const,
+  stories: ['stories'] as const,
+  timeline: ['timeline'] as const,
+  achievements: ['achievements'] as const,
+  categories: ['categories'] as const,
+  cosmetics: ['cosmetics'] as const,
 };
 
-export function useMe() {
-  const signedIn = useSessionStore((state) => state.status === 'signedIn');
-  return useQuery({ queryKey: queryKeys.me, queryFn: fetchMe, enabled: signedIn });
+function useSignedIn(): boolean {
+  return useSessionStore((state) => state.status === 'signedIn');
 }
 
-export function useItems(type: ItemType) {
-  const signedIn = useSessionStore((state) => state.status === 'signedIn');
-  return useQuery({
-    queryKey: queryKeys.items(type),
-    queryFn: () => fetchItems(type),
-    enabled: signedIn,
-  });
+export const useMe = () => {
+  const enabled = useSignedIn();
+  return useQuery({ queryKey: queryKeys.me, queryFn: fetchMe, enabled });
+};
+
+export const useHome = () => {
+  const enabled = useSignedIn();
+  return useQuery({ queryKey: queryKeys.home, queryFn: fetchHome, enabled });
+};
+
+export const useItems = (type: ItemType) => {
+  const enabled = useSignedIn();
+  return useQuery({ queryKey: queryKeys.items(type), queryFn: () => fetchItems(type), enabled });
+};
+
+export const useStories = () => {
+  const enabled = useSignedIn();
+  return useQuery({ queryKey: queryKeys.stories, queryFn: fetchStories, enabled });
+};
+
+export const useTimeline = () => {
+  const enabled = useSignedIn();
+  return useQuery({ queryKey: queryKeys.timeline, queryFn: fetchTimeline, enabled });
+};
+
+export const useAchievements = () => {
+  const enabled = useSignedIn();
+  return useQuery({ queryKey: queryKeys.achievements, queryFn: fetchAchievements, enabled });
+};
+
+export const useCategories = () => {
+  const enabled = useSignedIn();
+  return useQuery({ queryKey: queryKeys.categories, queryFn: fetchCategories, enabled });
+};
+
+export const useCosmetics = () => {
+  const enabled = useSignedIn();
+  return useQuery({ queryKey: queryKeys.cosmetics, queryFn: fetchCosmetics, enabled });
+};
+
+/** Depois de qualquer mudança de jogo, estes dados podem ter mudado. */
+function useRefreshGameData() {
+  const queryClient = useQueryClient();
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: ['items'] });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.me });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.home });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.timeline });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.stories });
+  };
 }
 
 type CheckVariables = { itemId: string; checkId: string };
@@ -32,6 +98,7 @@ type CheckVariables = { itemId: string; checkId: string };
  */
 export function useCheckItem(type: ItemType) {
   const queryClient = useQueryClient();
+  const refresh = useRefreshGameData();
   return useMutation<CheckResult, Error, CheckVariables, { previous: Item[] | undefined }>({
     mutationFn: ({ itemId, checkId }) => checkItem(itemId, checkId),
     onMutate: async ({ itemId }) => {
@@ -54,11 +121,57 @@ export function useCheckItem(type: ItemType) {
     onError: (_error, _variables, context) => {
       if (context?.previous) queryClient.setQueryData(queryKeys.items(type), context.previous);
     },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['items'] });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.me });
-    },
+    onSettled: refresh,
   });
+}
+
+/** Desfazer um check (só no mesmo dia). O servidor devolve o que foi revertido. */
+export function useUndoCheck() {
+  const refresh = useRefreshGameData();
+  return useMutation<CheckResult, Error, CheckVariables>({
+    mutationFn: ({ itemId, checkId }) => undoCheck(itemId, checkId),
+    onSettled: refresh,
+  });
+}
+
+export function useCreateItem() {
+  const refresh = useRefreshGameData();
+  return useMutation({ mutationFn: createItem, onSuccess: refresh });
+}
+
+export function useUpdateItem() {
+  const refresh = useRefreshGameData();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Parameters<typeof updateItem>[1] }) =>
+      updateItem(id, body),
+    onSuccess: refresh,
+  });
+}
+
+export function useDeleteItem() {
+  const refresh = useRefreshGameData();
+  return useMutation({ mutationFn: deleteItem, onSuccess: refresh });
+}
+
+export function useCategoryMutations() {
+  const queryClient = useQueryClient();
+  const refresh = useRefreshGameData();
+  const done = () => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.categories });
+    refresh();
+  };
+  return {
+    create: useMutation({ mutationFn: createCategory, onSuccess: done }),
+    update: useMutation({
+      mutationFn: ({ id, body }: { id: string; body: Parameters<typeof updateCategory>[1] }) =>
+        updateCategory(id, body),
+      onSuccess: done,
+    }),
+    remove: useMutation({
+      mutationFn: ({ id, moveTo }: { id: string; moveTo?: string }) => deleteCategory(id, moveTo),
+      onSuccess: done,
+    }),
+  };
 }
 
 /** Progresso do capítulo (0 a 1) a partir do GET /me, para posicionar o banner. */

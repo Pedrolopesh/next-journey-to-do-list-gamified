@@ -76,7 +76,7 @@ As duas moderadas que acompanham (`uuid` e `decode-uri-component`, também só e
 
 | Tema | Situação | Quando |
 |---|---|---|
-| Cadastro revela se o e-mail já existe (`409 EMAIL_UNAVAILABLE`) | Sem verificação de e-mail ainda, não há como responder igual para e-mail novo e existente. O login e o refresh não vazam essa informação | Fase 5, com o e-mail transacional (Resend) |
+| Cadastro revela se o e-mail já existe (`409 EMAIL_UNAVAILABLE`) | O e-mail transacional já existe (recuperação de senha), mas o cadastro ainda não exige verificação de e-mail. Login, refresh e "esqueci a senha" não vazam essa informação | Fase 7, com verificação de e-mail no cadastro |
 | Rate limit de login (5 tentativas por minuto por IP e e-mail) | Ainda não implementado | Fase 7 (`@nestjs/throttler`) |
 | `helmet` e CORS com allowlist | Ainda não ligados | Fase 7 |
 | HTTPS | Obrigatório em produção; o app em desenvolvimento usa HTTP para o emulador | Antes do primeiro deploy |

@@ -5,14 +5,17 @@ import { AppError } from '../../common/app-error.js';
 import { Clock } from '../../common/clock.js';
 import type { Item, ItemCheck, Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { AchievementsService } from '../achievements/achievements.service.js';
 import {
   aplicarCheck,
   calcularStreak,
+  checksParaCapitulo,
   desfazerCheck,
   diaLocal,
 } from '../progression/domain/index.js';
 import { GameConfigService } from '../progression/game-config.service.js';
-import { fromPlayerState, toPlayerState } from '../progression/player-state.js';
+import { NO_STORY, statsColumns, toPlayerState } from '../progression/player-state.js';
+import { StoriesService } from '../stories/stories.service.js';
 
 const notFound = (): AppError => new AppError(404, ERROR_CODES.NOT_FOUND, 'Item não encontrado');
 
@@ -22,12 +25,14 @@ export class ChecksService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(Clock) private readonly clock: Clock,
     @Inject(GameConfigService) private readonly gameConfig: GameConfigService,
+    @Inject(StoriesService) private readonly stories: StoriesService,
+    @Inject(AchievementsService) private readonly achievements: AchievementsService,
   ) {}
 
   /**
-   * Marca um item. Uma única transação: valida, grava o check, atualiza EXP/nível/moedas/capítulo
-   * e a sequência do diário. O checkId (UUID do app) torna a chamada idempotente: repetir devolve
-   * o mesmo resultado sem duplicar EXP.
+   * Marca um item. Uma única transação: valida, grava o check, atualiza EXP/nível/moedas, o
+   * capítulo da história ativa, a sequência do diário e as conquistas. O checkId (UUID do app)
+   * torna a chamada idempotente: repetir devolve o mesmo resultado sem duplicar EXP.
    */
   async check(userId: string, itemId: string, checkId: string): Promise<CheckResult> {
     const now = this.clock.now();
@@ -63,14 +68,57 @@ export class ChecksService {
 
       const stats = await tx.userStats.findUniqueOrThrow({ where: { userId } });
       const config = await this.gameConfig.load(tx);
+      const active = await this.stories.active(tx, userId);
+      const storyProgress = active
+        ? {
+            chapter: active.progress.chapter,
+            checksInChapter: active.progress.checksInChapter,
+            completed: active.progress.completed,
+          }
+        : NO_STORY;
+
       const applied = aplicarCheck(
-        toPlayerState(stats),
+        toPlayerState(stats, storyProgress),
         { checkId, type: item.type, difficulty: item.difficulty, localDate: hoje },
         config,
       );
       const { summary, record } = applied;
 
-      const result: CheckResult = {
+      // Capítulo concluído: grava a conclusão e devolve o conteúdo do modal (RF-28)
+      let completedChapter: CheckResult['completedChapter'] = null;
+      if (active && record.closedChapter && record.chapterAtCheck !== null) {
+        const chapter = await tx.chapter.findUnique({
+          where: { storyId_number: { storyId: active.story.id, number: record.chapterAtCheck } },
+        });
+        if (chapter) {
+          await tx.chapterCompletion.upsert({
+            where: { userId_chapterId: { userId, chapterId: chapter.id } },
+            create: { userId, chapterId: chapter.id, completedAt: now },
+            update: {},
+          });
+          completedChapter = {
+            number: chapter.number,
+            title: chapter.title,
+            text: chapter.text,
+            storyCompleted: summary.historiaConcluida,
+          };
+        }
+      }
+
+      await tx.userStats.update({ where: { userId }, data: statsColumns(applied.state) });
+      if (active) {
+        await tx.storyProgress.update({
+          where: { userId_storyId: { userId, storyId: active.story.id } },
+          data: {
+            chapter: applied.state.story.chapter,
+            checksInChapter: applied.state.story.checksInChapter,
+            completed: applied.state.story.completed,
+          },
+        });
+      }
+
+      // Registro do check primeiro: as conquistas (ex.: equilíbrio, chama) enxergam este check
+      const resultBase: Omit<CheckResult, 'achievementsUnlocked'> = {
         expGained: summary.expGanho,
         coinsGained: summary.moedasGanhas + summary.bonusMoedas,
         level: summary.nivel,
@@ -81,10 +129,8 @@ export class ChecksService {
           requiredChecks: summary.progressoCapitulo.necessarios,
         },
         chapterCompleted: summary.capituloConcluido,
-        achievementsUnlocked: [],
+        completedChapter,
       };
-
-      await tx.userStats.update({ where: { userId }, data: fromPlayerState(applied.state) });
       await tx.itemCheck.create({
         data: {
           id: checkId,
@@ -95,10 +141,11 @@ export class ChecksService {
           coins: record.coins,
           countsForChapter: record.countsForChapter,
           chapterAtCheck: record.chapterAtCheck,
+          storyId: record.countsForChapter && active ? active.story.id : null,
           closedChapter: record.closedChapter,
           streakBefore: item.streakCurrent,
           lastCheckedBefore: item.lastCheckedOn,
-          result,
+          result: { ...resultBase, achievementsUnlocked: [] },
         },
       });
 
@@ -116,6 +163,15 @@ export class ChecksService {
         await tx.item.update({ where: { id: itemId }, data: { completedAt: now } });
       }
 
+      const achievementsUnlocked = await this.achievements.evaluateAfterCheck(tx, {
+        userId,
+        timezone: user.timezone,
+        now,
+        hoje,
+      });
+      const result: CheckResult = { ...resultBase, achievementsUnlocked };
+      // Repetir o checkId devolve exatamente este resultado (com as conquistas desta vez)
+      await tx.itemCheck.update({ where: { id: checkId }, data: { result } });
       return result;
     });
   }
@@ -147,10 +203,24 @@ export class ChecksService {
         );
       }
 
+      // O passo do capítulo volta na história em que o check contou, mesmo que não seja a ativa
+      const progress = check.storyId
+        ? await tx.storyProgress.findUnique({
+            where: { userId_storyId: { userId, storyId: check.storyId } },
+          })
+        : null;
+      const storyProgress = progress
+        ? {
+            chapter: progress.chapter,
+            checksInChapter: progress.checksInChapter,
+            completed: progress.completed,
+          }
+        : NO_STORY;
+
       const stats = await tx.userStats.findUniqueOrThrow({ where: { userId } });
       const config = await this.gameConfig.load(tx);
       const hoje = diaLocal(now, user.timezone);
-      const undone = desfazerCheck(toPlayerState(stats), this.toRecord(check), hoje);
+      const undone = desfazerCheck(toPlayerState(stats, storyProgress), this.toRecord(check), hoje);
       if (!undone.ok) {
         if (undone.motivo === 'CAPITULO_FECHADO') {
           throw new AppError(
@@ -166,7 +236,13 @@ export class ChecksService {
         );
       }
 
-      await tx.userStats.update({ where: { userId }, data: fromPlayerState(undone.state) });
+      await tx.userStats.update({ where: { userId }, data: statsColumns(undone.state) });
+      if (progress && check.countsForChapter) {
+        await tx.storyProgress.update({
+          where: { userId_storyId: { userId, storyId: progress.storyId } },
+          data: { checksInChapter: undone.state.story.checksInChapter },
+        });
+      }
       await tx.itemCheck.update({ where: { id: checkId }, data: { revertedAt: now } });
 
       if (item.type === 'daily') {
@@ -187,22 +263,13 @@ export class ChecksService {
         chapterProgress: {
           chapter: story.chapter,
           checksInChapter: story.checksInChapter,
-          requiredChecks: this.requiredChecks(story.chapter, config),
+          requiredChecks: checksParaCapitulo(story.chapter, config),
         },
         chapterCompleted: false,
+        completedChapter: null,
         achievementsUnlocked: [],
       };
     });
-  }
-
-  private requiredChecks(
-    chapter: number,
-    config: { chapterBaseChecks: number; chapterChecksStep: number; chapterMaxChecks: number },
-  ): number {
-    return Math.min(
-      config.chapterBaseChecks + config.chapterChecksStep * (chapter - 1),
-      config.chapterMaxChecks,
-    );
   }
 
   private toRecord(check: ItemCheck) {

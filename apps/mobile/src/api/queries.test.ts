@@ -12,6 +12,7 @@ const me = (checks: number, required: number, completed = false): MeResponse => 
     name: 'P',
     email: 'p@exemplo.com',
     timezone: 'UTC',
+    notifyAt: null,
   },
   player: {
     level: 1,
@@ -23,6 +24,9 @@ const me = (checks: number, required: number, completed = false): MeResponse => 
     expForNextLevel: 50,
     requiredChecksInChapter: required,
   },
+  character: null,
+  story: null,
+  onboarding: { tutorialSeen: false, hasCharacter: false, hasStory: false },
 });
 
 describe('chapterProgress', () => {

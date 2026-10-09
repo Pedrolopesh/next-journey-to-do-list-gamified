@@ -181,9 +181,9 @@ describe('itens e check', () => {
   it('o check que fecha o capítulo é definitivo (CHECK_LOCKED)', async () => {
     reset();
     const auth = await registerUser(ctx);
-    await ctx.prisma.userStats.update({
+    await ctx.prisma.storyProgress.updateMany({
       where: { userId: auth.user.id },
-      data: { storyChecksInChapter: 9 },
+      data: { checksInChapter: 9 },
     });
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const checkId = randomUUID();
