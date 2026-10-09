@@ -7,6 +7,8 @@ import request from 'supertest';
 
 import { AppModule } from '../src/app.module.js';
 import { Clock } from '../src/common/clock.js';
+import { IdTokenVerifier } from '../src/modules/auth/id-token-verifier.js';
+import { Mailer } from '../src/modules/auth/mailer.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { setupApp } from '../src/setup-app.js';
 
@@ -33,17 +35,39 @@ export type TestContext = {
 // 12:00 em America/Sao_Paulo (UTC-3)
 export const NOON_09 = '2026-10-09T15:00:00Z';
 
-export async function createTestApp(): Promise<TestContext> {
+/** E-mail capturado pelo teste (não há envio real). */
+export class FakeMailer extends Mailer {
+  readonly sent: { to: string; subject: string; text: string }[] = [];
+  send(message: { to: string; subject: string; text: string }): Promise<void> {
+    this.sent.push(message);
+    return Promise.resolve();
+  }
+  /** Segredo do link de recuperação do último e-mail para o endereço. */
+  lastResetToken(to: string): string | undefined {
+    const mail = [...this.sent].reverse().find((entry) => entry.to === to);
+    return mail?.text.match(/token=([A-Za-z0-9_-]+)/)?.[1];
+  }
+}
+
+export async function createTestApp(
+  overrides: { verifier?: IdTokenVerifier } = {},
+): Promise<TestContext & { mailer: FakeMailer }> {
   const clock = new TestClock(new Date(NOON_09));
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+  const mailer = new FakeMailer();
+  let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(Clock)
     .useValue(clock)
-    .compile();
+    .overrideProvider(Mailer)
+    .useValue(mailer);
+  if (overrides.verifier)
+    builder = builder.overrideProvider(IdTokenVerifier).useValue(overrides.verifier);
+  const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication({ bufferLogs: true });
   setupApp(app, { swagger: false });
   await app.init();
   return {
     app,
+    mailer,
     prisma: app.get(PrismaService),
     clock,
     http: () => request(app.getHttpServer()),
@@ -56,7 +80,11 @@ export function uniqueEmail(prefix = 'user'): string {
   return `${prefix}-${randomUUID()}@exemplo.com`;
 }
 
-export async function registerUser(ctx: TestContext, email = uniqueEmail()): Promise<AuthResponse> {
+export async function registerUser(
+  ctx: TestContext,
+  email = uniqueEmail(),
+  options: { story?: string | false } = {},
+): Promise<AuthResponse> {
   const response = await ctx
     .http()
     .post('/v1/auth/register')
@@ -70,7 +98,18 @@ export async function registerUser(ctx: TestContext, email = uniqueEmail()): Pro
       timezone: 'America/Sao_Paulo',
     })
     .expect(201);
-  return response.body as AuthResponse;
+  const auth = response.body as AuthResponse;
+  // A maioria dos testes precisa de uma história ativa (onboarding completo)
+  const story = options.story === undefined ? 'empreendedor' : options.story;
+  if (story) {
+    await ctx
+      .http()
+      .put('/v1/me/story')
+      .set('authorization', `Bearer ${auth.tokens.accessToken}`)
+      .send({ slug: story })
+      .expect(200);
+  }
+  return auth;
 }
 
 export const bearer = (auth: AuthResponse): string => `Bearer ${auth.tokens.accessToken}`;

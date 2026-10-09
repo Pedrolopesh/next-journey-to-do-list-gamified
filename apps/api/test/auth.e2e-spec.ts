@@ -36,7 +36,7 @@ describe('auth e segurança básica', () => {
       'Trabalho',
     ]);
     const stored = await ctx.prisma.user.findUniqueOrThrow({ where: { id: auth.user.id } });
-    expect(stored.passwordHash.startsWith('$argon2id$')).toBe(true);
+    expect(stored.passwordHash?.startsWith('$argon2id$')).toBe(true);
   });
 
   it('e-mail repetido é recusado sem expor o motivo detalhado', async () => {

@@ -10,6 +10,15 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(32, 'precisa ter pelo menos 32 caracteres'),
   ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
+  // E-mail transacional (Resend). Sem chave, nada é enviado (desenvolvimento).
+  RESEND_API_KEY: z.string().min(1).optional(),
+  MAIL_FROM: z.string().default('Next Journey <no-reply@example.com>'),
+  /** Link que abre o app na tela de nova senha (deep link). */
+  PASSWORD_RESET_URL: z.string().default('nextjourney://reset-password'),
+  PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().default(30),
+  // Login social: client ids públicos (não são segredos). Vazios = recurso indisponível.
+  GOOGLE_CLIENT_IDS: z.string().default(''),
+  APPLE_CLIENT_ID: z.string().default(''),
 });
 
 export type Env = z.infer<typeof envSchema>;

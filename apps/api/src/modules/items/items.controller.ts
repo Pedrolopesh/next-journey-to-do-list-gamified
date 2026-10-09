@@ -7,6 +7,7 @@ import {
   Inject,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -19,6 +20,8 @@ import {
   type Item,
   itemTypeSchema,
   localDateSchema,
+  type UpdateItemRequest,
+  updateItemRequestSchema,
 } from '@nextjourney/contracts';
 import { z } from 'zod';
 
@@ -53,6 +56,24 @@ export class ItemsController {
     @Body(new ZodValidationPipe(createItemRequestSchema)) body: CreateItemRequest,
   ): Promise<Item> {
     return this.items.create(userId, body);
+  }
+
+  @Patch(':id')
+  update(
+    @CurrentUserId() userId: string,
+    @Param('id', new ParseUUIDPipe()) itemId: string,
+    @Body(new ZodValidationPipe(updateItemRequestSchema)) body: UpdateItemRequest,
+  ): Promise<Item> {
+    return this.items.update(userId, itemId, body);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  async remove(
+    @CurrentUserId() userId: string,
+    @Param('id', new ParseUUIDPipe()) itemId: string,
+  ): Promise<void> {
+    await this.items.remove(userId, itemId);
   }
 
   @Post(':id/checks')

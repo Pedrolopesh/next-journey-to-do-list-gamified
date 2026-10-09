@@ -1,12 +1,18 @@
 import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
 import {
   type AuthResponse,
+  type ForgotPasswordRequest,
+  forgotPasswordRequestSchema,
   type LoginRequest,
   loginRequestSchema,
   type RefreshRequest,
   refreshRequestSchema,
   type RegisterRequest,
   registerRequestSchema,
+  type ResetPasswordRequest,
+  resetPasswordRequestSchema,
+  type SocialLoginRequest,
+  socialLoginRequestSchema,
 } from '@nextjourney/contracts';
 
 import { Public } from '../../common/public.decorator.js';
@@ -50,5 +56,42 @@ export class AuthController {
     @Body(new ZodValidationPipe(refreshRequestSchema)) body: RefreshRequest,
   ): Promise<void> {
     await this.auth.logout(body.refreshToken);
+  }
+
+  /** Sempre 202, exista ou não o e-mail. */
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(202)
+  async forgotPassword(
+    @Body(new ZodValidationPipe(forgotPasswordRequestSchema)) body: ForgotPasswordRequest,
+  ): Promise<void> {
+    await this.auth.forgotPassword(body.email);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(204)
+  async resetPassword(
+    @Body(new ZodValidationPipe(resetPasswordRequestSchema)) body: ResetPasswordRequest,
+  ): Promise<void> {
+    await this.auth.resetPassword(body.token, body.newPassword);
+  }
+
+  @Public()
+  @Post('google')
+  @HttpCode(200)
+  google(
+    @Body(new ZodValidationPipe(socialLoginRequestSchema)) body: SocialLoginRequest,
+  ): Promise<AuthResponse> {
+    return this.auth.socialLogin('google', body);
+  }
+
+  @Public()
+  @Post('apple')
+  @HttpCode(200)
+  apple(
+    @Body(new ZodValidationPipe(socialLoginRequestSchema)) body: SocialLoginRequest,
+  ): Promise<AuthResponse> {
+    return this.auth.socialLogin('apple', body);
   }
 }

@@ -7,10 +7,14 @@ import { Logger, LoggerModule } from 'nestjs-pino';
 import { AllExceptionsFilter } from './common/all-exceptions.filter.js';
 import { ENV, type Env } from './config/env.js';
 import { CoreModule } from './core.module.js';
+import { AchievementsModule } from './modules/achievements/achievements.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { CategoriesModule } from './modules/categories/categories.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { HomeModule } from './modules/home/home.module.js';
 import { ItemsModule } from './modules/items/items.module.js';
 import { MeModule } from './modules/me/me.module.js';
+import { StoriesModule } from './modules/stories/stories.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 
 const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
@@ -65,6 +69,10 @@ const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
     AuthModule,
     ItemsModule,
     MeModule,
+    StoriesModule,
+    CategoriesModule,
+    AchievementsModule,
+    HomeModule,
     HealthModule,
   ],
   providers: [

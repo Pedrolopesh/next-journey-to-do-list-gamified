@@ -37,3 +37,15 @@ export function diaLocal(instante: Date | number | string, timezone: string): Lo
     day: '2-digit',
   }).format(date);
 }
+
+/** Hora local (0 a 23) de um instante no fuso do usuário. Recebe o instante como argumento. */
+export function horaLocal(instante: Date | number | string, timezone: string): number {
+  const date = instante instanceof Date ? instante : new Date(instante);
+  if (Number.isNaN(date.getTime())) throw new RangeError('Instante inválido');
+  const hour = new Intl.DateTimeFormat('en-GB', {
+    timeZone: timezone,
+    hour: '2-digit',
+    hourCycle: 'h23',
+  }).format(date);
+  return Number(hour);
+}
