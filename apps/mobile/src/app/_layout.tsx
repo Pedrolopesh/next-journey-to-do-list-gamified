@@ -1,7 +1,7 @@
 import '@/i18n';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,7 @@ import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { useCheckSync } from '@/features/offline/use-check-sync';
 import { isOnboardingComplete } from '@/features/onboarding/next-step';
 import { syncDailyReminder } from '@/features/settings/reminder';
+import { log } from '@/logging';
 import { colors, space } from '@/theme';
 
 /** Splash enquanto a sessão é verificada (RF-09). */
@@ -85,9 +86,60 @@ function Gate() {
 
 export default function RootLayout() {
   const status = useSessionStore((state) => state.status);
+  const pathname = usePathname();
   const [queryClient] = useState(
-    () => new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } }),
+    () =>
+      new QueryClient({
+        defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
+        queryCache: new QueryCache({
+          onError: (error, query) => {
+            log.warn('query.error', { key: query.queryKey, message: error.message });
+          },
+        }),
+        mutationCache: new MutationCache({
+          onMutate: (variables, mutation) => {
+            log.info('mutation.start', { key: mutation.options.mutationKey, input: variables });
+          },
+          onSuccess: (data, _variables, _context, mutation) => {
+            log.info('mutation.success', { key: mutation.options.mutationKey });
+            log.debug('mutation.output', { key: mutation.options.mutationKey, data });
+          },
+          onError: (error, _variables, _context, mutation) => {
+            log.warn('mutation.error', {
+              key: mutation.options.mutationKey,
+              message: error.message,
+            });
+          },
+        }),
+      }),
   );
+
+  // Cada troca de tela vira um registro (rota sem parâmetros sensíveis)
+  useEffect(() => {
+    log.info('nav.screen', { path: pathname });
+  }, [pathname]);
+
+  // Erros que ninguém tratou (JS e promessas) também ficam registrados
+  useEffect(() => {
+    const globals = globalThis as unknown as {
+      ErrorUtils?: {
+        getGlobalHandler: () => (error: Error, fatal?: boolean) => void;
+        setGlobalHandler: (handler: (error: Error, fatal?: boolean) => void) => void;
+      };
+    };
+    const previous = globals.ErrorUtils?.getGlobalHandler();
+    globals.ErrorUtils?.setGlobalHandler((error, fatal) => {
+      log.error('app.uncaught', {
+        fatal,
+        message: error.message,
+        stack: error.stack?.split('\n').slice(0, 6),
+      });
+      previous?.(error, fatal);
+    });
+    return () => {
+      if (previous) globals.ErrorUtils?.setGlobalHandler(previous);
+    };
+  }, []);
 
   useEffect(() => {
     void restoreSession();

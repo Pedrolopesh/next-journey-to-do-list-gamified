@@ -2,6 +2,8 @@ import type { AuthResponse, UserSummary } from '@nextjourney/contracts';
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 
+import { log } from '@/logging';
+
 /** Só o refresh token é persistido (SecureStore: Keychain/Keystore). O access token vive na memória. */
 const REFRESH_KEY = 'nj.refreshToken';
 
@@ -28,6 +30,7 @@ export const useSessionStore = create<SessionState>((set) => ({
   refreshToken: null,
 
   async setSession(response) {
+    log.info('session.signedIn', { userId: response.user.id });
     await SecureStore.setItemAsync(REFRESH_KEY, response.tokens.refreshToken);
     set({
       status: 'signedIn',
@@ -38,6 +41,7 @@ export const useSessionStore = create<SessionState>((set) => ({
   },
 
   async clear() {
+    log.info('session.cleared');
     await SecureStore.deleteItemAsync(REFRESH_KEY).catch(() => undefined);
     set({ status: 'signedOut', user: null, accessToken: null, refreshToken: null });
   },

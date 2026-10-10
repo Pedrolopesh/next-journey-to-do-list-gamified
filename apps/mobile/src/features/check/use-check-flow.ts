@@ -11,6 +11,7 @@ import type { BannerViewHandle } from '@/banner/banner-view';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { buildModalQueue, type ModalEntry } from '@/features/feedback/modal-queue';
 import { useOfflineStore } from '@/features/offline/offline-store';
+import { log } from '@/logging';
 
 /** Se o banner não confirmar a transição de capítulo, o modal abre mesmo assim depois deste prazo. */
 const CHAPTER_MODAL_FALLBACK_MS = 3500;
@@ -77,10 +78,18 @@ export function useCheckFlow({ type, bannerRef }: Options) {
 
       // 2) API: o servidor decide EXP, nível, capítulo e conquistas
       const checkId = randomUUID();
+      log.info('check.start', { itemId: item.id, type, checkId });
       check.mutate(
         { itemId: item.id, checkId },
         {
           onSuccess: (result) => {
+            log.info('check.success', {
+              itemId: item.id,
+              checkId,
+              expGained: result.expGained,
+              chapterCompleted: result.chapterCompleted,
+              levelUp: result.leveledUp,
+            });
             useFeedbackStore.getState().rememberCheck(item.id, checkId);
             setToast(t('feedback.expToast', { exp: result.expGained }));
 
@@ -106,6 +115,12 @@ export function useCheckFlow({ type, bannerRef }: Options) {
           },
           onError: (cause) => {
             // Sem rede: guarda na fila e segue (sincroniza sozinho ao voltar a conexão)
+            log.warn('check.error', {
+              itemId: item.id,
+              checkId,
+              code: toApiError(cause)?.code,
+              retryable: isRetryableError(cause),
+            });
             if (isRetryableError(cause)) {
               useOfflineStore
                 .getState()
@@ -131,6 +146,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
   const handleUndo = useCallback(
     (item: Item, checkId: string) => {
       setError(null);
+      log.info('check.undo', { itemId: item.id, checkId });
       // Check ainda na fila (nunca chegou ao servidor): basta tirar da fila
       if (useOfflineStore.getState().queue.some((queued) => queued.checkId === checkId)) {
         useOfflineStore.getState().remove([checkId]);

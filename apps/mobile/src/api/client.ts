@@ -3,6 +3,7 @@ import axios, { isAxiosError } from 'axios';
 import { Platform } from 'react-native';
 
 import { useSessionStore } from '@/auth/session-store';
+import { log } from '@/logging';
 
 import { createHttpClient } from './http';
 
@@ -10,10 +11,12 @@ import { createHttpClient } from './http';
 const DEFAULT_URL = Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
 const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_URL).replace(/\/$/, '');
 export const baseURL = `${API_URL}/v1`;
+log.info('app.api', { baseURL });
 
 /** Cliente da API com refresh automático ligado à sessão. */
 export const http = createHttpClient({
   baseURL,
+  log,
   tokens: {
     getAccess: () => useSessionStore.getState().accessToken,
     getRefresh: () => useSessionStore.getState().refreshToken,

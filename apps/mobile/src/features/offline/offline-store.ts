@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
+import { log } from '@/logging';
+
 import { enqueue, type QueuedCheck, removeByCheckId } from './check-queue';
 
 const KEY = 'nj.check-queue.v1';
@@ -53,6 +55,7 @@ export const useOfflineStore = create<OfflineState>((set, get) => ({
     set({ loaded: true });
   },
   add: (entry) => {
+    log.info('offline.enqueue', { checkId: entry.checkId, itemId: entry.itemId, type: entry.type });
     const queue = enqueue(get().queue, entry);
     set({ queue });
     void persist(queue);
