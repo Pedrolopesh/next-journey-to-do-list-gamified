@@ -14,6 +14,7 @@
 
 - [ ] Branch segue o padrão `<tipo>/<slug>` e os commits seguem Conventional Commits
 - [ ] `pnpm run lint`, `typecheck`, `test` e `build` passam localmente
+- [ ] Se mexeu em tela ou botão: toda ação mostra carregando e termina em toast de sucesso ou erro, e validação reprovada avisa (regra RN-FB)
 - [ ] Regra nova tem teste; mudança de comportamento está descrita acima
 - [ ] Se alterou contrato (`packages/contracts`), rota ou protocolo do banner, os consumidores foram atualizados no mesmo PR
 - [ ] Se alterou regra de jogo, contrato ou protocolo: há proposta/spec no OpenSpec ou ADR atualizado

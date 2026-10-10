@@ -13,6 +13,7 @@ import { Pills } from '@/components/pills';
 import { ScreenFrame } from '@/components/screen-frame';
 import { TextField } from '@/components/text-field';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
+import { toast } from '@/features/feedback/toast-store';
 import { parseNotifyTime } from '@/features/settings/notify-time';
 import { syncDailyReminder } from '@/features/settings/reminder';
 import { timezoneOptions } from '@/features/settings/timezones';
@@ -28,6 +29,7 @@ export default function SettingsScreen() {
   const [notify, setNotify] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const apply = async (body: Parameters<typeof patchMe>[0], success: string): Promise<void> => {
     setSaving(true);
@@ -37,8 +39,10 @@ export default function SettingsScreen() {
       // O "dia" do usuário muda com o fuso: recarrega tudo que depende dele
       void queryClient.invalidateQueries();
       setMessage(success);
+      toast.success(success);
     } catch {
       setMessage(t('settings.saveFailed'));
+      toast.error(t('settings.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -52,12 +56,16 @@ export default function SettingsScreen() {
         style: 'destructive',
         onPress: () => {
           void (async () => {
+            setDeletingAccount(true);
             try {
               await deleteAccount();
             } catch {
               setMessage(t('settings.deleteFailed'));
+              toast.error(t('settings.deleteFailed'));
+              setDeletingAccount(false);
               return;
             }
+            toast.success(t('settings.deleted'));
             queryClient.clear();
             useFeedbackStore.getState().clear();
             await useSessionStore.getState().clear();
@@ -102,12 +110,16 @@ export default function SettingsScreen() {
             const parsed = parseNotifyTime(notifyValue);
             if (!parsed.ok) {
               setMessage(t('settings.notifyInvalid'));
+              toast.error(t('settings.notifyInvalid'));
               return;
             }
             void (async () => {
               await apply({ notifyAt: parsed.value }, t('settings.saved'));
               const allowed = await syncDailyReminder(parsed.value, { askPermission: true });
-              if (!allowed) setMessage(t('settings.notifyDenied'));
+              if (!allowed) {
+                setMessage(t('settings.notifyDenied'));
+                toast.error(t('settings.notifyDenied'));
+              }
             })();
           }}
         />
@@ -133,7 +145,12 @@ export default function SettingsScreen() {
           router.push('/settings/credits');
         }}
       />
-      <Button label={t('settings.delete')} variant="secondary" onPress={confirmDelete} />
+      <Button
+        label={t('settings.delete')}
+        variant="secondary"
+        loading={deletingAccount}
+        onPress={confirmDelete}
+      />
       <Text style={styles.about}>
         {t('settings.about', {
           name: 'Next Journey',

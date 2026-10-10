@@ -9,6 +9,7 @@ import { Button } from '@/components/button';
 import { Pills } from '@/components/pills';
 import { ScreenFrame } from '@/components/screen-frame';
 import { TextField } from '@/components/text-field';
+import { toast } from '@/features/feedback/toast-store';
 import { colors, radius, space } from '@/theme';
 
 /** Categorias (RF-23): renomear, criar e excluir até 10, com cor da paleta. */
@@ -25,13 +26,14 @@ export default function CategoriesScreen() {
   const list = categories.data ?? [];
   const fail = (cause: unknown): void => {
     const code = toApiError(cause)?.code;
-    setError(
+    const message =
       code === 'CATEGORY_LIMIT'
         ? t('categories.limit', { max: MAX_CATEGORIES })
         : code === 'LAST_CATEGORY'
           ? t('categories.last')
-          : t('categories.failed'),
-    );
+          : t('categories.failed');
+    setError(message);
+    toast.error(message);
   };
 
   return (
@@ -51,6 +53,7 @@ export default function CategoriesScreen() {
               />
               <Button
                 label={t('common.save')}
+                loading={update.isPending}
                 onPress={() => {
                   setError(null);
                   update.mutate(
@@ -58,6 +61,7 @@ export default function CategoriesScreen() {
                     {
                       onSuccess: () => {
                         setEditing(null);
+                        toast.success(t('categories.renamed'));
                       },
                       onError: fail,
                     },
@@ -100,6 +104,7 @@ export default function CategoriesScreen() {
                     {
                       onSuccess: () => {
                         setDeleting(null);
+                        toast.success(t('categories.removed'));
                       },
                       onError: fail,
                     },
@@ -136,6 +141,7 @@ export default function CategoriesScreen() {
               setError(null);
               if (name.trim() === '') {
                 setError(t('categories.nameRequired'));
+                toast.error(t('categories.nameRequired'));
                 return;
               }
               create.mutate(
@@ -143,6 +149,7 @@ export default function CategoriesScreen() {
                 {
                   onSuccess: () => {
                     setName('');
+                    toast.success(t('categories.added'));
                   },
                   onError: fail,
                 },

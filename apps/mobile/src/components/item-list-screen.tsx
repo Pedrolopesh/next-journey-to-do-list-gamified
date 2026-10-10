@@ -113,6 +113,7 @@ export function ItemListScreen({
         <ErrorState
           message={t('items.load')}
           retryLabel={t('items.retry')}
+          retrying={items.isFetching}
           onRetry={() => {
             void items.refetch();
           }}

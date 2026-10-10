@@ -9,6 +9,7 @@ import { isNetworkError, toApiError } from '@/api/errors';
 import { Button } from '@/components/button';
 import { PasswordChecklist } from '@/components/password-checklist';
 import { TextField } from '@/components/text-field';
+import { toast } from '@/features/feedback/toast-store';
 import { colors, space } from '@/theme';
 
 /** Nova senha, aberta pelo link do e-mail (nextjourney://reset-password?token=...). */
@@ -26,6 +27,7 @@ export default function ResetPasswordScreen() {
     setError(null);
     if (password !== confirm) {
       setError(t('auth.validation.passwordMismatch'));
+      toast.error(t('auth.validation.passwordMismatch'));
       return;
     }
     const parsed = resetPasswordRequestSchema.safeParse({
@@ -34,20 +36,22 @@ export default function ResetPasswordScreen() {
     });
     if (!parsed.success || !PASSWORD_RULES.every((rule) => rule.test(password))) {
       setError(t('auth.validation.passwordRules'));
+      toast.error(t('auth.validation.passwordRules'));
       return;
     }
     setSaving(true);
     try {
       await resetPassword(parsed.data);
       setDone(true);
+      toast.success(t('auth.passwordChanged'));
     } catch (cause) {
-      setError(
-        isNetworkError(cause)
-          ? t('auth.networkError')
-          : toApiError(cause)?.code === 'INVALID_RESET_TOKEN'
-            ? t('auth.resetInvalid')
-            : t('auth.genericError'),
-      );
+      const message = isNetworkError(cause)
+        ? t('auth.networkError')
+        : toApiError(cause)?.code === 'INVALID_RESET_TOKEN'
+          ? t('auth.resetInvalid')
+          : t('auth.genericError');
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }

@@ -1,42 +1,47 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type LoginRequest, loginRequestSchema } from '@nextjourney/contracts';
 import { Link } from 'expo-router';
-import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { login } from '@/api/endpoints';
-import { isNetworkError, toApiError } from '@/api/errors';
 import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
 import { SocialButtons } from '@/components/social-buttons';
 import { TextField } from '@/components/text-field';
+import { describeError } from '@/features/feedback/error-message';
+import { toast } from '@/features/feedback/toast-store';
+import { useAction } from '@/features/feedback/use-action';
+import { log } from '@/logging';
 import { colors, space } from '@/theme';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
-  const [formError, setFormError] = useState<string | null>(null);
+  const { run, loading } = useAction({
+    name: 'auth.login',
+    success: t('auth.loginSuccess'),
+    error: (error) => describeError(error, t, { UNAUTHORIZED: t('auth.invalidCredentials') }),
+  });
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginRequest>({
     resolver: zodResolver(loginRequestSchema),
     defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = handleSubmit(async (values) => {
-    setFormError(null);
-    try {
-      await useSessionStore.getState().setSession(await login(values));
-    } catch (error) {
-      if (isNetworkError(error)) setFormError(t('auth.networkError'));
-      else if (toApiError(error)?.code === 'UNAUTHORIZED')
-        setFormError(t('auth.invalidCredentials'));
-      else setFormError(t('auth.genericError'));
-    }
-  });
+  const onSubmit = handleSubmit(
+    (values) =>
+      run(async () => {
+        await useSessionStore.getState().setSession(await login(values));
+      }),
+    (invalid) => {
+      log.warn('form.invalid', { form: 'login', fields: Object.keys(invalid) });
+      toast.error(t('feedback.invalidForm'));
+    },
+  );
 
   return (
     <KeyboardAvoidingView
@@ -78,16 +83,7 @@ export default function LoginScreen() {
             />
           )}
         />
-        {formError ? (
-          <Text style={styles.formError} accessibilityLiveRegion="polite">
-            {formError}
-          </Text>
-        ) : null}
-        <Button
-          label={t('auth.submitLogin')}
-          onPress={() => void onSubmit()}
-          loading={isSubmitting}
-        />
+        <Button label={t('auth.submitLogin')} onPress={() => void onSubmit()} loading={loading} />
         <SocialButtons />
         <View style={styles.links}>
           <Link href="/register" style={styles.link}>

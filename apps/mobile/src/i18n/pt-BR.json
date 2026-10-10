@@ -25,6 +25,11 @@
     "invalidCredentials": "E-mail ou senha inválidos",
     "emailUnavailable": "Não foi possível concluir o cadastro. Tente entrar ou use outro e-mail.",
     "networkError": "Sem conexão com o servidor. Tente de novo.",
+    "registerSuccess": "Conta criada! Bem-vindo(a).",
+    "loginSuccess": "Você entrou.",
+    "logoutSuccess": "Você saiu da conta.",
+    "linkSent": "Se o e-mail existir, enviamos o link.",
+    "passwordChanged": "Senha alterada. Entre com a nova senha.",
     "genericError": "Algo deu errado. Tente de novo.",
     "welcomeTitle": "Next Journey",
     "welcomeSubtitle": "Cada tarefa é um passo da sua história",
@@ -79,6 +84,8 @@
     "settings": "Configurações"
   },
   "feedback": {
+    "invalidForm": "Revise os campos destacados.",
+    "saved": "Salvo.",
     "queuedOffline": "Sem conexão: o check será enviado quando a internet voltar.",
     "expToast": "+{{exp}} EXP",
     "alreadyDone": "Este item já foi marcado hoje.",
@@ -136,6 +143,9 @@
     "todayEmpty": "Nada pendente para hoje"
   },
   "itemForm": {
+    "created": "Item criado!",
+    "updated": "Item atualizado.",
+    "deleted": "Item excluído.",
     "type": "Tipo",
     "title": "Título",
     "titleRequired": "Informe um título",
@@ -204,6 +214,7 @@
     }
   },
   "character": {
+    "saved": "Personagem salvo!",
     "name": "Nome do personagem",
     "title": "Título",
     "skin": "Tom de pele",
@@ -239,6 +250,7 @@
     "locked": "Este item ainda não foi desbloqueado."
   },
   "story": {
+    "saved": "História escolhida!",
     "chooseTitle": "Escolha sua história",
     "confirm": "Começar esta história",
     "saveFailed": "Não foi possível escolher a história."
@@ -254,6 +266,7 @@
     "saveFailed": "Não foi possível salvar.",
     "categories": "Categorias",
     "delete": "Excluir conta",
+    "deleted": "Conta excluída.",
     "deleteTitle": "Excluir conta?",
     "deleteBody": "Seus dados pessoais são apagados agora e o restante é removido de vez em até 30 dias. Não dá para desfazer.",
     "deleteConfirm": "Excluir",
@@ -270,6 +283,9 @@
     "intro": "A arte e as licenças usadas no Next Journey."
   },
   "categories": {
+    "renamed": "Categoria renomeada.",
+    "removed": "Categoria removida.",
+    "added": "Categoria criada.",
     "title": "Categorias",
     "name": "Nome",
     "newName": "Nova categoria",

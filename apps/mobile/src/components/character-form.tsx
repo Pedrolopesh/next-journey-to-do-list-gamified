@@ -1,5 +1,5 @@
 import { type Character, characterSchema } from '@nextjourney/contracts';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -7,6 +7,7 @@ import { useCosmetics } from '@/api/queries';
 import { Button } from '@/components/button';
 import { Pills } from '@/components/pills';
 import { TextField } from '@/components/text-field';
+import { toast } from '@/features/feedback/toast-store';
 import { colors, radius, space } from '@/theme';
 
 /** Camadas LPC disponíveis. As chaves "reward" só liberam depois da conquista correspondente. */
@@ -63,6 +64,10 @@ export function CharacterForm({
   const [outfit, setOutfit] = useState(initial?.outfit ?? 'tunic-purple');
   const [accessory, setAccessory] = useState(initial?.accessory ?? 'none');
   const [formError, setFormError] = useState<string | null>(null);
+  // Validação reprovada também avisa por toast, para o botão nunca "não fazer nada"
+  useEffect(() => {
+    if (formError) toast.error(formError);
+  }, [formError]);
 
   const optionsFor = (kind: keyof typeof CHARACTER_OPTIONS) =>
     CHARACTER_OPTIONS[kind].map((value) => ({

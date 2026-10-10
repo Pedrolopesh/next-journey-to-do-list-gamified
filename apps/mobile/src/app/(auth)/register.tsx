@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerRequestSchema } from '@nextjourney/contracts';
 import { Link } from 'expo-router';
-import { useState } from 'react';
 import { Controller, type Resolver, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,12 +14,15 @@ import {
 } from 'react-native';
 
 import { register } from '@/api/endpoints';
-import { isNetworkError, toApiError } from '@/api/errors';
 import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
 import { PasswordChecklist } from '@/components/password-checklist';
 import { SocialButtons } from '@/components/social-buttons';
 import { TextField } from '@/components/text-field';
+import { describeError } from '@/features/feedback/error-message';
+import { toast } from '@/features/feedback/toast-store';
+import { useAction } from '@/features/feedback/use-action';
+import { log } from '@/logging';
 import { colors, space } from '@/theme';
 
 /** Versão dos Termos e da Política aceitos no cadastro (LGPD). Sobe quando os textos mudarem. */
@@ -36,41 +38,50 @@ type FormValues = {
 
 export default function RegisterScreen() {
   const { t } = useTranslation();
-  const [formError, setFormError] = useState<string | null>(null);
+  const { run, loading } = useAction({
+    name: 'auth.register',
+    success: t('auth.registerSuccess'),
+    error: (error) => describeError(error, t, { EMAIL_UNAVAILABLE: t('auth.emailUnavailable') }),
+  });
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<FormValues>({
-    // O schema do contrato é a mesma regra que a API aplica (inclusive o checklist da senha)
-    resolver: zodResolver(registerRequestSchema) as unknown as Resolver<FormValues>,
-    context: { termsVersion: TERMS_VERSION, timezone },
+    // O schema do contrato é a mesma regra que a API aplica (inclusive o checklist da senha).
+    // termsVersion e timezone não são campos da tela: entram aqui, senão o schema reprova o
+    // formulário em silêncio e o botão parece não fazer nada.
+    resolver: ((values, context, options) =>
+      zodResolver(registerRequestSchema)(
+        { ...values, termsVersion: TERMS_VERSION, timezone } as never,
+        context,
+        options as never,
+      )) as Resolver<FormValues>,
     defaultValues: { name: '', email: '', password: '', confirmPassword: '', acceptedTerms: false },
   });
   const password = useWatch({ control, name: 'password' });
 
-  const onSubmit = handleSubmit(async (values) => {
-    setFormError(null);
-    try {
-      const response = await register({
-        name: values.name,
-        email: values.email,
-        password: values.password,
-        confirmPassword: values.confirmPassword,
-        acceptedTerms: true,
-        termsVersion: TERMS_VERSION,
-        timezone,
-      });
-      await useSessionStore.getState().setSession(response);
-    } catch (error) {
-      if (isNetworkError(error)) setFormError(t('auth.networkError'));
-      else if (toApiError(error)?.code === 'EMAIL_UNAVAILABLE')
-        setFormError(t('auth.emailUnavailable'));
-      else setFormError(t('auth.genericError'));
-    }
-  });
+  const onSubmit = handleSubmit(
+    (values) =>
+      run(async () => {
+        const response = await register({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+          confirmPassword: values.confirmPassword,
+          acceptedTerms: true,
+          termsVersion: TERMS_VERSION,
+          timezone,
+        });
+        await useSessionStore.getState().setSession(response);
+      }),
+    (invalid) => {
+      log.warn('form.invalid', { form: 'register', fields: Object.keys(invalid) });
+      toast.error(t('feedback.invalidForm'));
+    },
+  );
 
   return (
     <KeyboardAvoidingView
@@ -123,6 +134,7 @@ export default function RegisterScreen() {
               autoCapitalize="none"
               autoComplete="new-password"
               secret
+              error={errors.password ? t('auth.validation.passwordRules') : undefined}
             />
           )}
         />
@@ -160,15 +172,10 @@ export default function RegisterScreen() {
         {errors.acceptedTerms ? (
           <Text style={styles.formError}>{t('auth.validation.termsRequired')}</Text>
         ) : null}
-        {formError ? (
-          <Text style={styles.formError} accessibilityLiveRegion="polite">
-            {formError}
-          </Text>
-        ) : null}
         <Button
           label={t('auth.submitRegister')}
           onPress={() => void onSubmit()}
-          loading={isSubmitting}
+          loading={loading}
         />
         <SocialButtons />
         <Link href="/login" style={styles.link}>

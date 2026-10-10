@@ -8,6 +8,7 @@ import { toApiError } from '@/api/errors';
 import { queryKeys, useMe } from '@/api/queries';
 import { CharacterForm } from '@/components/character-form';
 import { ScreenFrame } from '@/components/screen-frame';
+import { toast } from '@/features/feedback/toast-store';
 
 /** Editar o personagem (RF-37). Cosméticos de conquista aparecem liberados aqui. */
 export default function EditCharacterScreen() {
@@ -31,15 +32,17 @@ export default function EditCharacterScreen() {
           putCharacter(character)
             .then(async () => {
               await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+              toast.success(t('character.saved'));
               router.back();
             })
             .catch((cause: unknown) => {
               const apiError = toApiError(cause);
-              setError(
+              const message =
                 apiError?.code === 'COSMETIC_LOCKED'
                   ? t('character.locked')
-                  : (apiError?.message ?? t('character.saveFailed')),
-              );
+                  : (apiError?.message ?? t('character.saveFailed'));
+              setError(message);
+              toast.error(message);
             })
             .finally(() => {
               setSaving(false);

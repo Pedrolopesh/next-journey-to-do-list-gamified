@@ -2,7 +2,7 @@ import type { BannerToAppMessage, Item, ItemType } from '@nextjourney/contracts'
 import { useQueryClient } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 import * as Haptics from 'expo-haptics';
-import { type RefObject, useCallback, useRef, useState } from 'react';
+import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { isRetryableError, toApiError } from '@/api/errors';
@@ -10,6 +10,7 @@ import { chapterProgress, useCheckItem, useMe, useUndoCheck } from '@/api/querie
 import type { BannerViewHandle } from '@/banner/banner-view';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { buildModalQueue, type ModalEntry } from '@/features/feedback/modal-queue';
+import { toast as showToast } from '@/features/feedback/toast-store';
 import { useOfflineStore } from '@/features/offline/offline-store';
 import { log } from '@/logging';
 
@@ -30,6 +31,10 @@ export function useCheckFlow({ type, bannerRef }: Options) {
   const undo = useUndoCheck();
   const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Todo erro de check/desfazer também vira toast (a mensagem inline continua na lista)
+  useEffect(() => {
+    if (error) showToast.error(error);
+  }, [error]);
   const pendingChapter = useRef<ModalEntry[]>([]);
   const fallbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 

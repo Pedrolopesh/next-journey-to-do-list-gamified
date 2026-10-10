@@ -54,6 +54,7 @@ Mudança que altere comportamento, contrato da API, protocolo do banner ou regra
 7. **Logs sem dados sensíveis:** nunca e-mail, senha, token ou corpo de requisição.
 8. **Datas** em UTC no banco; "dia" do usuário no fuso do perfil; registro em ISO 8601.
 9. **Teste novo para regra nova.** Mudança de regra de jogo começa por um teste.
+10. **Nenhuma ação deixa o usuário no escuro (RN-FB).** Toda ação do usuário no app mostra carregando e termina em toast de sucesso ou de erro; validação reprovada nunca deixa o botão "sem fazer nada". Use `useAction` e `toast` (`apps/mobile/src/features/feedback`). Detalhes em `docs/REQUISITOS.MD` (seção 3) e portão de loja em `docs/QA.md` (seção 7).
 
 ## Checklist de segurança (verificar a CADA PR)
 
@@ -81,6 +82,7 @@ Resumo; a versão completa e o histórico de auditorias estão em `docs/SEGURANC
 
 ### App (Expo/React Native) e banner (WebView)
 
+- **Feedback de toda ação (RN-FB):** botão com `loading`, toast de sucesso/erro e mensagem de campo em validação reprovada. Tela estática depois de um toque é defeito.
 - Tokens só no SecureStore; nada sensível no AsyncStorage, em log, em URL ou em query string.
 - WebView: `originWhitelist` restrito, só HTML local embutido, sem carregar URL externa; toda mensagem do banner validada com Zod e descartada se inválida.
 - O banner não faz requisição de rede e não guarda estado.

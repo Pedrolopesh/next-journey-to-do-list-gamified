@@ -8,6 +8,7 @@ import { socialLogin } from '@/api/endpoints';
 import { isNetworkError, toApiError } from '@/api/errors';
 import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
+import { toast } from '@/features/feedback/toast-store';
 import { colors, space } from '@/theme';
 
 /** Termos aceitos no primeiro acesso por login social (LGPD). Sobe quando os textos mudarem. */
@@ -49,14 +50,15 @@ export function SocialButtons() {
         termsVersion: TERMS_VERSION,
       });
       await useSessionStore.getState().setSession(response);
+      toast.success(t('auth.loginSuccess'));
     } catch (cause) {
-      setError(
-        isNetworkError(cause)
-          ? t('auth.networkError')
-          : toApiError(cause)?.code === 'EMAIL_UNAVAILABLE'
-            ? t('auth.emailUnavailable')
-            : t('auth.genericError'),
-      );
+      const message = isNetworkError(cause)
+        ? t('auth.networkError')
+        : toApiError(cause)?.code === 'EMAIL_UNAVAILABLE'
+          ? t('auth.emailUnavailable')
+          : t('auth.genericError');
+      setError(message);
+      toast.error(message);
     }
   };
 
@@ -70,6 +72,7 @@ export function SocialButtons() {
         await finish('google', result.data.idToken);
     } catch {
       setError(t('auth.genericError'));
+      toast.error(t('auth.genericError'));
     } finally {
       setBusy(null);
     }
@@ -86,8 +89,11 @@ export function SocialButtons() {
         ],
       });
       if (credential.identityToken) await finish('apple', credential.identityToken);
-    } catch {
-      // cancelar o fluxo da Apple não é erro
+    } catch (cause) {
+      // cancelar o fluxo da Apple não é erro; qualquer outra falha precisa ser avisada
+      if ((cause as { code?: string }).code !== 'ERR_REQUEST_CANCELED') {
+        toast.error(t('auth.genericError'));
+      }
     } finally {
       setBusy(null);
     }

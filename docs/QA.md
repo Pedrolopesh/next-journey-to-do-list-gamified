@@ -42,3 +42,14 @@ Marque cada item e anote data, versão e aparelho no `docs/DIARIO.md`.
 - [ ] Listas mostram skeleton ao carregar, vazio com dica e erro com "Tentar de novo".
 - [ ] Alvos de toque de 44 pt; rótulos lidos pelo leitor de tela (TalkBack/VoiceOver) nos checks e botões.
 - [ ] Fonte maior do sistema (até 130%) não corta textos.
+
+## 7. Portão da loja: feedback de toda ação (RN-FB)
+
+Bloqueia o envio às lojas. Percorra **cada tela e cada botão** e confirme, com a API ligada e também desligada (ou em modo avião):
+
+- [ ] Ao tocar, o botão mostra carregando (e não aceita segundo toque) ou a tela muda na hora.
+- [ ] Sucesso: aparece toast de sucesso ou uma mudança visível e óbvia.
+- [ ] Erro (sem rede, API fora, dado inválido): aparece toast de erro com texto claro; o botão volta ao normal.
+- [ ] Formulário inválido (campos vazios, senha fraca, termos não aceitos): cada campo mostra sua mensagem e o toast avisa; o botão nunca "não faz nada".
+- [ ] Telas e botões cobertos: cadastro, login, entrar com Google/Apple, esqueci a senha, nova senha, tutorial, personagem, escolha de história, criar/editar/excluir item, check e desfazer, categorias (criar, renomear, excluir), configurações (fuso, lembrete), excluir conta, sair, botões "Tentar de novo".
+- [ ] Nenhuma tela fica parada sem resposta depois de um toque. Se achar uma, é bloqueio.

@@ -12,6 +12,7 @@ import { useMe } from '@/api/queries';
 import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
 import { ProgressionModalHost } from '@/components/progression-modal-host';
+import { ToastHost } from '@/components/toast-host';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { useCheckSync } from '@/features/offline/use-check-sync';
 import { isOnboardingComplete } from '@/features/onboarding/next-step';
@@ -52,7 +53,11 @@ function Gate() {
     return (
       <Splash>
         <Text style={styles.error}>{t('auth.networkError')}</Text>
-        <Button label={t('items.retry')} onPress={() => void me.refetch()} />
+        <Button
+          label={t('items.retry')}
+          loading={me.isFetching}
+          onPress={() => void me.refetch()}
+        />
       </Splash>
     );
   }
@@ -157,6 +162,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <StatusBar style="light" />
       <Gate />
+      <ToastHost />
     </QueryClientProvider>
   );
 }
