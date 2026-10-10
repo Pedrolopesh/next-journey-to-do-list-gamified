@@ -10,6 +10,7 @@ import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
 import { TabScreen } from '@/components/tab-screen';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
+import { useAction } from '@/features/feedback/use-action';
 import { colors, radius, size, space } from '@/theme';
 
 function LinkRow({ label, href }: { label: string; href: Href }) {
@@ -34,14 +35,21 @@ export default function ProfileScreen() {
   const queryClient = useQueryClient();
   const { data: me } = useMe();
 
-  const signOut = async (): Promise<void> => {
-    const { refreshToken, clear } = useSessionStore.getState();
-    // Revoga a sessão no servidor (best effort) e limpa o aparelho de qualquer jeito
-    if (refreshToken) await logout(refreshToken).catch(() => undefined);
-    queryClient.clear();
-    useFeedbackStore.getState().clear();
-    await clear();
-  };
+  const { run, loading: signingOut } = useAction({
+    name: 'auth.logout',
+    success: t('auth.logoutSuccess'),
+    error: () => t('auth.genericError'),
+  });
+
+  const signOut = (): Promise<boolean> =>
+    run(async () => {
+      const { refreshToken, clear } = useSessionStore.getState();
+      // Revoga a sessão no servidor (best effort) e limpa o aparelho de qualquer jeito
+      if (refreshToken) await logout(refreshToken).catch(() => undefined);
+      queryClient.clear();
+      useFeedbackStore.getState().clear();
+      await clear();
+    });
 
   return (
     <TabScreen title={t('tabs.profile')} debug={false}>
@@ -65,7 +73,12 @@ export default function ProfileScreen() {
         <LinkRow label={t('profile.myStory')} href="/story/timeline" />
         <LinkRow label={t('profile.customize')} href="/settings/character" />
         <LinkRow label={t('profile.settings')} href="/settings" />
-        <Button label={t('auth.logout')} variant="secondary" onPress={() => void signOut()} />
+        <Button
+          label={t('auth.logout')}
+          variant="secondary"
+          loading={signingOut}
+          onPress={() => void signOut()}
+        />
       </ScrollView>
     </TabScreen>
   );

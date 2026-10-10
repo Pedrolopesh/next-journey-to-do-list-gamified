@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toApiError } from '@/api/errors';
 import { useCreateItem } from '@/api/queries';
 import { ItemForm } from '@/components/item-form';
+import { toast } from '@/features/feedback/toast-store';
 import { colors } from '@/theme';
 
 const TYPES: readonly string[] = ['daily', 'todo', 'habit'];
@@ -34,10 +35,13 @@ export default function NewItemScreen() {
           setError(null);
           create.mutate(body, {
             onSuccess: () => {
+              toast.success(t('itemForm.created'));
               router.back();
             },
             onError: (cause) => {
-              setError(toApiError(cause)?.message ?? t('itemForm.saveFailed'));
+              const message = toApiError(cause)?.message ?? t('itemForm.saveFailed');
+              setError(message);
+              toast.error(message);
             },
           });
         }}

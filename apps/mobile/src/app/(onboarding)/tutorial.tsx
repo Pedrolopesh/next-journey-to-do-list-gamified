@@ -8,6 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { patchMe } from '@/api/endpoints';
 import { queryKeys } from '@/api/queries';
 import { Button } from '@/components/button';
+import { describeError } from '@/features/feedback/error-message';
+import { useAction } from '@/features/feedback/use-action';
 import { nextOnboardingStep } from '@/features/onboarding/next-step';
 import { colors, space } from '@/theme';
 
@@ -20,22 +22,21 @@ export default function TutorialScreen() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [index, setIndex] = useState(0);
-  const [saving, setSaving] = useState(false);
+  const { run, loading: saving } = useAction({
+    name: 'onboarding.tutorial',
+    error: (error) => describeError(error, t),
+  });
   const last = index === SLIDES.length - 1;
   const slide = SLIDES[index] ?? SLIDES[0];
 
-  const finish = async (): Promise<void> => {
-    setSaving(true);
-    try {
+  const finish = (): Promise<boolean> =>
+    run(async () => {
       const me = await patchMe({ tutorialSeen: true });
       queryClient.setQueryData(queryKeys.me, me);
       const next = nextOnboardingStep(me.onboarding);
       if (next === 'character') router.replace('/character');
       else if (next === 'story') router.replace('/story');
-    } finally {
-      setSaving(false);
-    }
-  };
+    });
 
   return (
     <View

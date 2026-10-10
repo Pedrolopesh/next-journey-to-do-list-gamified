@@ -9,6 +9,7 @@ import { toApiError } from '@/api/errors';
 import { queryKeys, useStories } from '@/api/queries';
 import { Button } from '@/components/button';
 import { ErrorState, SkeletonList } from '@/components/states';
+import { toast } from '@/features/feedback/toast-store';
 import { colors, radius, space } from '@/theme';
 
 /** Escolha de 1 entre 5 histórias (RF-12). Ao escolher, o app libera as abas. */
@@ -28,8 +29,11 @@ export default function StoryScreen() {
     try {
       await chooseStory(selected);
       await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+      toast.success(t('story.saved'));
     } catch (cause) {
-      setError(toApiError(cause)?.message ?? t('story.saveFailed'));
+      const message = toApiError(cause)?.message ?? t('story.saveFailed');
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }

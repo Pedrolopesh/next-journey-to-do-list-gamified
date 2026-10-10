@@ -194,6 +194,20 @@ Pontos que a especificação deixava abertos. Cada um vira teste no módulo `pro
 
 ---
 
+### Regra transversal: nenhuma ação deixa o usuário no escuro
+
+**RN-FB (obrigatória em todo o aplicativo).** Toda ação que o usuário dispara (toque em botão, envio de formulário, login social, sair, excluir, salvar, reenviar) precisa responder na hora e terminar de forma visível:
+
+1. **Em andamento:** o botão mostra carregando (`loading`) e ignora toques repetidos, ou a tela mostra skeleton/indicador. Nunca fica parado sem reação.
+2. **Sucesso:** toast de sucesso, ou uma mudança de tela/estado óbvia (ex.: o item aparece marcado).
+3. **Erro:** toast de erro com texto claro (sem rede, regra violada, erro genérico), mais a mensagem junto do campo quando houver.
+4. **Validação reprovada:** o botão nunca "não faz nada": campos inválidos mostram mensagem e o toast avisa. Todo campo exigido pelo contrato precisa ter onde exibir o erro.
+5. **Sem rede:** avisar (toast) e, quando houver fila offline, dizer que foi guardado para enviar depois.
+
+Uma tela estática depois de um toque é defeito, mesmo que a lógica esteja certa. Implementação: `useAction` e `toast` em `apps/mobile/src/features/feedback`. Exceção: navegação puramente local e instantânea (voltar, abrir tela, trocar aba).
+
+**Esta regra é verificada em todas as telas antes de qualquer envio às lojas** (roteiro em `docs/QA.md`, seção "Portão da loja") e a cada PR que mexe em tela.
+
 ## 4. Requisitos não funcionais
 
 > A meta de desempenho mais importante é o **check responder na tela em menos de 100 ms**, com atualização otimista, mesmo que o servidor demore.
@@ -206,6 +220,7 @@ Pontos que a especificação deixava abertos. Cada um vira teste no módulo `pro
 | Armazenamento no aparelho | Tokens só no SecureStore (Keychain / Keystore); nada sensível no AsyncStorage. |
 | Privacidade (LGPD) | Aceite de Termos e Política no cadastro; exclusão de conta com remoção dos dados pessoais em até 30 dias; logs sem e-mail, senha ou token. |
 | Disponibilidade | 99,5% ao mês; backup diário do PostgreSQL com retenção de 7 dias. |
+| Feedback ao usuário | Regra RN-FB (seção 3): toda ação mostra carregando e termina em toast de sucesso ou erro; nenhuma tela fica estática depois de um toque. |
 | Observabilidade | Logs JSON estruturados com `requestId` no back-end; captura de erros com Sentry no back-end, no app e no front-end do banner. |
 | Datas e fuso | Tudo em UTC no banco; o "dia" do usuário é calculado no fuso IANA salvo no perfil (ex.: `America/Sao_Paulo`). |
 | Acessibilidade | Alvos de toque de 44 px ou mais; `accessibilityLabel` em botões de ícone; texto informativo com contraste mínimo de 4,5:1; suporte a fonte do sistema em até 130%. |

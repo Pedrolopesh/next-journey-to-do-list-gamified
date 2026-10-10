@@ -41,16 +41,19 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
 export function ErrorState({
   message,
   retryLabel,
+  retrying = false,
   onRetry,
 }: {
   message: string;
   retryLabel: string;
+  /** Mostra o botão carregando enquanto a nova tentativa roda. */
+  retrying?: boolean;
   onRetry: () => void;
 }) {
   return (
     <View style={styles.center} accessibilityLiveRegion="polite">
       <Text style={styles.title}>{message}</Text>
-      <Button label={retryLabel} variant="secondary" onPress={onRetry} />
+      <Button label={retryLabel} variant="secondary" loading={retrying} onPress={onRetry} />
     </View>
   );
 }

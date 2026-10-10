@@ -8,6 +8,7 @@ import { forgotPassword } from '@/api/endpoints';
 import { isNetworkError } from '@/api/errors';
 import { Button } from '@/components/button';
 import { TextField } from '@/components/text-field';
+import { toast } from '@/features/feedback/toast-store';
 import { colors, space } from '@/theme';
 
 /** Recuperação de senha (RF-05). A resposta é sempre a mesma, exista ou não o e-mail. */
@@ -24,14 +25,18 @@ export default function ForgotPasswordScreen() {
     const parsed = forgotPasswordRequestSchema.safeParse({ email: email.trim() });
     if (!parsed.success) {
       setError(t('auth.validation.emailInvalid'));
+      toast.error(t('auth.validation.emailInvalid'));
       return;
     }
     setSending(true);
     try {
       await forgotPassword(parsed.data);
       setSent(true);
+      toast.success(t('auth.linkSent'));
     } catch (cause) {
-      setError(isNetworkError(cause) ? t('auth.networkError') : t('auth.genericError'));
+      const message = isNetworkError(cause) ? t('auth.networkError') : t('auth.genericError');
+      setError(message);
+      toast.error(message);
     } finally {
       setSending(false);
     }

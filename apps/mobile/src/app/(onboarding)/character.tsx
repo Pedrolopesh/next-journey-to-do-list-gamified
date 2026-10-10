@@ -11,6 +11,7 @@ import { toApiError } from '@/api/errors';
 import { queryKeys } from '@/api/queries';
 import { BannerView, type BannerViewHandle, type InitMessage } from '@/banner/banner-view';
 import { CharacterForm } from '@/components/character-form';
+import { toast } from '@/features/feedback/toast-store';
 import { colors, space } from '@/theme';
 
 const PREVIEW_INIT: InitMessage = {
@@ -42,9 +43,12 @@ export default function CharacterScreen() {
       await putCharacter(character);
       await queryClient.invalidateQueries({ queryKey: queryKeys.me });
       const me = queryClient.getQueryData<{ onboarding: { hasStory: boolean } }>(queryKeys.me);
+      toast.success(t('character.saved'));
       if (!me?.onboarding.hasStory) router.replace('/story');
     } catch (cause) {
-      setError(toApiError(cause)?.message ?? t('character.saveFailed'));
+      const message = toApiError(cause)?.message ?? t('character.saveFailed');
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }

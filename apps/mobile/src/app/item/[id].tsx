@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toApiError } from '@/api/errors';
 import { useDeleteItem, useItems, useUpdateItem } from '@/api/queries';
 import { ItemForm } from '@/components/item-form';
+import { toast } from '@/features/feedback/toast-store';
 import { colors } from '@/theme';
 
 export default function EditItemScreen() {
@@ -48,10 +49,13 @@ export default function EditItemScreen() {
             { id: item.id, body },
             {
               onSuccess: () => {
+                toast.success(t('itemForm.updated'));
                 router.back();
               },
               onError: (cause) => {
-                setError(toApiError(cause)?.message ?? t('itemForm.saveFailed'));
+                const message = toApiError(cause)?.message ?? t('itemForm.saveFailed');
+                setError(message);
+                toast.error(message);
               },
             },
           );
@@ -60,10 +64,12 @@ export default function EditItemScreen() {
           setError(null);
           remove.mutate(item.id, {
             onSuccess: () => {
+              toast.success(t('itemForm.deleted'));
               router.back();
             },
             onError: () => {
               setError(t('itemForm.saveFailed'));
+              toast.error(t('itemForm.saveFailed'));
             },
           });
         }}
