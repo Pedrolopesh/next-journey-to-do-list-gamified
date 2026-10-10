@@ -7,6 +7,7 @@ import { AppState } from 'react-native';
 import { checkItem } from '@/api/endpoints';
 import { refreshGameData } from '@/api/queries';
 import { useSessionStore } from '@/auth/session-store';
+import { log } from '@/logging';
 
 import { backoffMs, flushQueue } from './check-queue';
 import { useOfflineStore } from './offline-store';
@@ -41,6 +42,12 @@ export function useCheckSync(): void {
         },
         statusOf,
       );
+      log.info('offline.flush', {
+        sent: result.sent.length,
+        dropped: result.dropped.length,
+        remaining: result.remaining.length,
+        attempt: attempt.current,
+      });
       remove([...result.sent, ...result.dropped].map((entry) => entry.checkId));
       if (result.sent.length + result.dropped.length > 0) refreshGameData(queryClient);
       attempt.current = result.remaining.length === 0 ? 0 : attempt.current + 1;
