@@ -1,4 +1,4 @@
-import { gradientRect, rect, rng, sky, tileArea } from './draw';
+import { gradientRect, rect, rng, sky, sprite, tileArea } from './draw';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_H, SCENE_W } from './types';
 
@@ -87,141 +87,77 @@ function hills(env: SceneEnv): void {
   }
 }
 
-function temple(env: SceneEnv, cx: number, base: number): void {
+function cabin(env: SceneEnv, cx: number, base: number): void {
   const { ctx } = env;
-  const stone = by(env.time, '#f6efe4', '#fffaf0', '#cfd6ee');
-  const shade = by(env.time, '#d3c8b8', '#d6ccbb', '#8f9ac0');
-  // degraus
-  rect(env, cx - 31, base - 3, 62, 3, OUT);
-  rect(env, cx - 30, base - 3, 60, 2, shade);
-  rect(env, cx - 27, base - 6, 54, 3, OUT);
-  rect(env, cx - 26, base - 6, 52, 2, stone);
-  // colunas
-  for (const dx of [-22, -8, 8, 22]) {
-    rect(env, cx + dx - 3, base - 30, 6, 24, OUT);
-    rect(env, cx + dx - 2, base - 29, 4, 22, stone);
-    rect(env, cx + dx + 1, base - 29, 1, 22, shade);
-    rect(env, cx + dx - 3, base - 32, 6, 3, stone);
+  const night = env.time === 'night';
+  const wood = by(env.time, '#a8743c', '#b27a40', '#8a5c30');
+  const woodDark = '#6b4424';
+  const woodLight = '#c99356';
+  const w = 50;
+  const h = 22;
+  const x = cx - w / 2;
+  const top = base - h;
+  // chaminé de pedra (atrás do telhado)
+  rect(env, cx + 12, top - 20, 9, 24, OUT);
+  rect(env, cx + 13, top - 19, 7, 22, '#8d8f98');
+  rect(env, cx + 13, top - 19, 2, 22, '#b4b6bf');
+  rect(env, cx + 11, top - 22, 11, 4, OUT);
+  rect(env, cx + 12, top - 21, 9, 2, '#6b6e78');
+  // paredes de toras
+  rect(env, x - 1, top - 1, w + 2, h + 2, OUT);
+  for (let i = 0; i < h; i += 4) {
+    rect(env, x, top + i, w, 4, wood);
+    rect(env, x, top + i, w, 1, woodLight);
+    rect(env, x, top + i + 3, w, 1, woodDark);
+    rect(env, x, top + i, 2, 4, woodDark);
+    rect(env, x + w - 2, top + i, 2, 4, woodDark);
   }
-  // viga e frontão triangular
-  rect(env, cx - 28, base - 35, 56, 5, OUT);
-  rect(env, cx - 27, base - 34, 54, 3, stone);
-  rect(env, cx - 27, base - 31, 54, 1, shade);
+  // porta
+  rect(env, x + 8, base - 14, 10, 14, OUT);
+  rect(env, x + 9, base - 13, 8, 13, '#5a3412');
+  rect(env, x + 9, base - 13, 1, 13, '#7a4a22');
+  rect(env, x + 15, base - 7, 1, 2, '#ffd35a');
+  // janela com luz
+  rect(env, x + 28, top + 5, 13, 11, OUT);
+  rect(env, x + 29, top + 6, 11, 9, night ? '#ffd980' : '#bfe6f0');
+  rect(env, x + 34, top + 6, 1, 9, OUT);
+  rect(env, x + 29, top + 10, 11, 1, OUT);
+  rect(env, x + 27, top + 15, 15, 2, woodDark);
+  // telhado
   ctx.fillStyle = OUT;
   ctx.beginPath();
-  ctx.moveTo(cx - 30, base - 35);
-  ctx.lineTo(cx, base - 52);
-  ctx.lineTo(cx + 30, base - 35);
+  ctx.moveTo(x - 6, top + 1);
+  ctx.lineTo(cx, top - 19);
+  ctx.lineTo(x + w + 6, top + 1);
   ctx.fill();
-  ctx.fillStyle = stone;
+  ctx.fillStyle = by(env.time, '#9a3a2a', '#a8402e', '#6a2a2a');
   ctx.beginPath();
-  ctx.moveTo(cx - 26, base - 36);
-  ctx.lineTo(cx, base - 49);
-  ctx.lineTo(cx + 26, base - 36);
+  ctx.moveTo(x - 4, top);
+  ctx.lineTo(cx, top - 17);
+  ctx.lineTo(x + w + 4, top);
   ctx.fill();
-  ctx.fillStyle = by(env.time, '#ffd35a', '#ffd35a', '#ffe9a0');
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  for (let r = 0; r < 4; r++) {
+    const y = top - 3 - r * 4;
+    const half = Math.round((w / 2 + 4) * (1 - (top - y) / 17));
+    ctx.fillRect(cx - half, y, half * 2, 1);
+  }
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
   ctx.beginPath();
-  ctx.arc(cx, base - 41, 3, 0, Math.PI * 2);
+  ctx.moveTo(x - 4, top);
+  ctx.lineTo(cx, top - 17);
+  ctx.lineTo(cx - 3, top - 17);
+  ctx.lineTo(x - 4, top);
   ctx.fill();
-  // flores subindo pelas colunas
-  for (const dx of [-22, 22]) {
-    for (let k = 0; k < 4; k++)
-      rect(env, cx + dx + (k % 2 ? 2 : -3), base - 10 - k * 5, 2, 2, '#ff8fb8');
-  }
-}
-
-/** Árvore de cerejeira: tronco e copa de bolas rosadas, com pétalas caindo. */
-function blossomTree(env: SceneEnv, x: number, base: number, scale: number): void {
-  const { ctx } = env;
-  const trunk = '#6b4a2a';
-  ctx.fillStyle = OUT;
-  ctx.fillRect(x - 5 * scale - 1, base - 46 * scale, 10 * scale + 2, 46 * scale + 1);
-  ctx.fillStyle = trunk;
-  ctx.fillRect(x - 5 * scale, base - 46 * scale, 10 * scale, 46 * scale);
-  ctx.fillStyle = '#8a643c';
-  ctx.fillRect(x - 5 * scale, base - 46 * scale, 3 * scale, 46 * scale);
-  const pink = by(env.time, '#ffb3cf', '#ffc2d8', '#9a7fb8');
-  const light = by(env.time, '#ffd6e6', '#ffe0ec', '#c6aadc');
-  const dark = by(env.time, '#e88ab0', '#f09ab9', '#6f5a90');
-  const puffs: [number, number, number][] = [
-    [-26, -66, 16],
-    [0, -78, 20],
-    [26, -66, 16],
-    [-14, -54, 15],
-    [14, -54, 15],
-    [-34, -50, 11],
-    [34, -50, 11],
-  ];
-  for (const [dx, dy, r] of puffs) {
-    ctx.fillStyle = dark;
+  // fumaça subindo da chaminé
+  const smoke = by(env.time, 'rgba(240,240,244,', 'rgba(250,250,252,', 'rgba(190,200,230,');
+  for (let i = 0; i < 6; i++) {
+    const age = (((env.t * 0.35 + i / 6) % 1) + 1) % 1;
+    const sx = cx + 16.5 + Math.sin(env.t * 0.9 + i * 1.7) * 2 + age * 12;
+    const sy = top - 24 - age * 34;
+    ctx.fillStyle = `${smoke}${(0.7 * (1 - age)).toFixed(2)})`;
     ctx.beginPath();
-    ctx.arc(x + dx * scale, base + (dy + 3) * scale, r * scale, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  for (const [dx, dy, r] of puffs) {
-    ctx.fillStyle = pink;
-    ctx.beginPath();
-    ctx.arc(x + dx * scale, base + dy * scale, r * scale, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  const random = rng(Math.round(x));
-  ctx.fillStyle = light;
-  for (let i = 0; i < 30; i++) {
-    const [dx, dy, r] = puffs[i % puffs.length] ?? puffs[0] ?? [0, 0, 1];
-    const a = random() * Math.PI * 2;
-    const d = random() * r * 0.8;
-    ctx.fillRect(
-      Math.round(x + (dx + Math.cos(a) * d) * scale),
-      Math.round(base + (dy + Math.sin(a) * d) * scale),
-      2,
-      2,
-    );
-  }
-  // pétalas caindo
-  for (let i = 0; i < 8; i++) {
-    const fall = (env.t * (8 + (i % 3) * 3) + i * 17) % 70;
-    const px = x - 34 * scale + ((i * 23) % 70) * scale + Math.sin(env.t * 1.5 + i) * 4;
-    rect(env, px, base - 60 * scale + fall, 2, 1, light);
-  }
-}
-
-function leafyTree(env: SceneEnv, x: number, base: number, scale: number): void {
-  const { ctx } = env;
-  ctx.fillStyle = OUT;
-  ctx.fillRect(x - 3 * scale - 1, base - 26 * scale, 6 * scale + 2, 27 * scale);
-  ctx.fillStyle = '#6b4a2a';
-  ctx.fillRect(x - 3 * scale, base - 26 * scale, 6 * scale, 26 * scale);
-  const green = by(env.time, '#4fb35d', '#46b857', '#1f5a46');
-  const dark = by(env.time, '#2f8a47', '#2a8f44', '#143d33');
-  const light = by(env.time, '#8fe08a', '#9ae892', '#3c8a63');
-  const puffs: [number, number, number][] = [
-    [-14, -40, 14],
-    [10, -48, 16],
-    [16, -34, 13],
-    [-4, -32, 14],
-  ];
-  for (const [dx, dy, r] of puffs) {
-    ctx.fillStyle = dark;
-    ctx.beginPath();
-    ctx.arc(x + dx * scale, base + (dy + 3) * scale, r * scale, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  for (const [dx, dy, r] of puffs) {
-    ctx.fillStyle = green;
-    ctx.beginPath();
-    ctx.arc(x + dx * scale, base + dy * scale, r * scale, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.fillStyle = light;
-  for (const [dx, dy, r] of puffs) {
-    ctx.beginPath();
-    ctx.arc(
-      x + (dx - r * 0.3) * scale,
-      base + (dy - r * 0.35) * scale,
-      r * 0.35 * scale,
-      0,
-      Math.PI * 2,
-    );
+    ctx.arc(sx, sy, 2 + age * 5, 0, Math.PI * 2);
     ctx.fill();
   }
 }
@@ -400,7 +336,8 @@ function fireflies(env: SceneEnv): void {
 export const paradise: SceneDef = {
   id: 'paradise',
   name: 'Paraíso',
-  blurb: 'Campo florido com lago e lótus, templo ao longe, cerejeira, arco-íris e borboletas.',
+  blurb:
+    'Campo florido com lago e lótus, cabana com fumaça na chaminé, pinheiros, arco-íris e borboletas.',
   groundY: 180,
   back(env) {
     sky(env, 0, 0, SCENE_W, HORIZON + 8);
@@ -412,17 +349,19 @@ export const paradise: SceneDef = {
       for (let i = 0; i < 4; i++) rect(env, 70 + i * 70, 0, 12, HORIZON, 'rgba(255,255,220,0.08)');
     }
     hills(env);
-    temple(env, 232, HORIZON + 22);
+    cabin(env, 222, HORIZON + 24);
     // campo e névoa suave no horizonte
     tileArea(env, env.tiles.grass, 0, 160, 0, HORIZON + 24, SCENE_W, SCENE_H - HORIZON - 24);
     gradientRect(env, 0, HORIZON + 22, SCENE_W, 36, [
       by(env.time, 'rgba(255,240,220,0.35)', 'rgba(255,255,240,0.28)', 'rgba(120,150,220,0.18)'),
       'rgba(255,255,255,0)',
     ]);
-    leafyTree(env, 360, HORIZON + 40, 0.9);
+    // Árvores (pinheiros e arbustos do pacote)
+    sprite(env, env.tiles.treetop, 4, 101, 85, 107, 276, 52);
+    sprite(env, env.tiles.treetop, 102, 101, 85, 107, 332, 78);
+    sprite(env, env.tiles.treetop, 1, 0, 94, 96, 290, 128);
     lake(env);
     flowers(env);
-    blossomTree(env, 318, 176, 1);
     butterflies(env);
     fireflies(env);
   },
@@ -431,7 +370,7 @@ export const paradise: SceneDef = {
       { x: 304, y: 30, radius: 300, color: [160, 190, 255], intensity: 0.34 },
       { x: 195, y: 150, radius: 230, color: [150, 190, 240], intensity: 0.26 },
       { x: LAKE.cx, y: LAKE.cy, radius: 70, color: [140, 230, 255], intensity: 0.4 },
-      { x: 232, y: HORIZON, radius: 60, color: [255, 240, 190], intensity: 0.3 },
+      { x: 222 + 4, y: HORIZON + 14, radius: 40, color: [255, 210, 120], intensity: 0.7 },
     ];
     for (let i = 0; i < 16; i++) {
       const f = fireflyPos(i, env.t);
