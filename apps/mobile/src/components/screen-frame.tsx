@@ -36,7 +36,7 @@ export function ScreenFrame({ title, children, scroll = true, canGoBack = true }
         </Text>
       </View>
       <Body style={styles.body} {...(scroll ? { contentContainerStyle: styles.content } : {})}>
-        {scroll ? children : <View style={styles.content}>{children}</View>}
+        {scroll ? children : <View style={[styles.content, styles.fill]}>{children}</View>}
       </Body>
     </View>
   );
@@ -65,5 +65,6 @@ const styles = StyleSheet.create({
     paddingLeft: space[8],
   },
   body: { flex: 1 },
+  fill: { flex: 1 },
   content: { padding: space.screenMargin, gap: space[12], paddingBottom: space[40] },
 });

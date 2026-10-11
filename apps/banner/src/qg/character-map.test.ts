@@ -63,4 +63,20 @@ describe('seleção LPC a partir das camadas do app', () => {
     expect(selection).toEqual(look);
     expect(layersFor(data, selection).length).toBeGreaterThan(3);
   });
+
+  it('a roupa de conquista sobrepõe a roupa do look, o resto do look continua', () => {
+    const look = {
+      ...selectionFromLayers({ skin: 'light', hair: 'bald', outfit: 'x' }),
+      hairColor: 'blonde',
+    };
+    const selection = selectionFromLayers({
+      skin: 'light',
+      hair: 'bald',
+      outfit: 'outfit-cape',
+      look,
+    });
+    expect(selection.torso).toBe('torso-cardigan');
+    expect(selection.torsoColor).toBe('red');
+    expect(selection.hairColor).toBe('blonde');
+  });
 });

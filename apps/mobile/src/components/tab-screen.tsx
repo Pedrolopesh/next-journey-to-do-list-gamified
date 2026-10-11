@@ -5,13 +5,23 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { chapterProgress, useMe } from '@/api/queries';
-import { BannerView, type BannerViewHandle, type InitMessage } from '@/banner/banner-view';
+import {
+  BannerView,
+  type BannerViewHandle,
+  type InitMessage,
+  QG_ASPECT_RATIO,
+} from '@/banner/banner-view';
+import { characterLayers } from '@/features/qg/character-layers';
+import { useQgPrefs } from '@/features/qg/qg-store';
+import { useTimeOfDay } from '@/features/qg/use-time-of-day';
 import { colors, radius, size, space } from '@/theme';
 
 const CHECK_STEP = 0.2;
 
 type Props = {
   title: string;
+  /** Cena do banner: `map` (corrida das abas) ou `qg` (cenário da Home). */
+  scene?: 'map' | 'qg';
   /** O dono da tela pode enviar mensagens ao banner (ex.: ITEM_CHECKED depois de um check). */
   bannerRef?: RefObject<BannerViewHandle | null>;
   /** Mensagens do banner (ex.: CHAPTER_TRANSITION_DONE abre o modal do capítulo). */
@@ -22,29 +32,47 @@ type Props = {
 };
 
 /** Tela das abas: banner no topo (posição real do capítulo) e o conteúdo da aba embaixo. */
-export function TabScreen({ title, bannerRef, onBannerMessage, debug = true, children }: Props) {
+export function TabScreen({
+  title,
+  scene = 'map',
+  bannerRef,
+  onBannerMessage,
+  debug = true,
+  children,
+}: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const ownRef = useRef<BannerViewHandle>(null);
   const banner = bannerRef ?? ownRef;
   const { data: me } = useMe();
+  const { scenario, timeMode } = useQgPrefs();
+  const qgTime = useTimeOfDay(timeMode);
   const [simProgress, setSimProgress] = useState(0);
   const [lastEvent, setLastEvent] = useState('-');
 
-  // INIT com a posição real do capítulo (cena Mapa); os dados de personagem são fixos até a Fase 5
+  // INIT: no Mapa, a posição real do capítulo; no QG, o cenário e a hora escolhidos e o personagem salvo
   const initMessage = useMemo<InitMessage>(
     () => ({
       v: 1,
       type: 'INIT',
-      payload: {
-        scene: 'map',
-        character: { skin: 'light', hair: 'short-brown', outfit: 'tunic-purple' },
-        sceneKey: `story-1-chapter-${me?.player.story.chapter ?? 1}`,
-        progress: chapterProgress(me),
-        timeOfDay: 'night',
-      },
+      payload:
+        scene === 'qg'
+          ? {
+              scene: 'qg',
+              character: characterLayers(me?.character ?? null),
+              sceneKey: scenario,
+              progress: chapterProgress(me),
+              timeOfDay: qgTime,
+            }
+          : {
+              scene: 'map',
+              character: characterLayers(me?.character ?? null),
+              sceneKey: `story-1-chapter-${me?.player.story.chapter ?? 1}`,
+              progress: chapterProgress(me),
+              timeOfDay: 'night',
+            },
     }),
-    [me],
+    [me, scene, scenario, qgTime],
   );
 
   const handleBannerMessage = useCallback(
@@ -72,7 +100,12 @@ export function TabScreen({ title, bannerRef, onBannerMessage, debug = true, chi
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <BannerView ref={banner} initMessage={initMessage} onMessage={handleBannerMessage} />
+      <BannerView
+        ref={banner}
+        initMessage={initMessage}
+        onMessage={handleBannerMessage}
+        {...(scene === 'qg' ? { aspectRatio: QG_ASPECT_RATIO } : {})}
+      />
       <View style={styles.body}>
         {children ?? (
           <>

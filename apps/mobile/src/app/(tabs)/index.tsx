@@ -1,13 +1,15 @@
 import type { Item } from '@nextjourney/contracts';
 import { useRouter } from 'expo-router';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useHome, useMe } from '@/api/queries';
 import type { BannerViewHandle } from '@/banner/banner-view';
+import { Button } from '@/components/button';
 import { ExpToast } from '@/components/exp-toast';
 import { ItemRow } from '@/components/item-row';
+import { QgControls } from '@/components/qg-controls';
 import { EmptyState, ErrorState, SkeletonList } from '@/components/states';
 import { TabScreen } from '@/components/tab-screen';
 import { useCheckFlow } from '@/features/check/use-check-flow';
@@ -30,6 +32,7 @@ export default function HomeScreen() {
   const todoFlow = useCheckFlow({ type: 'todo', bannerRef: banner });
   const home = useHome();
   const { data: me } = useMe();
+  const [showEnvironment, setShowEnvironment] = useState(false);
 
   const flowFor = (item: Item) => (item.type === 'todo' ? todoFlow : dailyFlow);
   const error = dailyFlow.error ?? todoFlow.error;
@@ -38,6 +41,7 @@ export default function HomeScreen() {
   return (
     <TabScreen
       title={t('tabs.home')}
+      scene="qg"
       bannerRef={banner}
       debug={false}
       onBannerMessage={(message) => {
@@ -60,6 +64,28 @@ export default function HomeScreen() {
         <Text style={styles.greeting} accessibilityRole="header">
           {t('home.greeting', { name: me?.user.name ?? '' })}
         </Text>
+
+        <View style={styles.qgActions}>
+          <View style={styles.qgAction}>
+            <Button
+              label={showEnvironment ? t('qg.hide') : t('qg.show')}
+              variant="secondary"
+              onPress={() => {
+                setShowEnvironment((open) => !open);
+              }}
+            />
+          </View>
+          <View style={styles.qgAction}>
+            <Button
+              label={t('qg.character')}
+              variant="secondary"
+              onPress={() => {
+                router.push('/settings/character');
+              }}
+            />
+          </View>
+        </View>
+        {showEnvironment ? <QgControls /> : null}
 
         {home.isPending ? (
           <SkeletonList rows={2} />
@@ -147,6 +173,8 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   content: { gap: space[12], paddingBottom: space[40] },
   greeting: { color: colors.text.primary, fontSize: 20, fontWeight: '600' },
+  qgActions: { flexDirection: 'row', gap: space[8] },
+  qgAction: { flex: 1 },
   counters: { flexDirection: 'row', gap: space[8] },
   counter: {
     flex: 1,

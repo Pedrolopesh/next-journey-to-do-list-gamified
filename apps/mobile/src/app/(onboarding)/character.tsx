@@ -1,7 +1,7 @@
-import type { Character } from '@nextjourney/contracts';
+import type { Character, CharacterLayers } from '@nextjourney/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,21 +9,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { putCharacter } from '@/api/endpoints';
 import { toApiError } from '@/api/errors';
 import { queryKeys } from '@/api/queries';
-import { BannerView, type BannerViewHandle, type InitMessage } from '@/banner/banner-view';
 import { CharacterForm } from '@/components/character-form';
+import { CharacterPreview } from '@/components/character-preview';
 import { toast } from '@/features/feedback/toast-store';
+import { DEFAULT_LOOK, legacyHair, legacySkin } from '@/features/qg/options';
 import { colors, space } from '@/theme';
 
-const PREVIEW_INIT: InitMessage = {
-  v: 1,
-  type: 'INIT',
-  payload: {
-    scene: 'map',
-    character: { skin: 'light', hair: 'short-brown', outfit: 'tunic-purple' },
-    sceneKey: 'preview',
-    progress: 0.5,
-    timeOfDay: 'night',
-  },
+const START_LAYERS = {
+  skin: legacySkin(DEFAULT_LOOK.skin),
+  hair: legacyHair(DEFAULT_LOOK.hair),
+  outfit: 'tunic-purple',
+  look: DEFAULT_LOOK,
 };
 
 /** Criação do personagem (RF-11) com a prévia animada no banner. */
@@ -32,7 +28,7 @@ export default function CharacterScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const preview = useRef<BannerViewHandle>(null);
+  const [layers, setLayers] = useState<CharacterLayers>(START_LAYERS);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +52,7 @@ export default function CharacterScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <BannerView ref={preview} initMessage={PREVIEW_INIT} />
+      <CharacterPreview layers={layers} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <CharacterForm
           initial={null}
@@ -64,9 +60,7 @@ export default function CharacterScreen() {
           submitting={saving}
           error={error}
           onSubmit={(character) => void save(character)}
-          onPreview={(character) => {
-            preview.current?.send({ v: 1, type: 'SET_CHARACTER', payload: { character } });
-          }}
+          onPreview={setLayers}
         />
       </ScrollView>
     </View>

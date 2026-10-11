@@ -17,6 +17,8 @@ import { shouldPlay } from './playback';
 
 /** Banner 390 x 180 (cena Mapa das abas) */
 const ASPECT_RATIO = 390 / 180;
+/** Banner 390 x 220 (cena QG da Home) */
+export const QG_ASPECT_RATIO = 390 / 220;
 /** Se o banner não mandar READY neste prazo, o app mostra o fallback estático. */
 const READY_TIMEOUT_MS = 2000;
 
@@ -28,6 +30,8 @@ export type BannerViewHandle = {
 };
 
 type Props = {
+  /** Proporção da área do banner (padrão: a cena Mapa). */
+  aspectRatio?: number;
   /** Enviada ao banner assim que ele avisa READY. */
   initMessage: InitMessage;
   /** Mensagens válidas vindas do banner (READY, CHAPTER_TRANSITION_DONE, ERROR). */
@@ -42,7 +46,7 @@ async function loadBannerHtml(): Promise<string> {
 }
 
 export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerView(
-  { initMessage, onMessage },
+  { initMessage, onMessage, aspectRatio = ASPECT_RATIO },
   ref,
 ) {
   const { t } = useTranslation();
@@ -131,7 +135,11 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
   );
 
   return (
-    <View style={styles.container} accessibilityElementsHidden importantForAccessibility="no">
+    <View
+      style={[styles.container, { aspectRatio }]}
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+    >
       {html !== null && (
         <WebView
           ref={webViewRef}
@@ -168,7 +176,6 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    aspectRatio: ASPECT_RATIO,
     backgroundColor: colors.bg.sunken,
     overflow: 'hidden',
   },

@@ -12,6 +12,7 @@
 
 ## 3. Próximo PR (app)
 
-- [ ] 3.1 Home envia `INIT` do QG, hora do relógio e personagem
-- [ ] 3.2 Escolha do cenário em Configurações (com feedback RN-FB)
-- [ ] 3.3 Créditos LPC na tela Créditos
+- [x] 3.1 Home envia `INIT` do QG, hora do relógio e personagem
+- [x] 3.2 Escolha do cenário e da hora (Home e formulário do personagem, com toast)
+- [x] 3.2b Aparência LPC completa (`character.look`: contrato, API com migration, formulário e banner)
+- [x] 3.3 Créditos LPC na tela Créditos
