@@ -1,0 +1,144 @@
+import '../styles/qg.css';
+
+import type { CharacterLayers } from '@nextjourney/contracts';
+
+import { catalog, loadTiles, sheetSrc } from './assets';
+import { selectionFromLayers } from './character-map';
+import { createQgEngine, type QgEngine } from './engine';
+import { SCENES } from './scenes';
+import type { TimeOfDay } from './scenes/types';
+
+export const QG_DEFAULT_SCENE = 'cabin';
+const QG_FADE_MS = 500;
+const CELEBRATE_MS = 1500;
+
+export type QgScene = {
+  /** Mostra o QG (esconde o Mapa) e começa a animar. */
+  show: () => void;
+  /** Esconde o QG e para o laço de animação. */
+  hide: () => void;
+  setScene: (sceneId: string) => void;
+  setTime: (time: TimeOfDay) => void;
+  setCharacter: (layers: CharacterLayers) => void;
+  /** Check feito: o personagem comemora por alguns instantes. */
+  celebrate: () => void;
+  pause: () => void;
+  resume: () => void;
+  fadeOut: () => void;
+  fadeIn: () => void;
+};
+
+export function isQgSceneId(id: string): boolean {
+  return SCENES.some((scene) => scene.id === id);
+}
+
+/**
+ * Cena do QG (Home): cenário em canvas com o personagem LPC. O motor só é criado (e a arte só é
+ * decodificada) na primeira vez que o QG é mostrado, para as abas com o Mapa não pagarem por isso.
+ */
+export function createQgScene(root: HTMLElement): QgScene {
+  const host = document.createElement('div');
+  host.className = 'qg';
+  const canvas = document.createElement('canvas');
+  canvas.className = 'qg-canvas';
+  const fade = document.createElement('div');
+  fade.className = 'qg-fade';
+  host.append(canvas, fade);
+  root.append(host);
+
+  let engine: QgEngine | null = null;
+  let loading: Promise<void> | null = null;
+  let visible = false;
+  let paused = false;
+  let celebrateTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const pending = {
+    sceneId: QG_DEFAULT_SCENE,
+    time: 'afternoon' as TimeOfDay,
+    layers: null as CharacterLayers | null,
+  };
+
+  const apply = (): void => {
+    if (!engine) return;
+    engine.state.sceneId = isQgSceneId(pending.sceneId) ? pending.sceneId : QG_DEFAULT_SCENE;
+    engine.state.time = pending.time;
+    if (pending.layers) engine.state.selection = selectionFromLayers(pending.layers);
+  };
+
+  const ensureEngine = (): void => {
+    if (engine || loading) return;
+    loading = loadTiles().then(async (tiles) => {
+      const created = createQgEngine({
+        canvas,
+        catalog,
+        tiles,
+        sheetSrc,
+        initial: {
+          selection: selectionFromLayers(
+            pending.layers ?? { skin: 'light', hair: 'short-brown', outfit: 'tunic-purple' },
+          ),
+          anim: 'idle',
+          direction: 'down',
+          sceneId: QG_DEFAULT_SCENE,
+          time: 'afternoon',
+        },
+        maxFps: 30,
+        maxScale: 3,
+      });
+      engine = created;
+      apply();
+      await created.ready();
+      if (visible && !paused) created.start();
+    });
+  };
+
+  return {
+    show() {
+      visible = true;
+      root.dataset.scene = 'qg';
+      ensureEngine();
+      engine?.resize();
+      if (!paused) engine?.start();
+    },
+    hide() {
+      visible = false;
+      engine?.pause();
+    },
+    setScene(sceneId) {
+      pending.sceneId = sceneId;
+      apply();
+    },
+    setTime(time) {
+      pending.time = time;
+      apply();
+    },
+    setCharacter(layers) {
+      pending.layers = layers;
+      apply();
+    },
+    celebrate() {
+      if (!engine) return;
+      engine.state.anim = 'run';
+      clearTimeout(celebrateTimer);
+      celebrateTimer = setTimeout(() => {
+        if (engine) engine.state.anim = 'idle';
+      }, CELEBRATE_MS);
+    },
+    pause() {
+      paused = true;
+      engine?.pause();
+    },
+    resume() {
+      paused = false;
+      if (visible) engine?.start();
+    },
+    fadeOut() {
+      fade.classList.add('visible');
+    },
+    fadeIn() {
+      fade.classList.remove('visible');
+    },
+  };
+}
+
+export { QG_FADE_MS };

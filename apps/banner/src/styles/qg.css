@@ -1,0 +1,43 @@
+/*
+ * Cena "QG" (Home): canvas 390x220 desenhado por src/qg. Fica escondida enquanto a cena Mapa está ativa.
+ */
+.qg {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+.banner[data-scene='qg'] {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  aspect-ratio: 390 / 220;
+  image-rendering: auto;
+}
+
+.banner[data-scene='qg'] .scene {
+  display: none;
+}
+
+.banner[data-scene='qg'] .qg {
+  display: block;
+}
+
+.qg-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.qg-fade {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.qg-fade.visible {
+  opacity: 1;
+}

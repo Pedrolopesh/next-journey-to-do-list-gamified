@@ -1,13 +1,16 @@
 import { listenToApp, sendToApp } from './bridge';
 import { createBannerController } from './controller';
+import { createQgScene } from './qg/scene';
 import { createMapScene } from './scene/map';
 
 const root = document.getElementById('banner');
 if (!root) throw new Error('Elemento #banner não encontrado');
 
 const scene = createMapScene(root);
+const qg = createQgScene(root);
 const controller = createBannerController({
   scene,
+  qg,
   root,
   send: sendToApp,
   bannerVersion: __BANNER_VERSION__,
