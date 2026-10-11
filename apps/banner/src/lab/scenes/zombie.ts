@@ -15,10 +15,13 @@ const SKY_BY_TIME: Record<TimeOfDay, string[]> = {
   night: ['#03061a', '#0a1236', '#18255a', '#3a3050'],
 };
 
+/** Postes nos cantos da frente da cerca, com a lâmpada virada para os zumbis de fora. */
 const LAMPS: Lamp[] = [
-  { x: 146, baseY: 182, h: 76, dir: 1 },
-  { x: 244, baseY: 182, h: 76, dir: -1 },
+  { x: 72, baseY: 198, h: 84, dir: -1 },
+  { x: 318, baseY: 198, h: 84, dir: 1 },
 ];
+const CROWD_X = [40, SCENE_W - 40];
+const CROWD_FEET = 188;
 
 type Panel = { ax: number; ay: number; ah: number; bx: number; by: number; bh: number };
 
@@ -515,10 +518,6 @@ export const zombie: SceneDef = {
     // cerca dos fundos
     fence(env, BACK, 42);
 
-    // postes de iluminação que acendem à noite
-    for (const lamp of LAMPS) drawLampPost(env, lamp);
-    drawLampCones(env, LAMPS, SCENE_W / 2, 182);
-
     // suprimentos dentro da base
     crate(env, 104, 192, 14);
     crate(env, 118, 192, 12);
@@ -531,6 +530,11 @@ export const zombie: SceneDef = {
     // cercas laterais por cima dos zumbis e placas de perigo
     fence(env, LEFT, 38);
     fence(env, RIGHT, 38);
+    // postes dos cantos: a luz cai sobre os zumbis de fora
+    LAMPS.forEach((lamp, i) => {
+      drawLampPost(env, lamp);
+      drawLampCones(env, [lamp], CROWD_X[i] ?? 0, CROWD_FEET);
+    });
     sign(env, 100, 140);
     sign(env, 290, 140);
     sign(env, LEFT.bx + 6, LEFT.by - LEFT.bh - 14);
@@ -566,7 +570,10 @@ export const zombie: SceneDef = {
     const heli = heliPos(env.t);
     return [
       ...lights,
-      ...lampLights(LAMPS, SCENE_W / 2, 182),
+      ...LAMPS.flatMap((lamp, i) => lampLights([lamp], CROWD_X[i] ?? 0, CROWD_FEET)),
+      // luar sobre toda a base
+      { x: 304, y: 34, radius: 320, color: [160, 175, 255], intensity: 0.34 },
+      { x: 195, y: 150, radius: 240, color: [150, 165, 240], intensity: 0.28 },
       // holofotes nos postes dos cantos e lâmpada do hangar
       { x: 90, y: 130, radius: 55, color: [255, 235, 170], intensity: 0.5 },
       { x: 300, y: 130, radius: 55, color: [255, 235, 170], intensity: 0.5 },
@@ -580,6 +587,6 @@ export const zombie: SceneDef = {
   tint: {
     morning: { color: '#ffc89a', alpha: 0.2 },
     afternoon: { color: '#fff0c0', alpha: 0.1 },
-    night: { color: '#27386b', alpha: 0.6 },
+    night: { color: '#3a4f95', alpha: 0.4 },
   },
 };

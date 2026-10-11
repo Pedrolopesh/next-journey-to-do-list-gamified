@@ -1,5 +1,4 @@
 import { bands, gradientRect, rect, rng, sky, tileArea } from './draw';
-import { drawLampCones, drawLampPost, type Lamp, lampLights } from './lampposts';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_W } from './types';
 
@@ -580,11 +579,6 @@ function stringLights(env: SceneEnv): void {
   }
 }
 
-const LAMPS: Lamp[] = [
-  { x: 158, baseY: 188, h: 74, dir: 1 },
-  { x: 232, baseY: 188, h: 74, dir: -1 },
-];
-
 export const rooftop: SceneDef = {
   id: 'rooftop',
   name: 'Topo do prédio',
@@ -600,8 +594,6 @@ export const rooftop: SceneDef = {
     stringLights(env);
     // Espreguiçadeira virada para o sol (manhã: à esquerda; tarde e noite: à direita)
     lounger(env, 104, 192, env.time === 'morning' ? -1 : 1);
-    for (const lamp of LAMPS) drawLampPost(env, lamp);
-    drawLampCones(env, LAMPS, SCENE_W / 2, 190);
     // Vasos grandes com plantas
     pot(env, 334, 192, 26, 24, {
       base: '#c8693a',
@@ -630,7 +622,8 @@ export const rooftop: SceneDef = {
         intensity: Math.sin(env.t * 4) > 0 ? 0.6 : 0.05,
         at: ['night', 'morning', 'afternoon'],
       },
-      { x: 195, y: 150, radius: 150, color: [120, 140, 255], intensity: 0.16, at: ['night'] },
+      { x: 304, y: 30, radius: 300, color: [150, 175, 255], intensity: 0.34, at: ['night'] },
+      { x: 195, y: 150, radius: 230, color: [140, 165, 240], intensity: 0.3, at: ['night'] },
     ];
     BULBS.forEach((b, i) => {
       const twinkle = 0.55 + 0.45 * Math.sin(env.t * 2.2 + i * 1.7);
@@ -651,12 +644,11 @@ export const rooftop: SceneDef = {
         at: ['night'],
       });
     });
-    out.push(...lampLights(LAMPS, SCENE_W / 2, 190));
     return out;
   },
   tint: {
     morning: { color: '#ffd2b0', alpha: 0.22 },
     afternoon: { color: '#fffdf0', alpha: 0.04 },
-    night: { color: '#2b3a88', alpha: 0.5 },
+    night: { color: '#3b4fa0', alpha: 0.34 },
   },
 };

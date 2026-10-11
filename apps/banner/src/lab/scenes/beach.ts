@@ -1,5 +1,4 @@
 import { bands, flame, gradientRect, rect, rng, sky, tileArea } from './draw';
-import { drawLampCones, drawLampPost, type Lamp, lampLights } from './lampposts';
 import type { SceneDef, SceneEnv } from './types';
 import { SCENE_W } from './types';
 
@@ -199,11 +198,6 @@ function palm(env: SceneEnv, x: number, baseY: number, lean: number): void {
   }
 }
 
-const LAMPS: Lamp[] = [
-  { x: 172, baseY: 184, h: 74, dir: 1 },
-  { x: 218, baseY: 184, h: 74, dir: -1 },
-];
-
 export const beach: SceneDef = {
   id: 'beach',
   name: 'Praia',
@@ -251,8 +245,6 @@ export const beach: SceneDef = {
     towel(env, 70, 178, 58, 17);
     cooler(env, 142, 180);
     beachChair(env, 306, 196);
-    for (const lamp of LAMPS) drawLampPost(env, lamp);
-    drawLampCones(env, LAMPS, SCENE_W / 2, 176);
     // Fogueirinha à noite
     if (env.time === 'night') {
       rect(env, 252, 196, 14, 3, '#5a3412');
@@ -261,11 +253,13 @@ export const beach: SceneDef = {
   },
   lights: () => [
     { x: 259, y: 194, radius: 80, color: [255, 150, 60], intensity: 0.6, flicker: true },
-    ...lampLights(LAMPS, SCENE_W / 2, 176),
+    // Luar: ilumina o céu, o mar e a areia
+    { x: 304, y: 30, radius: 300, color: [150, 175, 255], intensity: 0.38 },
+    { x: 195, y: 150, radius: 230, color: [140, 165, 240], intensity: 0.3 },
   ],
   tint: {
     morning: { color: '#ffd9b3', alpha: 0.22 },
     afternoon: { color: '#fffbe8', alpha: 0.05 },
-    night: { color: '#3a4aa0', alpha: 0.55 },
+    night: { color: '#4a62b8', alpha: 0.36 },
   },
 };
