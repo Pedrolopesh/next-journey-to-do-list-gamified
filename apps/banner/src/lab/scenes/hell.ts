@@ -19,8 +19,10 @@ const BRAZIERS = [124, 266] as const;
 const BRAZIER_BASE = 162;
 const CX = SCENE_W / 2;
 const DAIS_TOP = 146;
-const LAKE = { cx: 70, cy: 186, rx: 62, ry: 22 };
-const GEYSER = { x: LAKE.cx + 6, phase: 0 };
+/** Lago de lava ao fundo, à direita (como o lago do terraço). */
+const LAKE = { x0: 206, top: HORIZON, bottom: 154 };
+const GEYSER = { x: 338, phase: 0 };
+const GEYSER_BASE = 146;
 const VOLCANO = { x: 112, peak: 62 };
 
 /** Altura atual do gêiser (0 quando está quieto). */
@@ -137,35 +139,66 @@ function volcano(env: SceneEnv): void {
 
 function lavaLake(env: SceneEnv): void {
   const { ctx } = env;
-  const path = (grow = 0): void => {
+  const shore: [number, number][] = [
+    [LAKE.x0, LAKE.top],
+    [LAKE.x0 - 6, 136],
+    [LAKE.x0 + 10, 148],
+    [LAKE.x0 + 44, LAKE.bottom - 2],
+    [LAKE.x0 + 90, LAKE.bottom],
+    [SCENE_W, LAKE.bottom + 3],
+    [SCENE_W, LAKE.top],
+  ];
+  const path = (): void => {
     ctx.beginPath();
-    ctx.ellipse(LAKE.cx, LAKE.cy, LAKE.rx + grow, LAKE.ry + grow * 0.6, 0, 0, Math.PI * 2);
+    shore.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
+    ctx.closePath();
   };
-  // borda de rocha escura com brilho
-  path(4);
-  ctx.fillStyle = OUT;
-  ctx.fill();
-  path(2);
-  ctx.fillStyle = by(env.time, '#4a1a14', '#2a0e0c');
-  ctx.fill();
-  path(1);
-  ctx.fillStyle = '#ff9a3c';
-  ctx.fill();
+  // margem de rocha escura com brilho
+  path();
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = OUT;
+  ctx.lineWidth = 6;
+  ctx.stroke();
+  ctx.strokeStyle = '#ff9a3c';
+  ctx.lineWidth = 2;
+  ctx.stroke();
   ctx.save();
   path();
   ctx.clip();
-  const x0 = LAKE.cx - LAKE.rx;
-  const y0 = LAKE.cy - LAKE.ry;
-  tileArea(env, env.tiles.lava, 0, 160, x0, y0, LAKE.rx * 2, LAKE.ry * 2, env.t * 10);
-  gradientRect(env, x0, y0, LAKE.rx * 2, LAKE.ry * 2, [
-    'rgba(255,220,120,0.3)',
-    'rgba(120,20,6,0.35)',
+  const w = SCENE_W - LAKE.x0 + 10;
+  tileArea(
+    env,
+    env.tiles.lava,
+    0,
+    160,
+    LAKE.x0 - 10,
+    LAKE.top,
+    w,
+    LAKE.bottom - LAKE.top + 4,
+    env.t * 10,
+  );
+  gradientRect(env, LAKE.x0 - 10, LAKE.top, w, LAKE.bottom - LAKE.top + 4, [
+    'rgba(120,20,6,0.45)',
+    'rgba(255,220,120,0.18)',
   ]);
+  // reflexo do sol/lua sobre a lava
+  const rx = 300;
+  for (let i = 0; i < 6; i++) {
+    const wobble = Math.round(Math.sin(env.t * 2 + i) * 3);
+    rect(
+      env,
+      rx - 8 + wobble + i,
+      LAKE.top + 2 + i * 5,
+      16 - i * 2,
+      2,
+      by(env.time, '#fff0b0', '#ff6a4a'),
+    );
+  }
   // bolhas que crescem e estouram
   const random = rng(12);
-  for (let i = 0; i < 9; i++) {
-    const x = x0 + 8 + random() * (LAKE.rx * 2 - 16);
-    const y = y0 + 6 + random() * (LAKE.ry * 2 - 12);
+  for (let i = 0; i < 11; i++) {
+    const x = LAKE.x0 + 14 + random() * (SCENE_W - LAKE.x0 - 24);
+    const y = LAKE.top + 4 + random() * (LAKE.bottom - LAKE.top - 8);
     const phase = (env.t * 0.6 + random() * 3) % 1;
     ctx.strokeStyle = phase > 0.85 ? '#fff0b0' : '#ffd24a';
     ctx.lineWidth = 1;
@@ -174,16 +207,15 @@ function lavaLake(env: SceneEnv): void {
     ctx.stroke();
   }
   ctx.restore();
-  // gêiser de lava no meio do lago
+  // gêiser de lava
   const h = geyserHeight(env.t, GEYSER.phase);
   if (h > 0) {
-    const base = LAKE.cy + 2;
-    rect(env, GEYSER.x - 3, base - h, 6, h, '#ff6a1a');
-    rect(env, GEYSER.x - 1, base - h, 2, h, '#ffd24a');
-    rect(env, GEYSER.x - 5, base - h - 2, 10, 4, '#ff8a2a');
+    rect(env, GEYSER.x - 3, GEYSER_BASE - h, 6, h, '#ff6a1a');
+    rect(env, GEYSER.x - 1, GEYSER_BASE - h, 2, h, '#ffd24a');
+    rect(env, GEYSER.x - 5, GEYSER_BASE - h - 2, 10, 4, '#ff8a2a');
     for (let k = 0; k < 5; k++) {
       const a = (env.t * 2 + k * 0.37) % 1;
-      rect(env, GEYSER.x + (k - 2) * 5 * a, base - h - 3 + a * a * h * 0.8, 2, 2, '#ffb347');
+      rect(env, GEYSER.x + (k - 2) * 5 * a, GEYSER_BASE - h - 3 + a * a * h * 0.8, 2, 2, '#ffb347');
     }
   }
 }
@@ -450,7 +482,8 @@ function groundCracks(env: SceneEnv): void {
 export const hell: SceneDef = {
   id: 'hell',
   name: 'Inferno',
-  blurb: 'Trono infernal no centro, lago de lava à esquerda, vulcão, braseiros e brasas subindo.',
+  blurb:
+    'Trono infernal no centro, lago de lava ao fundo à direita, vulcão, braseiros e brasas subindo.',
   groundY: 182,
   back(env) {
     gradientRect(env, 0, 0, SCENE_W, HORIZON, [...SKY_BY_TIME[env.time]]);
@@ -488,18 +521,19 @@ export const hell: SceneDef = {
     tileArea(env, env.tiles.lavarock, 0, 160, 0, HORIZON, SCENE_W, SCENE_H - HORIZON);
     gradientRect(env, 0, HORIZON, SCENE_W, 26, ['rgba(255,90,30,0.4)', 'rgba(255,90,30,0)']);
     rect(env, 0, HORIZON - 1, SCENE_W, 2, 'rgba(0,0,0,0.5)');
+    lavaLake(env);
     groundCracks(env);
 
     stalagmite(env, 152, 132, 22);
     stalagmite(env, 242, 132, 20, -1);
+    stalagmite(env, 22, 206, 42);
     stalagmite(env, 372, 204, 40, -1);
     for (const x of BRAZIERS) brazier(env, x);
     dais(env);
     throne(env);
-    lavaLake(env);
     skull(env, 150, 200);
     ribcage(env, 292, 204);
-    trident(env, 330, 200);
+    trident(env, 56, 200);
     skullPike(env, 362, 190);
     embers(env);
   },
@@ -507,9 +541,9 @@ export const hell: SceneDef = {
     const all: TimeOfDay[] = ['morning', 'afternoon', 'night'];
     const out: Light[] = [
       {
-        x: LAKE.cx,
-        y: LAKE.cy - 4,
-        radius: 110,
+        x: 300,
+        y: 138,
+        radius: 130,
         color: [255, 110, 30],
         intensity: 0.55,
         flicker: true,
@@ -539,7 +573,7 @@ export const hell: SceneDef = {
     if (h > 0)
       out.push({
         x: GEYSER.x,
-        y: LAKE.cy - h,
+        y: GEYSER_BASE - h,
         radius: 60,
         color: [255, 150, 50],
         intensity: 0.6,
