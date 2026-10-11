@@ -287,7 +287,8 @@
       "color-ginger": "Ruivo claro",
       "color-redhead": "Ruivo",
       "color-pink": "Rosa",
-      "default": "Padrão"
+      "default": "Padrão",
+      "color-brown": "Marrom"
     },
     "locked": "Este item ainda não foi desbloqueado.",
     "appearance": "Aparência",
@@ -303,7 +304,21 @@
     "feet": "Calçado",
     "feetColor": "Cor do calçado",
     "rewards": "Itens de conquista",
-    "identity": "Nome e título"
+    "identity": "Nome e título",
+    "presets": "Looks prontos",
+    "randomize": "Sortear aparência",
+    "randomized": "Aparência sorteada. Ajuste o que quiser.",
+    "presetApplied": "Look aplicado. Ajuste o que quiser.",
+    "quickStart": "Comece rápido",
+    "details": "Ajustar detalhes",
+    "nameHint": "Pode mudar depois no Perfil.",
+    "presetNames": {
+      "adventurer": "Aventureiro",
+      "warrior": "Guerreira",
+      "explorer": "Explorador",
+      "student": "Estudante",
+      "legend": "Lenda"
+    }
   },
   "story": {
     "saved": "História escolhida!",
@@ -378,6 +393,7 @@
       "morning": "Manhã",
       "afternoon": "Tarde",
       "night": "Noite"
-    }
+    },
+    "timeAutoNow": "Automática ({{name}})"
   }
 }

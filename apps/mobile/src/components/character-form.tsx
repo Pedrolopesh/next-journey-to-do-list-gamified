@@ -12,6 +12,7 @@ import { useCosmetics } from '@/api/queries';
 import { Button } from '@/components/button';
 import { Pills } from '@/components/pills';
 import { QgControls } from '@/components/qg-controls';
+import { Swatches } from '@/components/swatches';
 import { TextField } from '@/components/text-field';
 import { toast } from '@/features/feedback/toast-store';
 import {
@@ -24,9 +25,12 @@ import {
   legacyHair,
   legacySkin,
   LEGS_PARTS,
+  PRESETS,
+  randomLook,
   SKIN_TONES,
   TORSO_PARTS,
 } from '@/features/qg/options';
+import palettes from '@/features/qg/palettes.json';
 import { colors, radius, space } from '@/theme';
 
 /** Itens que só existem como recompensa de conquista (bloqueados até conquistar). */
@@ -77,6 +81,8 @@ export function CharacterForm({
   const [accessory, setAccessory] = useState(initial?.accessory ?? 'none');
   const [name, setName] = useState(initial?.name ?? '');
   const [title, setTitle] = useState<Character['title']>(initial?.title ?? 'Aventureiro');
+  // O título acompanha o corpo (Herói/Heroína) até a pessoa escolher um título à mão
+  const [titleTouched, setTitleTouched] = useState(initial !== null);
   const [formError, setFormError] = useState<string | null>(null);
   // Validação reprovada também avisa por toast, para o botão nunca "não fazer nada"
   useEffect(() => {
@@ -91,10 +97,15 @@ export function CharacterForm({
     look: nextLook,
   });
 
-  const changeLook = (patch: Partial<LpcLook>): void => {
-    const next = { ...look, ...patch };
+  const applyLook = (next: LpcLook): void => {
+    if (!titleTouched && next.bodyType !== look.bodyType) {
+      setTitle(next.bodyType === 'female' ? 'Heroína' : 'Herói');
+    }
     setLook(next);
     onPreview?.(layersFor(next, outfit, accessory));
+  };
+  const changeLook = (patch: Partial<LpcLook>): void => {
+    applyLook({ ...look, ...patch });
   };
   const changeExtras = (nextOutfit: string, nextAccessory: string): void => {
     setOutfit(nextOutfit);
@@ -111,6 +122,12 @@ export function CharacterForm({
     ...values.map((value) => option(value)),
   ];
   const pick = (value: string | null): string => value ?? 'none';
+  const swatchOptions = (material: 'body' | 'hair' | 'cloth', values: readonly string[]) =>
+    values.map((value) => ({
+      value,
+      color: (palettes[material] as Record<string, string>)[value] ?? '#888888',
+      label: t(`character.options.${material === 'body' ? '' : 'color-'}${value}`),
+    }));
 
   const submit = (): void => {
     setFormError(null);
@@ -128,10 +145,37 @@ export function CharacterForm({
 
   return (
     <View style={styles.container}>
+      <Text style={styles.heading}>{t('character.quickStart')}</Text>
+      <Group label={t('character.presets')}>
+        <Pills
+          scroll
+          label={t('character.presets')}
+          value={null}
+          onChange={(id) => {
+            const preset = PRESETS.find((candidate) => candidate.id === id);
+            if (!preset) return;
+            applyLook(preset.look);
+            toast.success(t('character.presetApplied'));
+          }}
+          options={PRESETS.map((preset) => ({
+            value: preset.id,
+            label: t(`character.presetNames.${preset.id}`),
+          }))}
+        />
+        <Button
+          label={t('character.randomize')}
+          variant="secondary"
+          onPress={() => {
+            applyLook(randomLook());
+            toast.success(t('character.randomized'));
+          }}
+        />
+      </Group>
+
       <Text style={styles.heading}>{t('character.environment')}</Text>
       <QgControls />
 
-      <Text style={styles.heading}>{t('character.appearance')}</Text>
+      <Text style={styles.heading}>{t('character.details')}</Text>
       <Group label={t('character.body')}>
         <Pills
           label={t('character.body')}
@@ -143,14 +187,13 @@ export function CharacterForm({
         />
       </Group>
       <Group label={t('character.skinTone')}>
-        <Pills
-          scroll
+        <Swatches
           label={t('character.skinTone')}
           value={look.skin}
           onChange={(value) => {
             changeLook({ skin: value });
           }}
-          options={SKIN_TONES.map((value) => option(value))}
+          options={swatchOptions('body', SKIN_TONES)}
         />
       </Group>
       <Group label={t('character.hairStyle')}>
@@ -165,14 +208,13 @@ export function CharacterForm({
         />
       </Group>
       <Group label={t('character.hairColor')}>
-        <Pills
-          scroll
+        <Swatches
           label={t('character.hairColor')}
           value={look.hairColor}
           onChange={(value) => {
             changeLook({ hairColor: value });
           }}
-          options={HAIR_COLORS.map((value) => option(value, 'color-'))}
+          options={swatchOptions('hair', HAIR_COLORS)}
         />
       </Group>
       <Group label={t('character.torso')}>
@@ -185,14 +227,13 @@ export function CharacterForm({
           }}
           options={optional(TORSO_PARTS)}
         />
-        <Pills
-          scroll
+        <Swatches
           label={t('character.torsoColor')}
           value={look.torsoColor}
           onChange={(value) => {
             changeLook({ torsoColor: value });
           }}
-          options={CLOTH_COLORS.map((value) => option(value, 'color-'))}
+          options={swatchOptions('cloth', CLOTH_COLORS)}
         />
       </Group>
       <Group label={t('character.legs')}>
@@ -205,14 +246,13 @@ export function CharacterForm({
           }}
           options={optional(LEGS_PARTS)}
         />
-        <Pills
-          scroll
+        <Swatches
           label={t('character.legsColor')}
           value={look.legsColor}
           onChange={(value) => {
             changeLook({ legsColor: value });
           }}
-          options={CLOTH_COLORS.map((value) => option(value, 'color-'))}
+          options={swatchOptions('cloth', CLOTH_COLORS)}
         />
       </Group>
       <Group label={t('character.feet')}>
@@ -225,14 +265,13 @@ export function CharacterForm({
           }}
           options={optional(FEET_PARTS)}
         />
-        <Pills
-          scroll
+        <Swatches
           label={t('character.feetColor')}
           value={look.feetColor}
           onChange={(value) => {
             changeLook({ feetColor: value });
           }}
-          options={CLOTH_COLORS.map((value) => option(value, 'color-'))}
+          options={swatchOptions('cloth', CLOTH_COLORS)}
         />
       </Group>
 
@@ -275,7 +314,10 @@ export function CharacterForm({
         <Pills
           label={t('character.title')}
           value={title}
-          onChange={setTitle}
+          onChange={(value) => {
+            setTitleTouched(true);
+            setTitle(value);
+          }}
           options={[
             { value: 'Herói', label: 'Herói' },
             { value: 'Heroína', label: 'Heroína' },
@@ -284,6 +326,7 @@ export function CharacterForm({
         />
       </Group>
       <TextField label={t('character.name')} value={name} onChangeText={setName} maxLength={40} />
+      <Text style={styles.hint}>{t('character.nameHint')}</Text>
       {(formError ?? error) ? (
         <Text style={styles.error} accessibilityLiveRegion="polite">
           {formError ?? error}

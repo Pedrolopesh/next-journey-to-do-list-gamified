@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Pills } from '@/components/pills';
 import { toast } from '@/features/feedback/toast-store';
-import { SCENARIOS, TIME_MODES } from '@/features/qg/options';
+import { SCENARIOS, TIME_MODES, timeOfDayFor } from '@/features/qg/options';
 import { useQgPrefs } from '@/features/qg/qg-store';
 import { colors, radius, space } from '@/theme';
 
@@ -36,7 +36,13 @@ export function QgControls() {
             setTimeMode(value);
             toast.success(t('qg.timeSaved', { name: t(`qg.times.${value}`) }));
           }}
-          options={TIME_MODES.map((value) => ({ value, label: t(`qg.times.${value}`) }))}
+          options={TIME_MODES.map((value) => ({
+            value,
+            label:
+              value === 'auto'
+                ? t('qg.timeAutoNow', { name: t(`qg.times.${timeOfDayFor(new Date())}`) })
+                : t(`qg.times.${value}`),
+          }))}
         />
       </View>
     </View>

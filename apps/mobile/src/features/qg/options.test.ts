@@ -12,6 +12,8 @@ import {
   legacyHair,
   legacySkin,
   LEGS_PARTS,
+  PRESETS,
+  randomLook,
   resolveTime,
   SCENARIOS,
   SKIN_TONES,
@@ -71,5 +73,29 @@ describe('validações e chaves simples', () => {
     expect(legacySkin('black')).toBe('dark');
     expect(legacyHair(null)).toBe('bald');
     expect(legacyHair('hair-curly-short')).toBe('curly-red');
+  });
+});
+
+describe('looks prontos e sorteio', () => {
+  const valid = (look: ReturnType<typeof randomLook>): void => {
+    expect(SKIN_TONES).toContain(look.skin);
+    expect(
+      look.hair === null || HAIR_PARTS.includes(look.hair as (typeof HAIR_PARTS)[number]),
+    ).toBe(true);
+    expect(HAIR_COLORS).toContain(look.hairColor);
+    expect(TORSO_PARTS).toContain(look.torso);
+    expect(LEGS_PARTS).toContain(look.legs);
+    expect(FEET_PARTS).toContain(look.feet);
+    for (const color of [look.torsoColor, look.legsColor, look.feetColor])
+      expect(CLOTH_COLORS).toContain(color);
+  };
+
+  it('todo look pronto usa só opções oferecidas e tem ids únicos', () => {
+    expect(new Set(PRESETS.map((preset) => preset.id)).size).toBe(PRESETS.length);
+    for (const preset of PRESETS) valid(preset.look as ReturnType<typeof randomLook>);
+  });
+
+  it('o sorteio sempre devolve opções oferecidas, nos extremos do gerador', () => {
+    for (const value of [0, 0.05, 0.5, 0.999]) valid(randomLook(() => value));
   });
 });

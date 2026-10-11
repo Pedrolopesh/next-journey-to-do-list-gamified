@@ -81,6 +81,7 @@ export const CLOTH_COLORS = [
   'yellow',
   'orange',
   'tan',
+  'brown',
   'gray',
 ] as const;
 
@@ -111,4 +112,88 @@ export function legacyHair(hair: string | null): string {
   if (hair === 'hair-curly-short') return 'curly-red';
   if (hair === 'hair-buzzcut') return 'short-brown';
   return 'long-black';
+}
+
+/** Looks prontos: um toque preenche toda a aparência (o usuário ainda pode ajustar). */
+export const PRESETS: { id: string; look: LpcLook }[] = [
+  { id: 'adventurer', look: DEFAULT_LOOK },
+  {
+    id: 'warrior',
+    look: {
+      bodyType: 'female',
+      skin: 'bronze',
+      hair: 'hair-half-up',
+      hairColor: 'black',
+      torso: 'torso-sleeveless-2',
+      torsoColor: 'red',
+      legs: 'legs-pants',
+      legsColor: 'gray',
+      feet: 'feet-revised-boots',
+      feetColor: 'black',
+    },
+  },
+  {
+    id: 'explorer',
+    look: {
+      bodyType: 'male',
+      skin: 'amber',
+      hair: 'hair-buzzcut',
+      hairColor: 'dark_brown',
+      torso: 'torso-longsleeve-2',
+      torsoColor: 'forest',
+      legs: 'legs-shorts',
+      legsColor: 'tan',
+      feet: 'feet-revised-boots',
+      feetColor: 'brown',
+    },
+  },
+  {
+    id: 'student',
+    look: {
+      bodyType: 'female',
+      skin: 'light',
+      hair: 'hair-bangs-bun',
+      hairColor: 'chestnut',
+      torso: 'torso-cardigan',
+      torsoColor: 'purple',
+      legs: 'legs-leggings',
+      legsColor: 'black',
+      feet: 'feet-basic-shoes',
+      feetColor: 'white',
+    },
+  },
+  {
+    id: 'legend',
+    look: {
+      bodyType: 'male',
+      skin: 'brown',
+      hair: 'hair-curly-short',
+      hairColor: 'redhead',
+      torso: 'torso-cardigan',
+      torsoColor: 'yellow',
+      legs: 'legs-pants',
+      legsColor: 'navy',
+      feet: 'feet-revised-boots',
+      feetColor: 'brown',
+    },
+  },
+];
+
+const pickOne = <T>(values: readonly T[], random: () => number): T =>
+  values[Math.floor(random() * values.length)] as T;
+
+/** Aparência sorteada (sempre com roupa de cima, calça e calçado; cabelo pode ser nenhum). */
+export function randomLook(random: () => number = Math.random): LpcLook {
+  return {
+    bodyType: pickOne(BODY_TYPES, random),
+    skin: pickOne(SKIN_TONES, random),
+    hair: random() < 0.1 ? null : pickOne(HAIR_PARTS, random),
+    hairColor: pickOne(HAIR_COLORS, random),
+    torso: pickOne(TORSO_PARTS, random),
+    torsoColor: pickOne(CLOTH_COLORS, random),
+    legs: pickOne(LEGS_PARTS, random),
+    legsColor: pickOne(CLOTH_COLORS, random),
+    feet: pickOne(FEET_PARTS, random),
+    feetColor: pickOne(CLOTH_COLORS, random),
+  };
 }
