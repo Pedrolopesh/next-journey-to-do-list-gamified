@@ -65,7 +65,7 @@
         width: 100%;
         height: auto;
         image-rendering: pixelated;
-        aspect-ratio: 390 / 180;
+        aspect-ratio: 390 / 220;
       }
       .panel {
         background: var(--surface);
@@ -146,8 +146,14 @@
         de fora.
       </div>
       <div class="stage">
-        <canvas id="scene" width="390" height="180" aria-label="Cabana com o personagem"></canvas>
+        <canvas id="scene" width="390" height="220" aria-label="Cabana com o personagem"></canvas>
       </div>
+      <section class="panel" aria-label="Cenário">
+        <h2>Cenário do QG</h2>
+        <div class="row"><label>Lugar</label><span id="c-place"></span></div>
+        <div class="row"><label>Hora</label><span id="c-time"></span></div>
+        <p class="meta" id="blurb"></p>
+      </section>
       <section class="panel" aria-label="Controles">
         <h2>Personagem</h2>
         <div class="row"><label>Corpo</label><span id="c-body"></span></div>
@@ -175,7 +181,6 @@
         <h2>Animação</h2>
         <div class="row"><label>Ação</label><span id="c-anim"></span></div>
         <div class="row"><label>Direção</label><span id="c-dir"></span></div>
-        <div class="row"><label>Cenário</label><span id="c-scene"></span></div>
         <p class="meta" id="stats"></p>
       </section>
       <section class="panel" aria-label="Créditos">

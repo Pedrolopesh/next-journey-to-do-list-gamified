@@ -210,13 +210,20 @@ if (base && existsSync(join(base, 'tileset'))) {
     cabinets: 'building-interior/cabinets.png',
     kitchen: 'building-interior/kitchen.png',
     chests: 'object/chests.png',
+    // Terreno e vegetação (Sharm) para os cenários externos
+    grass: 'outdoor/PNG/grass.png',
+    water: 'outdoor/PNG/water.png',
+    treetop: 'outdoor/PNG/treetop.png',
+    lava: 'lava/lava.png',
+    lavarock: 'lava/lavarock.png',
+    cement: 'sewer-dungeon/cement.png',
   };
   for (const [name, rel] of Object.entries(tiles)) {
     copyFileSync(join(base, 'tileset', 'original', 'Sharm', rel), join(sceneDir, `${name}.png`));
     scenery.push({ file: `assets/scene/${name}.png`, from: `tileset/original/Sharm/${rel}` });
   }
   credits.push({
-    file: 'tileset/original/Sharm (interior e objetos)',
+    file: 'tileset/original/Sharm (interior, objetos e terreno)',
     authors: ['Lanea Zimmerman (Sharm)'],
     licenseUsed: 'OGA-BY 3.0',
     licensesOffered: ['CC-BY-SA 3.0', 'GPL 3.0', 'OGA-BY 3.0'],

@@ -12,13 +12,11 @@ import {
   recolorPixels,
   type Selection,
 } from './compose';
+import { SCENES } from './scenes';
+import { applyTint, drawLights } from './scenes/lighting';
+import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay, TIMES } from './scenes/types';
 
-const SCENE_W = 390;
-const SCENE_H = 180;
-const WALL_BOTTOM = 88;
 const FPS: Record<AnimationName, number> = { idle: 2, walk: 9, run: 12 };
-/** Velocidade do cenário em px por segundo, quando o personagem anda ou corre. */
-const SCROLL: Record<AnimationName, number> = { idle: 0, walk: 40, run: 110 };
 const SKINS = ['light', 'amber', 'olive', 'taupe', 'bronze', 'brown', 'black'];
 const HAIR_COLORS = [
   'black',
@@ -93,7 +91,8 @@ const state = {
   } as Selection,
   anim: 'idle' as AnimationName,
   direction: 'down' as Direction,
-  movingScene: true,
+  sceneId: 'cabin',
+  time: 'afternoon' as TimeOfDay,
 };
 
 /** Folhas recoloridas em cache: uma por camada, animação e cor. */
@@ -132,73 +131,76 @@ const ctx = canvas.getContext('2d');
 if (!ctx) throw new Error('sem canvas 2d');
 ctx.imageSmoothingEnabled = false;
 
-let resolved: { spec: LayerSpec; sheet: HTMLCanvasElement }[] = [];
-let resolvedFor = '';
+type ResolvedLayer = { spec: LayerSpec; sheet: HTMLCanvasElement };
+const resolvedCache = new Map<string, ResolvedLayer[]>();
 
-async function resolveLayers(): Promise<void> {
-  const specs = layersFor(catalog, state.selection);
-  const signature = JSON.stringify([specs, state.anim]);
-  if (signature === resolvedFor) return;
+/** Camadas prontas (folhas recoloridas) de um personagem; aguarda o carregamento na primeira vez. */
+async function resolveLayers(selection: Selection, anim: AnimationName): Promise<ResolvedLayer[]> {
+  const specs = layersFor(catalog, selection);
+  const signature = JSON.stringify([specs, anim]);
+  const cached = resolvedCache.get(signature);
+  if (cached) return cached;
   const next = await Promise.all(
-    specs.map(async (spec) => ({ spec, sheet: await sheetFor(spec, state.anim) })),
+    specs.map(async (spec) => ({ spec, sheet: await sheetFor(spec, anim) })),
   );
-  resolved = next;
-  resolvedFor = signature;
+  resolvedCache.set(signature, next);
+  return next;
 }
 
-function tile(
-  image: HTMLImageElement | undefined,
-  sx: number,
-  sy: number,
-  sw: number,
-  sh: number,
-  dx: number,
-  dy: number,
+function drawCharacter(
+  layers: ResolvedLayer[],
+  anim: AnimationName,
+  direction: Direction,
+  x: number,
+  feetY: number,
+  clock: number,
 ): void {
-  if (image) ctx?.drawImage(image, sx, sy, sw, sh, dx, dy, sw, sh);
-}
-
-function drawScene(offset: number): void {
-  if (!ctx) return;
-  const inside = scene.inside;
-  // Piso e parede de tábuas (tile de madeira 32x32 do pacote), com a parede mais escura
-  const shift = ((offset % 32) + 32) % 32;
-  for (let y = 0; y < SCENE_H; y += 32) {
-    for (let x = -32; x < SCENE_W + 32; x += 32) tile(inside, 0, 128, 32, 32, x - shift, y);
+  const index = Math.floor(clock * FPS[anim]) % catalog.animations[anim];
+  const { sy } = frameRect(direction, 0);
+  // Nos quadros LPC os pés ficam perto da linha 60 de 64
+  for (const { sheet } of layers) {
+    ctx?.drawImage(
+      sheet,
+      index * FRAME,
+      sy,
+      FRAME,
+      FRAME,
+      Math.round(x - FRAME / 2),
+      Math.round(feetY - 60),
+      FRAME,
+      FRAME,
+    );
   }
-  ctx.fillStyle = 'rgba(20, 8, 0, 0.45)';
-  ctx.fillRect(0, 0, SCENE_W, WALL_BOTTOM);
-  ctx.fillStyle = '#2a1608';
-  ctx.fillRect(0, WALL_BOTTOM - 6, SCENE_W, 6);
-  ctx.fillStyle = '#1a0d04';
-  ctx.fillRect(0, 0, SCENE_W, 6);
-
-  // Mobília parada (a cabana é cenário de descanso): estante, fogão e cama
-  const move = state.movingScene && state.anim !== 'idle' ? -offset % 400 : 0;
-  tile(scene.cabinets, 32, 0, 64, 72, 250 + move, WALL_BOTTOM - 72);
-  tile(scene.kitchen, 0, 0, 32, 124, 340 + move, WALL_BOTTOM + 12 - 124);
-  tile(scene.country, 0, 0, 64, 96, 16 + move, 44);
 }
 
 let last = performance.now();
 let time = 0;
-let scroll = 0;
+let current: ResolvedLayer[] = [];
 
 async function frame(now: number): Promise<void> {
   const dt = (now - last) / 1000;
   last = now;
   time += dt;
-  scroll += SCROLL[state.anim] * dt * (state.movingScene ? 1 : 0);
-  await resolveLayers();
-  drawScene(scroll);
-  const frames = catalog.animations[state.anim];
-  const index = Math.floor(time * FPS[state.anim]) % frames;
-  const x = Math.round((SCENE_W - FRAME) / 2);
-  const y = 88;
-  const { sy } = frameRect(state.direction, 0);
-  for (const { sheet } of resolved) {
-    ctx?.drawImage(sheet, index * FRAME, sy, FRAME, FRAME, x, y, FRAME, FRAME);
-  }
+  const def = SCENES.find((candidate) => candidate.id === state.sceneId) ?? SCENES[0];
+  if (!ctx || !def) return;
+  const env: SceneEnv = { ctx, time: state.time, t: time, scroll: 0, tiles: scene };
+
+  current = await resolveLayers(state.selection, state.anim);
+  const extras = await Promise.all(
+    (def.extras ?? []).map(async (extra) => ({
+      extra,
+      layers: await resolveLayers({ ...state.selection, ...extra.selection }, extra.anim),
+    })),
+  );
+
+  ctx.clearRect(0, 0, SCENE_W, SCENE_H);
+  def.back(env);
+  for (const { extra, layers } of extras)
+    drawCharacter(layers, extra.anim, extra.direction, extra.x, extra.feetY, time);
+  drawCharacter(current, state.anim, state.direction, SCENE_W / 2, def.groundY, time);
+  def.front?.(env);
+  applyTint(env, def.tint?.[state.time]);
+  drawLights(env, def.lights?.(env) ?? []);
   requestAnimationFrame((t) => void frame(t));
 }
 
@@ -366,17 +368,24 @@ buttons<Direction>(
     state.direction = v;
   },
 );
-buttons<'on' | 'off'>(
-  $('c-scene'),
-  [
-    { value: 'on', label: 'Move com o personagem' },
-    { value: 'off', label: 'Parado' },
-  ],
-  () => (state.movingScene ? 'on' : 'off'),
+buttons<string>(
+  $('c-place'),
+  SCENES.map((def) => ({ value: def.id, label: def.name })),
+  () => state.sceneId,
   (v) => {
-    state.movingScene = v === 'on';
+    state.sceneId = v;
+    $('blurb').textContent = SCENES.find((def) => def.id === v)?.blurb ?? '';
   },
 );
+buttons<TimeOfDay>(
+  $('c-time'),
+  TIMES,
+  () => state.time,
+  (v) => {
+    state.time = v;
+  },
+);
+$('blurb').textContent = SCENES.find((def) => def.id === state.sceneId)?.blurb ?? '';
 
 // ---- Créditos e peso ----
 function renderCredits(): void {

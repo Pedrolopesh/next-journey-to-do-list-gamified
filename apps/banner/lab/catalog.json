@@ -469,6 +469,30 @@
     {
       "file": "assets/scene/chests.png",
       "from": "tileset/original/Sharm/object/chests.png"
+    },
+    {
+      "file": "assets/scene/grass.png",
+      "from": "tileset/original/Sharm/outdoor/PNG/grass.png"
+    },
+    {
+      "file": "assets/scene/water.png",
+      "from": "tileset/original/Sharm/outdoor/PNG/water.png"
+    },
+    {
+      "file": "assets/scene/treetop.png",
+      "from": "tileset/original/Sharm/outdoor/PNG/treetop.png"
+    },
+    {
+      "file": "assets/scene/lava.png",
+      "from": "tileset/original/Sharm/lava/lava.png"
+    },
+    {
+      "file": "assets/scene/lavarock.png",
+      "from": "tileset/original/Sharm/lava/lavarock.png"
+    },
+    {
+      "file": "assets/scene/cement.png",
+      "from": "tileset/original/Sharm/sewer-dungeon/cement.png"
     }
   ],
   "credits": [
@@ -914,7 +938,7 @@
       "notes": "edited for v3 bases by bluecarrot16, Jump/Sit/Emote/Run/Revised Combat by JaidynReiman"
     },
     {
-      "file": "tileset/original/Sharm (interior e objetos)",
+      "file": "tileset/original/Sharm (interior, objetos e terreno)",
       "authors": ["Lanea Zimmerman (Sharm)"],
       "licenseUsed": "OGA-BY 3.0",
       "licensesOffered": ["CC-BY-SA 3.0", "GPL 3.0", "OGA-BY 3.0"],
