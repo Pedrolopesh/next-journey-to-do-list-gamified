@@ -47,11 +47,54 @@ export function disc(env: SceneEnv, cx: number, cy: number, r: number, color: st
   }
 }
 
+/** Nuvem macia: vários "bofes" com sombra embaixo (vetor, sem serrilhado). */
 export function cloud(env: SceneEnv, x: number, y: number, size: number, color: string): void {
-  disc(env, x, y, 5 * size, color);
-  disc(env, x + 8 * size, y - 3 * size, 7 * size, color);
-  disc(env, x + 17 * size, y, 6 * size, color);
-  rect(env, x - 4 * size, y, 26 * size, 5 * size, color);
+  const { ctx } = env;
+  const puffs: [number, number, number][] = [
+    [0, 2, 5],
+    [8, -2, 8],
+    [17, 0, 7],
+    [24, 3, 5],
+    [12, 3, 7],
+  ];
+  ctx.save();
+  ctx.globalAlpha = 0.28;
+  ctx.fillStyle = '#5b6b9a';
+  for (const [dx, dy, r] of puffs) {
+    ctx.beginPath();
+    ctx.arc(x + dx * size, y + (dy + 2) * size, r * size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = color;
+  for (const [dx, dy, r] of puffs) {
+    ctx.beginPath();
+    ctx.arc(x + dx * size, y + dy * size, r * size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+/** Brilho suave (radial) em volta de um ponto, somando luz. */
+export function glow(
+  env: SceneEnv,
+  x: number,
+  y: number,
+  radius: number,
+  rgb: [number, number, number],
+  alpha: number,
+): void {
+  const { ctx } = env;
+  const [r, g, b] = rgb;
+  const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+  gradient.addColorStop(0, `rgba(${r},${g},${b},${alpha})`);
+  gradient.addColorStop(0.35, `rgba(${r},${g},${b},${alpha * 0.4})`);
+  gradient.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.fillStyle = gradient;
+  ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+  ctx.restore();
 }
 
 /** Repete um tile de 32x32 numa área, com deslocamento horizontal opcional. */
@@ -99,6 +142,21 @@ export const SKY: Record<TimeOfDay, string[]> = {
   night: ['#070b1f', '#0b1230', '#101a40', '#16234f', '#1d2d5c', '#25376a'],
 };
 
+/** Degradê contínuo vertical (céu, névoa) a partir da lista de cores. */
+export function gradientRect(
+  env: SceneEnv,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  colors: string[],
+): void {
+  const gradient = env.ctx.createLinearGradient(0, y, 0, y + h);
+  colors.forEach((color, i) => gradient.addColorStop(i / Math.max(1, colors.length - 1), color));
+  env.ctx.fillStyle = gradient;
+  env.ctx.fillRect(x, y, w, h);
+}
+
 /** Estrelas que piscam, só de noite. */
 export function stars(
   env: SceneEnv,
@@ -110,31 +168,65 @@ export function stars(
   count = 40,
 ): void {
   if (env.time !== 'night') return;
+  const { ctx } = env;
   const random = rng(seed);
   for (let i = 0; i < count; i++) {
-    const sx = x + Math.floor(random() * w);
-    const sy = y + Math.floor(random() * h);
+    const sx = x + random() * w;
+    const sy = y + random() * h;
     const phase = random() * 6;
-    const bright = Math.sin(env.t * 2 + phase) > -0.4;
-    rect(env, sx, sy, 1, 1, bright ? '#fff6d8' : '#8a93b8');
+    const size = random() > 0.85 ? 1.1 : 0.6;
+    const alpha = 0.55 + 0.45 * Math.sin(env.t * 2 + phase);
+    ctx.fillStyle = `rgba(255,246,216,${Math.max(0.15, alpha)})`;
+    ctx.beginPath();
+    ctx.arc(sx, sy, size, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
 
-/** Sol (manhã baixo, tarde alto) ou lua (noite) dentro de uma área de céu. */
+/** Sol (manhã baixo, tarde alto) ou lua cheia (noite) com brilho em volta. */
 export function celestial(env: SceneEnv, x: number, y: number, w: number, h: number): void {
-  if (env.time === 'morning') {
-    disc(env, x + w * 0.22, y + h * 0.78, 11, '#ffe9b0');
-    disc(env, x + w * 0.22, y + h * 0.78, 8, '#fff6cf');
-  } else if (env.time === 'afternoon') {
-    disc(env, x + w * 0.76, y + h * 0.24, 12, '#fff2b8');
-    disc(env, x + w * 0.76, y + h * 0.24, 9, '#fffbe0');
-  } else {
-    disc(env, x + w * 0.78, y + h * 0.28, 10, '#e8ecff');
-    disc(env, x + w * 0.78 + 4, y + h * 0.28 - 2, 8, '#16234f');
+  const { ctx } = env;
+  if (env.time === 'night') {
+    const mx = x + w * 0.78;
+    const my = y + h * 0.28;
+    glow(env, mx, my, 34, [170, 190, 255], 0.35);
+    ctx.fillStyle = '#eef2ff';
+    ctx.beginPath();
+    ctx.arc(mx, my, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(150,160,200,0.45)';
+    for (const [dx, dy, r] of [
+      [-3, -2, 2.2],
+      [3, 2, 1.8],
+      [1, -4, 1.2],
+    ] as const) {
+      ctx.beginPath();
+      ctx.arc(mx + dx, my + dy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    return;
   }
+  const morning = env.time === 'morning';
+  const sx = x + w * (morning ? 0.22 : 0.76);
+  const sy = y + h * (morning ? 0.78 : 0.24);
+  glow(env, sx, sy, morning ? 70 : 60, morning ? [255, 190, 120] : [255, 240, 190], 0.55);
+  const core = ctx.createRadialGradient(sx, sy, 0, sx, sy, 11);
+  core.addColorStop(0, '#ffffff');
+  core.addColorStop(0.7, morning ? '#ffe2a0' : '#fff6c4');
+  core.addColorStop(1, morning ? '#ffc680' : '#ffe48a');
+  ctx.fillStyle = core;
+  ctx.beginPath();
+  ctx.arc(sx, sy, 11, 0, Math.PI * 2);
+  ctx.fill();
 }
 
-/** Céu completo de uma área: faixas, estrelas, astro e nuvens que derivam devagar. */
+const SKY_STOPS: Record<TimeOfDay, string[]> = {
+  morning: ['#4f63b0', '#8a7cc0', '#d79bb4', '#f6b39a', '#ffd9a0'],
+  afternoon: ['#2b7bd6', '#5aa5e8', '#8cc6f2', '#c4e2f8', '#e4f2fb'],
+  night: ['#03061a', '#0a1236', '#14214f', '#22356b'],
+};
+
+/** Céu completo de uma área: degradê, estrelas, astro e nuvens que derivam devagar. */
 export function sky(
   env: SceneEnv,
   x: number,
@@ -148,14 +240,16 @@ export function sky(
   ctx.beginPath();
   ctx.rect(x, y, w, h);
   ctx.clip();
-  bands(env, x, y, w, h, SKY[env.time]);
-  stars(env, x, y, w, h * 0.7, 7);
+  gradientRect(env, x, y, w, h, SKY_STOPS[env.time]);
+  stars(env, x, y, w, h * 0.75, 7, Math.round(w / 6));
   celestial(env, x, y, w, h);
   if (withClouds) {
-    const color = env.time === 'night' ? '#2a3a6e' : env.time === 'morning' ? '#fde0d0' : '#ffffff';
-    const drift = (env.t * 3) % (w + 80);
-    cloud(env, x + ((drift + 30) % (w + 80)) - 40, y + h * 0.3, 1, color);
-    cloud(env, x + ((drift + 190) % (w + 80)) - 40, y + h * 0.55, 1, color);
+    const color = env.time === 'night' ? '#3a4a80' : env.time === 'morning' ? '#ffe6da' : '#ffffff';
+    const span = w + 90;
+    const drift = (env.t * 3) % span;
+    cloud(env, x + ((drift + 30) % span) - 45, y + h * 0.3, 1, color);
+    cloud(env, x + ((drift + 190) % span) - 45, y + h * 0.55, 1.2, color);
+    if (w > 200) cloud(env, x + ((drift + 330) % span) - 45, y + h * 0.18, 0.8, color);
   }
   ctx.restore();
 }

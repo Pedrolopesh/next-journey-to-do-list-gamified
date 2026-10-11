@@ -1,4 +1,4 @@
-import { bands, disc, flame, rect, rng, skyline, tileArea } from './draw';
+import { flame, glow, gradientRect, rect, rng, skyline, tileArea } from './draw';
 import type { SceneDef } from './types';
 import { SCENE_W } from './types';
 
@@ -14,29 +14,40 @@ export const zombie: SceneDef = {
   blurb: 'Cidade em ruínas, barricada e fogueira; um zumbi ronda ao longe.',
   groundY: 182,
   back(env) {
-    bands(env, 0, 0, SCENE_W, 120, [...SKY_BY_TIME[env.time]]);
-    // Lua vermelha à noite, sol fraco de dia
-    if (env.time === 'night') {
-      disc(env, 315, 41, 11, '#b3262e');
-      disc(env, 315, 41, 8, '#d4343c');
-    } else {
-      disc(env, 311, env.time === 'morning' ? 81 : 39, 11, 'rgba(255,240,200,0.5)');
-    }
+    gradientRect(env, 0, 0, SCENE_W, 126, [...SKY_BY_TIME[env.time]]);
+    // Lua vermelha à noite, sol fraco e enevoado de dia
+    const ay = env.time === 'night' ? 41 : env.time === 'morning' ? 81 : 39;
+    const ax = env.time === 'night' ? 315 : 311;
+    glow(
+      env,
+      ax,
+      ay,
+      env.time === 'night' ? 70 : 50,
+      env.time === 'night' ? [210, 40, 50] : [255, 240, 190],
+      0.5,
+    );
+    env.ctx.fillStyle = env.time === 'night' ? '#d4343c' : 'rgba(255,244,210,0.75)';
+    env.ctx.beginPath();
+    env.ctx.arc(ax, ay, env.time === 'night' ? 11 : 9, 0, Math.PI * 2);
+    env.ctx.fill();
     const far = env.time === 'night' ? '#190e1c' : '#4d5648';
     const near = env.time === 'night' ? '#0f0813' : '#363d33';
     skyline(env, 21, 130, 24, 66, far, { windows: false, ruined: true });
     skyline(env, 33, 138, 28, 84, near, { windows: true, ruined: true });
-    // Névoa que desliza
+    // Névoa que desliza (manchas suaves)
     for (let i = 0; i < 3; i++) {
-      const x = ((env.t * (6 + i * 3) + i * 140) % (SCENE_W + 120)) - 120;
-      rect(
-        env,
-        x,
-        110 + i * 14,
-        120,
-        8,
-        env.time === 'night' ? 'rgba(120,90,140,0.14)' : 'rgba(210,220,190,0.2)',
-      );
+      const x = ((env.t * (6 + i * 3) + i * 140) % (SCENE_W + 200)) - 100;
+      const fog = env.ctx.createRadialGradient(x, 124 + i * 6, 0, x, 124 + i * 6, 90);
+      const c = env.time === 'night' ? '130,100,150' : '215,225,195';
+      fog.addColorStop(0, `rgba(${c},0.32)`);
+      fog.addColorStop(1, `rgba(${c},0)`);
+      env.ctx.save();
+      env.ctx.translate(0, 124 + i * 6);
+      env.ctx.scale(1, 0.22);
+      env.ctx.translate(0, -(124 + i * 6));
+      env.ctx.fillStyle = fog;
+      env.ctx.fillRect(x - 90, 124 + i * 6 - 90, 180, 180);
+      env.ctx.restore();
     }
     // Rua rachada
     tileArea(env, env.tiles.cement, 0, 160, 0, 138, SCENE_W, 90);

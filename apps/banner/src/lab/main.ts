@@ -13,7 +13,7 @@ import {
   type Selection,
 } from './compose';
 import { SCENES } from './scenes';
-import { applyTint, drawLights } from './scenes/lighting';
+import { applyTint, drawLights, vignette } from './scenes/lighting';
 import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay, TIMES } from './scenes/types';
 
 const FPS: Record<AnimationName, number> = { idle: 2, walk: 9, run: 12 };
@@ -129,7 +129,17 @@ function sheetFor(spec: LayerSpec, anim: AnimationName): Promise<HTMLCanvasEleme
 const canvas = $<HTMLCanvasElement>('scene');
 const ctx = canvas.getContext('2d');
 if (!ctx) throw new Error('sem canvas 2d');
-ctx.imageSmoothingEnabled = false;
+
+/** Resolução interna: escolhe um fator inteiro para os sprites ficarem nítidos e o resto, suave. */
+let scale = 1;
+function fitCanvas(): void {
+  const wanted = (canvas.clientWidth || SCENE_W) * (window.devicePixelRatio || 1);
+  scale = Math.min(5, Math.max(2, Math.round(wanted / SCENE_W)));
+  canvas.width = SCENE_W * scale;
+  canvas.height = SCENE_H * scale;
+}
+fitCanvas();
+window.addEventListener('resize', fitCanvas);
 
 type ResolvedLayer = { spec: LayerSpec; sheet: HTMLCanvasElement };
 const resolvedCache = new Map<string, ResolvedLayer[]>();
@@ -157,6 +167,15 @@ function drawCharacter(
 ): void {
   const index = Math.floor(clock * FPS[anim]) % catalog.animations[anim];
   const { sy } = frameRect(direction, 0);
+  // Sombra suave no chão, embaixo dos pés
+  if (ctx) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(x, feetY - 1, 13, 3.6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
   // Nos quadros LPC os pés ficam perto da linha 60 de 64
   for (const { sheet } of layers) {
     ctx?.drawImage(
@@ -193,6 +212,8 @@ async function frame(now: number): Promise<void> {
     })),
   );
 
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  ctx.imageSmoothingEnabled = false; // sprites e tiles continuam nítidos
   ctx.clearRect(0, 0, SCENE_W, SCENE_H);
   def.back(env);
   for (const { extra, layers } of extras)
@@ -201,6 +222,7 @@ async function frame(now: number): Promise<void> {
   def.front?.(env);
   applyTint(env, def.tint?.[state.time]);
   drawLights(env, def.lights?.(env) ?? []);
+  vignette(env);
   requestAnimationFrame((t) => void frame(t));
 }
 

@@ -1,4 +1,4 @@
-import { bands, disc, rect, rng, tileArea } from './draw';
+import { glow, gradientRect, rect, rng, tileArea } from './draw';
 import type { SceneDef, SceneEnv } from './types';
 import { SCENE_W } from './types';
 
@@ -33,21 +33,29 @@ export const hell: SceneDef = {
   blurb: 'Rio de lava, rochas escuras e brasas subindo; o céu arde em vermelho.',
   groundY: 182,
   back(env) {
-    bands(env, 0, 0, SCENE_W, 120, [...SKY_BY_TIME[env.time]]);
-    disc(
-      env,
-      300,
-      env.time === 'morning' ? 96 : 40,
-      14,
-      env.time === 'night' ? '#8a1a1a' : '#ffb347',
-    );
+    gradientRect(env, 0, 0, SCENE_W, 126, [...SKY_BY_TIME[env.time]]);
+    const sunY = env.time === 'morning' ? 96 : 40;
+    glow(env, 300, sunY, 80, env.time === 'night' ? [200, 40, 30] : [255, 150, 60], 0.6);
+    const orb = env.ctx.createRadialGradient(300, sunY, 0, 300, sunY, 14);
+    orb.addColorStop(0, env.time === 'night' ? '#d83a2a' : '#fff0b0');
+    orb.addColorStop(1, env.time === 'night' ? '#7a1414' : '#ff9a3c');
+    env.ctx.fillStyle = orb;
+    env.ctx.beginPath();
+    env.ctx.arc(300, sunY, 14, 0, Math.PI * 2);
+    env.ctx.fill();
     // Montanhas pontiagudas (triângulos apontando para cima)
     const random = rng(41);
     const rock = env.time === 'night' ? '#14060a' : '#2a0b0b';
+    env.ctx.fillStyle = rock;
     for (let x = -10; x < SCENE_W + 30; x += 36) {
       const h = 40 + random() * 50;
-      for (let row = 0; row < h; row += 2)
-        rect(env, x + 18 - row * 0.5, 126 - h + row, row + 2, 2, rock);
+      env.ctx.beginPath();
+      env.ctx.moveTo(x - 6, 126);
+      env.ctx.lineTo(x + 8, 126 - h * 0.7);
+      env.ctx.lineTo(x + 18, 126 - h);
+      env.ctx.lineTo(x + 27, 126 - h * 0.6);
+      env.ctx.lineTo(x + 44, 126);
+      env.ctx.fill();
     }
     // Rio de lava animado
     tileArea(env, env.tiles.lava, 0, 160, 0, 126, SCENE_W, 34, env.t * 14);
