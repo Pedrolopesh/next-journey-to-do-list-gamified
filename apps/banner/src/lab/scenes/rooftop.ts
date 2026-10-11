@@ -1,4 +1,5 @@
 import { bands, gradientRect, rect, rng, sky, tileArea } from './draw';
+import { drawLampCones, drawLampPost, type Lamp, lampLights } from './lampposts';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_W } from './types';
 
@@ -281,22 +282,8 @@ function buildLounger(): HTMLCanvasElement {
   const WHITE = '#f8f8f8';
   const WHITE_DARK = '#c3c9d3';
   const WOOD = '#c88a46';
-  const WOOD_DARK = '#8a5a2a';
   const seatZ = (l: number): number => (l <= 34 ? 8 : 8 + ((l - 34) * 6) / 12);
 
-  // pernas (de trás para a frente)
-  for (const [l, w] of [
-    [40, 1],
-    [40, W - 1],
-    [2, 1],
-    [2, W - 1],
-  ] as const) {
-    const [x, y] = P(l, w);
-    ctx.fillStyle = WOOD_DARK;
-    ctx.fillRect(Math.round(x) - 1, Math.round(y) - 9, 3, 9);
-    ctx.fillStyle = WOOD;
-    ctx.fillRect(Math.round(x) - 1, Math.round(y) - 9, 1, 9);
-  }
   // topo do assento e do apoio de pés, em listras
   for (let k = 0; k * 4 < L; k++) {
     const a = k * 4;
@@ -593,6 +580,11 @@ function stringLights(env: SceneEnv): void {
   }
 }
 
+const LAMPS: Lamp[] = [
+  { x: 158, baseY: 188, h: 74, dir: 1 },
+  { x: 232, baseY: 188, h: 74, dir: -1 },
+];
+
 export const rooftop: SceneDef = {
   id: 'rooftop',
   name: 'Topo do prédio',
@@ -608,6 +600,8 @@ export const rooftop: SceneDef = {
     stringLights(env);
     // Espreguiçadeira virada para o sol (manhã: à esquerda; tarde e noite: à direita)
     lounger(env, 104, 192, env.time === 'morning' ? -1 : 1);
+    for (const lamp of LAMPS) drawLampPost(env, lamp);
+    drawLampCones(env, LAMPS, SCENE_W / 2, 190);
     // Vasos grandes com plantas
     pot(env, 334, 192, 26, 24, {
       base: '#c8693a',
@@ -657,6 +651,7 @@ export const rooftop: SceneDef = {
         at: ['night'],
       });
     });
+    out.push(...lampLights(LAMPS, SCENE_W / 2, 190));
     return out;
   },
   tint: {

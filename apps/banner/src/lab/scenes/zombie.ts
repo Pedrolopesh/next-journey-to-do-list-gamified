@@ -1,4 +1,5 @@
 import { celestial, gradientRect, rect, rng, stars, tileArea } from './draw';
+import { drawLampCones, drawLampPost, type Lamp, lampLights } from './lampposts';
 import type { ExtraCharacter, Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_H, SCENE_W } from './types';
 
@@ -13,6 +14,11 @@ const SKY_BY_TIME: Record<TimeOfDay, string[]> = {
   afternoon: ['#3c86d8', '#78b4ec', '#b8d8f4', '#f0e6c8'],
   night: ['#03061a', '#0a1236', '#18255a', '#3a3050'],
 };
+
+const LAMPS: Lamp[] = [
+  { x: 146, baseY: 182, h: 76, dir: 1 },
+  { x: 244, baseY: 182, h: 76, dir: -1 },
+];
 
 type Panel = { ax: number; ay: number; ah: number; bx: number; by: number; bh: number };
 
@@ -509,6 +515,10 @@ export const zombie: SceneDef = {
     // cerca dos fundos
     fence(env, BACK, 42);
 
+    // postes de iluminação que acendem à noite
+    for (const lamp of LAMPS) drawLampPost(env, lamp);
+    drawLampCones(env, LAMPS, SCENE_W / 2, 182);
+
     // suprimentos dentro da base
     crate(env, 104, 192, 14);
     crate(env, 118, 192, 12);
@@ -556,6 +566,7 @@ export const zombie: SceneDef = {
     const heli = heliPos(env.t);
     return [
       ...lights,
+      ...lampLights(LAMPS, SCENE_W / 2, 182),
       // holofotes nos postes dos cantos e lâmpada do hangar
       { x: 90, y: 130, radius: 55, color: [255, 235, 170], intensity: 0.5 },
       { x: 300, y: 130, radius: 55, color: [255, 235, 170], intensity: 0.5 },
