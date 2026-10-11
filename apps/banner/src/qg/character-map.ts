@@ -66,15 +66,37 @@ const OUTFITS: Record<string, Outfit> = {
   },
 };
 
+/** Roupas que só existem como recompensa de conquista. */
+const REWARD_OUTFITS: ReadonlySet<string> = new Set(['outfit-special', 'outfit-cape']);
+
+function fromOutfit(
+  outfit: Outfit,
+): Pick<Selection, 'torso' | 'torsoColor' | 'legs' | 'legsColor' | 'feetColor'> {
+  return {
+    torso: outfit.torso,
+    torsoColor: outfit.torsoColor,
+    legs: outfit.legs,
+    legsColor: outfit.legsColor,
+    feetColor: outfit.feetColor,
+  };
+}
+
 const FALLBACK_HAIR: Hair = { hair: 'hair-buzzcut', color: 'dark_brown' };
 const FALLBACK_OUTFIT = OUTFITS['tunic-purple'] as Outfit;
 
 /**
- * Converte as chaves de camada do app (cadastro do personagem) na seleção LPC do banner.
+ * Converte as camadas do personagem do app na seleção LPC do banner: usa `look` quando existe e,
+ * senão, as chaves simples (cadastro antigo).
  * Chave desconhecida cai no padrão em vez de quebrar a cena. Acessórios (chapéu, espada, escudo) ainda
  * não têm arte LPC importada e são ignorados.
  */
 export function selectionFromLayers(layers: CharacterLayers): Selection {
+  // A aparência detalhada (formulário do app) vale mais que o mapa das chaves simples; só a roupa de
+  // conquista (recompensa) sobrepõe a roupa escolhida
+  if (layers.look) {
+    const reward = REWARD_OUTFITS.has(layers.outfit) ? OUTFITS[layers.outfit] : undefined;
+    return reward ? { ...layers.look, ...fromOutfit(reward) } : { ...layers.look };
+  }
   const hair = HAIRS[layers.hair] ?? FALLBACK_HAIR;
   const outfit = OUTFITS[layers.outfit] ?? FALLBACK_OUTFIT;
   return {

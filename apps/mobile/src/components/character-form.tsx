@@ -1,38 +1,55 @@
-import { type Character, characterSchema } from '@nextjourney/contracts';
-import { useEffect, useState } from 'react';
+import {
+  type Character,
+  type CharacterLayers,
+  characterSchema,
+  type LpcLook,
+} from '@nextjourney/contracts';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useCosmetics } from '@/api/queries';
 import { Button } from '@/components/button';
 import { Pills } from '@/components/pills';
+import { QgControls } from '@/components/qg-controls';
+import { Swatches } from '@/components/swatches';
 import { TextField } from '@/components/text-field';
 import { toast } from '@/features/feedback/toast-store';
+import {
+  BODY_TYPES,
+  CLOTH_COLORS,
+  DEFAULT_LOOK,
+  FEET_PARTS,
+  HAIR_COLORS,
+  HAIR_PARTS,
+  legacyHair,
+  legacySkin,
+  LEGS_PARTS,
+  PRESETS,
+  randomLook,
+  SKIN_TONES,
+  TORSO_PARTS,
+} from '@/features/qg/options';
+import palettes from '@/features/qg/palettes.json';
 import { colors, radius, space } from '@/theme';
 
-/** Camadas LPC disponíveis. As chaves "reward" só liberam depois da conquista correspondente. */
-export const CHARACTER_OPTIONS = {
-  skin: ['light', 'tan', 'brown', 'dark'],
-  hair: ['short-brown', 'long-black', 'curly-red', 'bald'],
-  outfit: ['tunic-purple', 'tunic-green', 'armor-iron', 'outfit-special', 'outfit-cape'],
-  accessory: [
-    'none',
-    'hat-straw',
-    'scarf-red',
-    'accessory-bandana',
-    'weapon-silver-sword',
-    'accessory-shield',
-  ],
-} as const;
-
-/** Chaves que são recompensa de conquista (bloqueadas até conquistar). */
+/** Itens que só existem como recompensa de conquista (bloqueados até conquistar). */
+export const REWARD_OUTFITS = ['outfit-special', 'outfit-cape'] as const;
+export const ACCESSORIES = [
+  'none',
+  'hat-straw',
+  'scarf-red',
+  'accessory-bandana',
+  'weapon-silver-sword',
+  'accessory-shield',
+] as const;
 const REWARDS: ReadonlySet<string> = new Set([
-  'outfit-special',
-  'outfit-cape',
+  ...REWARD_OUTFITS,
   'accessory-bandana',
   'weapon-silver-sword',
   'accessory-shield',
 ]);
+const DEFAULT_OUTFIT = 'tunic-purple';
 
 type Props = {
   initial: Character | null;
@@ -40,12 +57,14 @@ type Props = {
   submitting: boolean;
   error: string | null;
   onSubmit: (character: Character) => void;
-  /** Avisa cada mudança para a prévia (banner) mostrar a combinação. */
-  onPreview?: (
-    character: Pick<Character, 'skin' | 'hair' | 'outfit'> & { accessory?: string },
-  ) => void;
+  /** Avisa cada mudança de aparência para a prévia (banner) mostrar a combinação. */
+  onPreview?: (character: CharacterLayers) => void;
 };
 
+/**
+ * Formulário do personagem. As opções de aparência (as mesmas do laboratório do banner) e o ambiente
+ * vêm primeiro, com a prévia no topo da tela; o nome e o título ficam por último.
+ */
 export function CharacterForm({
   initial,
   submitLabel,
@@ -57,46 +76,65 @@ export function CharacterForm({
   const { t } = useTranslation();
   const cosmetics = useCosmetics();
   const owned = new Set(cosmetics.data ?? []);
+  const [look, setLook] = useState<LpcLook>(initial?.look ?? DEFAULT_LOOK);
+  const [outfit, setOutfit] = useState(initial?.outfit ?? DEFAULT_OUTFIT);
+  const [accessory, setAccessory] = useState(initial?.accessory ?? 'none');
   const [name, setName] = useState(initial?.name ?? '');
   const [title, setTitle] = useState<Character['title']>(initial?.title ?? 'Aventureiro');
-  const [skin, setSkin] = useState(initial?.skin ?? 'light');
-  const [hair, setHair] = useState(initial?.hair ?? 'short-brown');
-  const [outfit, setOutfit] = useState(initial?.outfit ?? 'tunic-purple');
-  const [accessory, setAccessory] = useState(initial?.accessory ?? 'none');
+  // O título acompanha o corpo (Herói/Heroína) até a pessoa escolher um título à mão
+  const [titleTouched, setTitleTouched] = useState(initial !== null);
   const [formError, setFormError] = useState<string | null>(null);
   // Validação reprovada também avisa por toast, para o botão nunca "não fazer nada"
   useEffect(() => {
     if (formError) toast.error(formError);
   }, [formError]);
 
-  const optionsFor = (kind: keyof typeof CHARACTER_OPTIONS) =>
-    CHARACTER_OPTIONS[kind].map((value) => ({
-      value,
-      label: t(`character.options.${value}`),
-      disabled: REWARDS.has(value) && !owned.has(value),
-    }));
+  const layersFor = (nextLook: LpcLook, nextOutfit: string, nextAccessory: string) => ({
+    skin: legacySkin(nextLook.skin),
+    hair: legacyHair(nextLook.hair),
+    outfit: nextOutfit,
+    ...(nextAccessory !== 'none' ? { accessory: nextAccessory } : {}),
+    look: nextLook,
+  });
 
-  const change = (
-    patch: Partial<{ skin: string; hair: string; outfit: string; accessory: string }>,
-  ): void => {
-    const next = { skin, hair, outfit, accessory, ...patch };
-    onPreview?.({
-      skin: next.skin,
-      hair: next.hair,
-      outfit: next.outfit,
-      ...(next.accessory !== 'none' ? { accessory: next.accessory } : {}),
-    });
+  const applyLook = (next: LpcLook): void => {
+    if (!titleTouched && next.bodyType !== look.bodyType) {
+      setTitle(next.bodyType === 'female' ? 'Heroína' : 'Herói');
+    }
+    setLook(next);
+    onPreview?.(layersFor(next, outfit, accessory));
   };
+  const changeLook = (patch: Partial<LpcLook>): void => {
+    applyLook({ ...look, ...patch });
+  };
+  const changeExtras = (nextOutfit: string, nextAccessory: string): void => {
+    setOutfit(nextOutfit);
+    setAccessory(nextAccessory);
+    onPreview?.(layersFor(look, nextOutfit, nextAccessory));
+  };
+
+  const option = (value: string, prefix = '') => ({
+    value,
+    label: t(`character.options.${prefix}${value}`),
+  });
+  const optional = (values: readonly string[]) => [
+    { value: 'none', label: t('character.options.none') },
+    ...values.map((value) => option(value)),
+  ];
+  const pick = (value: string | null): string => value ?? 'none';
+  const swatchOptions = (material: 'body' | 'hair' | 'cloth', values: readonly string[]) =>
+    values.map((value) => ({
+      value,
+      color: (palettes[material] as Record<string, string>)[value] ?? '#888888',
+      label: t(`character.options.${material === 'body' ? '' : 'color-'}${value}`),
+    }));
 
   const submit = (): void => {
     setFormError(null);
     const parsed = characterSchema.safeParse({
       name: name.trim(),
       title,
-      skin,
-      hair,
-      outfit,
-      ...(accessory !== 'none' ? { accessory } : {}),
+      ...layersFor(look, outfit, accessory),
     });
     if (!parsed.success) {
       setFormError(t('character.invalid'));
@@ -107,12 +145,179 @@ export function CharacterForm({
 
   return (
     <View style={styles.container}>
-      <TextField label={t('character.name')} value={name} onChangeText={setName} maxLength={40} />
+      <Text style={styles.heading}>{t('character.quickStart')}</Text>
+      <Group label={t('character.presets')}>
+        <Pills
+          scroll
+          label={t('character.presets')}
+          value={null}
+          onChange={(id) => {
+            const preset = PRESETS.find((candidate) => candidate.id === id);
+            if (!preset) return;
+            applyLook(preset.look);
+            toast.success(t('character.presetApplied'));
+          }}
+          options={PRESETS.map((preset) => ({
+            value: preset.id,
+            label: t(`character.presetNames.${preset.id}`),
+          }))}
+        />
+        <Button
+          label={t('character.randomize')}
+          variant="secondary"
+          onPress={() => {
+            applyLook(randomLook());
+            toast.success(t('character.randomized'));
+          }}
+        />
+      </Group>
+
+      <Text style={styles.heading}>{t('character.environment')}</Text>
+      <QgControls />
+
+      <Text style={styles.heading}>{t('character.details')}</Text>
+      <Group label={t('character.body')}>
+        <Pills
+          label={t('character.body')}
+          value={look.bodyType}
+          onChange={(value) => {
+            changeLook({ bodyType: value === 'female' ? 'female' : 'male' });
+          }}
+          options={BODY_TYPES.map((value) => option(value))}
+        />
+      </Group>
+      <Group label={t('character.skinTone')}>
+        <Swatches
+          label={t('character.skinTone')}
+          value={look.skin}
+          onChange={(value) => {
+            changeLook({ skin: value });
+          }}
+          options={swatchOptions('body', SKIN_TONES)}
+        />
+      </Group>
+      <Group label={t('character.hairStyle')}>
+        <Pills
+          scroll
+          label={t('character.hairStyle')}
+          value={pick(look.hair)}
+          onChange={(value) => {
+            changeLook({ hair: value === 'none' ? null : value });
+          }}
+          options={optional(HAIR_PARTS)}
+        />
+      </Group>
+      <Group label={t('character.hairColor')}>
+        <Swatches
+          label={t('character.hairColor')}
+          value={look.hairColor}
+          onChange={(value) => {
+            changeLook({ hairColor: value });
+          }}
+          options={swatchOptions('hair', HAIR_COLORS)}
+        />
+      </Group>
+      <Group label={t('character.torso')}>
+        <Pills
+          scroll
+          label={t('character.torso')}
+          value={pick(look.torso)}
+          onChange={(value) => {
+            changeLook({ torso: value === 'none' ? null : value });
+          }}
+          options={optional(TORSO_PARTS)}
+        />
+        <Swatches
+          label={t('character.torsoColor')}
+          value={look.torsoColor}
+          onChange={(value) => {
+            changeLook({ torsoColor: value });
+          }}
+          options={swatchOptions('cloth', CLOTH_COLORS)}
+        />
+      </Group>
+      <Group label={t('character.legs')}>
+        <Pills
+          scroll
+          label={t('character.legs')}
+          value={pick(look.legs)}
+          onChange={(value) => {
+            changeLook({ legs: value === 'none' ? null : value });
+          }}
+          options={optional(LEGS_PARTS)}
+        />
+        <Swatches
+          label={t('character.legsColor')}
+          value={look.legsColor}
+          onChange={(value) => {
+            changeLook({ legsColor: value });
+          }}
+          options={swatchOptions('cloth', CLOTH_COLORS)}
+        />
+      </Group>
+      <Group label={t('character.feet')}>
+        <Pills
+          scroll
+          label={t('character.feet')}
+          value={pick(look.feet)}
+          onChange={(value) => {
+            changeLook({ feet: value === 'none' ? null : value });
+          }}
+          options={optional(FEET_PARTS)}
+        />
+        <Swatches
+          label={t('character.feetColor')}
+          value={look.feetColor}
+          onChange={(value) => {
+            changeLook({ feetColor: value });
+          }}
+          options={swatchOptions('cloth', CLOTH_COLORS)}
+        />
+      </Group>
+
+      <Text style={styles.heading}>{t('character.rewards')}</Text>
+      <Group label={t('character.outfit')}>
+        <Pills
+          scroll
+          label={t('character.outfit')}
+          value={outfit}
+          onChange={(value) => {
+            changeExtras(value, accessory);
+          }}
+          options={[
+            { value: DEFAULT_OUTFIT, label: t('character.options.default') },
+            ...REWARD_OUTFITS.map((value) => ({
+              ...option(value),
+              disabled: !owned.has(value),
+            })),
+          ]}
+        />
+      </Group>
+      <Group label={t('character.accessory')}>
+        <Pills
+          scroll
+          label={t('character.accessory')}
+          value={accessory}
+          onChange={(value) => {
+            changeExtras(outfit, value);
+          }}
+          options={ACCESSORIES.map((value) => ({
+            ...option(value),
+            disabled: REWARDS.has(value) && !owned.has(value),
+          }))}
+        />
+      </Group>
+      <Text style={styles.hint}>{t('character.lockedHint')}</Text>
+
+      <Text style={styles.heading}>{t('character.identity')}</Text>
       <Group label={t('character.title')}>
         <Pills
           label={t('character.title')}
           value={title}
-          onChange={setTitle}
+          onChange={(value) => {
+            setTitleTouched(true);
+            setTitle(value);
+          }}
           options={[
             { value: 'Herói', label: 'Herói' },
             { value: 'Heroína', label: 'Heroína' },
@@ -120,51 +325,8 @@ export function CharacterForm({
           ]}
         />
       </Group>
-      <Group label={t('character.skin')}>
-        <Pills
-          label={t('character.skin')}
-          value={skin}
-          onChange={(value) => {
-            setSkin(value);
-            change({ skin: value });
-          }}
-          options={optionsFor('skin')}
-        />
-      </Group>
-      <Group label={t('character.hair')}>
-        <Pills
-          label={t('character.hair')}
-          value={hair}
-          onChange={(value) => {
-            setHair(value);
-            change({ hair: value });
-          }}
-          options={optionsFor('hair')}
-        />
-      </Group>
-      <Group label={t('character.outfit')}>
-        <Pills
-          label={t('character.outfit')}
-          value={outfit}
-          onChange={(value) => {
-            setOutfit(value);
-            change({ outfit: value });
-          }}
-          options={optionsFor('outfit')}
-        />
-      </Group>
-      <Group label={t('character.accessory')}>
-        <Pills
-          label={t('character.accessory')}
-          value={accessory}
-          onChange={(value) => {
-            setAccessory(value);
-            change({ accessory: value });
-          }}
-          options={optionsFor('accessory')}
-        />
-      </Group>
-      <Text style={styles.hint}>{t('character.lockedHint')}</Text>
+      <TextField label={t('character.name')} value={name} onChangeText={setName} maxLength={40} />
+      <Text style={styles.hint}>{t('character.nameHint')}</Text>
       {(formError ?? error) ? (
         <Text style={styles.error} accessibilityLiveRegion="polite">
           {formError ?? error}
@@ -175,7 +337,7 @@ export function CharacterForm({
   );
 }
 
-function Group({ label, children }: { label: string; children: React.ReactNode }) {
+function Group({ label, children }: { label: string; children: ReactNode }) {
   return (
     <View style={styles.group}>
       <Text style={styles.label}>{label}</Text>
@@ -186,6 +348,7 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
 
 const styles = StyleSheet.create({
   container: { gap: space[16] },
+  heading: { color: colors.text.primary, fontSize: 16, fontWeight: '600' },
   group: {
     gap: space[8],
     backgroundColor: colors.bg.surface,

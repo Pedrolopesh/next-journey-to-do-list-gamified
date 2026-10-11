@@ -3,6 +3,8 @@ import {
   type Character,
   characterSchema,
   ERROR_CODES,
+  type LpcLook,
+  lpcLookSchema,
   type MeResponse,
   type PatchMeRequest,
   patchMeRequestSchema,
@@ -11,6 +13,7 @@ import {
 import { AppError } from '../../common/app-error.js';
 import { CurrentUserId } from '../../common/current-user.decorator.js';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe.js';
+import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AccountService } from '../account/account.service.js';
 import {
@@ -21,6 +24,12 @@ import {
 import { GameConfigService } from '../progression/game-config.service.js';
 import { NO_STORY, toPlayerState } from '../progression/player-state.js';
 import { StoriesService } from '../stories/stories.service.js';
+
+/** Lê a aparência salva; dado antigo ou inválido vira "sem look" em vez de quebrar o /me. */
+function lookOf(value: unknown): { look?: LpcLook } {
+  const parsed = lpcLookSchema.safeParse(value);
+  return parsed.success ? { look: parsed.data } : {};
+}
 
 /** Chaves de cosmético que só existem como recompensa de conquista. */
 const REWARD_KEYS: ReadonlySet<string> = new Set(
@@ -97,6 +106,7 @@ export class MeController {
             hair: user.character.hair,
             outfit: user.character.outfit,
             ...(user.character.accessory ? { accessory: user.character.accessory } : {}),
+            ...lookOf(user.character.look),
           }
         : null,
       story: active
@@ -158,10 +168,16 @@ export class MeController {
         throw new AppError(403, 'COSMETIC_LOCKED', 'Este item ainda não foi desbloqueado');
       }
     }
+    const { look, ...rest } = body;
+    const data = {
+      ...rest,
+      accessory: body.accessory ?? null,
+      look: look ?? Prisma.JsonNull,
+    };
     await this.prisma.character.upsert({
       where: { userId },
-      create: { userId, ...body, accessory: body.accessory ?? null },
-      update: { ...body, accessory: body.accessory ?? null },
+      create: { userId, ...data },
+      update: data,
     });
     return body;
   }

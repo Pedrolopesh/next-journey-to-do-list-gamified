@@ -40,4 +40,43 @@ describe('seleção LPC a partir das camadas do app', () => {
     expect(selection.skin).toBe('light');
     expect(selection.torso).toBe('torso-longsleeve-2');
   });
+
+  it('a aparência detalhada (look) vale mais que as chaves simples', () => {
+    const look = {
+      bodyType: 'female' as const,
+      skin: 'olive',
+      hair: 'hair-bob',
+      hairColor: 'blonde',
+      torso: 'torso-tshirt',
+      torsoColor: 'teal',
+      legs: 'legs-shorts',
+      legsColor: 'tan',
+      feet: null,
+      feetColor: 'brown',
+    };
+    const selection = selectionFromLayers({
+      skin: 'dark',
+      hair: 'bald',
+      outfit: 'armor-iron',
+      look,
+    });
+    expect(selection).toEqual(look);
+    expect(layersFor(data, selection).length).toBeGreaterThan(3);
+  });
+
+  it('a roupa de conquista sobrepõe a roupa do look, o resto do look continua', () => {
+    const look = {
+      ...selectionFromLayers({ skin: 'light', hair: 'bald', outfit: 'x' }),
+      hairColor: 'blonde',
+    };
+    const selection = selectionFromLayers({
+      skin: 'light',
+      hair: 'bald',
+      outfit: 'outfit-cape',
+      look,
+    });
+    expect(selection.torso).toBe('torso-cardigan');
+    expect(selection.torsoColor).toBe('red');
+    expect(selection.hairColor).toBe('blonde');
+  });
 });

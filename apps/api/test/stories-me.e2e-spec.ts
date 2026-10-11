@@ -78,6 +78,54 @@ describe('histórias, personagem e perfil', () => {
     });
   });
 
+  it('guarda e devolve a aparência LPC detalhada e rejeita chave inválida', async () => {
+    const auth = await registerUser(ctx);
+    const look = {
+      bodyType: 'female',
+      skin: 'amber',
+      hair: 'hair-bob',
+      hairColor: 'dark_brown',
+      torso: 'torso-tshirt',
+      torsoColor: 'blue',
+      legs: 'legs-pants',
+      legsColor: 'navy',
+      feet: null,
+      feetColor: 'brown',
+    };
+    const base = {
+      name: 'Aria',
+      title: 'Heroína',
+      skin: 'light',
+      hair: 'short-brown',
+      outfit: 'tunic-purple',
+    };
+    await ctx
+      .http()
+      .put('/v1/me/character')
+      .set('authorization', bearer(auth))
+      .send({ ...base, look })
+      .expect(200);
+    const me = await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
+    expect(me.body.character.look).toEqual(look);
+
+    await ctx
+      .http()
+      .put('/v1/me/character')
+      .set('authorization', bearer(auth))
+      .send({ ...base, look: { ...look, hair: '../x' } })
+      .expect(400);
+
+    // salvar sem look apaga a aparência detalhada
+    await ctx
+      .http()
+      .put('/v1/me/character')
+      .set('authorization', bearer(auth))
+      .send(base)
+      .expect(200);
+    const again = await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
+    expect(again.body.character.look).toBeUndefined();
+  });
+
   it('história inexistente é 404 e personagem inválido é 400', async () => {
     const auth = await registerUser(ctx, undefined, { story: false });
     await ctx

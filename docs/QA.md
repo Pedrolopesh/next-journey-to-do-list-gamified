@@ -33,6 +33,15 @@ Marque cada item e anote data, versão e aparelho no `docs/DIARIO.md`.
 - [ ] Desfazer no mesmo dia devolve EXP e moedas; no capítulo fechado mostra o aviso.
 - [ ] Sem internet, o check mostra erro claro e o item volta ao estado anterior (a fila offline é da Fase 7).
 
+## 4b. QG da Home (cenário e personagem)
+- [ ] A Home mostra o QG (cenário parado com o personagem) e o personagem salvo, com a hora do aparelho (manhã, tarde ou noite).
+- [ ] "Ambiente" na Home abre cenário e hora; trocar muda o banner na hora e mostra toast; o valor continua depois de fechar o app.
+- [ ] "Personagem" abre a edição com a prévia fixa no topo; cada opção (corpo, pele, cabelo e cor, roupa, calça, calçado e cores) muda a prévia.
+- [ ] Nome e título ficam por último no formulário; salvar mostra toast e a Home já mostra o novo visual.
+- [ ] Fazer um check na Home faz o personagem comemorar; fechar o capítulo escurece e abre o modal depois.
+- [ ] Em aparelho de entrada, o QG roda fluido (cerca de 30 quadros por segundo) e para em segundo plano e com "reduzir movimento".
+- [ ] Créditos (Configurações) lista a arte LPC com autor e licença.
+
 ## 5. Perfil
 - [ ] Nível, EXP, moedas, conquistas (progresso e estado), Minha história (check, borda roxa, cadeado).
 - [ ] Personalizar personagem: cosmético liberado por conquista aparece disponível.

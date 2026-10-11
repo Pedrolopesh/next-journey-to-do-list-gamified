@@ -1,0 +1,176 @@
+[
+  {
+    "asset": "bodies/male",
+    "author": "bluecarrot16, JaidynReiman, Benjamin K. Smith (BenCreating), Evert, Eliza Wyatt (ElizaWy), TheraHedwig, MuffinElZangano, Durrani, Johannes Sjölund (wulax), Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles"
+  },
+  {
+    "asset": "bodies/female",
+    "author": "Benjamin K. Smith (BenCreating), bluecarrot16, TheraHedwig, Evert, MuffinElZangano, Durrani, Pierre Vigier (pvigier), ElizaWy, Matthew Krohn (makrohn), Johannes Sjölund (wulax), Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles"
+  },
+  {
+    "asset": "human/male",
+    "author": "bluecarrot16, Benjamin K. Smith (BenCreating), Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles"
+  },
+  {
+    "asset": "human/female",
+    "author": "bluecarrot16, Benjamin K. Smith (BenCreating), Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/"
+  },
+  {
+    "asset": "head/faces",
+    "author": "JaidynReiman, ElizaWy, Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://github.com/ElizaWy/LPC/tree/main/Characters/Head"
+  },
+  {
+    "asset": "female/neutral",
+    "author": "JaidynReiman, Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles"
+  },
+  {
+    "asset": "male/neutral",
+    "author": "JaidynReiman, Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles"
+  },
+  {
+    "asset": "hair/buzzcut",
+    "author": "ElizaWy",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/lpc-hair"
+  },
+  {
+    "asset": "hair/bob",
+    "author": "ElizaWy, bluecarrot16",
+    "license": "CC0",
+    "url": "https://opengameart.org/content/lpc-hair"
+  },
+  {
+    "asset": "hair/curly_short",
+    "author": "ElizaWy",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/lpc-hair"
+  },
+  {
+    "asset": "hair/bangs_bun",
+    "author": "ElizaWy, bluecarrot16",
+    "license": "CC0",
+    "url": "https://opengameart.org/content/lpc-hair"
+  },
+  {
+    "asset": "hair/half_up",
+    "author": "ElizaWy",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/lpc-hair"
+  },
+  {
+    "asset": "hair/natural",
+    "author": "ElizaWy, bluecarrot16",
+    "license": "CC0",
+    "url": "https://opengameart.org/content/lpc-hair"
+  },
+  {
+    "asset": "shortsleeve/tshirt",
+    "author": "ElizaWy, JaidynReiman, Stephen Challener (Redshrike), Johannes Sjölund (wulax)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/lpc-revised-character-basics"
+  },
+  {
+    "asset": "longsleeve/longsleeve2",
+    "author": "ElizaWy, JaidynReiman, Stephen Challener (Redshrike), Johannes Sjölund (wulax)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/lpc-revised-character-basics"
+  },
+  {
+    "asset": "longsleeve/longsleeve2_cardigan",
+    "author": "ElizaWy, JaidynReiman, Stephen Challener (Redshrike), Johannes Sjölund (wulax)",
+    "license": "OGA-BY 3.0",
+    "url": "http://opengameart.org/content/lpc-revised-character-basics"
+  },
+  {
+    "asset": "sleeveless/sleeveless2",
+    "author": "ElizaWy, JaidynReiman, Stephen Challener (Redshrike), Johannes Sjölund (wulax)",
+    "license": "OGA-BY 3.0",
+    "url": "http://opengameart.org/content/lpc-revised-character-basics"
+  },
+  {
+    "asset": "pants/male",
+    "author": "bluecarrot16, JaidynReiman, ElizaWy, Matthew Krohn (makrohn), Johannes Sjölund (wulax), Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles"
+  },
+  {
+    "asset": "pants/thin",
+    "author": "bluecarrot16, JaidynReiman, ElizaWy, Joe White, Matthew Krohn (makrohn), Johannes Sjölund (wulax), Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles"
+  },
+  {
+    "asset": "shorts/male",
+    "author": "JaidynReiman, ElizaWy, Bluecarrot16, Johannes Sjölund (wulax), Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing"
+  },
+  {
+    "asset": "shorts/shorts",
+    "author": "ElizaWy, JaidynReiman, Johannes Sjölund (wulax), Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing"
+  },
+  {
+    "asset": "leggings/male",
+    "author": "bluecarrot16, ElizaWy, JaidynReiman, Mandi Paugh, William.Thompsonj, Johannes Sjölund (wulax), Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing"
+  },
+  {
+    "asset": "legs/leggings",
+    "author": "bluecarrot16, ElizaWy, JaidynReiman, Mandi Paugh, William.Thompsonj, Johannes Sjölund (wulax), Stephen Challener (Redshrike)",
+    "license": "OGA-BY 3.0",
+    "url": "http://opengameart.org/content/sara-wizard"
+  },
+  {
+    "asset": "feet/shoes",
+    "author": "JaidynReiman, bluecarrot16, Johannes Sjölund (wulax)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"
+  },
+  {
+    "asset": "basic/thin",
+    "author": "JaidynReiman, Joe White, Johannes Sjölund (wulax)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"
+  },
+  {
+    "asset": "revised/male",
+    "author": "JaidynReiman, ElizaWy, Bluecarrot16, Stephen Challener (Redshrike), Johannes Sjölund (wulax)",
+    "license": "OGA-BY 3.0",
+    "url": "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing"
+  },
+  {
+    "asset": "boots/revised",
+    "author": "ElizaWy, JaidynReiman, Stephen Challener (Redshrike), Johannes Sjölund (wulax)",
+    "license": "OGA-BY 3.0",
+    "url": "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing"
+  },
+  {
+    "asset": "feet/sandals",
+    "author": "Nila122, JaidynReiman, Matthew Krohn (makrohn), Johannes Sjölund (wulax)",
+    "license": "OGA-BY 3.0",
+    "url": "https://opengameart.org/content/lpc-roman-armor"
+  },
+  {
+    "asset": "original/Sharm (interior, objetos e terreno)",
+    "author": "Lanea Zimmerman (Sharm)",
+    "license": "CC-BY 3.0",
+    "url": "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles"
+  }
+]
