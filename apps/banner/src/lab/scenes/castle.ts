@@ -191,6 +191,62 @@ function armor(env: SceneEnv, cx: number, base: number): void {
   rect(env, cx, base - 53, 2, 6, '#c0302f');
 }
 
+function weaponRack(env: SceneEnv, x: number, base: number): void {
+  const wood = '#7a4a22';
+  const woodDark = '#4a2c12';
+  const woodLight = '#a0693a';
+  // armas apoiadas, de trás para a frente (levantadas para as pontas aparecerem)
+  env.ctx.save();
+  env.ctx.translate(0, -10);
+  // espada
+  rect(env, x + 6, base - 46, 4, 30, OUT);
+  rect(env, x + 7, base - 45, 2, 28, STEEL_LIGHT);
+  rect(env, x + 8, base - 45, 1, 28, STEEL_DARK);
+  rect(env, x + 3, base - 19, 10, 4, OUT);
+  rect(env, x + 4, base - 18, 8, 2, GOLD);
+  rect(env, x + 7, base - 15, 2, 8, OUT);
+  rect(env, x + 7, base - 14, 2, 6, '#5a3412');
+  rect(env, x + 6, base - 8, 4, 3, GOLD_DARK);
+  // lança
+  rect(env, x + 15, base - 6, 4, -46, OUT);
+  rect(env, x + 16, base - 6, 2, -44, '#8a6a3a');
+  rect(env, x + 14, base - 60, 6, 9, OUT);
+  rect(env, x + 15, base - 59, 4, 7, STEEL_LIGHT);
+  rect(env, x + 16, base - 62, 2, 3, STEEL_LIGHT);
+  rect(env, x + 17, base - 59, 1, 7, STEEL_DARK);
+  // machado de duas lâminas
+  rect(env, x + 24, base - 6, 4, -40, OUT);
+  rect(env, x + 25, base - 6, 2, -38, '#8a6a3a');
+  rect(env, x + 19, base - 47, 14, 10, OUT);
+  rect(env, x + 20, base - 46, 5, 8, STEEL);
+  rect(env, x + 27, base - 46, 5, 8, STEEL);
+  rect(env, x + 20, base - 46, 5, 1, STEEL_LIGHT);
+  rect(env, x + 27, base - 46, 5, 1, STEEL_LIGHT);
+  rect(env, x + 25, base - 46, 2, 8, STEEL_DARK);
+  // maça com cabeça de espinhos
+  rect(env, x + 34, base - 6, 4, -34, OUT);
+  rect(env, x + 35, base - 6, 2, -32, '#8a6a3a');
+  rect(env, x + 31, base - 46, 10, 10, OUT);
+  rect(env, x + 32, base - 45, 8, 8, STEEL_DARK);
+  rect(env, x + 32, base - 45, 3, 3, STEEL_LIGHT);
+  rect(env, x + 35, base - 48, 2, 2, STEEL);
+  rect(env, x + 29, base - 42, 2, 2, STEEL);
+  rect(env, x + 41, base - 42, 2, 2, STEEL);
+  env.ctx.restore();
+  // suporte de madeira por cima das armas
+  rect(env, x - 1, base - 36, 4, 36, OUT);
+  rect(env, x, base - 35, 2, 34, wood);
+  rect(env, x + 40, base - 36, 4, 36, OUT);
+  rect(env, x + 41, base - 35, 2, 34, wood);
+  for (const y of [base - 24, base - 11]) {
+    rect(env, x - 2, y - 1, 48, 6, OUT);
+    rect(env, x - 1, y, 46, 4, wood);
+    rect(env, x - 1, y, 46, 1, woodLight);
+    rect(env, x - 1, y + 3, 46, 1, woodDark);
+  }
+  block(env, x - 3, base - 3, 50, 4, wood, woodDark, woodLight);
+}
+
 function candelabra(env: SceneEnv, x: number): void {
   const base = 170;
   block(env, x - 5, base - 3, 10, 3, GOLD, GOLD_DARK, GOLD_LIGHT);
@@ -287,6 +343,7 @@ export const castle: SceneDef = {
     torch(env, 260);
     pillar(env, 22);
     pillar(env, SCENE_W - 22);
+    weaponRack(env, 40, 152);
     armor(env, 100, 150);
     armor(env, 290, 150);
     dais(env);
