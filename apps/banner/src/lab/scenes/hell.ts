@@ -19,10 +19,13 @@ const BRAZIERS = [124, 266] as const;
 const BRAZIER_BASE = 162;
 const CX = SCENE_W / 2;
 const DAIS_TOP = 146;
-/** Lago de lava ao fundo, à direita (como o lago do terraço). */
-const LAKE = { x0: 206, top: HORIZON, bottom: 154 };
-const GEYSER = { x: 338, phase: 0 };
-const GEYSER_BASE = 146;
+/** Rio de lava que corre atrás do trono, de ponta a ponta. */
+const LAKE = { x0: -10, top: HORIZON, bottom: 158 };
+const GEYSERS = [
+  { x: 58, phase: 0 },
+  { x: 338, phase: 2.6 },
+] as const;
+const GEYSER_BASE = 148;
 const VOLCANO = { x: 112, peak: 62 };
 
 /** Altura atual do gêiser (0 quando está quieto). */
@@ -139,15 +142,11 @@ function volcano(env: SceneEnv): void {
 
 function lavaLake(env: SceneEnv): void {
   const { ctx } = env;
-  const shore: [number, number][] = [
-    [LAKE.x0, LAKE.top],
-    [LAKE.x0 - 6, 136],
-    [LAKE.x0 + 10, 148],
-    [LAKE.x0 + 44, LAKE.bottom - 2],
-    [LAKE.x0 + 90, LAKE.bottom],
-    [SCENE_W, LAKE.bottom + 3],
-    [SCENE_W, LAKE.top],
-  ];
+  // margem inferior ondulada, de ponta a ponta
+  const shore: [number, number][] = [[LAKE.x0, LAKE.top]];
+  for (let x = LAKE.x0; x <= SCENE_W + 10; x += 20)
+    shore.push([x, LAKE.bottom + Math.round(Math.sin(x / 37) * 2)]);
+  shore.push([SCENE_W + 10, LAKE.top]);
   const path = (): void => {
     ctx.beginPath();
     shore.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
@@ -207,15 +206,16 @@ function lavaLake(env: SceneEnv): void {
     ctx.stroke();
   }
   ctx.restore();
-  // gêiser de lava
-  const h = geyserHeight(env.t, GEYSER.phase);
-  if (h > 0) {
-    rect(env, GEYSER.x - 3, GEYSER_BASE - h, 6, h, '#ff6a1a');
-    rect(env, GEYSER.x - 1, GEYSER_BASE - h, 2, h, '#ffd24a');
-    rect(env, GEYSER.x - 5, GEYSER_BASE - h - 2, 10, 4, '#ff8a2a');
+  // gêiseres de lava
+  for (const g of GEYSERS) {
+    const h = geyserHeight(env.t, g.phase);
+    if (h <= 0) continue;
+    rect(env, g.x - 3, GEYSER_BASE - h, 6, h, '#ff6a1a');
+    rect(env, g.x - 1, GEYSER_BASE - h, 2, h, '#ffd24a');
+    rect(env, g.x - 5, GEYSER_BASE - h - 2, 10, 4, '#ff8a2a');
     for (let k = 0; k < 5; k++) {
-      const a = (env.t * 2 + k * 0.37) % 1;
-      rect(env, GEYSER.x + (k - 2) * 5 * a, GEYSER_BASE - h - 3 + a * a * h * 0.8, 2, 2, '#ffb347');
+      const a = (env.t * 2 + k * 0.37 + g.phase) % 1;
+      rect(env, g.x + (k - 2) * 5 * a, GEYSER_BASE - h - 3 + a * a * h * 0.8, 2, 2, '#ffb347');
     }
   }
 }
@@ -483,7 +483,7 @@ export const hell: SceneDef = {
   id: 'hell',
   name: 'Inferno',
   blurb:
-    'Trono infernal no centro, lago de lava ao fundo à direita, vulcão, braseiros e brasas subindo.',
+    'Trono infernal no centro, rio de lava correndo ao fundo, vulcão, braseiros e brasas subindo.',
   groundY: 182,
   back(env) {
     gradientRect(env, 0, 0, SCENE_W, HORIZON, [...SKY_BY_TIME[env.time]]);
@@ -524,8 +524,6 @@ export const hell: SceneDef = {
     lavaLake(env);
     groundCracks(env);
 
-    stalagmite(env, 152, 132, 22);
-    stalagmite(env, 242, 132, 20, -1);
     stalagmite(env, 22, 206, 42);
     stalagmite(env, 372, 204, 40, -1);
     for (const x of BRAZIERS) brazier(env, x);
@@ -540,6 +538,15 @@ export const hell: SceneDef = {
   lights: (env): Light[] => {
     const all: TimeOfDay[] = ['morning', 'afternoon', 'night'];
     const out: Light[] = [
+      {
+        x: 100,
+        y: 142,
+        radius: 130,
+        color: [255, 110, 30],
+        intensity: 0.5,
+        flicker: true,
+        at: all,
+      },
       {
         x: 300,
         y: 138,
@@ -569,16 +576,18 @@ export const hell: SceneDef = {
         at: all,
       })),
     ];
-    const h = geyserHeight(env.t, GEYSER.phase);
-    if (h > 0)
-      out.push({
-        x: GEYSER.x,
-        y: GEYSER_BASE - h,
-        radius: 60,
-        color: [255, 150, 50],
-        intensity: 0.6,
-        at: all,
-      });
+    for (const g of GEYSERS) {
+      const h = geyserHeight(env.t, g.phase);
+      if (h > 0)
+        out.push({
+          x: g.x,
+          y: GEYSER_BASE - h,
+          radius: 60,
+          color: [255, 150, 50],
+          intensity: 0.6,
+          at: all,
+        });
+    }
     return out;
   },
   tint: {
