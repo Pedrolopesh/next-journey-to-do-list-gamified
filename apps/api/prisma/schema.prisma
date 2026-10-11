@@ -214,6 +214,8 @@ model Character {
   hair      String
   outfit    String
   accessory String?
+  /// Aparência LPC detalhada (validada por `lpcLookSchema` antes de gravar)
+  look      Json?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

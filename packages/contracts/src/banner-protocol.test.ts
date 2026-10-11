@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BANNER_PROTOCOL_VERSION,
   createErrorMessage,
+  lpcLookSchema,
   parseAppToBannerMessage,
   parseBannerToAppMessage,
 } from './banner-protocol';
@@ -45,6 +46,45 @@ describe('protocolo app -> banner', () => {
     expect(parseAppToBannerMessage({ v: 1, type: 'FOO' }).ok).toBe(false);
     expect(parseAppToBannerMessage('não é json').ok).toBe(false);
     expect(parseAppToBannerMessage(undefined).ok).toBe(false);
+  });
+});
+
+describe('aparência LPC detalhada (look)', () => {
+  const look = {
+    bodyType: 'female',
+    skin: 'amber',
+    hair: 'hair-bob',
+    hairColor: 'dark_brown',
+    torso: 'torso-tshirt',
+    torsoColor: 'blue',
+    legs: 'legs-pants',
+    legsColor: 'navy',
+    feet: null,
+    feetColor: 'brown',
+  };
+
+  it('INIT aceita o personagem com look e sem look', () => {
+    const base = {
+      v: 1,
+      type: 'INIT',
+      payload: { scene: 'qg', sceneKey: 'castle', progress: 0, timeOfDay: 'night' },
+    };
+    expect(parseAppToBannerMessage({ ...base, payload: { ...base.payload, character } }).ok).toBe(
+      true,
+    );
+    expect(
+      parseAppToBannerMessage({
+        ...base,
+        payload: { ...base.payload, character: { ...character, look } },
+      }).ok,
+    ).toBe(true);
+  });
+
+  it('rejeita look com chave fora do padrão (nada de caminho ou texto livre)', () => {
+    expect(lpcLookSchema.safeParse({ ...look, hair: '../etc/passwd' }).success).toBe(false);
+    expect(lpcLookSchema.safeParse({ ...look, skin: 'A B' }).success).toBe(false);
+    expect(lpcLookSchema.safeParse({ ...look, bodyType: 'robot' }).success).toBe(false);
+    expect(lpcLookSchema.safeParse({ ...look, hairColor: 'x'.repeat(41) }).success).toBe(false);
   });
 });
 

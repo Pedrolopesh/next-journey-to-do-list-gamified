@@ -17,12 +17,42 @@ export type SceneKind = z.infer<typeof sceneKindSchema>;
 export const timeOfDaySchema = z.enum(['morning', 'afternoon', 'night']);
 export type TimeOfDay = z.infer<typeof timeOfDaySchema>;
 
-/** Chaves das camadas LPC do personagem (salvas no cadastro do personagem). */
+/** Identificador de peça ou cor do catálogo LPC (ex.: `hair-bob`, `dark_brown`). */
+const lpcKeySchema = z
+  .string()
+  .min(1)
+  .max(40)
+  .regex(/^[a-z0-9_-]+$/);
+
+/**
+ * Aparência LPC completa, no nível de detalhe do laboratório: corpo, cor da pele, cabelo e cor,
+ * roupa de cima, calça e calçado com suas cores. `null` = sem a peça (ex.: careca, descalço).
+ */
+export const lpcLookSchema = z.object({
+  bodyType: z.enum(['male', 'female']),
+  skin: lpcKeySchema,
+  hair: lpcKeySchema.nullable(),
+  hairColor: lpcKeySchema,
+  torso: lpcKeySchema.nullable(),
+  torsoColor: lpcKeySchema,
+  legs: lpcKeySchema.nullable(),
+  legsColor: lpcKeySchema,
+  feet: lpcKeySchema.nullable(),
+  feetColor: lpcKeySchema,
+});
+export type LpcLook = z.infer<typeof lpcLookSchema>;
+
+/**
+ * Chaves das camadas do personagem (salvas no cadastro). `skin`, `hair`, `outfit` e `accessory` são as
+ * chaves simples do app (e das recompensas de conquista); `look` é a aparência LPC detalhada e, quando
+ * existe, o banner a usa no lugar do mapa das chaves simples.
+ */
 export const characterLayersSchema = z.object({
   skin: z.string().min(1),
   hair: z.string().min(1),
   outfit: z.string().min(1),
   accessory: z.string().min(1).optional(),
+  look: lpcLookSchema.optional(),
 });
 export type CharacterLayers = z.infer<typeof characterLayersSchema>;
 
