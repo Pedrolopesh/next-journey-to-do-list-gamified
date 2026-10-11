@@ -270,7 +270,7 @@ function buildLounger(): HTMLCanvasElement {
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) return canvas;
   const L = 46;
-  const W = 16;
+  const W = 20;
   /** Ponto do chão (l: comprimento, w: largura, z: altura) projetado na tela. */
   const P = (l: number, w: number, z = 0): Point => [
     LOUNGER_OX + l + w * 0.55,
@@ -293,7 +293,7 @@ function buildLounger(): HTMLCanvasElement {
   ] as const) {
     const [x, y] = P(l, w);
     ctx.fillStyle = WOOD_DARK;
-    ctx.fillRect(Math.round(x) - 1, Math.round(y) - 9, 2, 9);
+    ctx.fillRect(Math.round(x) - 1, Math.round(y) - 9, 3, 9);
     ctx.fillStyle = WOOD;
     ctx.fillRect(Math.round(x) - 1, Math.round(y) - 9, 1, 9);
   }
@@ -313,22 +313,22 @@ function buildLounger(): HTMLCanvasElement {
     const b = a + 4;
     poly(
       ctx,
-      [P(a, W, seatZ(a)), P(b, W, seatZ(b)), P(b, W, seatZ(b) - 3), P(a, W, seatZ(a) - 3)],
+      [P(a, W, seatZ(a)), P(b, W, seatZ(b)), P(b, W, seatZ(b) - 5), P(a, W, seatZ(a) - 5)],
       k % 2 ? BLUE_DARK : WHITE_DARK,
     );
   }
   // travessa de madeira sob o assento
-  poly(ctx, [P(0, W, 5), P(34, W, 5), P(L, W, 11), P(L, W, 9), P(34, W, 3), P(0, W, 3)], WOOD);
+  poly(ctx, [P(0, W, 3), P(34, W, 3), P(L, W, 9), P(L, W, 7), P(34, W, 1), P(0, W, 1)], WOOD);
   // encosto: borda lateral e a parte de trás, listrada na vertical
-  poly(ctx, [P(0, W, 8), P(-10, W, 30), P(-6, W, 30), P(3, W, 8)], BLUE_DARK);
-  for (let k = 0; k < 4; k++) {
+  poly(ctx, [P(0, W, 8), P(-10, W, 30), P(-5, W, 30), P(5, W, 8)], BLUE_DARK);
+  for (let k = 0; k < 5; k++) {
     const w1 = k * 4;
     const w2 = w1 + 4;
     poly(ctx, [P(0, w1, 8), P(0, w2, 8), P(-10, w2, 30), P(-10, w1, 30)], k % 2 ? BLUE : WHITE);
   }
   poly(ctx, [P(0, W, 8), P(-10, W, 30), P(-10, W, 28), P(0, W, 6)], WOOD);
   // topo do encosto com realce
-  poly(ctx, [P(-10, 0, 30), P(-10, W, 30), P(-6, W, 30), P(-6, 0, 30)], WHITE_DARK);
+  poly(ctx, [P(-10, 0, 30), P(-10, W, 30), P(-5, W, 30), P(-5, 0, 30)], WHITE_DARK);
 
   // mesinha com drink, ao lado da cabeceira
   ctx.fillStyle = '#b9b4a8';
