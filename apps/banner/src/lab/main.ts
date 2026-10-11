@@ -1,22 +1,14 @@
 import {
   type AnimationName,
   type BodyType,
-  buildRecolorMap,
   type Catalog,
   creditsFor,
   type Direction,
-  FRAME,
-  frameRect,
-  layersFor,
-  type LayerSpec,
-  recolorPixels,
-  type Selection,
-} from './compose';
-import { SCENES } from './scenes';
-import { applyTint, drawLights, vignette } from './scenes/lighting';
-import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay, TIMES } from './scenes/types';
+} from '../qg/compose';
+import { createQgEngine, loadImage, type QgState } from '../qg/engine';
+import { SCENES } from '../qg/scenes';
+import { type TimeOfDay, TIMES } from '../qg/scenes/types';
 
-const FPS: Record<AnimationName, number> = { idle: 2, walk: 9, run: 12 };
 const SKINS = ['light', 'amber', 'olive', 'taupe', 'bronze', 'brown', 'black'];
 const HAIR_COLORS = [
   'black',
@@ -51,18 +43,6 @@ const $ = <T extends HTMLElement>(id: string): T => {
   return el as T;
 };
 
-const loadImage = (src: string): Promise<HTMLImageElement> =>
-  new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => {
-      resolve(image);
-    };
-    image.onerror = () => {
-      reject(new Error(`falha ao carregar ${src}`));
-    };
-    image.src = src;
-  });
-
 const catalog = (await (await fetch('/lab/catalog.json')).json()) as Catalog;
 const scene = Object.fromEntries(
   await Promise.all(
@@ -76,7 +56,7 @@ const scene = Object.fromEntries(
   ),
 ) as Record<string, HTMLImageElement>;
 
-const state = {
+const state: QgState = {
   selection: {
     bodyType: 'male',
     skin: 'light',
@@ -88,143 +68,26 @@ const state = {
     legsColor: 'navy',
     feet: 'feet-basic-shoes',
     feetColor: 'brown',
-  } as Selection,
-  anim: 'idle' as AnimationName,
-  direction: 'down' as Direction,
+  },
+  anim: 'idle',
+  direction: 'down',
   sceneId: 'cabin',
-  time: 'afternoon' as TimeOfDay,
+  time: 'afternoon',
 };
 
-/** Folhas recoloridas em cache: uma por camada, animação e cor. */
-const sheets = new Map<string, Promise<HTMLCanvasElement>>();
 let requests = 0;
-
-function sheetFor(spec: LayerSpec, anim: AnimationName): Promise<HTMLCanvasElement> {
-  const key = `${spec.path}|${anim}|${spec.material ?? ''}|${spec.color ?? ''}`;
-  let sheet = sheets.get(key);
-  if (!sheet) {
-    requests += 1;
-    sheet = loadImage(`/lab/assets/lpc/${spec.path}${anim}.png`).then((image) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = image.width;
-      canvas.height = image.height;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      if (!ctx) throw new Error('sem canvas 2d');
-      ctx.drawImage(image, 0, 0);
-      const palette = spec.material ? catalog.palettes[spec.material] : null;
-      const source = palette?.colors[palette.base];
-      const target = spec.color ? palette?.colors[spec.color] : undefined;
-      if (source && target && spec.color !== palette?.base) {
-        const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        recolorPixels(data.data, buildRecolorMap(source, target));
-        ctx.putImageData(data, 0, 0);
-      }
-      return canvas;
-    });
-    sheets.set(key, sheet);
-  }
-  return sheet;
-}
-
 const canvas = $<HTMLCanvasElement>('scene');
-const ctx = canvas.getContext('2d');
-if (!ctx) throw new Error('sem canvas 2d');
-
-/** Resolução interna: escolhe um fator inteiro para os sprites ficarem nítidos e o resto, suave. */
-let scale = 1;
-function fitCanvas(): void {
-  const wanted = (canvas.clientWidth || SCENE_W) * (window.devicePixelRatio || 1);
-  scale = Math.min(5, Math.max(2, Math.round(wanted / SCENE_W)));
-  canvas.width = SCENE_W * scale;
-  canvas.height = SCENE_H * scale;
-}
-fitCanvas();
-window.addEventListener('resize', fitCanvas);
-
-type ResolvedLayer = { spec: LayerSpec; sheet: HTMLCanvasElement };
-const resolvedCache = new Map<string, ResolvedLayer[]>();
-
-/** Camadas prontas (folhas recoloridas) de um personagem; aguarda o carregamento na primeira vez. */
-async function resolveLayers(selection: Selection, anim: AnimationName): Promise<ResolvedLayer[]> {
-  const specs = layersFor(catalog, selection);
-  const signature = JSON.stringify([specs, anim]);
-  const cached = resolvedCache.get(signature);
-  if (cached) return cached;
-  const next = await Promise.all(
-    specs.map(async (spec) => ({ spec, sheet: await sheetFor(spec, anim) })),
-  );
-  resolvedCache.set(signature, next);
-  return next;
-}
-
-function drawCharacter(
-  layers: ResolvedLayer[],
-  anim: AnimationName,
-  direction: Direction,
-  x: number,
-  feetY: number,
-  clock: number,
-): void {
-  const index = Math.floor(clock * FPS[anim]) % catalog.animations[anim];
-  const { sy } = frameRect(direction, 0);
-  // Sombra suave no chão, embaixo dos pés
-  if (ctx) {
-    ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.ellipse(x, feetY - 1, 13, 3.6, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-  // Nos quadros LPC os pés ficam perto da linha 60 de 64
-  for (const { sheet } of layers) {
-    ctx?.drawImage(
-      sheet,
-      index * FRAME,
-      sy,
-      FRAME,
-      FRAME,
-      Math.round(x - FRAME / 2),
-      Math.round(feetY - 60),
-      FRAME,
-      FRAME,
-    );
-  }
-}
-
-let last = performance.now();
-let time = 0;
-let current: ResolvedLayer[] = [];
-
-async function frame(now: number): Promise<void> {
-  const dt = (now - last) / 1000;
-  last = now;
-  time += dt;
-  const def = SCENES.find((candidate) => candidate.id === state.sceneId) ?? SCENES[0];
-  if (!ctx || !def) return;
-  const env: SceneEnv = { ctx, time: state.time, t: time, scroll: 0, tiles: scene };
-
-  current = await resolveLayers(state.selection, state.anim);
-  const extras = await Promise.all(
-    (def.extras ?? []).map(async (extra) => ({
-      extra,
-      layers: await resolveLayers({ ...state.selection, ...extra.selection }, extra.anim),
-    })),
-  );
-
-  ctx.setTransform(scale, 0, 0, scale, 0, 0);
-  ctx.imageSmoothingEnabled = false; // sprites e tiles continuam nítidos
-  ctx.clearRect(0, 0, SCENE_W, SCENE_H);
-  def.back(env);
-  for (const { extra, layers } of extras)
-    drawCharacter(layers, extra.anim, extra.direction, extra.x, extra.feetY, time);
-  drawCharacter(current, state.anim, state.direction, SCENE_W / 2, def.groundY, time);
-  def.front?.(env);
-  applyTint(env, def.tint?.[state.time]);
-  drawLights(env, def.lights?.(env) ?? []);
-  vignette(env);
-  requestAnimationFrame((t) => void frame(t));
-}
+const engine = createQgEngine({
+  canvas,
+  catalog,
+  tiles: scene,
+  sheetSrc: (path, anim) => {
+    requests += 1;
+    return `/lab/assets/lpc/${path}${anim}.png`;
+  },
+  initial: state,
+});
+window.addEventListener('resize', engine.resize);
 
 // ---- Controles ----
 function buttons<T extends string>(
@@ -450,4 +313,4 @@ function renderCredits(): void {
 setInterval(renderCredits, 600);
 renderCredits();
 
-requestAnimationFrame((t) => void frame(t));
+engine.start();

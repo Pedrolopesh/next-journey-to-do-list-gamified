@@ -100,4 +100,105 @@ describe('controlador do banner', () => {
     expect(sent[0]).toMatchObject({ type: 'ERROR', payload: { code: 'INVALID_MESSAGE' } });
     expect(root.classList.contains('running')).toBe(false);
   });
+
+  describe('cena QG (Home)', () => {
+    function setupQg() {
+      setup(); // só para montar o DOM
+      const calls: string[] = [];
+      const qg = {
+        show: () => calls.push('show'),
+        hide: () => calls.push('hide'),
+        setScene: (id: string) => calls.push(`scene:${id}`),
+        setTime: (time: string) => calls.push(`time:${time}`),
+        setCharacter: () => calls.push('character'),
+        celebrate: () => calls.push('celebrate'),
+        pause: () => calls.push('pause'),
+        resume: () => calls.push('resume'),
+        fadeOut: () => calls.push('fadeOut'),
+        fadeIn: () => calls.push('fadeIn'),
+      };
+      const sent: BannerToAppMessage[] = [];
+      const root = document.getElementById('banner') as HTMLElement;
+      const controller = createBannerController({
+        scene: createMapScene(root),
+        qg,
+        root,
+        send: (message) => sent.push(message),
+        bannerVersion: '9.9.9',
+      });
+      const receive = (raw: unknown): void => {
+        const result = parseAppToBannerMessage(raw);
+        if (result.ok) controller.handleMessage(result.message);
+        else controller.handleInvalid(result.error);
+      };
+      return { root, calls, sent, receive };
+    }
+
+    const init = {
+      v: 1,
+      type: 'INIT',
+      payload: { scene: 'qg', character, sceneKey: 'castle', progress: 0, timeOfDay: 'night' },
+    };
+
+    it('INIT qg configura cenário, hora e personagem e mostra o QG', () => {
+      const { calls, root, receive, sent } = setupQg();
+      receive(init);
+      expect(calls).toEqual(['scene:castle', 'time:night', 'character', 'show']);
+      expect(root.dataset.sceneKey).toBe('castle');
+      expect(sent).toHaveLength(0);
+    });
+
+    it('SET_TIME_OF_DAY e SET_CHARACTER chegam ao QG', () => {
+      const { calls, receive } = setupQg();
+      receive(init);
+      calls.length = 0;
+      receive({ v: 1, type: 'SET_TIME_OF_DAY', payload: { timeOfDay: 'morning' } });
+      receive({ v: 1, type: 'SET_CHARACTER', payload: { character } });
+      expect(calls).toEqual(['time:morning', 'character']);
+    });
+
+    it('ITEM_CHECKED no QG faz o personagem comemorar em vez de correr no Mapa', () => {
+      const { calls, root, receive } = setupQg();
+      receive(init);
+      receive({ v: 1, type: 'ITEM_CHECKED', payload: { progress: 0.4 } });
+      expect(calls).toContain('celebrate');
+      expect(root.classList.contains('running')).toBe(false);
+    });
+
+    it('CHAPTER_COMPLETED no QG escurece, volta e avisa CHAPTER_TRANSITION_DONE', () => {
+      const { calls, receive, sent } = setupQg();
+      receive(init);
+      receive({ v: 1, type: 'CHAPTER_COMPLETED', payload: { nextSceneKey: 'x' } });
+      expect(calls).toContain('fadeOut');
+      expect(sent).toHaveLength(0);
+      vi.advanceTimersByTime(FADE_MS);
+      expect(calls).toContain('fadeIn');
+      vi.advanceTimersByTime(FADE_MS);
+      expect(sent).toEqual([{ v: 1, type: 'CHAPTER_TRANSITION_DONE' }]);
+    });
+
+    it('PAUSE e RESUME também controlam o QG', () => {
+      const { calls, receive } = setupQg();
+      receive({ v: 1, type: 'PAUSE' });
+      receive({ v: 1, type: 'RESUME' });
+      expect(calls).toEqual(['pause', 'resume']);
+    });
+
+    it('voltar para o Mapa esconde o QG', () => {
+      const { calls, receive } = setupQg();
+      receive(init);
+      receive({
+        v: 1,
+        type: 'INIT',
+        payload: {
+          scene: 'map',
+          character,
+          sceneKey: 'story-1-chapter-1',
+          progress: 0.2,
+          timeOfDay: 'night',
+        },
+      });
+      expect(calls).toContain('hide');
+    });
+  });
 });

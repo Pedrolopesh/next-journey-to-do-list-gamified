@@ -45,6 +45,9 @@
         height: 180px;
         background: #000;
       }
+      iframe.qg {
+        height: 220px;
+      }
     </style>
   </head>
   <body>
@@ -65,12 +68,38 @@
       <button data-send="RESUME" class="secondary">RESUME</button>
       <button data-send="INVALID" class="secondary">mensagem inválida</button>
     </div>
+    <div class="panel">
+      <button data-send="INIT_QG">INIT (QG / Home)</button>
+      <label
+        >cenário
+        <select id="scenario">
+          <option value="cabin">cabana</option>
+          <option value="beach">praia</option>
+          <option value="rooftop">topo do prédio</option>
+          <option value="zombie">zumbi</option>
+          <option value="castle">castelo</option>
+          <option value="paradise">paraíso</option>
+          <option value="hell">inferno</option>
+        </select></label
+      >
+      <label
+        >hora
+        <select id="time">
+          <option value="morning">manhã</option>
+          <option value="afternoon" selected>tarde</option>
+          <option value="night">noite</option>
+        </select></label
+      >
+      <button data-send="SET_TIME_QG" class="secondary">SET_TIME_OF_DAY</button>
+    </div>
     <pre id="log"></pre>
     <script type="module">
       const frame = document.getElementById('frame');
       const progress = document.getElementById('progress');
       const out = document.getElementById('out');
       const log = document.getElementById('log');
+      const scenario = document.getElementById('scenario');
+      const time = document.getElementById('time');
       const character = { skin: 'light', hair: 'short-brown', outfit: 'tunic-purple' };
       const p = () => Number(progress.value);
       const builders = {
@@ -84,6 +113,22 @@
             progress: p(),
             timeOfDay: 'night',
           },
+        }),
+        INIT_QG: () => ({
+          v: 1,
+          type: 'INIT',
+          payload: {
+            scene: 'qg',
+            character,
+            sceneKey: scenario.value,
+            progress: 0,
+            timeOfDay: time.value,
+          },
+        }),
+        SET_TIME_QG: () => ({
+          v: 1,
+          type: 'SET_TIME_OF_DAY',
+          payload: { timeOfDay: time.value },
         }),
         ITEM_CHECKED: () => ({ v: 1, type: 'ITEM_CHECKED', payload: { progress: p() } }),
         CHAPTER_COMPLETED: () => ({
@@ -110,6 +155,7 @@
       document.querySelectorAll('[data-send]').forEach((button) => {
         button.addEventListener('click', () => {
           const message = builders[button.dataset.send]();
+          if (message.type === 'INIT') frame.classList.toggle('qg', message.payload.scene === 'qg');
           write('app -> banner', message);
           frame.contentWindow.postMessage(message, '*');
         });
