@@ -3,8 +3,6 @@ import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_H, SCENE_W } from './types';
 
 const HORIZON = 126;
-const LAVA_TOP = 128;
-const LAVA_BOTTOM = 160;
 const OUT = '#120406';
 
 const SKY_BY_TIME = {
@@ -17,12 +15,12 @@ function by<T>(time: TimeOfDay, day: T, night: T): T {
   return time === 'night' ? night : day;
 }
 
-const BRAZIERS = [138, 252] as const;
-const BRAZIER_BASE = 172;
-const GEYSERS = [
-  { x: 58, phase: 0 },
-  { x: 334, phase: 2.6 },
-] as const;
+const BRAZIERS = [124, 266] as const;
+const BRAZIER_BASE = 162;
+const CX = SCENE_W / 2;
+const DAIS_TOP = 146;
+const LAKE = { cx: 70, cy: 186, rx: 62, ry: 22 };
+const GEYSER = { x: LAKE.cx + 6, phase: 0 };
 const VOLCANO = { x: 112, peak: 62 };
 
 /** Altura atual do gêiser (0 quando está quieto). */
@@ -137,37 +135,181 @@ function volcano(env: SceneEnv): void {
   }
 }
 
-function lava(env: SceneEnv): void {
-  tileArea(env, env.tiles.lava, 0, 160, 0, LAVA_TOP, SCENE_W, LAVA_BOTTOM - LAVA_TOP, env.t * 14);
-  gradientRect(env, 0, LAVA_TOP, SCENE_W, 12, ['rgba(60,10,6,0.55)', 'rgba(60,10,6,0)']);
-  rect(env, 0, LAVA_TOP - 1, SCENE_W, 2, '#ffb347');
+function lavaLake(env: SceneEnv): void {
+  const { ctx } = env;
+  const path = (grow = 0): void => {
+    ctx.beginPath();
+    ctx.ellipse(LAKE.cx, LAKE.cy, LAKE.rx + grow, LAKE.ry + grow * 0.6, 0, 0, Math.PI * 2);
+  };
+  // borda de rocha escura com brilho
+  path(4);
+  ctx.fillStyle = OUT;
+  ctx.fill();
+  path(2);
+  ctx.fillStyle = by(env.time, '#4a1a14', '#2a0e0c');
+  ctx.fill();
+  path(1);
+  ctx.fillStyle = '#ff9a3c';
+  ctx.fill();
+  ctx.save();
+  path();
+  ctx.clip();
+  const x0 = LAKE.cx - LAKE.rx;
+  const y0 = LAKE.cy - LAKE.ry;
+  tileArea(env, env.tiles.lava, 0, 160, x0, y0, LAKE.rx * 2, LAKE.ry * 2, env.t * 10);
+  gradientRect(env, x0, y0, LAKE.rx * 2, LAKE.ry * 2, [
+    'rgba(255,220,120,0.3)',
+    'rgba(120,20,6,0.35)',
+  ]);
   // bolhas que crescem e estouram
   const random = rng(12);
-  const { ctx } = env;
-  for (let i = 0; i < 10; i++) {
-    const x = random() * SCENE_W;
-    const y = LAVA_TOP + 6 + random() * 20;
+  for (let i = 0; i < 9; i++) {
+    const x = x0 + 8 + random() * (LAKE.rx * 2 - 16);
+    const y = y0 + 6 + random() * (LAKE.ry * 2 - 12);
     const phase = (env.t * 0.6 + random() * 3) % 1;
-    const r = phase * 3.2;
     ctx.strokeStyle = phase > 0.85 ? '#fff0b0' : '#ffd24a';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(x, y, Math.max(0.5, r), 0, Math.PI * 2);
+    ctx.arc(x, y, Math.max(0.5, phase * 3.2), 0, Math.PI * 2);
     ctx.stroke();
   }
-  // gêiseres de lava
-  for (const g of GEYSERS) {
-    const h = geyserHeight(env.t, g.phase);
-    if (h <= 0) continue;
-    const base = LAVA_BOTTOM - 6;
-    rect(env, g.x - 3, base - h, 6, h, '#ff6a1a');
-    rect(env, g.x - 1, base - h, 2, h, '#ffd24a');
-    rect(env, g.x - 5, base - h - 2, 10, 4, '#ff8a2a');
+  ctx.restore();
+  // gêiser de lava no meio do lago
+  const h = geyserHeight(env.t, GEYSER.phase);
+  if (h > 0) {
+    const base = LAKE.cy + 2;
+    rect(env, GEYSER.x - 3, base - h, 6, h, '#ff6a1a');
+    rect(env, GEYSER.x - 1, base - h, 2, h, '#ffd24a');
+    rect(env, GEYSER.x - 5, base - h - 2, 10, 4, '#ff8a2a');
     for (let k = 0; k < 5; k++) {
-      const a = (env.t * 2 + k * 0.37 + g.phase) % 1;
-      rect(env, g.x + (k - 2) * 5 * a, base - h - 3 + a * a * h * 0.8, 2, 2, '#ffb347');
+      const a = (env.t * 2 + k * 0.37) % 1;
+      rect(env, GEYSER.x + (k - 2) * 5 * a, base - h - 3 + a * a * h * 0.8, 2, 2, '#ffb347');
     }
   }
+}
+
+function dais(env: SceneEnv): void {
+  const rock = by(env.time, '#4a2a2e', '#2e1a20');
+  const rockLight = by(env.time, '#7a4a4a', '#4a2a32');
+  const rockDark = by(env.time, '#2a1418', '#180a0e');
+  const steps: [number, number, number, number][] = [
+    [118, 162, 154, 10],
+    [130, 154, 130, 9],
+    [142, DAIS_TOP, 106, 9],
+  ];
+  for (const [x, y, w, h] of steps) {
+    rect(env, x - 1, y - 1, w + 2, h + 2, OUT);
+    rect(env, x, y, w, h, rock);
+    rect(env, x, y, w, 1, rockLight);
+    rect(env, x, y + h - 1, w, 1, rockDark);
+    // veios de lava na face do degrau
+    rect(env, x + 6, y + h - 3, 14, 1, '#ff7a1a');
+    rect(env, x + w - 24, y + h - 4, 18, 1, '#ff7a1a');
+  }
+  // tapete de brasa que desce pelos degraus
+  rect(env, CX - 18, DAIS_TOP + 1, 36, 8, '#6a1018');
+  rect(env, CX - 18, 155, 36, 8, '#6a1018');
+  rect(env, CX - 18, 163, 36, 9, '#6a1018');
+  rect(env, CX - 20, 172, 40, 48, '#6a1018');
+  rect(env, CX - 20, 172, 2, 48, '#ff7a1a');
+  rect(env, CX + 18, 172, 2, 48, '#ff7a1a');
+}
+
+function throne(env: SceneEnv): void {
+  const { ctx } = env;
+  const base = DAIS_TOP;
+  const top = 62;
+  const body = by(env.time, '#2e1822', '#1c0e14');
+  const trim = '#8a2a3a';
+  const bone = '#e8dcc0';
+  const glowColor = Math.sin(env.t * 2) > -0.3 ? '#ff4a2a' : '#ff8a3a';
+
+  // chifres curvos nas laterais
+  for (const side of [-1, 1]) {
+    for (const [color, width] of [
+      [OUT, 6],
+      [bone, 4],
+    ] as const) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(CX + side * 20, top + 36);
+      ctx.quadraticCurveTo(CX + side * 40, top + 30, CX + side * 36, top + 4);
+      ctx.stroke();
+    }
+  }
+  // costas pontiagudas
+  const outline: [number, number][] = [
+    [-22, base - 16],
+    [-27, base - 50],
+    [-19, base - 56],
+    [-16, top + 20],
+    [-9, top + 24],
+    [-6, top + 10],
+    [0, top],
+    [6, top + 10],
+    [9, top + 24],
+    [16, top + 20],
+    [19, base - 56],
+    [27, base - 50],
+    [22, base - 16],
+  ];
+  const trace = (grow: number): void => {
+    ctx.beginPath();
+    outline.forEach(([dx, y], i) => {
+      const x = CX + dx + Math.sign(dx) * grow;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+  };
+  trace(1);
+  ctx.fillStyle = OUT;
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = OUT;
+  ctx.stroke();
+  trace(0);
+  ctx.fillStyle = body;
+  ctx.fill();
+  // painel interno com runa brilhante
+  rect(env, CX - 12, top + 30, 24, base - top - 64, '#4a1420');
+  rect(env, CX - 12, top + 30, 2, base - top - 64, '#7a2030');
+  rect(env, CX - 1, top + 36, 2, 26, glowColor);
+  rect(env, CX - 7, top + 44, 14, 2, glowColor);
+  rect(env, CX - 5, top + 52, 10, 2, glowColor);
+  rect(env, CX - 3, top + 58, 6, 2, glowColor);
+  // crânio no topo
+  skull(env, CX - 6, top - 12);
+  // colunas de ossos nas laterais
+  for (const side of [-1, 1]) {
+    const x = side < 0 ? CX - 30 : CX + 24;
+    rect(env, x - 1, top + 32, 8, base - top - 50, OUT);
+    rect(env, x, top + 33, 6, base - top - 52, trim);
+    rect(env, x, top + 33, 1, base - top - 52, '#c0485a');
+    for (let k = 0; k < 3; k++) rect(env, x + 1, top + 42 + k * 12, 4, 2, bone);
+  }
+  // braços com crânios nas pontas
+  for (const side of [-1, 1]) {
+    const x = side < 0 ? CX - 32 : CX + 23;
+    rect(env, x - 1, base - 30, 12, 9, OUT);
+    rect(env, x, base - 29, 10, 7, body);
+    rect(env, x, base - 29, 10, 1, trim);
+    rect(env, x + (side < 0 ? 0 : 3), base - 36, 7, 7, OUT);
+    rect(env, x + (side < 0 ? 1 : 4), base - 35, 5, 5, bone);
+    rect(env, x + (side < 0 ? 2 : 5), base - 33, 1, 1, glowColor);
+    rect(env, x + (side < 0 ? 4 : 7), base - 33, 1, 1, glowColor);
+  }
+  // assento de couro sangue e base
+  rect(env, CX - 21, base - 23, 42, 8, OUT);
+  rect(env, CX - 20, base - 22, 40, 6, '#7a1420');
+  rect(env, CX - 20, base - 22, 40, 1, '#c0303c');
+  rect(env, CX - 25, base - 15, 50, 15, OUT);
+  rect(env, CX - 24, base - 14, 48, 13, body);
+  rect(env, CX - 24, base - 14, 48, 1, trim);
+  rect(env, CX - 24, base - 2, 48, 1, '#150a0e');
+  for (const dx of [-17, -8, 8, 17]) rect(env, CX + dx, base - 11, 1, 6, glowColor);
 }
 
 function stalagmite(env: SceneEnv, x: number, base: number, h: number, flip = 1): void {
@@ -308,7 +450,7 @@ function groundCracks(env: SceneEnv): void {
 export const hell: SceneDef = {
   id: 'hell',
   name: 'Inferno',
-  blurb: 'Vulcão, rio de lava com bolhas e gêiseres, braseiros, ossos e brasas subindo.',
+  blurb: 'Trono infernal no centro, lago de lava à esquerda, vulcão, braseiros e brasas subindo.',
   groundY: 182,
   back(env) {
     gradientRect(env, 0, 0, SCENE_W, HORIZON, [...SKY_BY_TIME[env.time]]);
@@ -342,41 +484,34 @@ export const hell: SceneDef = {
       'rgba(255,100,30,0.6)',
     );
 
-    lava(env);
-
-    // Chão de rocha com borda iluminada pela lava
-    tileArea(env, env.tiles.lavarock, 0, 160, 0, LAVA_BOTTOM, SCENE_W, SCENE_H - LAVA_BOTTOM);
-    rect(env, 0, LAVA_BOTTOM - 2, SCENE_W, 2, 'rgba(0,0,0,0.55)');
-    gradientRect(env, 0, LAVA_BOTTOM, SCENE_W, 14, ['rgba(255,110,30,0.35)', 'rgba(255,110,30,0)']);
+    // Chão de rocha até o horizonte, com névoa avermelhada na base das montanhas
+    tileArea(env, env.tiles.lavarock, 0, 160, 0, HORIZON, SCENE_W, SCENE_H - HORIZON);
+    gradientRect(env, 0, HORIZON, SCENE_W, 26, ['rgba(255,90,30,0.4)', 'rgba(255,90,30,0)']);
+    rect(env, 0, HORIZON - 1, SCENE_W, 2, 'rgba(0,0,0,0.5)');
     groundCracks(env);
 
-    stalagmite(env, 22, 206, 44);
+    stalagmite(env, 152, 132, 22);
+    stalagmite(env, 242, 132, 20, -1);
     stalagmite(env, 372, 204, 40, -1);
-    skull(env, 40, 184);
-    ribcage(env, 304, 202);
-    skullPike(env, 352, 196);
-    trident(env, 82, 200);
     for (const x of BRAZIERS) brazier(env, x);
+    dais(env);
+    throne(env);
+    lavaLake(env);
+    skull(env, 150, 200);
+    ribcage(env, 292, 204);
+    trident(env, 330, 200);
+    skullPike(env, 362, 190);
     embers(env);
   },
   lights: (env): Light[] => {
     const all: TimeOfDay[] = ['morning', 'afternoon', 'night'];
     const out: Light[] = [
       {
-        x: 100,
-        y: 144,
-        radius: 130,
+        x: LAKE.cx,
+        y: LAKE.cy - 4,
+        radius: 110,
         color: [255, 110, 30],
-        intensity: 0.5,
-        flicker: true,
-        at: all,
-      },
-      {
-        x: 300,
-        y: 144,
-        radius: 130,
-        color: [255, 110, 30],
-        intensity: 0.5,
+        intensity: 0.55,
         flicker: true,
         at: all,
       },
@@ -389,6 +524,7 @@ export const hell: SceneDef = {
         flicker: true,
         at: all,
       },
+      { x: CX, y: 120, radius: 90, color: [255, 70, 40], intensity: 0.28, flicker: true, at: all },
       ...BRAZIERS.map((x) => ({
         x,
         y: BRAZIER_BASE - 26,
@@ -399,18 +535,16 @@ export const hell: SceneDef = {
         at: all,
       })),
     ];
-    for (const g of GEYSERS) {
-      const h = geyserHeight(env.t, g.phase);
-      if (h > 0)
-        out.push({
-          x: g.x,
-          y: LAVA_BOTTOM - 6 - h,
-          radius: 60,
-          color: [255, 150, 50],
-          intensity: 0.6,
-          at: all,
-        });
-    }
+    const h = geyserHeight(env.t, GEYSER.phase);
+    if (h > 0)
+      out.push({
+        x: GEYSER.x,
+        y: LAKE.cy - h,
+        radius: 60,
+        color: [255, 150, 50],
+        intensity: 0.6,
+        at: all,
+      });
     return out;
   },
   tint: {
