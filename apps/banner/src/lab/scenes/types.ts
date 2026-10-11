@@ -1,0 +1,59 @@
+import type { AnimationName, Direction, Selection } from '../compose';
+
+export type TimeOfDay = 'morning' | 'afternoon' | 'night';
+export const TIMES: { value: TimeOfDay; label: string }[] = [
+  { value: 'morning', label: 'Manhã' },
+  { value: 'afternoon', label: 'Tarde' },
+  { value: 'night', label: 'Noite' },
+];
+
+export const SCENE_W = 390;
+export const SCENE_H = 220;
+
+/** Tudo que uma cena precisa para desenhar um quadro. */
+export type SceneEnv = {
+  ctx: CanvasRenderingContext2D;
+  time: TimeOfDay;
+  /** Segundos desde o início, para animações (chamas, ondas, estrelas). */
+  t: number;
+  /** Deslocamento horizontal do cenário (quando o personagem anda ou corre). */
+  scroll: number;
+  tiles: Record<string, HTMLImageElement>;
+};
+
+export type Light = {
+  x: number;
+  y: number;
+  radius: number;
+  color: [number, number, number];
+  /** 0 a 1. */
+  intensity: number;
+  flicker?: boolean;
+  /** Só acende nestas horas (padrão: noite). */
+  at?: TimeOfDay[];
+};
+
+export type ExtraCharacter = {
+  x: number;
+  /** Altura dos pés. */
+  feetY: number;
+  anim: AnimationName;
+  direction: Direction;
+  selection: Partial<Selection>;
+};
+
+export type Tint = { color: string; alpha: number };
+
+export type SceneDef = {
+  id: string;
+  name: string;
+  blurb: string;
+  /** Linha dos pés do personagem principal. */
+  groundY: number;
+  back: (env: SceneEnv) => void;
+  front?: (env: SceneEnv) => void;
+  lights?: (env: SceneEnv) => Light[];
+  extras?: ExtraCharacter[];
+  /** Cor aplicada sobre toda a cena por hora do dia (multiplicação). */
+  tint?: Partial<Record<TimeOfDay, Tint>>;
+};

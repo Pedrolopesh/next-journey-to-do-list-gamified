@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Next Journey — laboratório do personagem</title>
+    <style>
+      :root {
+        --bg: #1a1a2e;
+        --surface: #16213e;
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+        --accent: #7c3aed;
+        --ok: #10b981;
+        --warn: #f59e0b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          14px/1.45 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 16px;
+        display: grid;
+        gap: 16px;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0;
+      }
+      h2 {
+        font-size: 14px;
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .license-banner {
+        background: #3b2a05;
+        border: 1px solid var(--warn);
+        color: #fde68a;
+        border-radius: 10px;
+        padding: 10px 14px;
+      }
+      .license-banner strong {
+        color: #fff;
+      }
+      .stage {
+        background: #000;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #334155;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 390 / 220;
+      }
+      .panel {
+        background: var(--surface);
+        border-radius: 10px;
+        padding: 12px 14px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .row > label {
+        min-width: 84px;
+        color: var(--muted);
+      }
+      button,
+      select {
+        background: #0f3460;
+        color: var(--text);
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font: inherit;
+        cursor: pointer;
+      }
+      button[aria-pressed='true'] {
+        background: var(--accent);
+        border-color: #a78bfa;
+      }
+      .swatch {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border-radius: 50%;
+        border: 2px solid transparent;
+      }
+      .swatch[aria-pressed='true'] {
+        border-color: #fff;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 4px 6px;
+        border-bottom: 1px solid #243352;
+        vertical-align: top;
+      }
+      .badge {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: var(--ok);
+        color: #04210f;
+        font-weight: 700;
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Laboratório do personagem e da cabana (LPC)</h1>
+      <div class="license-banner" role="note">
+        <strong>Licença:</strong> toda a arte daqui é de terceiros e só foi incluída por oferecer
+        <strong>OGA-BY 3.0</strong> ou <strong>CC0</strong>. Isso exige
+        <strong>dar crédito aos autores</strong>
+        (lista abaixo, que também vira a tela Créditos do app). Arte só CC-BY-SA ou GPL foi deixada
+        de fora.
+      </div>
+      <div class="stage">
+        <canvas id="scene" width="390" height="220" aria-label="Cabana com o personagem"></canvas>
+      </div>
+      <section class="panel" aria-label="Cenário">
+        <h2>Cenário do QG</h2>
+        <div class="row"><label>Lugar</label><span id="c-place"></span></div>
+        <div class="row"><label>Hora</label><span id="c-time"></span></div>
+        <p class="meta" id="blurb"></p>
+      </section>
+      <section class="panel" aria-label="Controles">
+        <h2>Personagem</h2>
+        <div class="row"><label>Corpo</label><span id="c-body"></span></div>
+        <div class="row"><label>Pele</label><span id="c-skin"></span></div>
+        <div class="row">
+          <label>Cabelo</label
+          ><select id="s-hair"></select
+          ><span id="c-hair"></span>
+        </div>
+        <div class="row">
+          <label>Camisa</label
+          ><select id="s-torso"></select
+          ><span id="c-torso"></span>
+        </div>
+        <div class="row">
+          <label>Calça</label
+          ><select id="s-legs"></select
+          ><span id="c-legs"></span>
+        </div>
+        <div class="row">
+          <label>Calçado</label
+          ><select id="s-feet"></select
+          ><span id="c-feet"></span>
+        </div>
+        <h2>Animação</h2>
+        <div class="row"><label>Ação</label><span id="c-anim"></span></div>
+        <div class="row"><label>Direção</label><span id="c-dir"></span></div>
+        <p class="meta" id="stats"></p>
+      </section>
+      <section class="panel" aria-label="Créditos">
+        <h2>Créditos e licenças em uso</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Arte</th>
+              <th>Autores</th>
+              <th>Licença usada</th>
+            </tr>
+          </thead>
+          <tbody id="credits"></tbody>
+        </table>
+      </section>
+    </main>
+    <script type="module" src="/src/lab/main.ts"></script>
+  </body>
+</html>

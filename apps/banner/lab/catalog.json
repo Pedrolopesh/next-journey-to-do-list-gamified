@@ -1,0 +1,951 @@
+{
+  "animations": {
+    "idle": 2,
+    "walk": 9,
+    "run": 8
+  },
+  "bodyTypes": ["male", "female"],
+  "palettes": {
+    "body": {
+      "base": "light",
+      "colors": {
+        "light": ["#271920", "#99423c", "#cc8665", "#E4A47C", "#F9D5BA", "#FAECE7"],
+        "amber": ["#281716", "#9E3E37", "#D28144", "#EA9F54", "#FDD082", "#FBE7A4"],
+        "olive": ["#271920", "#442725", "#7F4C31", "#AE6B3F", "#D38B59", "#E4A47C"],
+        "taupe": ["#271920", "#503734", "#785946", "#936849", "#BA8454", "#C7935F"],
+        "bronze": ["#1A1213", "#442725", "#644133", "#7F4C31", "#AE6B3F", "#D38B59"],
+        "brown": ["#120E10", "#412B29", "#5F4539", "#76513A", "#9C663E", "#B8773F"],
+        "black": ["#000000", "#1A1213", "#2E1F1C", "#442725", "#603429", "#7F4C31"],
+        "blue": ["#16171B", "#46425D", "#586B90", "#748DA4", "#A9C9CA", "#C8E8E8"],
+        "bright_green": ["#02280E", "#06410E", "#255E1D", "#5B8F11", "#75AE23", "#99D248"],
+        "dark_green": ["#011708", "#02280E", "#06410E", "#255E1D", "#508A48", "#509E59"],
+        "fur_black": ["#040510", "#0A0E1B", "#0D1621", "#14212C", "#1B2C36", "#154259"],
+        "fur_brown": ["#000000", "#1E120E", "#251B19", "#473730", "#624135", "#975B5A"],
+        "fur_copper": ["#0F0506", "#300500", "#6A1A00", "#9C3B01", "#CC6901", "#FAA301"],
+        "fur_gold": ["#200808", "#552B15", "#AC5D1F", "#E09E2B", "#FCCF56", "#FFE67D"],
+        "fur_grey": ["#0F0F11", "#36363F", "#55585F", "#6A6E74", "#909699", "#B8BBBC"],
+        "fur_tan": ["#222121", "#3A200E", "#663A1A", "#975F43", "#B88751", "#DB8E60"],
+        "fur_white": ["#17171A", "#36363F", "#484E57", "#8B9498", "#B8BBBC", "#D8DCDC"],
+        "green": ["#140C09", "#09320B", "#19541D", "#228236", "#39AA4E", "#53BF71"],
+        "lavender": ["#16171B", "#393B44", "#787C8F", "#A0A5BC", "#C9D0EE", "#FBECE6"],
+        "pale_green": ["#271920", "#314829", "#456238", "#5F874D", "#86B278", "#ADCCA6"],
+        "zombie": ["#281820", "#6B5C40", "#928364", "#A79778", "#C5B38F", "#DBCBAB"],
+        "zombie_green": ["#101925", "#074337", "#4A7A69", "#839F6E", "#D4D887", "#F2F0C4"]
+      }
+    },
+    "hair": {
+      "base": "orange",
+      "colors": {
+        "orange": ["#260D14", "#6A1108", "#A42600", "#BF4000", "#E55600", "#FF8A00"],
+        "ash": ["#2D061B", "#642442", "#935065", "#C18F8A", "#EDDF95", "#FFF1C1"],
+        "platinum": ["#1C0E06", "#7D5D5D", "#A87D52", "#C0AB81", "#EDDF95", "#F6F6F3"],
+        "white": ["#1D1D21", "#484E57", "#8B9498", "#B8BBBC", "#D8DCDC", "#FFFFFF"],
+        "gray": ["#0E0E0E", "#292929", "#4B4B4B", "#777777", "#AAAAAA", "#D9D9D9"],
+        "blonde": ["#331313", "#552B15", "#AC5D1F", "#E09E2B", "#FCCF56", "#FFE67D"],
+        "sandy": ["#1C0E06", "#633E2C", "#99622D", "#BF9D5A", "#EDDC7E", "#F6F6C2"],
+        "strawberry": ["#300700", "#6A2800", "#9C5900", "#CCA000", "#FAF080", "#F6F6C2"],
+        "gold": ["#5C0D00", "#902900", "#E47100", "#FFA913", "#FFE453", "#EEFE7E"],
+        "ginger": ["#300500", "#6A1A00", "#9C3B01", "#CC6901", "#FAA301", "#FFE01E"],
+        "carrot": ["#5A1500", "#8A2000", "#AC2800", "#EC673E", "#F68764", "#FFB39C"],
+        "redhead": ["#260D14", "#3E111A", "#73171E", "#9E1F1F", "#C7341B", "#E74716"],
+        "red": ["#300000", "#870000", "#A40712", "#CB0000", "#E21414", "#F1583A"],
+        "light_brown": ["#1A0E04", "#301B07", "#60350F", "#7D4513", "#AE682A", "#C88D58"],
+        "chestnut": ["#200C0D", "#3A130E", "#63200B", "#81310A", "#B6550E", "#D28102"],
+        "dark_brown": ["#050100", "#160701", "#290E02", "#421603", "#5F1F04", "#792806"],
+        "dark_gray": ["#000000", "#0E0E0E", "#1B1B1B", "#3B3B3B", "#7C7C7C", "#C1C1C1"],
+        "black": ["#000000", "#080A0A", "#101414", "#1C2222", "#31313E", "#4A5057"],
+        "raven": ["#010107", "#040B18", "#061421", "#071F2A", "#0D384D", "#1A5369"],
+        "rose": ["#30051F", "#6A1E4B", "#9C4373", "#CC789D", "#FABBC6", "#FAE1E5"],
+        "pink": ["#330410", "#71043A", "#B60A68", "#E941AA", "#E976C4", "#EA95D5"],
+        "purple": ["#13112D", "#2B225A", "#402E82", "#7141B2", "#A966DD", "#D085ED"],
+        "violet": ["#1E032E", "#30035C", "#380392", "#3C07D8", "#5662F3", "#5792F2"],
+        "navy": ["#180716", "#20102B", "#281E41", "#322D6A", "#3C49AD", "#466AC9"],
+        "blue": ["#000027", "#00005E", "#000091", "#0041B4", "#0074CB", "#1E85EF"],
+        "green": ["#000400", "#001400", "#002D00", "#005000", "#007C00", "#00A700"]
+      }
+    },
+    "cloth": {
+      "base": "white",
+      "colors": {
+        "brown": ["#1d131e", "#411E05", "#4B2B13", "#62351C", "#744B30", "#996B4A"],
+        "leather": ["#2b1c1d", "#311210", "#4B2B13", "#704325", "#75502D", "#9A6F37"],
+        "walnut": ["#1d0f0e", "#3e2613", "#62351c", "#744b30", "#996b4a", "#a17c50"],
+        "yellow": ["#301723", "#5F2F25", "#BA5B23", "#D99431", "#F3C03F", "#FFE360"],
+        "tan": ["#3e2613", "#684415", "#986A20", "#B78C41", "#B7996A", "#CFC587"],
+        "orange": ["#301723", "#5F1D1B", "#9C3F23", "#D75B1A", "#EF7E19", "#FFA749"],
+        "rose": ["#1d131e", "#301723", "#562323", "#77372B", "#8A3D28", "#B05F3C"],
+        "maroon": ["#1d131e", "#400B1F", "#551C22", "#682121", "#832121", "#AE424A"],
+        "red": ["#1d131e", "#400B1F", "#651117", "#82171C", "#AB1E1E", "#CD2429"],
+        "pink": ["#1d131e", "#54242E", "#6C3536", "#AE424A", "#C36072", "#E08080"],
+        "lavender": ["#13112d", "#2B225A", "#402E82", "#7141B2", "#A966DD", "#D085ED"],
+        "purple": ["#180716", "#13112D", "#261044", "#411357", "#621E78", "#813089"],
+        "blue": ["#180716", "#281E41", "#322D6A", "#3C49AD", "#466AC9", "#61A0EF"],
+        "navy": ["#180716", "#20102B", "#281E41", "#322D6A", "#3C49AD", "#466AC9"],
+        "teal": ["#180716", "#1B2B47", "#0E4E72", "#156C99", "#0098B2", "#00CFDF"],
+        "bluegray": ["#11150b", "#0B2B28", "#2E403A", "#315B49", "#557E85", "#79979D"],
+        "forest": ["#09131d", "#07391D", "#0B1F25", "#0B2B28", "#134507", "#1B5502"],
+        "green": ["#101820", "#192832", "#0B5C2F", "#214437", "#2F8136", "#64A42C"],
+        "white": ["#281820", "#4D4A5D", "#958080", "#C4B59F", "#E5E6C7", "#FFFFFF"],
+        "sky": ["#1a0d18", "#313148", "#586B90", "#9FBBCB", "#C6EEFD", "#FFFFFF"],
+        "slate": ["#1d131e", "#31313E", "#4A5057", "#818B8B", "#B3AFA1", "#E5E6C7"],
+        "gray": ["#0e0e18", "#201E2B", "#373340", "#585561", "#797580", "#A2A0A4"],
+        "black": ["#000000", "#101414", "#1C2222", "#22282A", "#2A3034", "#4A5057"],
+        "charcoal": ["#000000", "#130D14", "#1C2222", "#2A3034", "#4A5057", "#6E7675"]
+      }
+    },
+    "eye": {
+      "base": "blue",
+      "colors": {
+        "blue": ["#2a3c49", "#5686ae", "#57cee4"],
+        "green": ["#2b4b29", "#53b351", "#84ec50"],
+        "purple": ["#710862", "#b90da0", "#eba0e0"],
+        "red": ["#532421", "#cb4a39", "#ff3d62"],
+        "orange": ["#a45227", "#be734b", "#ea9b71"],
+        "yellow": ["#b69953", "#d9bf46", "#fedf47"],
+        "brown": ["#232017", "#544c2e", "#7e4e20"],
+        "gray": ["#3d3c37", "#8b8979", "#ada18f"]
+      }
+    }
+  },
+  "parts": [
+    {
+      "id": "body",
+      "slot": "body",
+      "name": "Corpo",
+      "material": "body",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 10,
+          "paths": {
+            "male": "body/bodies/male/",
+            "female": "body/bodies/female/"
+          }
+        }
+      ],
+      "credits": [0, 1]
+    },
+    {
+      "id": "head-male",
+      "slot": "head",
+      "name": "Cabeça (masc.)",
+      "material": "body",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 100,
+          "paths": {
+            "male": "head/heads/human/male/",
+            "female": "head/heads/human/male/"
+          }
+        }
+      ],
+      "credits": [2]
+    },
+    {
+      "id": "head-female",
+      "slot": "head",
+      "name": "Cabeça (fem.)",
+      "material": "body",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 100,
+          "paths": {
+            "male": "head/heads/human/female/",
+            "female": "head/heads/human/female/"
+          }
+        }
+      ],
+      "credits": [3]
+    },
+    {
+      "id": "face",
+      "slot": "face",
+      "name": "Rosto",
+      "material": "body",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 101,
+          "paths": {
+            "male": "head/faces/male/neutral/",
+            "female": "head/faces/female/neutral/"
+          }
+        }
+      ],
+      "credits": [4, 5, 6]
+    },
+    {
+      "id": "hair-buzzcut",
+      "slot": "hair",
+      "name": "Buzzcut",
+      "material": "hair",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 120,
+          "paths": {
+            "male": "hair/buzzcut/adult/",
+            "female": "hair/buzzcut/adult/"
+          }
+        }
+      ],
+      "credits": [7]
+    },
+    {
+      "id": "hair-bob",
+      "slot": "hair",
+      "name": "Bob",
+      "material": "hair",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 120,
+          "paths": {
+            "male": "hair/bob/adult/",
+            "female": "hair/bob/adult/"
+          }
+        }
+      ],
+      "credits": [8]
+    },
+    {
+      "id": "hair-curly-short",
+      "slot": "hair",
+      "name": "Curly short",
+      "material": "hair",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 120,
+          "paths": {
+            "male": "hair/curly_short/adult/",
+            "female": "hair/curly_short/adult/"
+          }
+        }
+      ],
+      "credits": [9]
+    },
+    {
+      "id": "hair-bangs-bun",
+      "slot": "hair",
+      "name": "Bangs bun",
+      "material": "hair",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 120,
+          "paths": {
+            "male": "hair/bangs_bun/adult/",
+            "female": "hair/bangs_bun/adult/"
+          }
+        }
+      ],
+      "credits": [10]
+    },
+    {
+      "id": "hair-half-up",
+      "slot": "hair",
+      "name": "Half up",
+      "material": "hair",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 120,
+          "paths": {
+            "male": "hair/half_up/adult/",
+            "female": "hair/half_up/adult/"
+          }
+        }
+      ],
+      "credits": [11]
+    },
+    {
+      "id": "hair-natural",
+      "slot": "hair",
+      "name": "Natural",
+      "material": "hair",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 120,
+          "paths": {
+            "male": "hair/natural/adult/",
+            "female": "hair/natural/adult/"
+          }
+        }
+      ],
+      "credits": [12]
+    },
+    {
+      "id": "torso-tshirt",
+      "slot": "torso",
+      "name": "TShirt",
+      "material": "cloth",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 35,
+          "paths": {
+            "male": "torso/clothes/shortsleeve/tshirt/male/",
+            "female": "torso/clothes/shortsleeve/tshirt/female/"
+          }
+        }
+      ],
+      "credits": [13]
+    },
+    {
+      "id": "torso-longsleeve-2",
+      "slot": "torso",
+      "name": "Longsleeve 2",
+      "material": "cloth",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 35,
+          "paths": {
+            "male": "torso/clothes/longsleeve/longsleeve2/male/",
+            "female": "torso/clothes/longsleeve/longsleeve2/female/"
+          }
+        }
+      ],
+      "credits": [14]
+    },
+    {
+      "id": "torso-cardigan",
+      "slot": "torso",
+      "name": "Cardigan",
+      "material": "cloth",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 35,
+          "paths": {
+            "male": "torso/clothes/longsleeve/longsleeve2_cardigan/male/",
+            "female": "torso/clothes/longsleeve/longsleeve2_cardigan/female/"
+          }
+        }
+      ],
+      "credits": [15]
+    },
+    {
+      "id": "torso-sleeveless-2",
+      "slot": "torso",
+      "name": "Sleeveless 2",
+      "material": "cloth",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 35,
+          "paths": {
+            "male": "torso/clothes/sleeveless/sleeveless2/male/",
+            "female": "torso/clothes/sleeveless/sleeveless2/female/"
+          }
+        }
+      ],
+      "credits": [16]
+    },
+    {
+      "id": "legs-pants",
+      "slot": "legs",
+      "name": "Pants",
+      "material": "cloth",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 20,
+          "paths": {
+            "male": "legs/pants/male/",
+            "female": "legs/pants/thin/"
+          }
+        }
+      ],
+      "credits": [17, 18]
+    },
+    {
+      "id": "legs-shorts",
+      "slot": "legs",
+      "name": "Shorts",
+      "material": "cloth",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 20,
+          "paths": {
+            "male": "legs/shorts/shorts/male/",
+            "female": "legs/shorts/shorts/thin/"
+          }
+        }
+      ],
+      "credits": [19, 20]
+    },
+    {
+      "id": "legs-leggings",
+      "slot": "legs",
+      "name": "Leggings",
+      "material": "cloth",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 20,
+          "paths": {
+            "male": "legs/leggings/male/",
+            "female": "legs/leggings/thin/"
+          }
+        }
+      ],
+      "credits": [21, 22]
+    },
+    {
+      "id": "feet-basic-shoes",
+      "slot": "feet",
+      "name": "Basic Shoes",
+      "material": "cloth",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 15,
+          "paths": {
+            "male": "feet/shoes/basic/male/",
+            "female": "feet/shoes/basic/thin/"
+          }
+        }
+      ],
+      "credits": [23, 24]
+    },
+    {
+      "id": "feet-revised-boots",
+      "slot": "feet",
+      "name": "Revised Boots",
+      "material": "cloth",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 25,
+          "paths": {
+            "male": "feet/boots/revised/male/",
+            "female": "feet/boots/revised/thin/"
+          }
+        }
+      ],
+      "credits": [25, 26]
+    },
+    {
+      "id": "feet-sandals",
+      "slot": "feet",
+      "name": "Sandals",
+      "material": "cloth",
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 15,
+          "paths": {
+            "male": "feet/sandals/male/",
+            "female": "feet/sandals/thin/"
+          }
+        }
+      ],
+      "credits": [27]
+    }
+  ],
+  "scenery": [
+    {
+      "file": "assets/scene/inside.png",
+      "from": "tileset/original/Sharm/building-interior/inside.png"
+    },
+    {
+      "file": "assets/scene/country.png",
+      "from": "tileset/original/Sharm/building-interior/country.png"
+    },
+    {
+      "file": "assets/scene/cabinets.png",
+      "from": "tileset/original/Sharm/building-interior/cabinets.png"
+    },
+    {
+      "file": "assets/scene/kitchen.png",
+      "from": "tileset/original/Sharm/building-interior/kitchen.png"
+    },
+    {
+      "file": "assets/scene/chests.png",
+      "from": "tileset/original/Sharm/object/chests.png"
+    },
+    {
+      "file": "assets/scene/grass.png",
+      "from": "tileset/original/Sharm/outdoor/PNG/grass.png"
+    },
+    {
+      "file": "assets/scene/water.png",
+      "from": "tileset/original/Sharm/outdoor/PNG/water.png"
+    },
+    {
+      "file": "assets/scene/treetop.png",
+      "from": "tileset/original/Sharm/outdoor/PNG/treetop.png"
+    },
+    {
+      "file": "assets/scene/lava.png",
+      "from": "tileset/original/Sharm/lava/lava.png"
+    },
+    {
+      "file": "assets/scene/lavarock.png",
+      "from": "tileset/original/Sharm/lava/lavarock.png"
+    },
+    {
+      "file": "assets/scene/cement.png",
+      "from": "tileset/original/Sharm/sewer-dungeon/cement.png"
+    }
+  ],
+  "credits": [
+    {
+      "file": "body/bodies/male",
+      "authors": [
+        "bluecarrot16",
+        "JaidynReiman",
+        "Benjamin K. Smith (BenCreating)",
+        "Evert",
+        "Eliza Wyatt (ElizaWy)",
+        "TheraHedwig",
+        "MuffinElZangano",
+        "Durrani",
+        "Johannes Sjölund (wulax)",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+      "urls": [
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
+        "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
+        "https://opengameart.org/content/lpc-male-jumping-animation-by-durrani",
+        "https://opengameart.org/content/lpc-runcycle-and-diagonal-walkcycle",
+        "https://opengameart.org/content/lpc-revised-character-basics",
+        "https://opengameart.org/content/lpc-be-seated",
+        "https://opengameart.org/content/lpc-runcycle-for-male-muscular-and-pregnant-character-bases-with-modular-heads",
+        "https://opengameart.org/content/lpc-jump-expanded",
+        "https://opengameart.org/content/lpc-character-bases"
+      ],
+      "notes": "see details at https://opengameart.org/content/lpc-character-bases; 'Thick' Male Revised Run/Climb by JaidynReiman (based on ElizaWy's LPC Revised)"
+    },
+    {
+      "file": "body/bodies/female",
+      "authors": [
+        "Benjamin K. Smith (BenCreating)",
+        "bluecarrot16",
+        "TheraHedwig",
+        "Evert",
+        "MuffinElZangano",
+        "Durrani",
+        "Pierre Vigier (pvigier)",
+        "ElizaWy",
+        "Matthew Krohn (makrohn)",
+        "Johannes Sjölund (wulax)",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+      "urls": [
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
+        "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
+        "https://opengameart.org/content/lpc-ladies",
+        "https://opengameart.org/content/lpc-7-womens-shirts",
+        "https://opengameart.org/content/lpc-jump-expanded",
+        "https://opengameart.org/content/lpc-be-seated",
+        "https://opengameart.org/content/lpc-revised-character-basics",
+        "https://gitlab.com/vagabondgame/lpc-characters",
+        "https://opengameart.org/content/lpc-male-jumping-animation-by-durrani",
+        "https://opengameart.org/content/lpc-runcycle-and-diagonal-walkcycle"
+      ],
+      "notes": "see details at https://opengameart.org/content/lpc-character-bases"
+    },
+    {
+      "file": "head/heads/human/male",
+      "authors": [
+        "bluecarrot16",
+        "Benjamin K. Smith (BenCreating)",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+      "urls": [
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
+        "https://opengameart.org/content/lpc-character-bases"
+      ],
+      "notes": "original head by Redshrike, tweaks by BenCreating, modular version by bluecarrot16"
+    },
+    {
+      "file": "head/heads/human/female",
+      "authors": [
+        "bluecarrot16",
+        "Benjamin K. Smith (BenCreating)",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+      "urls": [
+        "https://opengameart.org/content/",
+        "https://opengameart.org/content/lpc-character-bases"
+      ],
+      "notes": "original head by Redshrike, tweaks by BenCreating, modular version by bluecarrot16"
+    },
+    {
+      "file": "head/faces",
+      "authors": ["JaidynReiman", "ElizaWy", "Stephen Challener (Redshrike)"],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0"],
+      "urls": [
+        "https://github.com/ElizaWy/LPC/tree/main/Characters/Head",
+        "https://opengameart.org/content/ulpc-expanded-expressions"
+      ],
+      "notes": "Original by Redshrike, Expressions by ElizaWy, mapped to all frames by JaidynReiman"
+    },
+    {
+      "file": "head/faces/female/neutral",
+      "authors": ["JaidynReiman", "Stephen Challener (Redshrike)"],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+      "urls": [
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
+        "https://opengameart.org/content/ulpc-expanded-expressions"
+      ],
+      "notes": "Original by Redshrike, spellcast and jump overrides by JaidynReiman"
+    },
+    {
+      "file": "head/faces/male/neutral",
+      "authors": ["JaidynReiman", "Stephen Challener (Redshrike)"],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+      "urls": [
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
+        "https://opengameart.org/content/ulpc-expanded-expressions"
+      ],
+      "notes": "Original by Redshrike, spellcast and jump overrides by JaidynReiman"
+    },
+    {
+      "file": "hair/buzzcut",
+      "authors": ["ElizaWy"],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0"],
+      "urls": ["https://opengameart.org/content/lpc-hair"],
+      "notes": ""
+    },
+    {
+      "file": "hair/bob",
+      "authors": ["ElizaWy", "bluecarrot16"],
+      "licenseUsed": "CC0",
+      "licensesOffered": ["CC0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-hair",
+        "https://github.com/ElizaWy/LPC/blob/main/Characters/Hair",
+        "https://opengameart.org/content/lpc-expanded-sit-run-jump-more"
+      ],
+      "notes": "Original by bluecarrot16. Edited and animated by ElizaWy."
+    },
+    {
+      "file": "hair/curly_short",
+      "authors": ["ElizaWy"],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-hair",
+        "https://opengameart.org/content/lpc-expanded-sit-run-jump-more"
+      ],
+      "notes": ""
+    },
+    {
+      "file": "hair/bangs_bun",
+      "authors": ["ElizaWy", "bluecarrot16"],
+      "licenseUsed": "CC0",
+      "licensesOffered": ["CC0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-hair",
+        "https://github.com/ElizaWy/LPC/blob/main/Characters/Hair",
+        "https://opengameart.org/content/lpc-expanded-sit-run-jump-more"
+      ],
+      "notes": "Original by bluecarrot16, animated by ElizaWy."
+    },
+    {
+      "file": "hair/half_up",
+      "authors": ["ElizaWy"],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0"],
+      "urls": ["https://opengameart.org/content/lpc-hair"],
+      "notes": ""
+    },
+    {
+      "file": "hair/natural",
+      "authors": ["ElizaWy", "bluecarrot16"],
+      "licenseUsed": "CC0",
+      "licensesOffered": ["CC0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-hair",
+        "https://github.com/ElizaWy/LPC/blob/main/Characters/Hair",
+        "https://opengameart.org/content/lpc-expanded-sit-run-jump-more"
+      ],
+      "notes": "Original by bluecarrot16, animations by ElizaWy."
+    },
+    {
+      "file": "torso/clothes/shortsleeve/tshirt",
+      "authors": [
+        "ElizaWy",
+        "JaidynReiman",
+        "Stephen Challener (Redshrike)",
+        "Johannes Sjölund (wulax)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-revised-character-basics",
+        "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
+        "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
+        "https://opengameart.org/content/lpc-expanded-simple-shirts"
+      ],
+      "notes": "original by ElizaWy; spellcast/thrust/shoot/hurt/male adapted from original by JaidynReiman"
+    },
+    {
+      "file": "torso/clothes/longsleeve/longsleeve2",
+      "authors": [
+        "ElizaWy",
+        "JaidynReiman",
+        "Stephen Challener (Redshrike)",
+        "Johannes Sjölund (wulax)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-revised-character-basics",
+        "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
+        "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
+        "https://opengameart.org/content/lpc-expanded-simple-shirts"
+      ],
+      "notes": "original by ElizaWy; spellcast/thrust/shoot/hurt/male adapted from original by JaidynReiman"
+    },
+    {
+      "file": "torso/clothes/longsleeve/longsleeve2_cardigan",
+      "authors": [
+        "ElizaWy",
+        "JaidynReiman",
+        "Stephen Challener (Redshrike)",
+        "Johannes Sjölund (wulax)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0"],
+      "urls": [
+        "http://opengameart.org/content/lpc-revised-character-basics",
+        "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
+        "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
+        "https://opengameart.org/content/lpc-expanded-simple-shirts"
+      ],
+      "notes": "original by ElizaWy; spellcast/thrust/shoot/hurt/male adapted from original by JaidynReiman"
+    },
+    {
+      "file": "torso/clothes/sleeveless/sleeveless2",
+      "authors": [
+        "ElizaWy",
+        "JaidynReiman",
+        "Stephen Challener (Redshrike)",
+        "Johannes Sjölund (wulax)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0"],
+      "urls": [
+        "http://opengameart.org/content/lpc-revised-character-basics",
+        "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
+        "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
+        "https://opengameart.org/content/lpc-expanded-simple-shirts"
+      ],
+      "notes": "original by ElizaWy; sleeveless adapted from original by JaidynReiman"
+    },
+    {
+      "file": "legs/pants/male",
+      "authors": [
+        "bluecarrot16",
+        "JaidynReiman",
+        "ElizaWy",
+        "Matthew Krohn (makrohn)",
+        "Johannes Sjölund (wulax)",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "GPL 3.0", "CC-BY-SA 3.0"],
+      "urls": [
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
+        "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
+        "https://opengameart.org/content/lpc-expanded-pants"
+      ],
+      "notes": "original male pants by wulax, recolors and edits to v3 base by bluecarrot16, climb/jump/run/sit/emotes/revised combat by JaidynReiman based on ElizaWy's LPC Revised"
+    },
+    {
+      "file": "legs/pants/thin",
+      "authors": [
+        "bluecarrot16",
+        "JaidynReiman",
+        "ElizaWy",
+        "Joe White",
+        "Matthew Krohn (makrohn)",
+        "Johannes Sjölund (wulax)",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "GPL 3.0", "CC-BY-SA 3.0"],
+      "urls": [
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
+        "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
+        "http://opengameart.org/content/lpc-clothing-updates",
+        "https://opengameart.org/content/lpc-expanded-pants"
+      ],
+      "notes": "original male pants by wulax, edited for female by Joe White, recolors and edits to v3 base by bluecarrot16, teen legs by ElizaWy derived from base, climb/jump/run/sit/emotes/revised combat by JaidynReiman based on ElizaWy's LPC Revised"
+    },
+    {
+      "file": "legs/shorts/shorts/male",
+      "authors": [
+        "JaidynReiman",
+        "ElizaWy",
+        "Bluecarrot16",
+        "Johannes Sjölund (wulax)",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "GPL 3.0"],
+      "urls": [
+        "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
+        "https://opengameart.org/content/lpc-expanded-pants"
+      ],
+      "notes": "Original bases by Redshrike, thrust/shoot bases by Wulax, original overalls and shorts by ElizaWy, base animations adapted from v3 overalls by bluecarrot16, shorts by JaidynReiman"
+    },
+    {
+      "file": "legs/shorts/shorts",
+      "authors": [
+        "ElizaWy",
+        "JaidynReiman",
+        "Johannes Sjölund (wulax)",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0"],
+      "urls": [
+        "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
+        "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
+        "https://opengameart.org/content/lpc-expanded-pants"
+      ],
+      "notes": "Original bases by Redshrike, thrust/shoot bases by Wulax, original shorts by ElizaWy, climb/jump/run/sit/emotes/revised combat by JaidynReiman"
+    },
+    {
+      "file": "legs/leggings/male",
+      "authors": [
+        "bluecarrot16",
+        "ElizaWy",
+        "JaidynReiman",
+        "Mandi Paugh",
+        "William.Thompsonj",
+        "Johannes Sjölund (wulax)",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "GPL 3.0"],
+      "urls": [
+        "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
+        "https://opengameart.org/content/lpc-expanded-pants"
+      ],
+      "notes": "Original bases by Redshrike, thrust/shoot bases by Wulax, original overalls by ElizaWy, base animations adapted from v3 overalls by bluecarrot16, leggings by JaidynReiman"
+    },
+    {
+      "file": "legs/leggings",
+      "authors": [
+        "bluecarrot16",
+        "ElizaWy",
+        "JaidynReiman",
+        "Mandi Paugh",
+        "William.Thompsonj",
+        "Johannes Sjölund (wulax)",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0"],
+      "urls": [
+        "http://opengameart.org/content/sara-wizard",
+        "https://opengameart.org/content/lpc-sara",
+        "https://opengameart.org/content/lpc-expanded-pants"
+      ],
+      "notes": "Original bases by Redshrike, thrust/shoot bases by Wulax, adapted from sara's leggings to v3 bases by bluecarrot16, jump/run/sit by JaidynReiman based on ElizaWy's and modified to match"
+    },
+    {
+      "file": "feet/shoes",
+      "authors": ["JaidynReiman", "bluecarrot16", "Johannes Sjölund (wulax)"],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
+        "http://opengameart.org/content/lpc-clothing-updates",
+        "https://opengameart.org/content/lpc-expanded-socks-shoes"
+      ],
+      "notes": "original by wulax, edited for v3 base by bluecarrot16, Jump/Sit/Emote/Run/Revised Combat by JaidynReiman"
+    },
+    {
+      "file": "feet/shoes/basic/thin",
+      "authors": ["JaidynReiman", "Joe White", "Johannes Sjölund (wulax)"],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
+        "http://opengameart.org/content/lpc-clothing-updates",
+        "https://opengameart.org/content/lpc-expanded-socks-shoes"
+      ],
+      "notes": "original by wulax, edited for female base by Joe White, edited for v3 base by bluecarrot16, Jump/Sit/Emote/Run/Revised Combat by JaidynReiman"
+    },
+    {
+      "file": "feet/boots/revised/male",
+      "authors": [
+        "JaidynReiman",
+        "ElizaWy",
+        "Bluecarrot16",
+        "Stephen Challener (Redshrike)",
+        "Johannes Sjölund (wulax)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "GPL 3.0"],
+      "urls": [
+        "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
+        "https://opengameart.org/content/lpc-expanded-socks-shoes"
+      ],
+      "notes": "original overalls and boots by ElizaWy, base animations adapted from v3 overalls by bluecarrot16, boots by JaidynReiman"
+    },
+    {
+      "file": "feet/boots/revised",
+      "authors": [
+        "ElizaWy",
+        "JaidynReiman",
+        "Stephen Challener (Redshrike)",
+        "Johannes Sjölund (wulax)"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0"],
+      "urls": [
+        "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
+        "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
+        "https://opengameart.org/content/lpc-expanded-socks-shoes"
+      ],
+      "notes": "original by ElizaWy, remaining frames by JaidynReiman"
+    },
+    {
+      "file": "feet/sandals",
+      "authors": ["Nila122", "JaidynReiman", "Matthew Krohn (makrohn)", "Johannes Sjölund (wulax)"],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-roman-armor",
+        "http://opengameart.org/content/lpc-clothing-updates",
+        "https://opengameart.org/content/lpc-expanded-socks-shoes"
+      ],
+      "notes": "edited for v3 bases by bluecarrot16, Jump/Sit/Emote/Run/Revised Combat by JaidynReiman"
+    },
+    {
+      "file": "tileset/original/Sharm (interior, objetos e terreno)",
+      "authors": ["Lanea Zimmerman (Sharm)"],
+      "licenseUsed": "CC-BY 3.0",
+      "licensesOffered": ["CC-BY-SA 3.0", "GPL 3.0", "CC-BY 3.0"],
+      "urls": [
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles"
+      ],
+      "notes": "Cenários (cabana, praia, terraço, zumbi, paraíso, inferno). Sharm e Redshrike liberam a própria arte também em CC-BY, sem ShareAlike e sem a cláusula anti-DRM (página do pacote). Exige crédito."
+    }
+  ]
+}
