@@ -228,60 +228,155 @@ function city(env: SceneEnv): void {
   tower(env);
 }
 
-/** Posição do eixo x de um pixel local do objeto, espelhado conforme a direção. */
-function mirrored(cx: number, dir: 1 | -1) {
-  return (lx: number, w: number): number => (dir > 0 ? cx + lx : cx - lx - w);
-}
+type Point = [number, number];
 
-/** Espreguiçadeira de perfil: encosto inclinado, almofada listrada e apoio de pés, virada para o sol. */
-function lounger(env: SceneEnv, cx: number, baseY: number, dir: 1 | -1): void {
-  const { ctx } = env;
-  const X = mirrored(cx, dir);
-  const px = (lx: number, ly: number, w: number, h: number, color: string): void =>
-    rect(env, X(lx, w), baseY + ly, w, h, color);
-  ctx.fillStyle = 'rgba(0,0,0,0.22)';
-  ctx.beginPath();
-  ctx.ellipse(cx, baseY, 33, 3.6, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // pernas do quadro
-  px(-15, -10, 5, 10, OUT);
-  px(-14, -9, 3, 9, '#efe9db');
-  px(19, -10, 5, 10, OUT);
-  px(20, -9, 3, 9, '#efe9db');
-  // apoio dos pés
-  px(20, -17, 10, 8, OUT);
-  px(21, -16, 8, 6, '#2bb3ab');
-  px(21, -16, 8, 1, '#5fd6cf');
-  // assento
-  px(-13, -14, 35, 7, OUT);
-  for (let i = 0; i < 8; i++) {
-    px(-12 + i * 4, -13, 4, 5, i % 2 ? '#f6f6f2' : '#2bb3ab');
-  }
-  px(-12, -13, 33, 1, '#7fe3dc');
-  px(-12, -9, 33, 1, '#1c837e');
-  // encosto inclinado
-  for (let pass = 0; pass < 2; pass++) {
-    for (let i = 0; i < 15; i++) {
-      const lx = -13 - Math.round(i * 0.85);
-      const ly = -14 - Math.round(i * 1.15);
-      if (pass === 0) px(lx - 1, ly - 1, 11, 6, OUT);
-      else px(lx, ly, 9, 4, i % 4 < 2 ? '#2bb3ab' : '#f6f6f2');
+/** Preenche um polígono em pixels inteiros (sem serrilhado suave), linha a linha. */
+function poly(ctx: CanvasRenderingContext2D, pts: Point[], color: string): void {
+  ctx.fillStyle = color;
+  const ys = pts.map((p) => p[1]);
+  const minY = Math.floor(Math.min(...ys));
+  const maxY = Math.ceil(Math.max(...ys));
+  for (let y = minY; y < maxY; y++) {
+    const cy = y + 0.5;
+    const xs: number[] = [];
+    for (let i = 0; i < pts.length; i++) {
+      const p1 = pts[i];
+      const p2 = pts[(i + 1) % pts.length];
+      if (!p1 || !p2) continue;
+      if ((p1[1] <= cy && p2[1] > cy) || (p2[1] <= cy && p1[1] > cy)) {
+        xs.push(p1[0] + ((cy - p1[1]) / (p2[1] - p1[1])) * (p2[0] - p1[0]));
+      }
+    }
+    xs.sort((m, n) => m - n);
+    for (let k = 0; k + 1 < xs.length; k += 2) {
+      const from = Math.round(xs[k] ?? 0);
+      const to = Math.round(xs[k + 1] ?? 0);
+      if (to > from) ctx.fillRect(from, y, to - from, 1);
     }
   }
-  // travesseiro
-  px(-29, -35, 9, 5, OUT);
-  px(-28, -34, 7, 3, '#f7e4c0');
-  px(-28, -34, 7, 1, '#fff6e0');
-  // mesinha ao lado com copo
-  px(-50, -15, 15, 3, OUT);
-  px(-49, -14, 13, 1, '#e4dfd2');
-  px(-49, -13, 13, 1, '#a9a498');
-  px(-44, -12, 3, 12, OUT);
-  px(-43, -12, 1, 12, '#b9b4a8');
-  px(-47, -24, 5, 9, OUT);
-  px(-46, -23, 3, 7, 'rgba(225,242,255,0.9)');
-  px(-46, -20, 3, 4, '#ffb347');
-  px(-43, -27, 1, 6, '#e63946');
+}
+
+const LOUNGER_W = 100;
+const LOUNGER_H = 64;
+const LOUNGER_OX = 32;
+const LOUNGER_OY = 52;
+let loungerSprite: HTMLCanvasElement | null = null;
+
+/** Desenha a espreguiçadeira uma vez (diagonal, vista de trás e de lado), com contorno de 1 px. */
+function buildLounger(): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = LOUNGER_W;
+  canvas.height = LOUNGER_H;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return canvas;
+  const L = 46;
+  const W = 16;
+  /** Ponto do chão (l: comprimento, w: largura, z: altura) projetado na tela. */
+  const P = (l: number, w: number, z = 0): Point => [
+    LOUNGER_OX + l + w * 0.55,
+    LOUNGER_OY - l * 0.5 + w * 0.45 - z,
+  ];
+  const BLUE = '#2d6cdf';
+  const BLUE_DARK = '#1d4aa0';
+  const WHITE = '#f8f8f8';
+  const WHITE_DARK = '#c3c9d3';
+  const WOOD = '#c88a46';
+  const WOOD_DARK = '#8a5a2a';
+  const seatZ = (l: number): number => (l <= 34 ? 8 : 8 + ((l - 34) * 6) / 12);
+
+  // pernas (de trás para a frente)
+  for (const [l, w] of [
+    [40, 1],
+    [40, W - 1],
+    [2, 1],
+    [2, W - 1],
+  ] as const) {
+    const [x, y] = P(l, w);
+    ctx.fillStyle = WOOD_DARK;
+    ctx.fillRect(Math.round(x) - 1, Math.round(y) - 9, 2, 9);
+    ctx.fillStyle = WOOD;
+    ctx.fillRect(Math.round(x) - 1, Math.round(y) - 9, 1, 9);
+  }
+  // topo do assento e do apoio de pés, em listras
+  for (let k = 0; k * 4 < L; k++) {
+    const a = k * 4;
+    const b = a + 4;
+    poly(
+      ctx,
+      [P(a, 0, seatZ(a)), P(b, 0, seatZ(b)), P(b, W, seatZ(b)), P(a, W, seatZ(a))],
+      k % 2 ? BLUE : WHITE,
+    );
+  }
+  // lateral perto de nós
+  for (let k = 0; k * 4 < L; k++) {
+    const a = k * 4;
+    const b = a + 4;
+    poly(
+      ctx,
+      [P(a, W, seatZ(a)), P(b, W, seatZ(b)), P(b, W, seatZ(b) - 3), P(a, W, seatZ(a) - 3)],
+      k % 2 ? BLUE_DARK : WHITE_DARK,
+    );
+  }
+  // travessa de madeira sob o assento
+  poly(ctx, [P(0, W, 5), P(34, W, 5), P(L, W, 11), P(L, W, 9), P(34, W, 3), P(0, W, 3)], WOOD);
+  // encosto: borda lateral e a parte de trás, listrada na vertical
+  poly(ctx, [P(0, W, 8), P(-10, W, 30), P(-6, W, 30), P(3, W, 8)], BLUE_DARK);
+  for (let k = 0; k < 4; k++) {
+    const w1 = k * 4;
+    const w2 = w1 + 4;
+    poly(ctx, [P(0, w1, 8), P(0, w2, 8), P(-10, w2, 30), P(-10, w1, 30)], k % 2 ? BLUE : WHITE);
+  }
+  poly(ctx, [P(0, W, 8), P(-10, W, 30), P(-10, W, 28), P(0, W, 6)], WOOD);
+  // topo do encosto com realce
+  poly(ctx, [P(-10, 0, 30), P(-10, W, 30), P(-6, W, 30), P(-6, 0, 30)], WHITE_DARK);
+
+  // mesinha com drink, ao lado da cabeceira
+  ctx.fillStyle = '#b9b4a8';
+  ctx.fillRect(11, 43, 2, 9);
+  ctx.fillRect(8, 51, 8, 1);
+  ctx.fillStyle = '#e4dfd2';
+  ctx.fillRect(6, 41, 12, 2);
+  ctx.fillStyle = '#a9a498';
+  ctx.fillRect(6, 42, 12, 1);
+  ctx.fillStyle = '#d9ecff';
+  ctx.fillRect(9, 34, 4, 7);
+  ctx.fillStyle = '#ffb347';
+  ctx.fillRect(9, 37, 4, 4);
+  ctx.fillStyle = '#e63946';
+  ctx.fillRect(12, 31, 1, 5);
+
+  // contorno escuro em volta de tudo
+  const { data } = ctx.getImageData(0, 0, LOUNGER_W, LOUNGER_H);
+  const solid = (x: number, y: number): boolean =>
+    x >= 0 &&
+    y >= 0 &&
+    x < LOUNGER_W &&
+    y < LOUNGER_H &&
+    (data[(y * LOUNGER_W + x) * 4 + 3] ?? 0) > 0;
+  ctx.fillStyle = OUT;
+  for (let y = 0; y < LOUNGER_H; y++) {
+    for (let x = 0; x < LOUNGER_W; x++) {
+      if (solid(x, y)) continue;
+      if (solid(x - 1, y) || solid(x + 1, y) || solid(x, y - 1) || solid(x, y + 1))
+        ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  return canvas;
+}
+
+/** Espreguiçadeira em diagonal, de frente para o sol (dir 1: sol à direita; -1: à esquerda). */
+function lounger(env: SceneEnv, cx: number, baseY: number, dir: 1 | -1): void {
+  const { ctx } = env;
+  loungerSprite ??= buildLounger();
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath();
+  ctx.ellipse(cx + dir * 24, baseY - 8, 32, 6.5, dir * -0.32, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.save();
+  ctx.translate(cx, baseY - LOUNGER_OY);
+  ctx.scale(dir, 1);
+  ctx.drawImage(loungerSprite, -LOUNGER_OX, 0);
+  ctx.restore();
 }
 
 type LeafColors = { line: string; dark: string; mid: string; light: string; rib: string };
@@ -432,37 +527,69 @@ function flowerPlant(env: SceneEnv, cx: number, potTop: number): void {
   });
 }
 
+const POLE_GAP = 48;
+const POLE_TOP = RAIL_TOP - 9;
+const SAG = 6;
+
+/** Corrimão de metal: balaústres finos, travessa de baixo, corrimão com realce e postes com tampa. */
 function railing(env: SceneEnv): void {
   rect(env, 0, WALL_TOP - 2, SCENE_W, 3, '#b6bbc4');
-  for (let x = 6; x < SCENE_W; x += 16)
-    rect(env, x, RAIL_TOP + 2, 2, WALL_TOP - RAIL_TOP - 3, '#9aa0ab');
-  rect(env, 0, RAIL_TOP, SCENE_W, 2, '#c4c9d1');
-  rect(env, 0, RAIL_TOP + 8, SCENE_W, 1, '#8a909b');
+  for (let x = 3; x < SCENE_W; x += 6)
+    rect(env, x, RAIL_TOP + 3, 1, WALL_TOP - RAIL_TOP - 6, '#7f8591');
+  rect(env, 0, WALL_TOP - 6, SCENE_W, 2, '#9aa0ab');
+  rect(env, 0, WALL_TOP - 6, SCENE_W, 1, '#c9ced6');
+  rect(env, 0, RAIL_TOP, SCENE_W, 3, '#aeb4be');
+  rect(env, 0, RAIL_TOP, SCENE_W, 1, '#e6eaf0');
+  rect(env, 0, RAIL_TOP + 2, SCENE_W, 1, '#6f7581');
+  rect(env, 0, RAIL_TOP + 3, SCENE_W, 1, '#3d424c');
+  for (let x = 0; x <= SCENE_W + POLE_GAP; x += POLE_GAP) {
+    rect(env, x - 2, POLE_TOP, 4, WALL_TOP - POLE_TOP - 1, '#7d838f');
+    rect(env, x - 2, POLE_TOP, 1, WALL_TOP - POLE_TOP - 1, '#c9ced6');
+    rect(env, x + 1, POLE_TOP, 1, WALL_TOP - POLE_TOP - 1, '#565c68');
+    rect(env, x - 3, POLE_TOP - 2, 6, 2, '#d8dce3');
+    rect(env, x - 3, POLE_TOP - 2, 6, 1, '#ffffff');
+    rect(env, x - 1, POLE_TOP - 4, 2, 2, '#aeb4be');
+  }
 }
 
-/** Pontos do pisca-pisca: uma lâmpada a cada 12 px, em cima do corrimão. */
-const BULBS = Array.from({ length: 33 }, (_, i) => ({
-  x: 4 + i * 12,
-  y: RAIL_TOP - 4 + (i % 2 ? 2 : 0),
-}));
+/** Ponto da curva do fio entre dois postes (t de 0 a 1). */
+function wirePoint(x0: number, t: number): { x: number; y: number } {
+  const y0 = POLE_TOP - 1;
+  const control = y0 + SAG * 2;
+  return {
+    x: x0 + t * POLE_GAP,
+    y: (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * control + t * t * y0,
+  };
+}
+
+/** Lâmpadas do pisca-pisca: cinco por trecho de fio, penduradas entre os postes. */
+const BULBS: { x: number; y: number }[] = [];
+for (let seg = 0; seg * POLE_GAP < SCENE_W; seg++) {
+  for (let k = 1; k <= 5; k++) {
+    const pt = wirePoint(seg * POLE_GAP, k / 6);
+    BULBS.push({ x: Math.round(pt.x), y: Math.round(pt.y) });
+  }
+}
 
 function stringLights(env: SceneEnv): void {
   const { ctx } = env;
-  ctx.strokeStyle = '#25252d';
-  ctx.lineWidth = 0.8;
-  ctx.beginPath();
-  BULBS.forEach((b, i) => {
-    if (i === 0) ctx.moveTo(b.x, b.y);
-    else {
-      const prev = BULBS[i - 1];
-      if (prev) ctx.quadraticCurveTo((prev.x + b.x) / 2, Math.max(prev.y, b.y) + 2, b.x, b.y);
-    }
-  });
-  ctx.stroke();
+  ctx.strokeStyle = '#1f1f27';
+  ctx.lineWidth = 0.9;
+  for (let seg = 0; seg * POLE_GAP < SCENE_W; seg++) {
+    const x0 = seg * POLE_GAP;
+    const y0 = POLE_TOP - 1;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.quadraticCurveTo(x0 + POLE_GAP / 2, y0 + SAG * 2, x0 + POLE_GAP, y0);
+    ctx.stroke();
+  }
   const lit = env.time === 'night';
   for (const b of BULBS) {
-    rect(env, b.x - 1, b.y, 2, 1, '#25252d');
-    rect(env, b.x - 1, b.y + 1, 2, 3, lit ? '#fff0b8' : '#e7e1cc');
+    rect(env, b.x - 1, b.y, 2, 2, '#1f1f27'); // soquete
+    // lâmpada em formato de gota/cruz de pixels
+    rect(env, b.x - 1, b.y + 3, 3, 2, lit ? '#ffd45e' : '#cfc9b2');
+    rect(env, b.x, b.y + 2, 1, 4, lit ? '#ffd45e' : '#cfc9b2');
+    rect(env, b.x, b.y + 3, 1, 2, lit ? '#fffbe6' : '#f4f0e0');
   }
 }
 
@@ -480,7 +607,7 @@ export const rooftop: SceneDef = {
     railing(env);
     stringLights(env);
     // Espreguiçadeira virada para o sol (manhã: à esquerda; tarde e noite: à direita)
-    lounger(env, 118, 192, env.time === 'morning' ? -1 : 1);
+    lounger(env, 104, 192, env.time === 'morning' ? -1 : 1);
     // Vasos grandes com plantas
     pot(env, 334, 192, 26, 24, {
       base: '#c8693a',
@@ -515,7 +642,7 @@ export const rooftop: SceneDef = {
       const twinkle = 0.55 + 0.45 * Math.sin(env.t * 2.2 + i * 1.7);
       out.push({
         x: b.x,
-        y: b.y + 2,
+        y: b.y + 4,
         radius: 5,
         color: [255, 236, 170],
         intensity: 1.4 * twinkle,
@@ -523,8 +650,8 @@ export const rooftop: SceneDef = {
       });
       out.push({
         x: b.x,
-        y: b.y + 2,
-        radius: 16,
+        y: b.y + 4,
+        radius: 17,
         color: [255, 220, 140],
         intensity: 0.6 * twinkle,
         at: ['night'],
