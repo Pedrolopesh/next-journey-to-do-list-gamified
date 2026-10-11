@@ -19,10 +19,16 @@ sem terceiros. Eles serão trocados pela arte final.
 >
 > O laboratório do personagem e da cabana (`apps/banner/lab`) usa arte LPC; a lista completa, com autores, licença usada e links, está em [`apps/banner/lab/CREDITS-LPC.md`](apps/banner/lab/CREDITS-LPC.md) (gerada pelo script de importação).
 
-Ainda **nenhum asset LPC foi importado**. Ao importar, adicione uma linha por arquivo usado:
+Os assets LPC já importados (camadas do personagem e tiles de cenário) estão em
+[`apps/banner/lab/CREDITS-LPC.md`](apps/banner/lab/CREDITS-LPC.md), com autor, licença usada e link por arquivo:
 
-| Asset | Autor | Licença (CC-BY-SA / GPL / CC0) | Link |
-| ----- | ----- | ------------------------------ | ---- |
+| Grupo                                                   | Autor                                | Licença usada     | Link                                                                                                                                |
+| ------------------------------------------------------- | ------------------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Camadas do personagem (corpo, cabelo, roupas, calçados) | vários, listados em `CREDITS-LPC.md` | OGA-BY 3.0 ou CC0 | [Universal LPC Spritesheet Character Generator](https://github.com/liberatedpixelcup/Universal-LPC-Spritesheet-Character-Generator) |
+| Tiles de cenário (`tileset/original/Sharm`)             | Lanea Zimmerman (Sharm)              | CC-BY 3.0         | [LPC Base Assets](https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles)                            |
+
+Os demais elementos dos cenários (trono, cerca, helicóptero, postes, cabana, braseiros e similares) são
+desenhados em código por este projeto, sem arte de terceiros.
 
 Regras:
 

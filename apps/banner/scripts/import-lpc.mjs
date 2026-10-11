@@ -198,7 +198,7 @@ for (const [slot, names] of Object.entries(WANTED)) {
   }
 }
 
-// Cenário da cabana: tiles de Lanea Zimmerman (Sharm), disponíveis em OGA-BY 3.0
+// Cenários: tiles de Lanea Zimmerman (Sharm), que ela libera também em CC-BY (página do pacote no OpenGameArt)
 const scenery = [];
 const base = process.env.LPC_BASE;
 if (base && existsSync(join(base, 'tileset'))) {
@@ -225,11 +225,11 @@ if (base && existsSync(join(base, 'tileset'))) {
   credits.push({
     file: 'tileset/original/Sharm (interior, objetos e terreno)',
     authors: ['Lanea Zimmerman (Sharm)'],
-    licenseUsed: 'OGA-BY 3.0',
-    licensesOffered: ['CC-BY-SA 3.0', 'GPL 3.0', 'OGA-BY 3.0'],
+    licenseUsed: 'CC-BY 3.0',
+    licensesOffered: ['CC-BY-SA 3.0', 'GPL 3.0', 'CC-BY 3.0'],
     urls: ['https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles'],
     notes:
-      'Cenário da cabana. Os autores Sharm e Redshrike oferecem também OGA-BY 3.0 (página do pacote).',
+      'Cenários (cabana, praia, terraço, zumbi, paraíso, inferno). Sharm e Redshrike liberam a própria arte também em CC-BY, sem ShareAlike e sem a cláusula anti-DRM (página do pacote). Exige crédito.',
   });
 }
 
