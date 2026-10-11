@@ -1,6 +1,6 @@
 # Next Journey — Agent Context
 
-Este arquivo é lido por agents ANTES de qualquer alteração neste repo. Fonte de verdade de stack, regras e checklists. Visão geral em `docs/COMO-FUNCIONA.md`.
+Este arquivo é lido por agents ANTES de qualquer alteração neste repo. Fonte de verdade de stack, regras e checklists. Visão geral em `docs/COMO-FUNCIONA.md`. **Estado atual do trabalho, como rodar e o que falta: `HANDOFF.md` (leia em seguida e mantenha atualizado).**
 
 ## Projeto
 
