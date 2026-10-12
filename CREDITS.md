@@ -6,8 +6,7 @@ das licenças abaixo é manual e obrigatória antes de congelar a arte (Fase 6, 
 
 ## Arte atual
 
-Os sprites e camadas do banner hoje são **placeholders originais do projeto** (formas simples em SVG),
-sem terceiros. Eles serão trocados pela arte final.
+A cena Mapa do banner (usada nas abas de itens) ainda usa **placeholders originais do projeto** (formas simples em SVG), sem terceiros, a serem trocados pela arte final. A cena QG (Home) usa a arte LPC listada abaixo.
 
 | Asset                                                          | Autor   | Licença | Origem           |
 | -------------------------------------------------------------- | ------- | ------- | ---------------- |

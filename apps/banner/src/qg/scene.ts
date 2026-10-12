@@ -8,8 +8,7 @@ import { createQgEngine, type QgEngine } from './engine';
 import { SCENES } from './scenes';
 import type { TimeOfDay } from './scenes/types';
 
-export const QG_DEFAULT_SCENE = 'cabin';
-const QG_FADE_MS = 500;
+const QG_DEFAULT_SCENE = 'cabin';
 const CELEBRATE_MS = 1500;
 
 export type QgScene = {
@@ -28,7 +27,7 @@ export type QgScene = {
   fadeIn: () => void;
 };
 
-export function isQgSceneId(id: string): boolean {
+function isQgSceneId(id: string): boolean {
   return SCENES.some((scene) => scene.id === id);
 }
 
@@ -67,29 +66,34 @@ export function createQgScene(root: HTMLElement): QgScene {
 
   const ensureEngine = (): void => {
     if (engine || loading) return;
-    loading = loadTiles().then(async (tiles) => {
-      const created = createQgEngine({
-        canvas,
-        catalog,
-        tiles,
-        sheetSrc,
-        initial: {
-          selection: selectionFromLayers(
-            pending.layers ?? { skin: 'light', hair: 'short-brown', outfit: 'tunic-purple' },
-          ),
-          anim: 'idle',
-          direction: 'down',
-          sceneId: QG_DEFAULT_SCENE,
-          time: 'afternoon',
-        },
-        maxFps: 30,
-        maxScale: 3,
+    loading = loadTiles()
+      .then(async (tiles) => {
+        const created = createQgEngine({
+          canvas,
+          catalog,
+          tiles,
+          sheetSrc,
+          initial: {
+            selection: selectionFromLayers(
+              pending.layers ?? { skin: 'light', hair: 'short-brown', outfit: 'tunic-purple' },
+            ),
+            anim: 'idle',
+            direction: 'down',
+            sceneId: QG_DEFAULT_SCENE,
+            time: 'afternoon',
+          },
+          maxFps: 30,
+          maxScale: 3,
+        });
+        engine = created;
+        apply();
+        await created.ready();
+        if (visible && !paused) created.start();
+      })
+      .catch(() => {
+        // Sem a arte o QG fica em branco; libera para tentar de novo no próximo INIT
+        loading = null;
       });
-      engine = created;
-      apply();
-      await created.ready();
-      if (visible && !paused) created.start();
-    });
   };
 
   return {
@@ -140,5 +144,3 @@ export function createQgScene(root: HTMLElement): QgScene {
     },
   };
 }
-
-export { QG_FADE_MS };

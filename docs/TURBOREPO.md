@@ -1,6 +1,6 @@
 # Turborepo — como funciona e como está configurado no Next Journey
 
-Atualizado em 2026-10-03, com `turbo` 2.11.6 e `pnpm` 11.28.3. As documentações oficiais da versão instalada ficam em `node_modules/turbo/docs/` e valem mais do que qualquer texto da internet, porque acompanham a versão que o projeto usa.
+Atualizado em 2026-10-12, com `turbo` 2.11.6 e `pnpm` 11.28.3. As documentações oficiais da versão instalada ficam em `node_modules/turbo/docs/` e valem mais do que qualquer texto da internet, porque acompanham a versão que o projeto usa.
 
 ## Parte 1 — Como o Turborepo funciona (geral)
 
@@ -125,43 +125,35 @@ Leitura linha a linha:
 Saída real de `turbo ls`:
 
 ```
-3 packages (pnpm9)
+6 packages (pnpm9)
+  @nextjourney/api           apps/api
+  @nextjourney/banner        apps/banner
   @nextjourney/contracts     packages/contracts
   @nextjourney/eslint-config packages/eslint-config
+  @nextjourney/mobile        apps/mobile
   @nextjourney/tsconfig      packages/tsconfig
 ```
 
 | Pacote | Scripts | Papel |
 |---|---|---|
-| `@nextjourney/contracts` | `build` (placeholder com `echo`), `lint` (`eslint .`), `typecheck` (`tsc --noEmit`) | Futuros schemas Zod. Já exporta `main`, `module`, `types` e `exports` apontando para `dist/` |
+| `@nextjourney/contracts` | `build` (`tsup`), `lint`, `typecheck`, `test` | Schemas Zod compartilhados. Exporta `main`, `module`, `types` e `exports` apontando para `dist/` |
 | `@nextjourney/tsconfig` | nenhum | Configs de TypeScript reaproveitadas: `base.json` (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, ES2022), `node.json` (NodeNext) e `react-native.json` |
 | `@nextjourney/eslint-config` | nenhum | Regras de lint exportadas como `@nextjourney/eslint-config/base`, `/node` e `/react` |
 
-`apps/` está vazia. Os apps nascem nas Fases 2 e 4, porque os geradores (`create-expo-app`, Nest CLI) exigem um diretório novo.
+`apps/` tem `api`, `banner` e `mobile`, cada um com os próprios scripts (`build`, `lint`, `typecheck`, `test`).
 
 ### 2.3 O que acontece quando você roda `pnpm run build`
 
 1. O pnpm executa o script `build` da raiz: `turbo build`.
-2. O Turbo lê o workspace e monta o grafo de pacotes (3 pacotes, sem dependências entre si).
-3. Só o `contracts` tem script `build`; os outros dois não participam.
-4. Ele calcula o hash do `contracts#build`. Na primeira vez, executa o `echo` e guarda o log. Na segunda, o resultado é `Cached: 1 cached, 1 total ... FULL TURBO`, sem executar.
+2. O Turbo lê o workspace e monta o grafo de pacotes (6 pacotes; a API, o banner e o app dependem do `contracts`).
+3. Por causa do `^build`, o `contracts` é compilado antes dos pacotes que o importam.
+4. Para cada tarefa ele calcula um hash das entradas. Na primeira vez executa e guarda o resultado; nas seguintes, se nada mudou, responde `FULL TURBO` sem executar.
 
-Aviso esperado: `no output files found for task @nextjourney/contracts#build`. O `build` declara `outputs: ["dist/**"]`, mas o placeholder não gera `dist/`. Some quando o `tsup` entrar (Fase 3).
+Com os apps, o `build` do banner também copia o `index.html` gerado para dentro do app (`apps/mobile/assets/banner/banner.html`, ignorado pelo Git) e valida o peso. Os testes do `mobile` rodam Vitest e Jest.
 
-`pnpm run lint` e `pnpm run typecheck` executam no `contracts` (o `typecheck` primeiro espera o `build`, por causa do `^build`, se houver dependências). `pnpm run test` retorna "No tasks were executed", porque nenhum pacote tem esse script ainda. Isso é correto, não é erro.
+### 2.4 Próximas mudanças no Turbo
 
-### 2.4 O que vai mudar nas próximas fases
-
-| Fase | Mudança no Turbo |
-|---|---|
-| 1, passos 8 a 10 (feito) | `eslint-config` com as regras; `contracts` com `lint` e `typecheck`; Husky: `pre-commit` com lint-staged e `pre-push` com `turbo run typecheck test --filter="...[origin/main]"` |
-| 1, passo 12 | CI (GitHub Actions) com `pnpm turbo lint typecheck test build` |
-| 2 | `apps/banner` e `apps/mobile` entram. O banner gera `dist/index.html` e um script copia para `apps/mobile/assets/banner/banner.html`. O mobile precisa depender do build do banner: declarando o banner em `devDependencies` do mobile (e o `^build` cuida disso) ou com `dependsOn: ["@nextjourney/banner#build"]` |
-| 3 | `contracts` passa a compilar com `tsup`; o aviso de outputs some |
-| 4 | `apps/api` entra; `dev` roda API em paralelo ao Metro. `test` da API pode precisar de variáveis (`env`) para o Postgres de teste |
-| 7 | Cache remoto opcional para acelerar o CI |
-
-Se alguma tarefa passar a precisar de variáveis de ambiente, declare-as em `env` ou `globalEnv` no `turbo.json`; sem isso o modo estrito as esconde.
+Quando entrar o deploy da API, o `turbo prune` gera o subconjunto do monorepo que o Dockerfile precisa. Outras mudanças entram aqui quando houver decisão.
 
 ### 2.5 Receitas do dia a dia
 
@@ -185,4 +177,3 @@ No ambiente do Pedro, comandos como `pnpm lint` são reescritos pelo `rtk`. Para
 - **`rtk` e `pnpm lint`.** Ver 2.5.
 - **ESLint 9 resolve o `eslint.config.js` a partir da pasta atual**, não do arquivo. No lint-staged (que roda da raiz) isso quebraria, então o comando usa `--flag v10_config_lookup_from_file`, que faz o ESLint procurar a config perto de cada arquivo (comportamento padrão do ESLint 10). O `eslint` também precisa estar nas `devDependencies` da raiz para o lint-staged achar o binário.
 - **TypeScript 5.9, não 7.** O `typescript-eslint` 8.71 aceita `typescript <6.1`. Como o `npm` já oferece a 7.x, o `pnpm add` instala a 7 se você não fixar a faixa.
-- **O aviso "no output files found"** é normal enquanto o `build` do `contracts` for um `echo`.

@@ -1,45 +1,42 @@
 # Next Journey — como o projeto funciona
 
-Atualizado em 2026-10-03 (após a Fase 1, passos 8 a 10). Este documento descreve **o que existe hoje** no repositório e **como as peças vão conversar** quando estiverem prontas. Onde algo ainda não existe, está marcado como **(planejado)** com a fase do plano. Fontes: plano de implementação (documento local, fora do Git) (fases), [REQUISITOS.MD](./REQUISITOS.MD) (especificação), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design) e [TURBOREPO.md](./TURBOREPO.md) (ferramenta de build).
+Atualizado em 2026-10-12. Este documento descreve **o que existe hoje** no repositório e **como as peças conversam**. O estado do trabalho e o que falta ficam no [`HANDOFF.md`](../HANDOFF.md). Fontes: plano de implementação (documento local, fora do Git) (fases), [REQUISITOS.MD](./REQUISITOS.MD) (especificação), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design) e [TURBOREPO.md](./TURBOREPO.md) (ferramenta de build).
 
 ## 1. O produto em uma frase
 
 Um to-do list de uso pessoal para iOS e Android em que cada item marcado rende EXP e moedas e faz um personagem pixel art (LPC) avançar por uma história em 5 capítulos. Três tipos de item (diário, tarefa, hábito) usam o mesmo check. Sem social, sem loja, sem penalidades na v1.
 
-## 2. Estado atual do repositório (2026-10-03)
+## 2. Estado atual do repositório (2026-10-12)
 
 | Item | Estado |
 |---|---|
 | Plano, especificação e registro do Figma | Prontos, em `docs/` |
-| Monorepo pnpm + Turborepo | Funcionando (Fase 1, passos 1 a 7) |
-| `packages/tsconfig` | Pronto: `base.json`, `node.json`, `react-native.json` |
-| `packages/contracts` | Esqueleto: `src/index.ts` vazio; `build` ainda é um `echo` (tsup entra na Fase 3); já tem `lint` e `typecheck` reais |
-| `packages/eslint-config` | Pronto: `base.js`, `node.js`, `react.js` (ESLint 9 flat config, regras type-checked, imports ordenados, `no-console`) |
-| Prettier, Husky, lint-staged, commitlint | Funcionando: `pre-commit` (ESLint `--fix` e Prettier nos arquivos staged), `commit-msg` (Conventional Commits), `pre-push` (typecheck e test dos pacotes alterados) |
-| CI no GitHub Actions | Planejado (Fase 1, passo 12) |
-| `apps/api`, `apps/banner`, `apps/mobile` | Planejado (Fases 2 e 4) |
-| Hospedagem | Decidida: VPS própria, em Docker. Ainda sem deploy |
+| Monorepo pnpm + Turborepo, hooks e CI | Funcionando: ESLint, Prettier, Husky, lint-staged, commitlint e GitHub Actions (lint, typecheck, test, build e varredura de segurança em todo PR) |
+| `packages/contracts` | Schemas Zod compartilhados (auth, itens, check, histórias, personagem, protocolo do banner), com testes; build com `tsup` |
+| `packages/tsconfig`, `packages/eslint-config` | Prontos |
+| `apps/api` | NestJS + Prisma + PostgreSQL: auth, itens, check, progressão, histórias, conquistas, personagem, `GET /home`, exclusão de conta; testes unitários e e2e |
+| `apps/banner` | Vite + TypeScript: cena Mapa (CSS) e cena QG (canvas, 7 cenários, personagem LPC); laboratórios de desenvolvimento (`lab.html`, `buttons.html`, `dev.html`) fora do build |
+| `apps/mobile` | Expo + React Native: cadastro, onboarding, Home com o QG, abas de itens, perfil, configurações e créditos |
+| Hospedagem | Decidida: servidor próprio em contêineres. Ainda sem deploy do Next Journey |
 
-Nenhuma funcionalidade do app existe ainda. Hoje o repositório só prova que instalação, build, lint, typecheck e os hooks de qualidade funcionam.
+As Fases 1 a 5 estão concluídas em código; a Fase 6 (conteúdo e arte) e a Fase 7 (produção) estão em andamento. O que falta está no `HANDOFF.md`.
 
 ## 3. Estrutura de pastas
 
 ```
 next-journey-to-do-list-gamified/
-  apps/                        (vazia; os apps nascem nas Fases 2 e 4)
-    api/        NestJS + Prisma + PostgreSQL         (planejado, Fase 4)
-    banner/     Vite + TypeScript, camada de jogo    (planejado, Fase 2)
-    mobile/     Expo + React Native + Expo Router    (planejado, Fase 2)
+  apps/
+    api/        NestJS + Prisma + PostgreSQL
+    banner/     Vite + TypeScript; Mapa em CSS e QG em canvas (src/qg)
+    mobile/     Expo + React Native + Expo Router
   packages/
     contracts/      schemas Zod e tipos compartilhados
     tsconfig/       configurações base do TypeScript
     eslint-config/  regras de lint compartilhadas
-  docs/            plano, requisitos, Figma, este documento e o do Turborepo
-  .nvmrc           versão do Node (24)
-  package.json     raiz: scripts e versão do pnpm
-  pnpm-workspace.yaml   quais pastas são pacotes
-  pnpm-lock.yaml        versões exatas instaladas
-  turbo.json            tarefas e dependências entre elas
+  docs/            plano, requisitos, Figma, ADRs, QA, segurança e este documento
+  openspec/        propostas e specs de mudanças de comportamento
+  scripts/         varredura de segurança e backup
+  HANDOFF.md       estado do trabalho para quem for continuar
   AGENTS.md        regras para agentes de IA (o bloco do Turborepo é escrito pelo próprio turbo)
 ```
 
@@ -56,7 +53,7 @@ Nome dos pacotes: escopo `@nextjourney/*` (ex.: `@nextjourney/contracts`). Um pa
        ▼
 ┌───────────────┐
 │ apps/banner   │  roda dentro de um WebView; nunca acessa a API
-│ Vite + CSS    │
+│ Vite + TS     │
 └───────────────┘
         └──────── todos importam schemas Zod de packages/contracts ────────┘
 ```
@@ -86,37 +83,20 @@ Valores iniciais (ficam na tabela `game_config`, ajustáveis sem novo build): EX
 
 | Projeto | Principais tecnologias |
 |---|---|
-| API | Node 24, NestJS 11, Prisma, PostgreSQL 16+, Zod + nestjs-zod, argon2, JWT, nestjs-pino, helmet, throttler, Terminus (`/health`), Swagger fora de produção, Jest |
-| Banner | Vite, TypeScript, CSS `@keyframes` + `steps()` em spritesheets (só `transform` e `opacity`), Vitest + jsdom, Sentry |
+| API | Node 24, NestJS 11, Prisma, PostgreSQL 16+, Zod + nestjs-zod, argon2, JWT, nestjs-pino, helmet, throttler, Terminus (`/health`), Swagger fora de produção, Vitest |
+| Banner | Vite, TypeScript; Mapa em CSS (`@keyframes`, só `transform` e `opacity`) e QG em canvas 2D com sprites LPC; Vitest + jsdom |
 | App | Expo (development build, não Expo Go), React Native, Expo Router, TanStack Query, Zustand, axios, react-hook-form + Zod, SecureStore, reanimated, i18next (pt-BR), google-signin, expo-apple-authentication, expo-notifications, Sentry, jest-expo |
 | Compartilhado | pnpm, Turborepo, TypeScript strict, ESLint 9 (flat config), Prettier, Husky, lint-staged, commitlint, GitHub Actions |
 
 ## 7. Como rodar hoje
 
-Pré-requisitos: Node 24 (`nvm use`, lê o `.nvmrc`) e o pnpm 11.28.3 via corepack.
-
-```bash
-corepack enable
-corepack prepare pnpm@11.28.3 --activate   # o campo packageManager já fixa a versão
-pnpm install
-pnpm run build        # roda o build de todos os pacotes que têm esse script (via Turbo)
-```
-
-`pnpm run lint` e `pnpm run typecheck` já rodam no `contracts`. `test` e `dev` existem como scripts da raiz, mas nenhum pacote tem esses scripts ainda, então o Turbo responde "No tasks were executed".
-
-Git hooks (instalados pelo `pnpm install`, via script `prepare`): commit com mensagem fora do padrão é rejeitado; arquivo `.ts` staged passa por ESLint com `--fix` e Prettier, e o commit é barrado se sobrar erro que não tem correção automática (ex.: `console.log`). O `pre-push` roda `turbo run typecheck test --filter="...[origin/main]"`.
-
-Observação do ambiente do Pedro: o hook do `rtk` reescreve `pnpm lint` para `eslint`. Use `pnpm run lint` com `rtk proxy` na frente (`rtk proxy pnpm run lint`) para testar.
-
-O TypeScript está fixado em `~5.9` (e não na 7.x, que é a mais nova no npm) porque o `typescript-eslint` 8.71 só aceita versões abaixo de 6.1; Expo e Nest também seguem a linha 5.x.
-
-A versão do pnpm está fixada em 11.28.3 (e não na mais nova, 12.8.1) porque o corepack não conseguiu ativar a 12.8.1 nesta máquina em 2026-10-02.
+Pré-requisitos, comandos e armadilhas conhecidas estão no [`HANDOFF.md`](../HANDOFF.md) (seção "Como rodar localmente"). Em resumo: Node 24, pnpm 11 via corepack, `pnpm install` e `pnpm exec turbo run lint typecheck test build`.
 
 ## 8. Ambientes e hospedagem
 
 - **Desenvolvimento:** Postgres local via `docker compose` (arquivo na raiz, Fase 4), app em development build contra a API local ou de staging.
 - **Staging e produção:** uma VPS própria da We Tech Hub (Ubuntu 24.04), em Docker, com nginx no host (80/443) e certbot. Regras: Postgres próprio do Next Journey em compose project separado, portas publicadas só em `127.0.0.1`, limites de memória e CPU por container, staging e produção em projetos e portas distintos, backup diário do Postgres com 7 dias de retenção, monitor externo no `/health`. Endereço, inventário e achados de auditoria ficam fora do repositório.
-- **Pré-requisito de segurança:** concluir a auditoria da VPS (registrada fora do repositório) antes do primeiro deploy.
+- **Pré-requisito de segurança:** concluir a revisão da hospedagem (registrada fora do repositório) antes do primeiro deploy.
 - **Builds do app:** EAS Build e EAS Submit, perfis `development`, `preview` e `production`; OTA (EAS Update) para correções de JavaScript e do banner.
 - **E-mail:** Resend, só para recuperação de senha.
 - **Identidade:** nome Next Journey; bundle id `br.com.wetechhub.app` (dev: `br.com.wetechhub.app.dev`), imutável a partir do primeiro build iOS com credenciais Apple.
@@ -124,24 +104,24 @@ A versão do pnpm está fixada em 11.28.3 (e não na mais nova, 12.8.1) porque o
 ## 9. Como o trabalho é conduzido
 
 - Plano em 9 fases (0 a 8) e 3 marcos, com critério de pronto por fase. Estado na tabela de Andamento do plano (documento local, fora do Git).
-- Cada passo numerado vira um PR pequeno com Conventional Commits (`feat(mobile): ...`, `chore: ...`). PR só entra com lint, typecheck e testes verdes no CI (o CI chega no passo 12 da Fase 1).
-- Decisões difíceis de reverter viram ADR em `docs/adr/`. O diário do projeto fica em `docs/DIARIO.md` (a criar). Datas sempre em ISO 8601.
+- Cada passo numerado vira um PR pequeno com Conventional Commits (`feat(mobile): ...`, `chore: ...`). PR só entra com lint, typecheck e testes verdes no CI.
+- Decisões difíceis de reverter viram ADR em `docs/adr/`. O diário do projeto fica em `docs/DIARIO.md`. Datas sempre em ISO 8601.
 - Regra de ouro do plano: se uma decisão, mudança de escopo ou desvio não está escrito com data, ele não aconteceu.
 
 ## 10. Decisões já tomadas (2026-10-02)
 
 - Regras de progressão num único lugar do back-end; sem pacote `@nextjourney/domain`.
-- Banner em CSS (canvas só como plano B, se o spike de desempenho falhar).
+- Banner: Mapa em CSS; QG em canvas (decidido na Fase 6, com limite de 30 quadros por segundo e peso máximo de 1,5 MB).
 - Login Google com `@react-native-google-signin/google-signin`.
 - Rota do check: `POST /v1/items/:id/checks`.
 - Sem limite de checks por hábito.
 - Escolhas narrativas e escolha de mapa: backlog (fora da v1).
 - Excluir conta: sem tela dedicada, linha em Configurações › Conta com diálogo de confirmação (exigência das lojas).
-- Hospedagem em VPS própria, em Docker;
+- Hospedagem própria, em contêineres.
 
 ## 11. Pendências conhecidas
 
-- Concluir a auditoria de segurança da VPS antes do primeiro deploy.
+- Concluir a revisão de segurança da hospedagem antes do primeiro deploy (registrada fora do repositório).
 - Confirmar as "Regras complementares" propostas em REQUISITOS.MD.
 - Desenhar no Figma: Conquistas, modal de conquista, Minha história, Categorias, Configurações, Termos no cadastro e Créditos.
-- Escrever o ADR do pnpm 11 e os ADR-001 (hospedagem) e ADR-002 (monorepo com pnpm + Turborepo).
+- Escrever o ADR-0003 (WebView para o banner), depois da medição em aparelho.

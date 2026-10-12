@@ -1,4 +1,4 @@
-import { celestial, gradientRect, rect, rng, stars, tileArea } from './draw';
+import { celestial, gradientRect, rect, rng, shadedBlock, stars, tileArea } from './draw';
 import { drawLampCones, drawLampPost, type Lamp, lampLights } from './lampposts';
 import type { ExtraCharacter, Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_H, SCENE_W } from './types';
@@ -57,7 +57,7 @@ function heliPos(t: number): { x: number; y: number } {
   return { x: ((t * 34) % (SCENE_W + 120)) - 60, y: 46 + Math.sin(t * 1.4) * 3 };
 }
 
-function block(
+const block = (
   env: SceneEnv,
   x: number,
   y: number,
@@ -66,12 +66,9 @@ function block(
   fill: string,
   dark: string,
   light: string,
-): void {
-  rect(env, x - 1, y - 1, w + 2, h + 2, OUT);
-  rect(env, x, y, w, h, fill);
-  rect(env, x, y, w, 1, light);
-  rect(env, x, y + h - 1, w, 1, dark);
-}
+): void => {
+  shadedBlock(env, x, y, w, h, fill, dark, light, OUT);
+};
 
 function dunes(env: SceneEnv): void {
   const { ctx } = env;

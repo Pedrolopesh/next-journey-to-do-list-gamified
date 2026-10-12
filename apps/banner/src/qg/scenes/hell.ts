@@ -1,4 +1,4 @@
-import { flame, glow, gradientRect, rect, rng, tileArea } from './draw';
+import { byTime, flame, glow, gradientRect, rect, rng, tileArea } from './draw';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_H, SCENE_W } from './types';
 
@@ -11,9 +11,7 @@ const SKY_BY_TIME = {
   night: ['#0a0305', '#14060a', '#200a0c', '#2e0f0d', '#44160e', '#5c1d0f'],
 } as const;
 
-function by<T>(time: TimeOfDay, day: T, night: T): T {
-  return time === 'night' ? night : day;
-}
+const by = <T>(time: TimeOfDay, day: T, night: T): T => byTime(time, day, day, night);
 
 const BRAZIERS = [124, 266] as const;
 const BRAZIER_BASE = 162;

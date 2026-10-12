@@ -26,3 +26,7 @@ auditConfig:
 overrides:
   mysql2: '>=3.23.1'
   deepmerge-ts: '>=8.0.0'
+  # Correções de ferramentas de desenvolvimento (Expo e Vite) com versão corrigida publicada
+  esbuild: '>=0.28.1'
+  uuid: '>=11.1.1'
+  decode-uri-component: '>=0.5.0'

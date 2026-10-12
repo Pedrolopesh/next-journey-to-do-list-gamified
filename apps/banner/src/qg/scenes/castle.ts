@@ -1,4 +1,4 @@
-import { bands, flame, rect, rng, sky } from './draw';
+import { bands, flame, rect, rng, shadedBlock, sky } from './draw';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_W } from './types';
 
@@ -20,7 +20,7 @@ const STEEL_LIGHT = '#dbe2ee';
 const CANDELABRA = [142, 248] as const;
 const CANDLE_Y = 130;
 
-function block(
+const block = (
   env: SceneEnv,
   x: number,
   y: number,
@@ -29,12 +29,9 @@ function block(
   fill: string,
   dark: string,
   light: string,
-): void {
-  rect(env, x - 1, y - 1, w + 2, h + 2, OUT);
-  rect(env, x, y, w, h, fill);
-  rect(env, x, y, w, 1, light);
-  rect(env, x, y + h - 1, w, 1, dark);
-}
+): void => {
+  shadedBlock(env, x, y, w, h, fill, dark, light, OUT);
+};
 
 function torch(env: SceneEnv, x: number): void {
   rect(env, x - 3, 67, 6, 22, OUT);
