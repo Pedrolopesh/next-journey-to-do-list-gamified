@@ -23,6 +23,29 @@ export function rect(
   env.ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
 }
 
+/** Bloco em pixel art: contorno de 1 px, cor, realce em cima e sombra embaixo. */
+export function shadedBlock(
+  env: SceneEnv,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  fill: string,
+  dark: string,
+  light: string,
+  outline: string,
+): void {
+  rect(env, x - 1, y - 1, w + 2, h + 2, outline);
+  rect(env, x, y, w, h, fill);
+  rect(env, x, y, w, 1, light);
+  rect(env, x, y + h - 1, w, 1, dark);
+}
+
+/** Escolhe um valor conforme a hora do dia. */
+export function byTime<T>(time: TimeOfDay, morning: T, afternoon: T, night: T): T {
+  return time === 'morning' ? morning : time === 'afternoon' ? afternoon : night;
+}
+
 /** Faixas horizontais de cor (degradê em "degraus", como em pixel art). */
 export function bands(
   env: SceneEnv,
@@ -38,17 +61,8 @@ export function bands(
   });
 }
 
-/** Disco em pixels (sem suavização). */
-export function disc(env: SceneEnv, cx: number, cy: number, r: number, color: string): void {
-  env.ctx.fillStyle = color;
-  for (let dy = -r; dy <= r; dy++) {
-    const half = Math.floor(Math.sqrt(r * r - dy * dy));
-    env.ctx.fillRect(Math.round(cx - half), Math.round(cy + dy), half * 2 + 1, 1);
-  }
-}
-
 /** Nuvem macia: vários "bofes" com sombra embaixo (vetor, sem serrilhado). */
-export function cloud(env: SceneEnv, x: number, y: number, size: number, color: string): void {
+function cloud(env: SceneEnv, x: number, y: number, size: number, color: string): void {
   const { ctx } = env;
   const puffs: [number, number, number][] = [
     [0, 2, 5],
@@ -135,12 +149,6 @@ export function sprite(
 ): void {
   if (image) env.ctx.drawImage(image, sx, sy, sw, sh, Math.round(dx), Math.round(dy), sw, sh);
 }
-
-export const SKY: Record<TimeOfDay, string[]> = {
-  morning: ['#6f86c9', '#8e9bd0', '#b7a6d3', '#e6b3b5', '#f7c6a0', '#fbd9a5'],
-  afternoon: ['#3f8fe0', '#5aa5e8', '#7bb9ee', '#9ecbf2', '#bcdcf5', '#d4e8f7'],
-  night: ['#070b1f', '#0b1230', '#101a40', '#16234f', '#1d2d5c', '#25376a'],
-};
 
 /** Degradê contínuo vertical (céu, névoa) a partir da lista de cores. */
 export function gradientRect(
@@ -252,46 +260,6 @@ export function sky(
     if (w > 200) cloud(env, x + ((drift + 330) % span) - 45, y + h * 0.18, 0.8, color);
   }
   ctx.restore();
-}
-
-/** Prédios em silhueta com janelas que acendem à noite. */
-export function skyline(
-  env: SceneEnv,
-  seed: number,
-  baseY: number,
-  minH: number,
-  maxH: number,
-  color: string,
-  options: { windows?: boolean; ruined?: boolean; shift?: number } = {},
-): void {
-  const random = rng(seed);
-  const shift = options.shift ?? 0;
-  let x = -20;
-  while (x < 410) {
-    const w = 22 + Math.floor(random() * 26);
-    const h = minH + Math.floor(random() * (maxH - minH));
-    const bx = x - (shift % 40);
-    rect(env, bx, baseY - h, w, h, color);
-    if (options.ruined && random() > 0.45) {
-      // topo quebrado: degraus no telhado
-      const cut = 6 + Math.floor(random() * 10);
-      rect(env, bx + w - cut, baseY - h - 1, cut, 1, color);
-      env.ctx.clearRect(bx + w - cut, baseY - h, cut, Math.floor(cut / 2));
-    }
-    if (options.windows) {
-      for (let wy = baseY - h + 5; wy < baseY - 4; wy += 7) {
-        for (let wx = bx + 3; wx < bx + w - 3; wx += 6) {
-          const lit = random() > 0.55;
-          if (env.time === 'night' && lit)
-            rect(env, wx, wy, 3, 3, random() > 0.8 ? '#8fd8ff' : '#ffd36b');
-          else if (env.time !== 'night')
-            rect(env, wx, wy, 3, 3, random() > 0.5 ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.18)');
-          else random();
-        }
-      }
-    }
-    x += w + 2 + Math.floor(random() * 4);
-  }
 }
 
 /** Chama pequena (tochas, lareira, fogueira) que dança. */

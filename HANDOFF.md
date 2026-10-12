@@ -63,7 +63,7 @@ Monorepo pnpm + Turborepo: `apps/api` (NestJS + Prisma + PostgreSQL), `apps/mobi
 
 - Licença do projeto.
 - ADR-0004, regras complementares de jogo.
-- WEPARTY-185.
+- Itens de segurança da hospedagem registrados fora do repositório.
 - Rotação de senhas e tokens que já circularam.
 - Pedido de limpeza ao suporte do GitHub.
 - Se o cenário do QG deve continuar sendo escolha do usuário (hoje é, por aparelho) ou passar a depender da história.

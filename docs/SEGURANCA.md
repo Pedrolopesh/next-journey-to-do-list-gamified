@@ -59,7 +59,22 @@ Ações (2026-10-03):
 3. `pnpm run security` roda no CI a cada PR.
 4. Ativados no GitHub: secret scanning, push protection e alertas do Dependabot; reporte privado de vulnerabilidades.
 
-Observação sobre ferramentas: o `.npmrc` do usuário contém token do npm. Ele não está no repositório, mas apareceu em saída de terminal durante a sessão de 2026-10-02; recomendou-se revogar e gerar outro.
+
+### 2026-10-12: revisão geral (código, dependências e documentação)
+
+Escopo: API (guards, validação, logs, CORS, rate limit), app (armazenamento, WebView, logs), banner (sem rede), dependências, documentação e arquivos versionados.
+
+| Verificação | Resultado |
+|---|---|
+| Rotas da API | Guard global de JWT com `@Public()` explícito nas rotas abertas (padrão seguro); throttler global com limite menor em `/auth` |
+| Entrada e saída | Zod em toda rota; nada cru para o Prisma; `GET /me` devolve só campos explícitos; `character.look` só aceita chaves `[a-z0-9_-]{1,40}` |
+| Logs | Pino só com metadados; corpo de requisição nunca logado; campos sensíveis redigidos; o app redige dados antes de logar |
+| App | Tokens no SecureStore; preferência de cenário (não sensível) no AsyncStorage; WebView só com HTML local, `originWhitelist` restrito e sem DOM storage; mensagens do banner validadas com Zod |
+| Banner | Sem rede e sem estado; chave desconhecida cai no padrão |
+| Arquivos versionados e histórico | Sem `.env` real, chaves ou endereços de infraestrutura (`security:full`) |
+| Dependências | `uuid`, `decode-uri-component` e `esbuild` atualizados por `overrides` (versão corrigida publicada); restam 1 moderada (`sprintf-js`, sem correção) e as 2 altas aceitas da seção 5 |
+
+Mudanças desta revisão: cache de folhas do QG com limite (evita crescimento de memória no WebView), código morto removido, documentação alinhada ao estado real.
 
 ## 5. Riscos aceitos (vulnerabilidades sem correção)
 
@@ -70,22 +85,22 @@ Exceções ao `pnpm audit --audit-level=high` são **sempre documentadas**: fica
 | 2026-10-03 | Alta | `node-forge` (GHSA-86w9-cpqp-85rv) | CLI do Expo (certificados de assinatura) | Só ferramenta de desenvolvimento; sem versão corrigida; não vai para o app | 2026-11-03 |
 | 2026-10-03 | Alta | `braces` (GHSA-vfj7-8cjw-p6xm) | Metro (empacotador) | Só ferramenta de desenvolvimento; sem versão corrigida; não vai para o app | 2026-11-03 |
 
-As duas moderadas que acompanham (`uuid` e `decode-uri-component`, também só em ferramentas do Expo) não bloqueiam o CI e serão resolvidas com a atualização do Expo.
+A moderada que resta (`sprintf-js`, só em ferramenta de desenvolvimento do Expo) não bloqueia o CI e não tem versão corrigida; `uuid`, `decode-uri-component` e `esbuild` foram resolvidos por `overrides` em 2026-10-12.
 
 ## 6. Limitações conhecidas (a resolver)
 
 | Tema | Situação | Quando |
 |---|---|---|
 | Cadastro revela se o e-mail já existe (`409 EMAIL_UNAVAILABLE`) | O e-mail transacional já existe (recuperação de senha), mas o cadastro ainda não exige verificação de e-mail. Login, refresh e "esqueci a senha" não vazam essa informação | Fase 7, com verificação de e-mail no cadastro |
-| Rate limit de login (5 tentativas por minuto por IP e e-mail) | Ainda não implementado | Fase 7 (`@nestjs/throttler`) |
-| `helmet` e CORS com allowlist | Ainda não ligados | Fase 7 |
+| Rate limit | Feito: limite geral por IP e limite menor nas rotas de autenticação (`@nestjs/throttler`, ajustável por variável de ambiente). Limite por e-mail no login ainda não existe | Avaliar na Fase 7 |
+| `helmet` e CORS com allowlist | Feitos (`apps/api/src/setup-app.ts`); sem lista de origens o CORS fica desligado | Concluído |
 | HTTPS | Obrigatório em produção; o app em desenvolvimento usa HTTP para o emulador | Antes do primeiro deploy |
 
-## 4. Próximas auditorias (checklist)
+## 7. Próximas auditorias (checklist)
 
 - [ ] Fase 4: revisão de auth (argon2, JWT, refresh com rotação, rate limit, enumeração de contas) antes do primeiro deploy.
 - [ ] Fase 4: revisão dos DTOs de saída (nenhum model do Prisma inteiro) e dos guards de cada rota.
-- [ ] Fase 7: helmet, CORS com allowlist, throttler, `pnpm audit` no CI, revisão de logs.
+- [x] helmet, CORS com allowlist, throttler, `pnpm audit` no CI e redação de dados sensíveis nos logs (revisados em 2026-10-12).
 - [ ] Fase 7: teste de exclusão de conta e de restauração de backup.
 - [ ] Antes de cada submissão às lojas: revisão de permissões, `EXPO_PUBLIC_*`, deep links e WebView.
 - [ ] Adicionar um scanner dedicado de segredos (gitleaks) ao CI quando o repositório tiver mais código.

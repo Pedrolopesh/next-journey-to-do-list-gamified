@@ -1,14 +1,9 @@
-import { gradientRect, rect, rng, sky, sprite, tileArea } from './draw';
-import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
+import { byTime as by, gradientRect, rect, rng, sky, sprite, tileArea } from './draw';
+import type { Light, SceneDef, SceneEnv } from './types';
 import { SCENE_H, SCENE_W } from './types';
 
 const HORIZON = 104;
 const OUT = '#16301c';
-
-/** Escolhe uma cor conforme a hora do dia. */
-function by<T>(time: TimeOfDay, morning: T, afternoon: T, night: T): T {
-  return time === 'morning' ? morning : time === 'afternoon' ? afternoon : night;
-}
 
 function rainbow(env: SceneEnv): void {
   if (env.time === 'night') return;

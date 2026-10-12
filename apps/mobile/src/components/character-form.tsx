@@ -34,8 +34,8 @@ import palettes from '@/features/qg/palettes.json';
 import { colors, radius, space } from '@/theme';
 
 /** Itens que só existem como recompensa de conquista (bloqueados até conquistar). */
-export const REWARD_OUTFITS = ['outfit-special', 'outfit-cape'] as const;
-export const ACCESSORIES = [
+const REWARD_OUTFITS = ['outfit-special', 'outfit-cape'] as const;
+const ACCESSORIES = [
   'none',
   'hat-straw',
   'scarf-red',

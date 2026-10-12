@@ -1,4 +1,4 @@
-import { flame, glow, rect, sky, sprite, tileArea } from './draw';
+import { flame, glow, rect, shadedBlock, sky, sprite, tileArea } from './draw';
 import type { SceneDef, SceneEnv } from './types';
 import { SCENE_W } from './types';
 
@@ -6,22 +6,18 @@ const WALL = 112;
 
 const OUTLINE = '#1c0e06';
 
-/** Bloco em pixel art: contorno de 1 px, cor, realce em cima e sombra embaixo. */
-function block(
+const block = (
   env: SceneEnv,
   x: number,
   y: number,
   w: number,
   h: number,
   fill: string,
-  light: string,
   dark: string,
-): void {
-  rect(env, x - 1, y - 1, w + 2, h + 2, OUTLINE);
-  rect(env, x, y, w, h, fill);
-  rect(env, x, y, w, 1, light);
-  rect(env, x, y + h - 1, w, 1, dark);
-}
+  light: string,
+): void => {
+  shadedBlock(env, x, y, w, h, fill, dark, light, OUTLINE);
+};
 
 /** Tapete trançado em frente à lareira: borda, listra dourada, losangos e franjas. */
 function rug(env: SceneEnv, x: number, y: number, w: number, h: number): void {
@@ -49,10 +45,10 @@ function armchair(env: SceneEnv, cx: number, baseY: number): void {
   const x0 = cx - 12;
   rect(env, x0 + 1, baseY - 2, 3, 2, '#2a170a');
   rect(env, x0 + 20, baseY - 2, 3, 2, '#2a170a');
-  block(env, x0 - 2, baseY - 20, 6, 18, '#276468', '#3f8a8e', '#1a4548');
-  block(env, x0 + 20, baseY - 20, 6, 18, '#276468', '#3f8a8e', '#1a4548');
-  block(env, x0 + 3, baseY - 12, 18, 10, '#2f767a', '#4a9a9e', '#1d4d50');
-  block(env, x0 + 2, baseY - 34, 20, 24, '#378489', '#59a8ac', '#235a5e');
+  block(env, x0 - 2, baseY - 20, 6, 18, '#276468', '#1a4548', '#3f8a8e');
+  block(env, x0 + 20, baseY - 20, 6, 18, '#276468', '#1a4548', '#3f8a8e');
+  block(env, x0 + 3, baseY - 12, 18, 10, '#2f767a', '#1d4d50', '#4a9a9e');
+  block(env, x0 + 2, baseY - 34, 20, 24, '#378489', '#235a5e', '#59a8ac');
   rect(env, x0 + 2, baseY - 34, 1, 1, OUTLINE);
   rect(env, x0 + 21, baseY - 34, 1, 1, OUTLINE);
   rect(env, x0 + 5, baseY - 24, 14, 1, '#235a5e'); // costura do encosto
@@ -61,8 +57,8 @@ function armchair(env: SceneEnv, cx: number, baseY: number): void {
 
 /** Criado-mudo de madeira com gaveta e puxador. */
 function nightstand(env: SceneEnv, x: number, y: number): void {
-  block(env, x, y, 24, 6, '#b27a3c', '#d09a58', '#8a5a2a'); // tampo
-  block(env, x + 1, y + 6, 22, 22, '#8f5d2b', '#a8723a', '#6b4119'); // corpo
+  block(env, x, y, 24, 6, '#b27a3c', '#8a5a2a', '#d09a58'); // tampo
+  block(env, x + 1, y + 6, 22, 22, '#8f5d2b', '#6b4119', '#a8723a'); // corpo
   rect(env, x + 3, y + 9, 18, 8, '#7d4f23');
   rect(env, x + 3, y + 9, 18, 1, '#a8723a');
   rect(env, x + 10, y + 12, 4, 2, '#e8c46a'); // puxador
@@ -74,7 +70,7 @@ function nightstand(env: SceneEnv, x: number, y: number): void {
 
 /** Luminária de mesa: base, haste e cúpula; acesa à noite. */
 function lamp(env: SceneEnv, cx: number, baseY: number, lit: boolean): void {
-  block(env, cx - 4, baseY - 4, 8, 4, '#6b4119', '#8a5a2a', '#4a2c0e');
+  block(env, cx - 4, baseY - 4, 8, 4, '#6b4119', '#4a2c0e', '#8a5a2a');
   rect(env, cx - 1, baseY - 12, 2, 8, OUTLINE);
   rect(env, cx, baseY - 12, 1, 8, '#c9a24a');
   const shade = lit ? '#ffe9a8' : '#e9dcb4';

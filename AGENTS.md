@@ -6,9 +6,9 @@ Este arquivo é lido por agents ANTES de qualquer alteração neste repo. Fonte 
 
 To-do list gamificado (diários, tarefas e hábitos rendem EXP e moedas e fazem um personagem LPC avançar por uma história). Monorepo **pnpm + Turborepo**, pacotes no escopo `@nextjourney/*`.
 
-- `apps/api`: NestJS 11 + Prisma + PostgreSQL (a criar, Fase 4)
-- `apps/banner`: camada de jogo em Vite + TypeScript + CSS, roda num WebView (a criar, Fase 2)
-- `apps/mobile`: React Native + Expo, Expo Router (a criar, Fase 2)
+- `apps/api`: NestJS 11 + Prisma + PostgreSQL
+- `apps/banner`: camada de jogo em Vite + TypeScript, roda num WebView (Mapa em CSS, QG em canvas)
+- `apps/mobile`: React Native + Expo, Expo Router
 - `packages/contracts`: schemas Zod compartilhados (API, app, banner)
 - `packages/tsconfig`, `packages/eslint-config`: configuração compartilhada
 

@@ -15,6 +15,8 @@ import { applyTint, drawLights, vignette } from './scenes/lighting';
 import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay } from './scenes/types';
 
 const FPS: Record<AnimationName, number> = { idle: 2, walk: 9, run: 12 };
+/** Folhas recoloridas guardadas em memória; passando disso, as mais antigas saem do cache. */
+const MAX_CACHED_SHEETS = 64;
 
 export type QgState = {
   selection: Selection;
@@ -114,6 +116,12 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
         return layer;
       });
       sheets.set(key, sheet);
+      // Cada folha recolorida ocupa cerca de 0,5 MB: sem limite, trocar a aparência muitas vezes
+      // (sorteio, cores) faria o WebView crescer sem parar
+      if (sheets.size > MAX_CACHED_SHEETS) {
+        const oldest = sheets.keys().next();
+        if (!oldest.done) sheets.delete(oldest.value);
+      }
     }
     return sheet;
   };
