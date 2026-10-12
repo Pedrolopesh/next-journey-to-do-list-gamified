@@ -27,8 +27,9 @@ type Panel = { ax: number; ay: number; ah: number; bx: number; by: number; bh: n
 
 /** Cerca em três lados (fundo e laterais) e a frente aberta para o jogador. */
 const BACK: Panel = { ax: 90, ay: FENCE_BASE, ah: FENCE_H, bx: 300, by: FENCE_BASE, bh: FENCE_H };
-const LEFT: Panel = { ax: 90, ay: FENCE_BASE, ah: FENCE_H, bx: 72, by: 198, bh: 40 };
-const RIGHT: Panel = { ax: 300, ay: FENCE_BASE, ah: FENCE_H, bx: 318, by: 198, bh: 40 };
+/** As laterais seguem a borda do piso e saem pela parte de baixo da cena: o cercado fecha dos dois lados. */
+const LEFT: Panel = { ax: 90, ay: FENCE_BASE, ah: FENCE_H, bx: 61, by: 222, bh: 46 };
+const RIGHT: Panel = { ax: 300, ay: FENCE_BASE, ah: FENCE_H, bx: 329, by: 222, bh: 46 };
 
 function at(p: Panel, u: number): { x: number; base: number; h: number } {
   return {
@@ -537,8 +538,10 @@ export const zombie: SceneDef = {
     });
     sign(env, 100, 140);
     sign(env, 290, 140);
-    sign(env, LEFT.bx + 6, LEFT.by - LEFT.bh - 14);
-    sign(env, RIGHT.bx - 6, RIGHT.by - RIGHT.bh - 14);
+    for (const panel of [LEFT, RIGHT]) {
+      const point = at(panel, 0.28);
+      sign(env, point.x, point.base - point.h - 12);
+    }
 
     // faíscas
     const { ctx } = env;
