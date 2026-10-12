@@ -1,7 +1,7 @@
 import { IconPlus } from '@tabler/icons-react-native';
 import { Pressable, StyleSheet } from 'react-native';
 
-import { colors, space } from '@/theme';
+import { colors, softGlow, space } from '@/theme';
 
 const FAB_SIZE = 52;
 
@@ -12,7 +12,11 @@ export function Fab({ label, onPress }: { label: string; onPress: () => void }) 
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      style={styles.fab}
+      style={({ pressed }) => [
+        styles.fab,
+        softGlow(colors.brand.primary, { pressed }),
+        pressed && styles.pressed,
+      ]}
     >
       <IconPlus size={24} color={colors.text.onPrimary} strokeWidth={2} />
     </Pressable>
@@ -30,6 +34,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
   },
+  pressed: { transform: [{ scale: 0.96 }] },
 });

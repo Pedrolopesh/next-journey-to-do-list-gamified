@@ -3,7 +3,7 @@ import { IconFlame } from '@tabler/icons-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, size, space } from '@/theme';
+import { colors, radius, size, softGlow, space } from '@/theme';
 
 type Props = {
   item: Item;
@@ -42,7 +42,11 @@ export function ItemRow({ item, onCheck, onOpen, onUndo, counters = false }: Pro
         onPress={() => {
           onCheck(item);
         }}
-        style={[styles.check, done && styles.checkDone]}
+        style={[
+          styles.check,
+          done && styles.checkDone,
+          done && softGlow(colors.status.success, { strength: 0.6 }),
+        ]}
       >
         {done ? <Text style={styles.checkMark}>✓</Text> : null}
       </Pressable>

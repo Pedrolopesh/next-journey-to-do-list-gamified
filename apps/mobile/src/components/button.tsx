@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors, radius, size } from '@/theme';
+import { colors, radius, size, softGlow } from '@/theme';
 
 type Props = {
   label: string;
@@ -28,6 +28,11 @@ export function Button({
       style={({ pressed }) => [
         styles.base,
         styles[variant],
+        // Brilho suave (some quando desabilitado); o botão "ghost" é só texto e não brilha
+        !inactive && variant === 'primary' && softGlow(colors.brand.primary, { pressed }),
+        !inactive &&
+          variant === 'secondary' &&
+          softGlow(colors.bg.raised, { pressed, strength: 0.6, halo: colors.status.info }),
         pressed && styles.pressed,
         inactive && styles.disabled,
       ]}
@@ -52,8 +57,8 @@ const styles = StyleSheet.create({
   primary: { backgroundColor: colors.brand.primary },
   secondary: { backgroundColor: colors.bg.raised },
   ghost: { backgroundColor: 'transparent' },
-  pressed: { opacity: 0.85 },
-  disabled: { opacity: 0.5 },
+  pressed: { transform: [{ scale: 0.98 }] },
+  disabled: { opacity: 0.45 },
   label: { color: colors.text.onPrimary, fontSize: 15, fontWeight: '600' },
   ghostLabel: { color: colors.brand.primaryLight },
 });

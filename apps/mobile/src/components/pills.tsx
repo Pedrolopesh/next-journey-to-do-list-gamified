@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
-import { colors, radius, size, space } from '@/theme';
+import { colors, radius, size, softGlow, space } from '@/theme';
 
 type Option<T extends string> = { value: T; label: string; color?: string; disabled?: boolean };
 
@@ -38,6 +38,7 @@ export function Pills<T extends string>({
           selected && {
             backgroundColor: option.color ?? colors.brand.primary,
             borderColor: option.color ?? colors.brand.primary,
+            ...softGlow(option.color ?? colors.brand.primary, { strength: 0.6 }),
           },
           option.disabled && styles.disabled,
         ]}
@@ -52,7 +53,7 @@ export function Pills<T extends string>({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.row}
+        contentContainerStyle={[styles.row, styles.scrollRow]}
       >
         {content}
       </ScrollView>
@@ -72,6 +73,8 @@ export function Pills<T extends string>({
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: space[8], alignItems: 'center' },
   wrap: { flexWrap: 'wrap' },
+  // folga para o brilho do chip selecionado não ser cortado pela lista
+  scrollRow: { paddingVertical: 8, paddingHorizontal: 4 },
   pill: {
     minHeight: size.touchTarget,
     paddingHorizontal: space[16],
