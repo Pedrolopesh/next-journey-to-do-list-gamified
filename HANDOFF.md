@@ -2,7 +2,7 @@
 
 Resumo para qualquer agente (ou pessoa) continuar de onde parou. Leia antes o `AGENTS.md` (regras, stack e checklist de segurança). Este arquivo não substitui o `AGENTS.md`; ele conta o **estado atual** e o que falta. Atualize-o ao fim de cada etapa.
 
-Última atualização: 2026-10-12, depois do merge do PR #22 na `main` (e antes do PR dos botões).
+Última atualização: 2026-10-12, depois do PR da revisão geral (#24) e durante a jornada das abas.
 
 ## Combinados com o Pedro (dono do projeto)
 
@@ -31,6 +31,8 @@ Monorepo pnpm + Turborepo: `apps/api` (NestJS + Prisma + PostgreSQL), `apps/mobi
 
 **Botões com brilho suave (PR dos botões):** `apps/banner/buttons.html` (só em desenvolvimento, fora do build) mostra 7 estilos de botão com luz e todos os estados. O app usa dois deles, definidos em `apps/mobile/src/theme/glow.ts` (`softGlow` e `softGlowOutline`, com `boxShadow` e `experimental_backgroundImage` do React Native): botão principal cheio com halo, botão secundário contornado, botão flutuante, chips selecionados e check concluído. O botão `ghost` (só texto) e a barra de navegação inferior ficam sem brilho de propósito. Ajustar a intensidade em um lugar só muda o app inteiro. Falta conferir o efeito no iOS e em aparelho de entrada (a propriedade de gradiente é marcada como experimental no React Native).
 
+**Jornada das abas (OpenSpec `banner-jornada`):** as abas Diários, Tarefas e Hábitos mostram o personagem andando para a esquerda com o cenário da história principal rolando atrás (`INIT` com `scene: 'journey'`). O cenário da história é escolhido em Home > Ambiente (preferência `storyScenario`, só no aparelho; sem cabana; "Topo do prédio" virou "Cidade"). Só a praia rola de verdade. Primeira abertura sem itens cria 15 itens de exemplo (`features/items/examples.ts`, uma vez por usuário e aparelho).
+
 ## Como rodar localmente
 
 - Node 24 e pnpm 11 (versões em `.nvmrc` e `packageManager`). Nunca `npm` ou `yarn`.
@@ -50,10 +52,14 @@ Monorepo pnpm + Turborepo: `apps/api` (NestJS + Prisma + PostgreSQL), `apps/mobi
 - O Vite recarrega a página inteira a cada arquivo salvo; o laboratório volta para a cabana. Espere alguns segundos antes de clicar.
 - Não editar migrations já aplicadas; migration nova sempre.
 
+## NÃO ESQUECER: medir o banner em aparelho real
+
+Combinado com o Pedro: adiado até terminar as próximas etapas (jornada em todos os cenários), mas **é obrigatório antes da loja**. Fase 2, passos 16 e 17 e o ADR-0003 com os números. O QG e a jornada rodam a 30 quadros por segundo com escala até 3; falta medir em aparelho de entrada (quadros por segundo, memória, bateria), com o app em segundo plano e com "reduzir movimento". A jornada anima o tempo todo e tem mais desenho por quadro que o QG parado, então pesa mais.
+
 ## O que falta (em ordem sugerida)
 
-1. **Desempenho do banner em aparelho real** (Fase 2, passos 16 e 17) e o ADR-0003 com os números. O QG roda a 30 quadros por segundo com escala até 3; falta medir em aparelho de entrada, com o app em segundo plano e com "reduzir movimento".
-2. **Cena Mapa em canvas** (cenário externo com rolagem) para as abas Diários, Tarefas e Hábitos, hoje ainda em CSS com arte provisória.
+1. **Jornada nos outros cenários** (cidade, zumbi, castelo, paraíso, inferno): hoje só a praia rola; os demais mostram o personagem andando no lugar. Refinar a praia com o Pedro e repetir o padrão (`journey(env)` em cada cena).
+2. Remover a cena Mapa em CSS (`apps/banner/src/scene`) quando a jornada cobrir todos os cenários; as abas já usam a jornada.
 3. **Acessórios LPC** (chapéu, cachecol, bandana, espada, escudo): hoje existem no formulário, mas não têm arte importada e o banner os ignora. Também falta usar o título (Herói/Heroína) para o corpo no cadastro antigo e tratar personagem sem `look` (o formulário mostra o visual padrão até salvar de novo).
 4. **Auditoria RN-FB do app inteiro** (`docs/QA.md` seção 7), requisito para a loja.
 5. **Fase 7** (itens que dependem de conta ou infraestrutura): Sentry, OTA, página pública de exclusão de conta, política de privacidade, auditoria de acessibilidade e agendamento de backup. **Fase 8**: publicação nas lojas.

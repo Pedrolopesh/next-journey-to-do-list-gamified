@@ -109,6 +109,7 @@ describe('controlador do banner', () => {
         show: () => calls.push('show'),
         hide: () => calls.push('hide'),
         setScene: (id: string) => calls.push(`scene:${id}`),
+        setJourney: (journey: boolean) => calls.push(`journey:${journey}`),
         setTime: (time: string) => calls.push(`time:${time}`),
         setCharacter: () => calls.push('character'),
         celebrate: () => calls.push('celebrate'),
@@ -143,9 +144,15 @@ describe('controlador do banner', () => {
     it('INIT qg configura cenário, hora e personagem e mostra o QG', () => {
       const { calls, root, receive, sent } = setupQg();
       receive(init);
-      expect(calls).toEqual(['scene:castle', 'time:night', 'character', 'show']);
+      expect(calls).toEqual(['journey:false', 'scene:castle', 'time:night', 'character', 'show']);
       expect(root.dataset.sceneKey).toBe('castle');
       expect(sent).toHaveLength(0);
+    });
+
+    it('INIT journey liga a jornada (personagem anda e o cenário rola)', () => {
+      const { calls, receive } = setupQg();
+      receive({ ...init, payload: { ...init.payload, scene: 'journey', sceneKey: 'beach' } });
+      expect(calls).toEqual(['journey:true', 'scene:beach', 'time:night', 'character', 'show']);
     });
 
     it('SET_TIME_OF_DAY e SET_CHARACTER chegam ao QG', () => {

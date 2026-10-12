@@ -16,9 +16,11 @@ export type SceneEnv = {
   time: TimeOfDay;
   /** Segundos desde o início, para animações (chamas, ondas, estrelas). */
   t: number;
-  /** Deslocamento horizontal do cenário (quando o personagem anda ou corre). */
+  /** Distância percorrida (px lógicos) na jornada; o cenário se desloca para a direita. */
   scroll: number;
   tiles: Record<string, HTMLImageElement>;
+  /** Cena desenhada na jornada (personagem andando): as luzes seguem o cenário que rola. */
+  journey: boolean;
 };
 
 export type Light = {
@@ -51,6 +53,8 @@ export type SceneDef = {
   /** Linha dos pés do personagem principal. */
   groundY: number;
   back: (env: SceneEnv) => void;
+  /** Versão da jornada: o cenário rola com `env.scroll`. Sem ela, a jornada usa `back` parado. */
+  journey?: (env: SceneEnv) => void;
   front?: (env: SceneEnv) => void;
   lights?: (env: SceneEnv) => Light[];
   extras?: ExtraCharacter[];

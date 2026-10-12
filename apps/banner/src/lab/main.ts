@@ -72,6 +72,7 @@ const state: QgState = {
   anim: 'idle',
   direction: 'down',
   sceneId: 'cabin',
+  journey: false,
   time: 'afternoon',
 };
 
@@ -251,6 +252,18 @@ buttons<Direction>(
   () => state.direction,
   (v) => {
     state.direction = v;
+  },
+);
+buttons<'still' | 'journey'>(
+  $('c-mode'),
+  [
+    { value: 'still', label: 'Parado no lugar' },
+    { value: 'journey', label: 'Jornada (anda e o cenário rola)' },
+  ],
+  () => (state.journey ? 'journey' : 'still'),
+  (v) => {
+    state.journey = v === 'journey';
+    if (state.journey && state.anim === 'idle') state.anim = 'walk';
   },
 );
 buttons<string>(

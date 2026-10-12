@@ -3,14 +3,15 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Pills } from '@/components/pills';
 import { toast } from '@/features/feedback/toast-store';
-import { SCENARIOS, TIME_MODES, timeOfDayFor } from '@/features/qg/options';
+import { SCENARIOS, STORY_SCENARIOS, TIME_MODES, timeOfDayFor } from '@/features/qg/options';
 import { useQgPrefs } from '@/features/qg/qg-store';
 import { colors, radius, space } from '@/theme';
 
 /** Escolha do ambiente do QG: cenário e hora do dia. Vale na Home e na prévia do personagem. */
 export function QgControls() {
   const { t } = useTranslation();
-  const { scenario, timeMode, setScenario, setTimeMode } = useQgPrefs();
+  const { scenario, storyScenario, timeMode, setScenario, setStoryScenario, setTimeMode } =
+    useQgPrefs();
   return (
     <View style={styles.container}>
       <View style={styles.group}>
@@ -24,6 +25,19 @@ export function QgControls() {
             toast.success(t('qg.scenarioSaved', { name: t(`qg.scenarios.${value}`) }));
           }}
           options={SCENARIOS.map((value) => ({ value, label: t(`qg.scenarios.${value}`) }))}
+        />
+      </View>
+      <View style={styles.group}>
+        <Text style={styles.label}>{t('qg.storyScenario')}</Text>
+        <Pills
+          scroll
+          label={t('qg.storyScenario')}
+          value={storyScenario}
+          onChange={(value) => {
+            setStoryScenario(value);
+            toast.success(t('qg.scenarioSaved', { name: t(`qg.scenarios.${value}`) }));
+          }}
+          options={STORY_SCENARIOS.map((value) => ({ value, label: t(`qg.scenarios.${value}`) }))}
         />
       </View>
       <View style={styles.group}>

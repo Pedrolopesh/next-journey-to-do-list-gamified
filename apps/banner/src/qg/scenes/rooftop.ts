@@ -581,7 +581,7 @@ function stringLights(env: SceneEnv): void {
 
 export const rooftop: SceneDef = {
   id: 'rooftop',
-  name: 'Topo do prédio',
+  name: 'Cidade',
   blurb: 'Terraço com a cidade em perspectiva e um lago ao fundo; pisca-pisca no corrimão à noite.',
   groundY: 190,
   back(env) {

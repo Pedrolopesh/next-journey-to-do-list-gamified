@@ -13,12 +13,28 @@ export const SCENARIOS = [
 export type Scenario = (typeof SCENARIOS)[number];
 export const DEFAULT_SCENARIO: Scenario = 'cabin';
 
+/** Cenários da história principal (abas de itens): os mesmos do QG, menos a cabana. */
+export const STORY_SCENARIOS = [
+  'beach',
+  'rooftop',
+  'zombie',
+  'castle',
+  'paradise',
+  'hell',
+] as const satisfies readonly Scenario[];
+export type StoryScenario = (typeof STORY_SCENARIOS)[number];
+export const DEFAULT_STORY_SCENARIO: StoryScenario = 'beach';
+
 /** Hora do QG: automática (relógio do aparelho) ou fixa. */
 export const TIME_MODES = ['auto', 'morning', 'afternoon', 'night'] as const;
 export type TimeMode = (typeof TIME_MODES)[number];
 
 export function isScenario(value: unknown): value is Scenario {
   return SCENARIOS.some((scenario) => scenario === value);
+}
+
+export function isStoryScenario(value: unknown): value is StoryScenario {
+  return STORY_SCENARIOS.some((scenario) => scenario === value);
 }
 
 export function isTimeMode(value: unknown): value is TimeMode {

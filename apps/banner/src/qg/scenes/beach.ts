@@ -1,10 +1,14 @@
-import { bands, flame, gradientRect, rect, rng, sky, tileArea } from './draw';
+import { bands, flame, gradientRect, rect, rng, scrolled, sky, tileArea } from './draw';
 import type { SceneDef, SceneEnv } from './types';
 import { SCENE_W } from './types';
 
 const HORIZON = 98;
 
 const OUTLINE = '#1c1410';
+
+/** Distância entre repetições dos objetos da areia na jornada. */
+const JOURNEY_PERIOD = 820;
+const SAND_LANE = 164;
 
 /** Ilha pequena no horizonte: morro verde com uma palmeirinha, em tom esmaecido pela distância. */
 function island(env: SceneEnv, cx: number): void {
@@ -198,6 +202,75 @@ function palm(env: SceneEnv, x: number, baseY: number, lean: number): void {
   }
 }
 
+const SEA = {
+  night: ['#0c2a55', '#0e3566', '#103f78'],
+  morning: ['#3d8fb8', '#4aa4c4', '#5fb7d0'],
+  afternoon: ['#1d78c2', '#2a90d6', '#3ba6e0'],
+};
+
+/** Posição da fogueira (só à noite) na distância percorrida. */
+const FIRE_WORLD = 700;
+
+/** Praia na jornada: céu e mar ao fundo se movem devagar, a areia e os objetos passam rápido. */
+function journey(env: SceneEnv): void {
+  sky(env, 0, 0, SCENE_W, HORIZON);
+  gradientRect(env, 0, HORIZON, SCENE_W, 44, SEA[env.time]);
+  island(env, scrolled(138, env.scroll, SCENE_W + 160, 0.04));
+  tileArea(
+    env,
+    env.tiles.water,
+    0,
+    160,
+    0,
+    HORIZON + 4,
+    SCENE_W,
+    38,
+    env.t * 8 - env.scroll * 0.25,
+  );
+  rect(env, 0, HORIZON, SCENE_W, 1, 'rgba(255,255,255,0.35)');
+  const reflect = env.time === 'night' ? '#cfd8ff' : '#fff2b8';
+  const rx = env.time === 'morning' ? 86 : env.time === 'afternoon' ? 296 : 304;
+  for (let i = 0; i < 7; i++) {
+    rect(
+      env,
+      rx - 10 + ((Math.sin(env.t * 2 + i) * 3) | 0),
+      HORIZON + 4 + i * 6,
+      20 - i,
+      2,
+      reflect,
+    );
+  }
+  boat(env);
+  const foamY = 142 + ((Math.sin(env.t * 1.2) * 2) | 0);
+  rect(env, 0, foamY, SCENE_W, 3, 'rgba(255,255,255,0.75)');
+  bands(env, 0, 145, SCENE_W, 75, ['#f1d9a0', '#ecd194', '#e6c987', '#dfc07c', '#d8b772']);
+  // Grãos de areia: colunas fixas no mundo, para a areia parecer passar sob os pés
+  const random = rng(11);
+  for (let i = 0; i < 70; i++) {
+    const worldX = random() * JOURNEY_PERIOD;
+    rect(
+      env,
+      scrolled(worldX, env.scroll, JOURNEY_PERIOD),
+      150 + random() * 66,
+      2,
+      1,
+      'rgba(120,80,30,0.25)',
+    );
+  }
+  const at = (world: number): number => scrolled(world, env.scroll, JOURNEY_PERIOD);
+  palm(env, at(60), SAND_LANE, 1.6);
+  palm(env, at(380), SAND_LANE + 4, -1.4);
+  palm(env, at(560), SAND_LANE, 1.2);
+  towel(env, at(230), SAND_LANE - 12, 58, 14);
+  cooler(env, at(300), SAND_LANE - 10);
+  beachChair(env, at(470), SAND_LANE + 6);
+  if (env.time === 'night') {
+    const fireX = at(FIRE_WORLD);
+    rect(env, fireX - 7, SAND_LANE + 4, 14, 3, '#5a3412');
+    flame(env, fireX, SAND_LANE + 4, 2);
+  }
+}
+
 export const beach: SceneDef = {
   id: 'beach',
   name: 'Praia',
@@ -206,13 +279,7 @@ export const beach: SceneDef = {
   back(env) {
     sky(env, 0, 0, SCENE_W, HORIZON);
     // Mar com faixas e ondas
-    const sea =
-      env.time === 'night'
-        ? ['#0c2a55', '#0e3566', '#103f78']
-        : env.time === 'morning'
-          ? ['#3d8fb8', '#4aa4c4', '#5fb7d0']
-          : ['#1d78c2', '#2a90d6', '#3ba6e0'];
-    gradientRect(env, 0, HORIZON, SCENE_W, 44, sea);
+    gradientRect(env, 0, HORIZON, SCENE_W, 44, SEA[env.time]);
     island(env, 138);
     tileArea(env, env.tiles.water, 0, 160, 0, HORIZON + 4, SCENE_W, 38, env.t * 8);
     rect(env, 0, HORIZON, SCENE_W, 1, 'rgba(255,255,255,0.35)');
@@ -251,8 +318,16 @@ export const beach: SceneDef = {
       flame(env, 259, 196, 2);
     }
   },
-  lights: () => [
-    { x: 259, y: 194, radius: 80, color: [255, 150, 60], intensity: 0.6, flicker: true },
+  journey,
+  lights: (env) => [
+    {
+      x: env.journey ? scrolled(FIRE_WORLD, env.scroll, JOURNEY_PERIOD) : 259,
+      y: env.journey ? SAND_LANE + 2 : 194,
+      radius: 80,
+      color: [255, 150, 60],
+      intensity: 0.6,
+      flicker: true,
+    },
     // Luar: ilumina o céu, o mar e a areia
     { x: 304, y: 30, radius: 300, color: [150, 175, 255], intensity: 0.38 },
     { x: 195, y: 150, radius: 230, color: [140, 165, 240], intensity: 0.3 },

@@ -373,6 +373,7 @@
   "qg": {
     "customize": "Personalizar QG",
     "scenario": "Cenário do QG",
+    "storyScenario": "Cenário da história principal",
     "time": "Hora do dia",
     "scenarioSaved": "Cenário: {{name}}.",
     "timeSaved": "Hora do dia: {{name}}.",
@@ -382,7 +383,7 @@
     "scenarios": {
       "cabin": "Cabana",
       "beach": "Praia",
-      "rooftop": "Topo do prédio",
+      "rooftop": "Cidade",
       "zombie": "Apocalipse zumbi",
       "castle": "Castelo",
       "paradise": "Paraíso",
@@ -395,5 +396,29 @@
       "night": "Noite"
     },
     "timeAutoNow": "Automática ({{name}})"
+  },
+  "examples": {
+    "added": "Adicionamos alguns itens de exemplo. Edite ou apague quando quiser.",
+    "daily": {
+      "water": "Beber 2 litros de água",
+      "exercise": "Fazer exercício físico",
+      "read": "Ler por 20 minutos",
+      "planDay": "Planejar o dia",
+      "makeBed": "Arrumar a cama"
+    },
+    "todo": {
+      "bill": "Pagar a conta de luz",
+      "doctor": "Marcar consulta médica",
+      "report": "Enviar o relatório da semana",
+      "shopping": "Fazer a lista de compras",
+      "exam": "Estudar para a prova"
+    },
+    "habit": {
+      "glass": "Beber um copo de água",
+      "stretch": "Alongar o corpo",
+      "breathe": "Respirar fundo por 1 minuto",
+      "rest": "Descansar os olhos da tela",
+      "gratitude": "Agradecer por algo"
+    }
   }
 }

@@ -33,6 +33,13 @@ Marque cada item e anote data, versão e aparelho no `docs/DIARIO.md`.
 - [ ] Desfazer no mesmo dia devolve EXP e moedas; no capítulo fechado mostra o aviso.
 - [ ] Sem internet, o check mostra erro claro e o item volta ao estado anterior (a fila offline é da Fase 7).
 
+## 4c. Jornada das abas (Diários, Tarefas, Hábitos)
+- [ ] O banner mostra o personagem escolhido andando virado para a esquerda; na praia, o mar, a ilha, a areia e os objetos passam atrás dele.
+- [ ] Home > Ambiente mostra "Cenário da história principal" abaixo do cenário do QG, sem a cabana e com "Cidade" no lugar de "Topo do prédio".
+- [ ] Trocar o cenário da história muda as três abas; a hora (automática ou fixa) vale na jornada.
+- [ ] Marcar um item faz o personagem correr por alguns segundos e voltar a andar.
+- [ ] Na primeira abertura sem itens aparecem 5 diários, 5 tarefas e 5 hábitos de exemplo e um toast avisa.
+
 ## 4b. QG da Home (cenário e personagem)
 - [ ] A Home mostra o QG (cenário parado com o personagem) e o personagem salvo, com a hora do aparelho (manhã, tarde ou noite).
 - [ ] "Ambiente" na Home abre cenário e hora; trocar muda o banner na hora e mostra toast; o valor continua depois de fechar o app.

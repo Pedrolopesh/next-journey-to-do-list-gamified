@@ -1,0 +1,9 @@
+- [x] Contrato: `journey` em `sceneKindSchema`
+- [x] Motor do QG: modo jornada, rolagem e velocidade por animação; animação de andar embutida
+- [x] Praia: `journey(env)` com céu, mar, ilha, areia e objetos que passam
+- [x] Controlador: `INIT journey` e testes
+- [x] Laboratório: modo "Jornada"
+- [x] App: `storyScenario`, seletor na Home, abas enviando `journey`, rótulo "Cidade"
+- [x] App: itens de exemplo e testes
+- [ ] Jornada dos demais cenários (um a um, depois de refinar a praia)
+- [ ] Medir o desempenho em aparelho real (ver HANDOFF)

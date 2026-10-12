@@ -9,12 +9,14 @@ import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { useItems } from '@/api/queries';
+import { useStarterExamples } from '@/features/items/use-starter-examples';
 import { colors, size } from '@/theme';
 
 const ICON_STROKE = 1.75;
 
 export default function TabsLayout() {
   const { t } = useTranslation();
+  useStarterExamples();
   const dailies = useItems('daily');
   const pending = dailies.data?.filter((item) => !item.doneToday).length ?? 0;
 

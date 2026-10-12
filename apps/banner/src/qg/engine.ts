@@ -15,6 +15,8 @@ import { applyTint, drawLights, vignette } from './scenes/lighting';
 import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay } from './scenes/types';
 
 const FPS: Record<AnimationName, number> = { idle: 2, walk: 9, run: 12 };
+/** Velocidade do cenário (px lógicos por segundo) quando o personagem anda ou corre na jornada. */
+const JOURNEY_SPEED: Record<AnimationName, number> = { idle: 0, walk: 34, run: 72 };
 /** Folhas recoloridas guardadas em memória; passando disso, as mais antigas saem do cache. */
 const MAX_CACHED_SHEETS = 64;
 
@@ -24,6 +26,8 @@ export type QgState = {
   direction: Direction;
   sceneId: string;
   time: TimeOfDay;
+  /** Jornada: o personagem anda para a esquerda e o cenário rola atrás dele. */
+  journey: boolean;
 };
 
 export type QgEngineOptions = {
@@ -217,17 +221,21 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
   const draw = (clock: number): void => {
     const def = SCENES.find((scene) => scene.id === state.sceneId) ?? SCENES[0];
     if (!def) return;
-    const env: SceneEnv = { ctx, time: state.time, t: clock, scroll: 0, tiles };
+    const walking = state.journey && def.journey !== undefined;
+    const env: SceneEnv = { ctx, time: state.time, t: clock, scroll, tiles, journey: walking };
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     ctx.imageSmoothingEnabled = false; // sprites e tiles continuam nítidos
     ctx.clearRect(0, 0, SCENE_W, SCENE_H);
-    def.back(env);
-    for (const { layers, index } of extras) {
-      const extra = def.extras?.[index];
-      if (extra) drawCharacter(layers, extra.anim, extra.direction, extra.x, extra.feetY, clock);
+    (walking ? def.journey : def.back)?.(env);
+    if (!walking) {
+      for (const { layers, index } of extras) {
+        const extra = def.extras?.[index];
+        if (extra) drawCharacter(layers, extra.anim, extra.direction, extra.x, extra.feetY, clock);
+      }
     }
-    drawCharacter(hero, heroAnim, state.direction, SCENE_W / 2, def.groundY, clock);
-    def.front?.(env);
+    const direction = state.journey ? 'left' : state.direction;
+    drawCharacter(hero, heroAnim, direction, SCENE_W / 2, def.groundY, clock);
+    if (!walking) def.front?.(env);
     applyTint(env, def.tint?.[state.time]);
     drawLights(env, def.lights?.(env) ?? []);
     vignette(env);
@@ -239,13 +247,16 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
   let last = performance.now();
   let clock = 0;
   let lastDraw = 0;
+  let scroll = 0;
   const minGap = 1000 / maxFps - 1;
 
   const tick = (now: number): void => {
     if (!running) return;
     raf = requestAnimationFrame(tick);
-    clock += Math.min(0.25, (now - last) / 1000);
+    const dt = Math.min(0.25, (now - last) / 1000);
+    clock += dt;
     last = now;
+    if (state.journey) scroll += JOURNEY_SPEED[state.anim] * dt;
     if (now - lastDraw < minGap) return;
     lastDraw = now;
     void sync();

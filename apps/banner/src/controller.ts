@@ -16,6 +16,7 @@ type Options = {
     | 'show'
     | 'hide'
     | 'setScene'
+    | 'setJourney'
     | 'setTime'
     | 'setCharacter'
     | 'celebrate'
@@ -80,7 +81,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
     handleMessage(message: AppToBannerMessage): void {
       switch (message.type) {
         case 'INIT': {
-          if (message.payload.scene === 'qg') {
+          if (message.payload.scene === 'qg' || message.payload.scene === 'journey') {
             if (!qg) {
               send(createErrorMessage('UNSUPPORTED_SCENE', 'Cena QG indisponível neste banner'));
               return;
@@ -88,6 +89,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
             active = 'qg';
             root.dataset.sceneKey = message.payload.sceneKey;
             root.dataset.timeOfDay = message.payload.timeOfDay;
+            qg.setJourney(message.payload.scene === 'journey');
             qg.setScene(message.payload.sceneKey);
             qg.setTime(message.payload.timeOfDay);
             qg.setCharacter(message.payload.character);

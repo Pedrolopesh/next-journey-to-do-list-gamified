@@ -20,8 +20,8 @@ const CHECK_STEP = 0.2;
 
 type Props = {
   title: string;
-  /** Cena do banner: `map` (corrida das abas) ou `qg` (cenário da Home). */
-  scene?: 'map' | 'qg';
+  /** Cena do banner: `journey` (personagem andando, nas abas) ou `qg` (cenário da Home). */
+  scene?: 'journey' | 'qg';
   /** O dono da tela pode enviar mensagens ao banner (ex.: ITEM_CHECKED depois de um check). */
   bannerRef?: RefObject<BannerViewHandle | null>;
   /** Mensagens do banner (ex.: CHAPTER_TRANSITION_DONE abre o modal do capítulo). */
@@ -34,7 +34,7 @@ type Props = {
 /** Tela das abas: banner no topo (posição real do capítulo) e o conteúdo da aba embaixo. */
 export function TabScreen({
   title,
-  scene = 'map',
+  scene = 'journey',
   bannerRef,
   onBannerMessage,
   debug = true,
@@ -45,12 +45,12 @@ export function TabScreen({
   const ownRef = useRef<BannerViewHandle>(null);
   const banner = bannerRef ?? ownRef;
   const { data: me } = useMe();
-  const { scenario, timeMode } = useQgPrefs();
+  const { scenario, storyScenario, timeMode } = useQgPrefs();
   const qgTime = useTimeOfDay(timeMode);
   const [simProgress, setSimProgress] = useState(0);
   const [lastEvent, setLastEvent] = useState('-');
 
-  // INIT: no Mapa, a posição real do capítulo; no QG, o cenário e a hora escolhidos e o personagem salvo
+  // INIT: o cenário (do QG ou da história principal), a hora escolhida e o personagem salvo
   const initMessage = useMemo<InitMessage>(
     () => ({
       v: 1,
@@ -65,14 +65,14 @@ export function TabScreen({
               timeOfDay: qgTime,
             }
           : {
-              scene: 'map',
+              scene: 'journey',
               character: characterLayers(me?.character ?? null),
-              sceneKey: `story-1-chapter-${me?.player.story.chapter ?? 1}`,
+              sceneKey: storyScenario,
               progress: chapterProgress(me),
-              timeOfDay: 'night',
+              timeOfDay: qgTime,
             },
     }),
-    [me, scene, scenario, qgTime],
+    [me, scene, scenario, storyScenario, qgTime],
   );
 
   const handleBannerMessage = useCallback(
@@ -104,7 +104,7 @@ export function TabScreen({
         ref={banner}
         initMessage={initMessage}
         onMessage={handleBannerMessage}
-        {...(scene === 'qg' ? { aspectRatio: QG_ASPECT_RATIO } : {})}
+        aspectRatio={QG_ASPECT_RATIO}
       />
       <View style={styles.body}>
         {children ?? (

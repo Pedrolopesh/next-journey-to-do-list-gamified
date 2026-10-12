@@ -17,6 +17,8 @@ export type QgScene = {
   /** Esconde o QG e para o laço de animação. */
   hide: () => void;
   setScene: (sceneId: string) => void;
+  /** Jornada: o personagem anda para a esquerda e o cenário rola (abas de itens). */
+  setJourney: (journey: boolean) => void;
   setTime: (time: TimeOfDay) => void;
   setCharacter: (layers: CharacterLayers) => void;
   /** Check feito: o personagem comemora por alguns instantes. */
@@ -54,6 +56,7 @@ export function createQgScene(root: HTMLElement): QgScene {
   const pending = {
     sceneId: QG_DEFAULT_SCENE,
     time: 'afternoon' as TimeOfDay,
+    journey: false,
     layers: null as CharacterLayers | null,
   };
 
@@ -61,6 +64,9 @@ export function createQgScene(root: HTMLElement): QgScene {
     if (!engine) return;
     engine.state.sceneId = isQgSceneId(pending.sceneId) ? pending.sceneId : QG_DEFAULT_SCENE;
     engine.state.time = pending.time;
+    engine.state.journey = pending.journey;
+    if (!pending.journey && engine.state.anim === 'walk') engine.state.anim = 'idle';
+    if (pending.journey && engine.state.anim === 'idle') engine.state.anim = 'walk';
     if (pending.layers) engine.state.selection = selectionFromLayers(pending.layers);
   };
 
@@ -81,6 +87,7 @@ export function createQgScene(root: HTMLElement): QgScene {
             direction: 'down',
             sceneId: QG_DEFAULT_SCENE,
             time: 'afternoon',
+            journey: false,
           },
           maxFps: 30,
           maxScale: 3,
@@ -112,6 +119,10 @@ export function createQgScene(root: HTMLElement): QgScene {
       pending.sceneId = sceneId;
       apply();
     },
+    setJourney(journey) {
+      pending.journey = journey;
+      apply();
+    },
     setTime(time) {
       pending.time = time;
       apply();
@@ -125,7 +136,7 @@ export function createQgScene(root: HTMLElement): QgScene {
       engine.state.anim = 'run';
       clearTimeout(celebrateTimer);
       celebrateTimer = setTimeout(() => {
-        if (engine) engine.state.anim = 'idle';
+        if (engine) engine.state.anim = pending.journey ? 'walk' : 'idle';
       }, CELEBRATE_MS);
     },
     pause() {

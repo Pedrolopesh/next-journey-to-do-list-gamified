@@ -11,7 +11,7 @@ export const BANNER_PROTOCOL_VERSION = 1 as const;
 // Tipos de dado
 // ---------------------------------------------------------------------------
 
-export const sceneKindSchema = z.enum(['qg', 'map']);
+export const sceneKindSchema = z.enum(['qg', 'journey', 'map']);
 export type SceneKind = z.infer<typeof sceneKindSchema>;
 
 export const timeOfDaySchema = z.enum(['morning', 'afternoon', 'night']);
