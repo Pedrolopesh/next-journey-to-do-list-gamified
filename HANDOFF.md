@@ -2,7 +2,7 @@
 
 Resumo para qualquer agente (ou pessoa) continuar de onde parou. Leia antes o `AGENTS.md` (regras, stack e checklist de segurança). Este arquivo não substitui o `AGENTS.md`; ele conta o **estado atual** e o que falta. Atualize-o ao fim de cada etapa.
 
-Última atualização: 2026-10-11, depois do merge do PR #20 na `main`.
+Última atualização: 2026-10-12, depois do merge do PR #22 na `main` (e antes do PR dos botões).
 
 ## Combinados com o Pedro (dono do projeto)
 
@@ -28,6 +28,8 @@ Monorepo pnpm + Turborepo: `apps/api` (NestJS + Prisma + PostgreSQL), `apps/mobi
 - **Contrato e API**: `character.look` opcional (`lpcLookSchema` em `packages/contracts/src/banner-protocol.ts`), guardado em `characters.look` (JSONB, migration `20261011190000_character_look`) e devolvido por `GET /me`.
 - **App**: Home com o QG, botões "Ambiente" (cenário e hora) e "Personagem". Hora automática pelo relógio (manhã 5h–11h59, tarde 12h–17h59, noite no resto) ou fixa; cenário e hora ficam só no aparelho (`features/qg/qg-store.ts`, AsyncStorage). Formulário do personagem (`components/character-form.tsx`), usado no cadastro e na edição, com prévia fixa no topo e todas as opções do laboratório; looks prontos, sorteio, cores em bolinhas, título que acompanha o corpo e nome por último. Tela Créditos lista a arte LPC.
 - Proposta OpenSpec em `openspec/changes/banner-cena-qg` (tarefas todas marcadas; falta arquivar com `/opsx:archive` se o projeto quiser sincronizar as specs). QA manual em `docs/QA.md` seção 4b.
+
+**Botões com brilho suave (PR dos botões):** `apps/banner/buttons.html` (só em desenvolvimento, fora do build) mostra 7 estilos de botão com luz e todos os estados. O app usa dois deles, definidos em `apps/mobile/src/theme/glow.ts` (`softGlow` e `softGlowOutline`, com `boxShadow` e `experimental_backgroundImage` do React Native): botão principal cheio com halo, botão secundário contornado, botão flutuante, chips selecionados e check concluído. O botão `ghost` (só texto) e a barra de navegação inferior ficam sem brilho de propósito. Ajustar a intensidade em um lugar só muda o app inteiro. Falta conferir o efeito no iOS e em aparelho de entrada (a propriedade de gradiente é marcada como experimental no React Native).
 
 ## Como rodar localmente
 
