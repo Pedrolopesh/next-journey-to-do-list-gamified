@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { mix, rgba, softGlow } from './glow';
+import { mix, rgba, softGlow, softGlowOutline } from './glow';
 
 describe('brilho suave', () => {
   it('converte hex em rgba e mistura cores', () => {
@@ -24,5 +24,15 @@ describe('brilho suave', () => {
     const strong = JSON.stringify(softGlow('#7c3aed', { strength: 5 }).boxShadow);
     expect(weak).not.toBe(strong);
     expect(strong).toBe(JSON.stringify(softGlow('#7c3aed').boxShadow));
+  });
+
+  it('o contornado tem borda na cor e halo; apertado enche e encurta o brilho', () => {
+    const rest = softGlowOutline('#7c3aed');
+    const pressed = softGlowOutline('#7c3aed', { pressed: true });
+    expect(rest.borderWidth).toBe(1.5);
+    expect(rest.borderColor).toBe('rgba(124, 58, 237, 0.75)');
+    expect(pressed.borderColor).toBe('rgba(124, 58, 237, 0.95)');
+    expect(rest.boxShadow).toHaveLength(3);
+    expect(JSON.stringify(rest.boxShadow)).not.toBe(JSON.stringify(pressed.boxShadow));
   });
 });

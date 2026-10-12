@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors, radius, size, softGlow } from '@/theme';
+import { colors, radius, size, softGlow, softGlowOutline } from '@/theme';
 
 type Props = {
   label: string;
@@ -28,19 +28,23 @@ export function Button({
       style={({ pressed }) => [
         styles.base,
         styles[variant],
-        // Brilho suave (some quando desabilitado); o botão "ghost" é só texto e não brilha
+        // Brilho suave: principal cheio, secundário contornado; ghost (só texto) não brilha.
+        // Desabilitado ou carregando perde o brilho (o contorno continua).
         !inactive && variant === 'primary' && softGlow(colors.brand.primary, { pressed }),
-        !inactive &&
-          variant === 'secondary' &&
-          softGlow(colors.bg.raised, { pressed, strength: 0.6, halo: colors.status.info }),
+        variant === 'secondary' &&
+          (inactive
+            ? styles.secondaryInactive
+            : softGlowOutline(colors.brand.primary, { pressed })),
         pressed && styles.pressed,
         inactive && styles.disabled,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={colors.text.onPrimary} />
+        <ActivityIndicator
+          color={variant === 'primary' ? colors.text.onPrimary : colors.brand.primaryLight}
+        />
       ) : (
-        <Text style={[styles.label, variant === 'ghost' && styles.ghostLabel]}>{label}</Text>
+        <Text style={[styles.label, variant !== 'primary' && styles.ghostLabel]}>{label}</Text>
       )}
     </Pressable>
   );
@@ -55,7 +59,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   primary: { backgroundColor: colors.brand.primary },
-  secondary: { backgroundColor: colors.bg.raised },
+  secondary: { backgroundColor: 'transparent' },
+  secondaryInactive: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(124, 58, 237, 0.4)',
+  },
   ghost: { backgroundColor: 'transparent' },
   pressed: { transform: [{ scale: 0.98 }] },
   disabled: { opacity: 0.45 },

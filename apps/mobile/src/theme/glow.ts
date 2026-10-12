@@ -80,3 +80,30 @@ export function softGlow(
         ],
   };
 }
+
+/**
+ * Brilho suave contornado: só a borda e um leve preenchimento na cor, com o mesmo halo difuso.
+ * Para ações secundárias (o botão cheio fica para a ação principal da tela).
+ */
+export function softGlowOutline(
+  color: string,
+  { pressed = false }: { pressed?: boolean } = {},
+): ViewStyle {
+  return {
+    borderWidth: 1.5,
+    borderColor: rgba(color, pressed ? 0.95 : 0.75),
+    experimental_backgroundImage: pressed
+      ? `linear-gradient(180deg, ${rgba(color, 0.3)}, ${rgba(color, 0.18)})`
+      : `linear-gradient(180deg, ${rgba(color, 0.14)}, ${rgba(color, 0.04)})`,
+    boxShadow: pressed
+      ? [
+          { offsetX: 0, offsetY: 2, blurRadius: 6, color: 'rgba(0, 0, 0, 0.25)', inset: true },
+          { offsetX: 0, offsetY: 4, blurRadius: 12, spreadDistance: -6, color: rgba(color, 0.5) },
+        ]
+      : [
+          { offsetX: 0, offsetY: 1, blurRadius: 0, color: 'rgba(255, 255, 255, 0.1)', inset: true },
+          { offsetX: 0, offsetY: 8, blurRadius: 22, spreadDistance: -10, color: rgba(color, 0.6) },
+          { offsetX: 0, offsetY: 0, blurRadius: 18, color: rgba(color, 0.2) },
+        ],
+  };
+}
