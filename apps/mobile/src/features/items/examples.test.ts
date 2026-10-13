@@ -35,6 +35,12 @@ describe('itens de exemplo', () => {
     expect(bill?.categoryId).toBe(categories[0]?.id);
   });
 
+  it('tem pelo menos 20 diários para testar', () => {
+    expect(EXAMPLES.filter((example) => example.type === 'daily').length).toBeGreaterThanOrEqual(
+      20,
+    );
+  });
+
   it('sem categorias não cria nada', () => {
     expect(buildExampleRequests([], titleOf)).toEqual([]);
   });

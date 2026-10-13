@@ -404,7 +404,22 @@
       "exercise": "Fazer exercício físico",
       "read": "Ler por 20 minutos",
       "planDay": "Planejar o dia",
-      "makeBed": "Arrumar a cama"
+      "makeBed": "Arrumar a cama",
+      "brushTeeth": "Escovar os dentes",
+      "breakfast": "Tomar café da manhã",
+      "walk": "Caminhar por 20 minutos",
+      "vitamins": "Tomar as vitaminas",
+      "sleepEarly": "Dormir antes das 23h",
+      "meditate": "Meditar por 10 minutos",
+      "journal": "Escrever no diário",
+      "tidyRoom": "Organizar o quarto",
+      "dishes": "Lavar a louça",
+      "cookMeal": "Cozinhar uma refeição",
+      "study": "Estudar por 1 hora",
+      "language": "Praticar um idioma",
+      "checkEmails": "Responder e-mails",
+      "focusBlock": "Bloco de foco sem distrações",
+      "reviewGoals": "Revisar as metas do dia"
     },
     "todo": {
       "bill": "Pagar a conta de luz",

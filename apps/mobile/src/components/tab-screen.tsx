@@ -1,5 +1,13 @@
 import type { BannerToAppMessage } from '@nextjourney/contracts';
-import { type ReactNode, type RefObject, useCallback, useMemo, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +20,8 @@ import {
   QG_ASPECT_RATIO,
 } from '@/banner/banner-view';
 import { characterLayers } from '@/features/qg/character-layers';
+import { journeyView } from '@/features/qg/journey-progress';
+import { useJourneyStore } from '@/features/qg/journey-store';
 import { useQgPrefs } from '@/features/qg/qg-store';
 import { useTimeOfDay } from '@/features/qg/use-time-of-day';
 import { colors, radius, size, space } from '@/theme';
@@ -47,6 +57,13 @@ export function TabScreen({
   const { data: me } = useMe();
   const { scenario, storyScenario, timeMode } = useQgPrefs();
   const qgTime = useTimeOfDay(timeMode);
+  const userId = me?.user.id;
+  const level = me?.player.level;
+  const shownLevel = useJourneyStore((state) => (userId ? state.shownLevel[userId] : undefined));
+  // Primeiro uso, ou nível que caiu: a cena exibida acompanha o nível atual
+  useEffect(() => {
+    if (userId && level !== undefined) useJourneyStore.getState().reconcile(userId, level);
+  }, [userId, level]);
   const [simProgress, setSimProgress] = useState(0);
   const [lastEvent, setLastEvent] = useState('-');
 
@@ -68,11 +85,11 @@ export function TabScreen({
               scene: 'journey',
               character: characterLayers(me?.character ?? null),
               sceneKey: storyScenario,
-              progress: chapterProgress(me),
+              progress: me ? journeyView(me.player, shownLevel).progress : 0,
               timeOfDay: qgTime,
             },
     }),
-    [me, scene, scenario, storyScenario, qgTime],
+    [me, scene, scenario, storyScenario, qgTime, shownLevel],
   );
 
   const handleBannerMessage = useCallback(
