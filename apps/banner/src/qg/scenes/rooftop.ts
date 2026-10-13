@@ -1,4 +1,5 @@
-import { bands, gradientRect, rect, rng, sky, tileArea } from './draw';
+import { drawTraffic, ground, sidewalkProps, streetLights } from './city-street';
+import { bands, gradientRect, portal, rect, rng, sky, tileArea } from './draw';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_W } from './types';
 
@@ -92,7 +93,7 @@ function windows(
 }
 
 /** Uma faixa de prédios. Os da frente mostram uma lateral (perspectiva em direção ao centro). */
-function layer(env: SceneEnv, o: LayerOptions): void {
+function layer(env: SceneEnv, o: LayerOptions, dx = 0): void {
   const random = rng(o.seed);
   let x = o.x0;
   while (x < o.x1) {
@@ -107,14 +108,14 @@ function layer(env: SceneEnv, o: LayerOptions): void {
       for (let k = 0; k < 6; k++) {
         const sx = dir > 0 ? x + w + k : x - 1 - k;
         const cut = Math.round(k * 0.6);
-        rect(env, sx, top + cut, 1, h - cut, o.side);
+        rect(env, sx + dx, top + cut, 1, h - cut, o.side);
       }
     }
-    rect(env, x, top, w, h, o.color);
+    rect(env, x + dx, top, w, h, o.color);
     const r = random();
-    if (r > 0.9) rect(env, x + Math.floor(w / 2), top - 8, 1, 8, o.color);
-    else if (r > 0.72) rect(env, x + 2, top - 3, w - 4, 3, o.color);
-    if (o.windows) windows(env, random, x, top, w, o.base, o.windows);
+    if (r > 0.9) rect(env, x + dx + Math.floor(w / 2), top - 8, 1, 8, o.color);
+    else if (r > 0.72) rect(env, x + dx + 2, top - 3, w - 4, 3, o.color);
+    if (o.windows) windows(env, random, x + dx, top, w, o.base, o.windows);
     x += w + 1 + Math.floor(random() * 3);
   }
 }
@@ -167,64 +168,69 @@ function lake(env: SceneEnv): void {
 const TOWER = { x: 146, w: 22, h: 96 };
 
 /** Torre alta de referência com antena e luz vermelha piscando. */
-function tower(env: SceneEnv): void {
+function tower(env: SceneEnv, dx = 0): void {
   const pal = PAL[env.time];
   const base = WALL_TOP + 4;
   const top = base - TOWER.h;
   for (let k = 0; k < 6; k++)
-    rect(env, TOWER.x + TOWER.w + k, top + Math.round(k * 0.6), 1, TOWER.h, pal.side);
-  rect(env, TOWER.x, top, TOWER.w, TOWER.h, pal.near);
-  rect(env, TOWER.x + 4, top - 6, TOWER.w - 8, 6, pal.near);
-  rect(env, TOWER.x + 10, top - 22, 2, 16, pal.near);
+    rect(env, TOWER.x + dx + TOWER.w + k, top + Math.round(k * 0.6), 1, TOWER.h, pal.side);
+  rect(env, TOWER.x + dx, top, TOWER.w, TOWER.h, pal.near);
+  rect(env, TOWER.x + dx + 4, top - 6, TOWER.w - 8, 6, pal.near);
+  rect(env, TOWER.x + dx + 10, top - 22, 2, 16, pal.near);
   const random = rng(77);
-  windows(env, random, TOWER.x, top, TOWER.w, base, 'normal');
-  if (Math.sin(env.t * 4) > 0) rect(env, TOWER.x + 9, top - 24, 4, 3, '#ff3b30');
+  windows(env, random, TOWER.x + dx, top, TOWER.w, base, 'normal');
+  if (Math.sin(env.t * 4) > 0) rect(env, TOWER.x + dx + 9, top - 24, 4, 3, '#ff3b30');
 }
+
+/** Camadas de prédios do fundo; a jornada repete as mesmas com sementes novas a cada volta. */
+const FAR_LAYER: LayerOptions = {
+  seed: 3,
+  base: SHORE + 2,
+  minH: 8,
+  maxH: 22,
+  minW: 8,
+  maxW: 16,
+  x0: -4,
+  x1: SCENE_W + 10,
+  color: '',
+};
+const MID_LAYER: LayerOptions = {
+  seed: 9,
+  base: 132,
+  minH: 14,
+  maxH: 42,
+  minW: 12,
+  maxW: 22,
+  x0: -4,
+  x1: 246,
+  color: '',
+  windows: 'tiny',
+  taperFrom: 150,
+};
+const NEAR_LAYER: LayerOptions = {
+  seed: 14,
+  base: WALL_TOP + 4,
+  minH: 36,
+  maxH: 78,
+  minW: 20,
+  maxW: 32,
+  x0: -10,
+  x1: 232,
+  color: '',
+  side: '',
+  windows: 'normal',
+  taperFrom: 170,
+};
 
 function city(env: SceneEnv): void {
   const pal = PAL[env.time];
   sky(env, 0, 0, SCENE_W, SHORE + 8);
-  layer(env, {
-    seed: 3,
-    base: SHORE + 2,
-    minH: 8,
-    maxH: 22,
-    minW: 8,
-    maxW: 16,
-    x0: -4,
-    x1: SCENE_W + 10,
-    color: pal.far,
-  });
+  layer(env, { ...FAR_LAYER, color: pal.far });
   haze(env, 60, SHORE + 4, 0.35);
   lake(env);
-  layer(env, {
-    seed: 9,
-    base: 132,
-    minH: 14,
-    maxH: 42,
-    minW: 12,
-    maxW: 22,
-    x0: -4,
-    x1: 246,
-    color: pal.mid,
-    windows: 'tiny',
-    taperFrom: 150,
-  });
+  layer(env, { ...MID_LAYER, color: pal.mid });
   haze(env, 80, 136, 0.22);
-  layer(env, {
-    seed: 14,
-    base: WALL_TOP + 4,
-    minH: 36,
-    maxH: 78,
-    minW: 20,
-    maxW: 32,
-    x0: -10,
-    x1: 232,
-    color: pal.near,
-    side: pal.side,
-    windows: 'normal',
-    taperFrom: 170,
-  });
+  layer(env, { ...NEAR_LAYER, color: pal.near, side: pal.side });
   tower(env);
 }
 
@@ -579,11 +585,62 @@ function stringLights(env: SceneEnv): void {
   }
 }
 
+/** Quanto cada camada de prédios anda em relação à calçada: o fundo passa devagar. */
+const FAR_SPEED = 0.03;
+const MID_SPEED = 0.1;
+const NEAR_SPEED = 0.2;
+/** Distância entre o começo de dois grupos de prédios: depois de cada grupo o rio aparece. */
+const BLOCK_PERIOD = 600;
+const FAR_PERIOD = SCENE_W + 14;
+
+type Block = { k: number; dx: number };
+
+/** Grupos de prédios que aparecem na tela; cada volta (k) usa uma semente nova. */
+function blocks(env: SceneEnv, speed: number, width: number): Block[] {
+  const shift = env.scroll * speed;
+  const first = Math.floor((shift - width) / BLOCK_PERIOD);
+  const out: Block[] = [];
+  for (let k = first; k <= first + 3; k++) {
+    const dx = k * BLOCK_PERIOD - shift;
+    if (dx < SCENE_W + 20 && dx + width > -20) out.push({ k, dx });
+  }
+  return out;
+}
+
+/** Cidade na jornada: o mesmo fundo do terraço, com os prédios passando devagar sobre o rio e a avenida embaixo. */
+function journey(env: SceneEnv): void {
+  const pal = PAL[env.time];
+  sky(env, 0, 0, SCENE_W, SHORE + 8);
+  const farShift = (((env.scroll * FAR_SPEED) % FAR_PERIOD) + FAR_PERIOD) % FAR_PERIOD;
+  layer(env, { ...FAR_LAYER, color: pal.far }, -farShift);
+  layer(env, { ...FAR_LAYER, color: pal.far }, FAR_PERIOD - farShift);
+  haze(env, 60, SHORE + 4, 0.35);
+  lake(env);
+  for (const { k, dx } of blocks(env, MID_SPEED, 260)) {
+    layer(env, { ...MID_LAYER, seed: MID_LAYER.seed + k * 17, color: pal.mid }, dx);
+  }
+  haze(env, 80, 136, 0.22);
+  for (const { k, dx } of blocks(env, NEAR_SPEED, 250)) {
+    layer(
+      env,
+      { ...NEAR_LAYER, seed: NEAR_LAYER.seed + k * 13, color: pal.near, side: pal.side },
+      dx,
+    );
+    if (k % 2 === 0) tower(env, dx);
+  }
+  ground(env);
+  drawTraffic(env, 'far');
+  drawTraffic(env, 'near');
+  sidewalkProps(env);
+  if (env.arrivedFor !== null) portal(env, env.arrivedFor, 178);
+}
+
 export const rooftop: SceneDef = {
   id: 'rooftop',
   name: 'Cidade',
   blurb: 'Terraço com a cidade em perspectiva e um lago ao fundo; pisca-pisca no corrimão à noite.',
   groundY: 190,
+  journey,
   back(env) {
     city(env);
     // Muro, piso e corrimão baixo (deixa a vista aparecer)
@@ -613,6 +670,25 @@ export const rooftop: SceneDef = {
     flowerPlant(env, 368, 192 - 28);
   },
   lights: (env) => {
+    if (env.journey) {
+      const out: Light[] = [
+        { x: 304, y: 30, radius: 300, color: [150, 175, 255], intensity: 0.34, at: ['night'] },
+        { x: 195, y: 150, radius: 230, color: [140, 165, 240], intensity: 0.3, at: ['night'] },
+      ];
+      for (const { k, dx } of blocks(env, NEAR_SPEED, 250)) {
+        if (k % 2 !== 0) continue;
+        out.push({
+          x: TOWER.x + dx + 11,
+          y: WALL_TOP + 4 - TOWER.h - 23,
+          radius: 22,
+          color: [255, 60, 50],
+          intensity: Math.sin(env.t * 4) > 0 ? 0.6 : 0.05,
+          at: ['night', 'morning', 'afternoon'],
+        });
+      }
+      for (const light of streetLights(env)) out.push({ ...light, at: ['night'] });
+      return out;
+    }
     const out: Light[] = [
       {
         x: TOWER.x + 11,

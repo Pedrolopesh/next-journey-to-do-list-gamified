@@ -16,7 +16,7 @@ const OUT = '#1b1f17';
 const REACH = 9;
 
 /** Onde fica a lâmpada de um poste. */
-function lampHead(lamp: Lamp): { x: number; y: number } {
+export function lampHead(lamp: Lamp): { x: number; y: number } {
   return { x: lamp.x + lamp.dir * REACH, y: lamp.baseY - lamp.h + 3 };
 }
 

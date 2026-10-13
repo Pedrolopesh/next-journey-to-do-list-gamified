@@ -1,4 +1,4 @@
-import { bands, flame, rect, rng, shadedBlock, sky } from './draw';
+import { bands, flame, portal, rect, rng, scrolled, shadedBlock, sky } from './draw';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_W } from './types';
 
@@ -160,7 +160,9 @@ function throne(env: SceneEnv): void {
   rect(env, CX - 3, base - 10, 6, 5, '#d03a3a');
 }
 
-function armor(env: SceneEnv, cx: number, base: number): void {
+type ArmorKind = 'spear' | 'shield' | 'sword';
+
+function armor(env: SceneEnv, cx: number, base: number, kind: ArmorKind = 'spear'): void {
   // pedestal
   block(env, cx - 10, base - 4, 20, 4, '#6b7280', '#3f4552', '#8d95a4');
   // lança de enfeite
@@ -186,6 +188,20 @@ function armor(env: SceneEnv, cx: number, base: number): void {
   rect(env, cx - 1, base - 41, 2, 4, STEEL_DARK);
   rect(env, cx - 1, base - 54, 3, 7, OUT);
   rect(env, cx, base - 53, 2, 6, '#c0302f');
+  if (kind === 'shield') {
+    block(env, cx - 21, base - 38, 12, 16, '#2f5fb0', '#1f3f7a', '#5a8ae0');
+    rect(env, cx - 16, base - 36, 2, 12, GOLD);
+    rect(env, cx - 19, base - 31, 8, 2, GOLD);
+    rect(env, cx - 17, base - 23, 4, 2, OUT);
+  }
+  if (kind === 'sword') {
+    rect(env, cx - 18, base - 54, 4, 26, OUT);
+    rect(env, cx - 17, base - 53, 2, 22, STEEL_LIGHT);
+    rect(env, cx - 16, base - 53, 1, 22, STEEL_DARK);
+    rect(env, cx - 21, base - 31, 10, 3, OUT);
+    rect(env, cx - 20, base - 30, 8, 1, GOLD);
+    rect(env, cx - 17, base - 28, 2, 6, '#5a3412');
+  }
 }
 
 function weaponRack(env: SceneEnv, x: number, base: number): void {
@@ -311,11 +327,176 @@ function windowAbove(env: SceneEnv): void {
   block(env, CX - 28, 52, 56, 4, '#8b93a1', '#5b6272', '#b3bbc9');
 }
 
+const WALL_FACTOR = 0.8;
+const WALL_PERIOD = 1250;
+const FLOOR_PERIOD = 1000;
+const CARPET_TOP = 168;
+const CARPET_BOTTOM = 197;
+
+/** Número fixo entre 0 e 1 por posição, para a parede não cintilar enquanto rola. */
+function noise(a: number, b: number): number {
+  const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
+  return v - Math.floor(v);
+}
+
+/** Duas espadas cruzadas sobre uma placa de madeira. */
+function crossedSwords(env: SceneEnv, x: number, y: number): void {
+  block(env, x - 11, y + 2, 22, 28, '#5a3a1e', '#3a2410', '#7a5030');
+  for (const flip of [1, -1]) {
+    for (let i = 0; i < 24; i++) {
+      const px = x - 11 * flip + i * flip;
+      rect(env, px - 1, y + 1 + i, 4, 3, OUT);
+    }
+  }
+  for (const flip of [1, -1]) {
+    for (let i = 0; i < 24; i++) {
+      const px = x - 11 * flip + i * flip;
+      rect(env, px, y + 2 + i, 2, 1, i % 2 ? STEEL : STEEL_LIGHT);
+    }
+    rect(env, x - 13 * flip - 2, y + 25, 6, 3, GOLD_DARK);
+  }
+  rect(env, x - 2, y + 11, 4, 4, GOLD);
+}
+
+/** Espada pendurada na horizontal, presa por dois suportes. */
+function wallSword(env: SceneEnv, x: number, y: number): void {
+  rect(env, x - 19, y - 1, 36, 5, OUT);
+  rect(env, x - 18, y, 30, 3, STEEL_LIGHT);
+  rect(env, x - 18, y + 2, 30, 1, STEEL_DARK);
+  rect(env, x + 11, y - 4, 4, 11, OUT);
+  rect(env, x + 12, y - 3, 2, 9, GOLD);
+  rect(env, x + 15, y, 8, 3, '#5a3412');
+  rect(env, x + 23, y - 1, 3, 5, GOLD_DARK);
+  for (const bx of [x - 10, x + 4]) {
+    rect(env, bx, y - 3, 3, 9, '#3a3d46');
+    rect(env, bx, y - 3, 1, 9, '#6b7280');
+  }
+}
+
+/** Sequências espalhadas, de propósito sem ritmo fixo. */
+const WALL_SET: { kind: 'banner' | 'torch' | 'cross' | 'sword' | 'pillar'; x: number }[] = [
+  { kind: 'banner', x: 90 },
+  { kind: 'torch', x: 205 },
+  { kind: 'cross', x: 330 },
+  { kind: 'torch', x: 455 },
+  { kind: 'sword', x: 560 },
+  { kind: 'pillar', x: 660 },
+  { kind: 'banner', x: 775 },
+  { kind: 'torch', x: 905 },
+  { kind: 'cross', x: 1010 },
+  { kind: 'sword', x: 1090 },
+  { kind: 'torch', x: 1190 },
+];
+const ARMORS: { kind: ArmorKind; x: number }[] = [
+  { kind: 'spear', x: 150 },
+  { kind: 'shield', x: 395 },
+  { kind: 'sword', x: 520 },
+  { kind: 'spear', x: 745 },
+  { kind: 'sword', x: 880 },
+  { kind: 'spear', x: 1060 },
+  { kind: 'shield', x: 1170 },
+];
+const RACK_X = 610;
+const CHESTS = [330, 880];
+const CANDLES = [120, 540, 770];
+
+const wallX = (env: SceneEnv, world: number): number =>
+  Math.round(scrolled(world, env.scroll, WALL_PERIOD, WALL_FACTOR));
+const floorX = (env: SceneEnv, world: number): number =>
+  Math.round(scrolled(world, env.scroll, FLOOR_PERIOD));
+
+/** Castelo na jornada: o personagem anda sobre o tapete real e o salão passa com peças espalhadas. */
+function journey(env: SceneEnv): void {
+  const shift = env.scroll * WALL_FACTOR;
+  bands(env, 0, 0, SCENE_W, FLOOR, ['#6b7280', '#656b78', '#5f6572']);
+  const startCol = Math.floor(shift / 32) - 1;
+  for (let row = 0; row * 12 < FLOOR; row++) {
+    const y = row * 12;
+    const offset = row % 2 ? 0 : 16;
+    for (let col = startCol; col < startCol + 15; col++) {
+      const x = col * 32 + offset - shift;
+      if (x > SCENE_W || x < -34) continue;
+      rect(env, x, y, 31, 11, `rgba(255,255,255,${0.02 + noise(col, row) * 0.05})`);
+      rect(env, x + 31, y, 1, 12, 'rgba(0,0,0,0.25)');
+    }
+    rect(env, 0, y + 11, SCENE_W, 1, 'rgba(0,0,0,0.25)');
+  }
+  bands(env, 0, FLOOR, SCENE_W, 100, ['#4a4f58', '#434852', '#3c414a']);
+  for (let y = FLOOR; y < 220; y += 24) rect(env, 0, y, SCENE_W, 1, 'rgba(0,0,0,0.3)');
+  const joint = -(((env.scroll % 48) + 48) % 48);
+  for (let x = joint; x < SCENE_W; x += 48) rect(env, x, FLOOR, 1, 100, 'rgba(0,0,0,0.2)');
+
+  for (const item of WALL_SET) {
+    const x = wallX(env, item.x);
+    if (x < -40 || x > SCENE_W + 40) continue;
+    if (item.kind === 'banner') banner(env, x - 11);
+    else if (item.kind === 'torch') torch(env, x);
+    else if (item.kind === 'cross') crossedSwords(env, x, 36);
+    else if (item.kind === 'sword') wallSword(env, x, 56);
+    else pillar(env, x);
+  }
+  for (const item of ARMORS) {
+    const x = wallX(env, item.x);
+    if (x > -40 && x < SCENE_W + 40) armor(env, x, 150, item.kind);
+  }
+  const rack = wallX(env, RACK_X);
+  if (rack > -60 && rack < SCENE_W + 20) weaponRack(env, rack - 20, 152);
+
+  // Tapete real por todo o caminho
+  rect(env, 0, CARPET_TOP, SCENE_W, CARPET_BOTTOM - CARPET_TOP, '#8f1d1d');
+  rect(env, 0, CARPET_TOP, SCENE_W, 1, 'rgba(0,0,0,0.3)');
+  rect(env, 0, CARPET_TOP + 1, SCENE_W, 3, GOLD);
+  rect(env, 0, CARPET_TOP + 1, SCENE_W, 1, GOLD_LIGHT);
+  rect(env, 0, CARPET_BOTTOM - 4, SCENE_W, 3, GOLD);
+  rect(env, 0, CARPET_BOTTOM - 1, SCENE_W, 1, 'rgba(0,0,0,0.35)');
+  const motif = 40;
+  const first = -(((env.scroll % motif) + motif) % motif);
+  for (let x = first; x < SCENE_W; x += motif) {
+    rect(env, x + 14, 180, 12, 3, GOLD_DARK);
+    rect(env, x + 17, 177, 6, 9, GOLD_DARK);
+    rect(env, x + 19, 180, 2, 3, GOLD_LIGHT);
+  }
+
+  for (const world of CANDLES) candelabra(env, floorX(env, world));
+  for (const world of CHESTS) {
+    const x = floorX(env, world);
+    if (x > -50 && x < SCENE_W + 20) chest(env, x, 166);
+  }
+  if (env.arrivedFor !== null) portal(env, env.arrivedFor, 166);
+}
+
+/** Luzes da jornada: tochas e velas que passam e o luar. */
+function journeyLights(env: SceneEnv): Light[] {
+  const glow = (x: number, y: number, radius: number, intensity: number): Light => ({
+    x,
+    y,
+    radius,
+    color: [255, 150, 60],
+    intensity,
+    flicker: true,
+    at: ['night', 'morning', 'afternoon'],
+  });
+  const out: Light[] = [];
+  for (const item of WALL_SET) {
+    if (item.kind !== 'torch') continue;
+    const x = wallX(env, item.x);
+    if (x > -100 && x < SCENE_W + 100) out.push(glow(x, 62, 90, 0.5));
+  }
+  for (const world of CANDLES) {
+    const x = floorX(env, world);
+    if (x > -60 && x < SCENE_W + 60) out.push(glow(x, CANDLE_Y - 4, 46, 0.55));
+  }
+  out.push({ x: CX, y: 40, radius: 110, color: [150, 170, 255], intensity: 0.3, at: ['night'] });
+  out.push({ x: CX, y: 120, radius: 90, color: [255, 224, 140], intensity: 0.18, at: ['night'] });
+  return out;
+}
+
 export const castle: SceneDef = {
   id: 'castle',
   name: 'Castelo',
   blurb: 'Salão do trono com tablado, tapete real, armaduras, candelabros, estandartes e baú.',
   groundY: 178,
+  journey,
   back(env) {
     // Parede de blocos de pedra
     bands(env, 0, 0, SCENE_W, FLOOR, ['#6b7280', '#656b78', '#5f6572']);
@@ -348,28 +529,31 @@ export const castle: SceneDef = {
     for (const x of CANDELABRA) candelabra(env, x);
     chest(env, 318, 198);
   },
-  lights: (): Light[] => [
-    ...[132, 260].map((x) => ({
-      x,
-      y: 62,
-      radius: 90,
-      color: [255, 150, 60] as [number, number, number],
-      intensity: 0.5,
-      flicker: true,
-      at: ['night', 'morning', 'afternoon'] as TimeOfDay[],
-    })),
-    ...CANDELABRA.map((x) => ({
-      x,
-      y: CANDLE_Y - 4,
-      radius: 46,
-      color: [255, 170, 80] as [number, number, number],
-      intensity: 0.55,
-      flicker: true,
-      at: ['night', 'morning', 'afternoon'] as TimeOfDay[],
-    })),
-    { x: CX, y: 40, radius: 110, color: [150, 170, 255], intensity: 0.3, at: ['night'] },
-    { x: CX, y: 120, radius: 90, color: [255, 224, 140], intensity: 0.18, at: ['night'] },
-  ],
+  lights: (env): Light[] =>
+    env.journey
+      ? journeyLights(env)
+      : [
+          ...[132, 260].map((x) => ({
+            x,
+            y: 62,
+            radius: 90,
+            color: [255, 150, 60] as [number, number, number],
+            intensity: 0.5,
+            flicker: true,
+            at: ['night', 'morning', 'afternoon'] as TimeOfDay[],
+          })),
+          ...CANDELABRA.map((x) => ({
+            x,
+            y: CANDLE_Y - 4,
+            radius: 46,
+            color: [255, 170, 80] as [number, number, number],
+            intensity: 0.55,
+            flicker: true,
+            at: ['night', 'morning', 'afternoon'] as TimeOfDay[],
+          })),
+          { x: CX, y: 40, radius: 110, color: [150, 170, 255], intensity: 0.3, at: ['night'] },
+          { x: CX, y: 120, radius: 90, color: [255, 224, 140], intensity: 0.18, at: ['night'] },
+        ],
   tint: {
     morning: { color: '#ffe0c0', alpha: 0.2 },
     afternoon: { color: '#fff4de', alpha: 0.08 },

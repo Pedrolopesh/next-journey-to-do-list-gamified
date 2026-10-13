@@ -2,7 +2,7 @@
 
 Resumo para qualquer agente (ou pessoa) continuar de onde parou. Leia antes o `AGENTS.md` (regras, stack e checklist de segurança). Este arquivo não substitui o `AGENTS.md`; ele conta o **estado atual** e o que falta. Atualize-o ao fim de cada etapa.
 
-Última atualização: 2026-10-12, depois do PR da revisão geral (#24) e durante a jornada das abas.
+Última atualização: 2026-10-13, depois do PR da revisão geral (#24) e durante a jornada das abas (branch `feat/banner-mapa-e-exemplos`, ainda sem PR).
 
 ## Combinados com o Pedro (dono do projeto)
 
@@ -22,7 +22,7 @@ Monorepo pnpm + Turborepo: `apps/api` (NestJS + Prisma + PostgreSQL), `apps/mobi
 
 **Trabalho recente (PRs #18, #19, #20), a Home com o QG:**
 
-- **Laboratório web** (`apps/banner/lab.html`, só em desenvolvimento, fora do build): valida o personagem LPC e os 7 cenários do QG, cada um com manhã, tarde e noite: cabana, praia, topo do prédio, apocalipse zumbi, castelo, paraíso e inferno. Cada cenário foi refinado com o Pedro (props desenhados em código, luzes noturnas, animações).
+- **Laboratório web** (`apps/banner/lab.html`, só em desenvolvimento, fora do build): valida o personagem LPC e os 7 cenários do QG, cada um com manhã, tarde e noite: cabana, praia, cidade (antes topo do prédio), apocalipse zumbi, castelo, floresta (antes paraíso, mesmo id `paradise`) e inferno. Cada cenário foi refinado com o Pedro (props desenhados em código, luzes noturnas, animações).
 - **Motor do QG** em `apps/banner/src/qg`: `engine.ts` (canvas em escala inteira de 2 a 5, limite de FPS, pausa), `scenes/` (um arquivo por cenário e `draw.ts`/`lighting.ts` com os helpers de pixel art), `compose.ts` (camadas LPC e recolorização de paleta), `character-map.ts` (chaves simples do app para camadas LPC; `look` vence; roupa de conquista sobrepõe), `assets.ts` (arte embutida como data URL: só parado e correndo) e `scene.ts` (cena usada pelo controlador).
 - **Banner de produção**: `INIT` com `scene: 'qg'` (`sceneKey` = id do cenário, `timeOfDay`), `SET_TIME_OF_DAY`, `SET_CHARACTER`; `ITEM_CHECKED` faz o personagem comemorar; `CHAPTER_COMPLETED` faz fade e responde `CHAPTER_TRANSITION_DONE`. Bundle com cerca de 570 KB (limite 1,5 MB). O Mapa (`scene: 'map'`, CSS) continua nas outras abas.
 - **Contrato e API**: `character.look` opcional (`lpcLookSchema` em `packages/contracts/src/banner-protocol.ts`), guardado em `characters.look` (JSONB, migration `20261011190000_character_look`) e devolvido por `GET /me`.
@@ -31,7 +31,7 @@ Monorepo pnpm + Turborepo: `apps/api` (NestJS + Prisma + PostgreSQL), `apps/mobi
 
 **Botões com brilho suave (PR dos botões):** `apps/banner/buttons.html` (só em desenvolvimento, fora do build) mostra 7 estilos de botão com luz e todos os estados. O app usa dois deles, definidos em `apps/mobile/src/theme/glow.ts` (`softGlow` e `softGlowOutline`, com `boxShadow` e `experimental_backgroundImage` do React Native): botão principal cheio com halo, botão secundário contornado, botão flutuante, chips selecionados e check concluído. O botão `ghost` (só texto) e a barra de navegação inferior ficam sem brilho de propósito. Ajustar a intensidade em um lugar só muda o app inteiro. Falta conferir o efeito no iOS e em aparelho de entrada (a propriedade de gradiente é marcada como experimental no React Native).
 
-**Jornada das abas (OpenSpec `banner-jornada`):** as abas Diários, Tarefas e Hábitos mostram o personagem andando (começa à esquerda, virado para a direita) com o cenário da história principal rolando para a esquerda; a EXP do nível vira 6 paradas e, ao marcar item, ele corre até a próxima; ao subir de nível chega à última, tudo para e um portal abre à direita, e a cena só troca no check seguinte (`INIT` com `scene: 'journey'`). O cenário da história é escolhido em Home > Ambiente (preferência `storyScenario`, só no aparelho; sem cabana; "Topo do prédio" virou "Cidade"). Só a praia rola de verdade. Primeira abertura sem itens cria 30 itens de exemplo (20 diários) (`features/items/examples.ts`, uma vez por usuário e aparelho).
+**Jornada das abas (OpenSpec `banner-jornada`):** as abas Diários, Tarefas e Hábitos mostram o personagem andando (começa à esquerda, virado para a direita) com o cenário da história principal rolando para a esquerda; a EXP do nível vira 6 paradas e, ao marcar item, ele corre até a próxima; ao subir de nível chega à última, tudo para e um portal abre à direita, e a cena só troca no check seguinte (`INIT` com `scene: 'journey'`). O cenário da história é escolhido em Home > Ambiente (preferência `storyScenario`, só no aparelho; sem cabana; "Topo do prédio" virou "Cidade"). Os seis cenários rolam: praia (areia e objetos), cidade (avenida com carros, postes e ponto de ônibus, prédios passando devagar sobre o rio), zumbi (base militar com cerca e zumbis parados, helicóptero), castelo (tapete real em todo o caminho, cavaleiros com lança, escudo ou espada, espadas na parede, sem trono), floresta (casa e lago passando devagar, árvores em três profundidades) e inferno (lava e vulcão ao fundo, ossos, braseiros e tridentes pelo caminho, sem trono). Primeira abertura sem itens cria 30 itens de exemplo (20 diários) (`features/items/examples.ts`, uma vez por usuário e aparelho).
 
 ## Como rodar localmente
 
@@ -58,7 +58,7 @@ Combinado com o Pedro: adiado até terminar as próximas etapas (jornada em todo
 
 ## O que falta (em ordem sugerida)
 
-1. **Jornada nos outros cenários** (cidade, zumbi, castelo, paraíso, inferno): hoje só a praia rola; os demais mostram o personagem andando no lugar. Refinar a praia com o Pedro e repetir o padrão (`journey(env)` em cada cena).
+1. **Refinar as jornadas com o Pedro** (praia, cidade, zumbi, castelo, floresta e inferno já rolam; cada uma tem `journey(env)` na sua cena). Falta conferir manhã, tarde e noite de cada uma dentro do app e o portal em cada cenário.
 2. Remover a cena Mapa em CSS (`apps/banner/src/scene`) quando a jornada cobrir todos os cenários; as abas já usam a jornada.
 3. **Acessórios LPC** (chapéu, cachecol, bandana, espada, escudo): hoje existem no formulário, mas não têm arte importada e o banner os ignora. Também falta usar o título (Herói/Heroína) para o corpo no cadastro antigo e tratar personagem sem `look` (o formulário mostra o visual padrão até salvar de novo).
 4. **Auditoria RN-FB do app inteiro** (`docs/QA.md` seção 7), requisito para a loja.

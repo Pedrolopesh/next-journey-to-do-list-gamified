@@ -175,6 +175,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
         useOfflineStore.getState().remove([checkId]);
         useFeedbackStore.getState().forgetCheck(item.id, checkId);
         void queryClient.invalidateQueries({ queryKey: ['items'] });
+        showToast.success(t('feedback.undone'));
         resetBanner();
         return;
       }
@@ -183,6 +184,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
         {
           onSuccess: () => {
             useFeedbackStore.getState().forgetCheck(item.id, checkId);
+            showToast.success(t('feedback.undone'));
             resetBanner();
           },
           onError: (cause) => {

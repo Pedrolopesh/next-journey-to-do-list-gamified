@@ -278,3 +278,43 @@ export function flame(env: SceneEnv, x: number, y: number, size = 1): void {
   rect(env, x - 1 * size, y - (5 + wobble) * size, 3 * size, 5 * size, '#ff922b');
   rect(env, x - 1 * size + wobble, y - (7 + wobble) * size, 1 * size + 1, 4 * size, '#ffd43b');
 }
+
+/** Portal no fim da jornada: abre aos poucos, com anel azul e roxo e um miolo que gira. */
+export function portal(env: SceneEnv, since: number, baseY: number): void {
+  const { ctx } = env;
+  const open = Math.min(1, since / 0.9);
+  const cx = 350;
+  const cy = baseY - 22;
+  const rx = 15 * open;
+  const ry = 30 * open;
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(cx, baseY + 6, rx + 4, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const glowing = ctx.createRadialGradient(cx, cy, 2, cx, cy, ry + 14);
+  glowing.addColorStop(0, 'rgba(160,120,255,0.55)');
+  glowing.addColorStop(1, 'rgba(160,120,255,0)');
+  ctx.fillStyle = glowing;
+  ctx.fillRect(cx - ry - 14, cy - ry - 14, (ry + 14) * 2, (ry + 14) * 2);
+  ctx.fillStyle = '#2a1458';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx + 3, ry + 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#6b3fe0';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+  for (let i = 0; i < 4; i++) {
+    const turn = env.t * 1.6 + i * 1.57;
+    ctx.fillStyle = i % 2 ? '#a98bff' : '#45c8ff';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx * (0.85 - i * 0.18), ry * (0.85 - i * 0.18), turn, 0, Math.PI * 1.1);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#e9e0ff';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx * 0.2, ry * 0.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}

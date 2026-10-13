@@ -1,5 +1,5 @@
 import type { Item } from '@nextjourney/contracts';
-import { IconFlame } from '@tabler/icons-react-native';
+import { IconBolt, IconFlame, IconLeaf, IconSkull } from '@tabler/icons-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -9,24 +9,27 @@ type Props = {
   item: Item;
   onCheck: (item: Item) => void;
   onOpen?: (item: Item) => void;
-  /** Mostra "Desfazer" (check feito hoje neste aparelho). */
+  /** Check feito hoje neste aparelho: tocar de novo no check desmarca. */
   onUndo?: (item: Item) => void;
   /** Hábito: contador de hoje e da semana em vez de "feito". */
   counters?: boolean;
 };
 
-const DIFFICULTY_COLOR = {
-  easy: colors.status.success,
-  medium: colors.status.warning,
-  hard: colors.status.danger,
+const DIFFICULTY_ICON = {
+  easy: { Icon: IconLeaf, color: colors.status.success },
+  medium: { Icon: IconBolt, color: colors.status.warning },
+  hard: { Icon: IconSkull, color: colors.status.danger },
 } as const;
 
 /** Linha de item (diário, tarefa ou hábito): o mesmo componente de check para os 3 tipos. */
 export function ItemRow({ item, onCheck, onOpen, onUndo, counters = false }: Props) {
   const { t } = useTranslation();
   const done = item.doneToday;
-  // Hábito pode ser marcado várias vezes: o check nunca fica bloqueado
-  const locked = done && item.type !== 'habit';
+  // Feito hoje e ainda desfazível neste aparelho: o check vira "desmarcar"
+  const canUndo = done && onUndo !== undefined;
+  // Sem como desfazer, diário e tarefa feitos ficam bloqueados; hábito pode ser marcado de novo
+  const locked = done && !canUndo && item.type !== 'habit';
+  const { Icon, color } = DIFFICULTY_ICON[item.difficulty];
 
   return (
     <View style={styles.row}>
@@ -34,13 +37,16 @@ export function ItemRow({ item, onCheck, onOpen, onUndo, counters = false }: Pro
         accessibilityRole="checkbox"
         accessibilityState={{ checked: done, disabled: locked }}
         accessibilityLabel={
-          locked
-            ? t('items.doneLabel', { title: item.title })
-            : t('items.checkLabel', { title: item.title })
+          canUndo
+            ? t('items.uncheckLabel', { title: item.title })
+            : locked
+              ? t('items.doneLabel', { title: item.title })
+              : t('items.checkLabel', { title: item.title })
         }
         disabled={locked}
         onPress={() => {
-          onCheck(item);
+          if (canUndo) onUndo(item);
+          else onCheck(item);
         }}
         style={[
           styles.check,
@@ -63,9 +69,6 @@ export function ItemRow({ item, onCheck, onOpen, onUndo, counters = false }: Pro
           {item.title}
         </Text>
         <View style={styles.meta}>
-          <Text style={[styles.chip, { color: DIFFICULTY_COLOR[item.difficulty] }]}>
-            {t(`difficulty.${item.difficulty}`)}
-          </Text>
           {item.overdue && !done ? <Text style={styles.overdue}>{t('items.overdue')}</Text> : null}
           {item.streak > 0 ? (
             <View
@@ -84,18 +87,16 @@ export function ItemRow({ item, onCheck, onOpen, onUndo, counters = false }: Pro
         </View>
       </Pressable>
 
-      {onUndo ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('feedback.undo')}
-          onPress={() => {
-            onUndo(item);
-          }}
-          style={styles.undo}
-        >
-          <Text style={styles.undoText}>{t('feedback.undo')}</Text>
-        </Pressable>
-      ) : null}
+      <View
+        style={styles.difficulty}
+        accessible
+        accessibilityRole="image"
+        accessibilityLabel={t('items.difficultyLabel', {
+          level: t(`difficulty.${item.difficulty}`),
+        })}
+      >
+        <Icon size={22} color={color} strokeWidth={1.75} />
+      </View>
     </View>
   );
 }
@@ -126,11 +127,9 @@ const styles = StyleSheet.create({
   title: { color: colors.text.primary, fontSize: 15, fontWeight: '500' },
   titleDone: { color: colors.text.secondary, textDecorationLine: 'line-through' },
   meta: { flexDirection: 'row', alignItems: 'center', gap: space[8], flexWrap: 'wrap' },
-  chip: { fontSize: 12, fontWeight: '600' },
   overdue: { color: colors.status.danger, fontSize: 12, fontWeight: '600' },
   streak: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   streakText: { color: colors.brand.gold, fontSize: 12, fontWeight: '600' },
   counters: { color: colors.text.muted, fontSize: 12 },
-  undo: { minHeight: size.touchTarget, justifyContent: 'center', paddingHorizontal: space[8] },
-  undoText: { color: colors.brand.primaryLight, fontSize: 12, fontWeight: '600' },
+  difficulty: { width: size.touchTarget / 1.5, alignItems: 'center', justifyContent: 'center' },
 });

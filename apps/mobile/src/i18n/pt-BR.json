@@ -91,6 +91,7 @@
     "alreadyDone": "Este item já foi marcado hoje.",
     "checkFailed": "Não foi possível marcar. Tente de novo.",
     "undo": "Desfazer",
+    "undone": "Check desmarcado.",
     "undoLocked": "Não dá para desfazer: o capítulo já foi concluído.",
     "undoOtherDay": "Só é possível desfazer no mesmo dia.",
     "undoFailed": "Não foi possível desfazer. Tente de novo.",
@@ -105,6 +106,8 @@
   "items": {
     "doneLabel": "{{title}} concluído hoje",
     "checkLabel": "Marcar {{title}}",
+    "uncheckLabel": "Desmarcar {{title}}",
+    "difficultyLabel": "Dificuldade: {{level}}",
     "openLabel": "Abrir {{title}}",
     "overdue": "Atrasado",
     "streak": "{{count}} dias seguidos",
@@ -386,7 +389,7 @@
       "rooftop": "Cidade",
       "zombie": "Apocalipse zumbi",
       "castle": "Castelo",
-      "paradise": "Paraíso",
+      "paradise": "Floresta",
       "hell": "Inferno"
     },
     "times": {
