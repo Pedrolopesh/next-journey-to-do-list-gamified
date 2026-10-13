@@ -206,8 +206,9 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
   const resize = (): void => {
     const wanted = (canvas.clientWidth || SCENE_W) * (window.devicePixelRatio || 1);
     scale = Math.min(maxScale, Math.max(2, Math.round(wanted / SCENE_W)));
-    canvas.width = SCENE_W * scale;
-    canvas.height = SCENE_H * scale;
+    // Redimensionar apaga o canvas: só mexe quando o tamanho realmente muda
+    if (canvas.width !== SCENE_W * scale) canvas.width = SCENE_W * scale;
+    if (canvas.height !== SCENE_H * scale) canvas.height = SCENE_H * scale;
   };
   resize();
 

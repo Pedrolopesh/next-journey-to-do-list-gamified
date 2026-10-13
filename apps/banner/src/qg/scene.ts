@@ -75,7 +75,9 @@ export function createQgScene(root: HTMLElement): QgScene {
     engine.state.sceneId = isQgSceneId(pending.sceneId) ? pending.sceneId : QG_DEFAULT_SCENE;
     engine.state.time = pending.time;
     engine.state.journey = pending.journey;
-    if (pending.snap) engine.placeHero(pending.stop);
+    // Um INIT repetido (o app recarrega o perfil depois de cada check) não pode teletransportar
+    // o personagem nem cortar a corrida em andamento
+    if (pending.snap && engine.state.stop !== pending.stop) engine.placeHero(pending.stop);
     else engine.state.stop = pending.stop;
     pending.snap = false;
     if (!pending.journey && engine.state.anim === 'walk') engine.state.anim = 'idle';

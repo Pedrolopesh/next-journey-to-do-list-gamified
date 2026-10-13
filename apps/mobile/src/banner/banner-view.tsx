@@ -27,6 +27,8 @@ export type InitMessage = Extract<AppToBannerMessage, { type: 'INIT' }>;
 export type BannerViewHandle = {
   /** Envia uma mensagem tipada ao banner (já validada pelo tipo do contrato). */
   send: (message: AppToBannerMessage) => void;
+  /** Reenvia o INIT atual da tela: volta o banner à posição real (ex.: um check que falhou). */
+  reset: () => void;
 };
 
 type Props = {
@@ -61,7 +63,11 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
     webViewRef.current?.postMessage(JSON.stringify(message));
   }, []);
 
-  useImperativeHandle(ref, () => ({ send }), [send]);
+  const reset = useCallback(() => {
+    send(initRef.current);
+  }, [send]);
+
+  useImperativeHandle(ref, () => ({ send, reset }), [send, reset]);
 
   useEffect(() => {
     let cancelled = false;

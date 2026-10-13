@@ -6,7 +6,7 @@ import { type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 
 import { isRetryableError, toApiError } from '@/api/errors';
-import { chapterProgress, useCheckItem, useMe, useUndoCheck } from '@/api/queries';
+import { useCheckItem, useMe, useUndoCheck } from '@/api/queries';
 import type { BannerViewHandle } from '@/banner/banner-view';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { buildModalQueue, type ModalEntry } from '@/features/feedback/modal-queue';
@@ -55,19 +55,8 @@ export function useCheckFlow({ type, bannerRef }: Options) {
   );
 
   const resetBanner = useCallback(() => {
-    // volta o banner à posição real, sem animação
-    bannerRef.current?.send({
-      v: 1,
-      type: 'INIT',
-      payload: {
-        scene: 'map',
-        character: { skin: 'light', hair: 'short-brown', outfit: 'tunic-purple' },
-        sceneKey: `story-${me?.story?.slug ?? '1'}-chapter-${me?.player.story.chapter ?? 1}`,
-        progress: chapterProgress(me),
-        timeOfDay: 'night',
-      },
-    });
-  }, [bannerRef, me]);
+    bannerRef.current?.reset();
+  }, [bannerRef]);
 
   const handleCheck = useCallback(
     (item: Item) => {
