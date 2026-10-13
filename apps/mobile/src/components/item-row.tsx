@@ -1,8 +1,9 @@
 import type { Item } from '@nextjourney/contracts';
-import { IconBolt, IconFlame, IconLeaf, IconSkull } from '@tabler/icons-react-native';
+import { IconFlame } from '@tabler/icons-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { DifficultyIcon } from '@/components/difficulty-icon';
 import { colors, radius, size, softGlow, space } from '@/theme';
 
 type Props = {
@@ -15,12 +16,6 @@ type Props = {
   counters?: boolean;
 };
 
-const DIFFICULTY_ICON = {
-  easy: { Icon: IconLeaf, color: colors.status.success },
-  medium: { Icon: IconBolt, color: colors.status.warning },
-  hard: { Icon: IconSkull, color: colors.status.danger },
-} as const;
-
 /** Linha de item (diário, tarefa ou hábito): o mesmo componente de check para os 3 tipos. */
 export function ItemRow({ item, onCheck, onOpen, onUndo, counters = false }: Props) {
   const { t } = useTranslation();
@@ -29,7 +24,6 @@ export function ItemRow({ item, onCheck, onOpen, onUndo, counters = false }: Pro
   const canUndo = done && onUndo !== undefined;
   // Sem como desfazer, diário e tarefa feitos ficam bloqueados; hábito pode ser marcado de novo
   const locked = done && !canUndo && item.type !== 'habit';
-  const { Icon, color } = DIFFICULTY_ICON[item.difficulty];
 
   return (
     <View style={styles.row}>
@@ -95,7 +89,7 @@ export function ItemRow({ item, onCheck, onOpen, onUndo, counters = false }: Pro
           level: t(`difficulty.${item.difficulty}`),
         })}
       >
-        <Icon size={22} color={color} strokeWidth={1.75} />
+        <DifficultyIcon difficulty={item.difficulty} />
       </View>
     </View>
   );

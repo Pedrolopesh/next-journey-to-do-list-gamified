@@ -3,7 +3,7 @@ import type { PlayerState, StoryProgress } from '@nextjourney/contracts';
 import type { UserStats } from '../../generated/prisma/client.js';
 
 /** Sem história ativa (onboarding incompleto) o check rende EXP e moedas mas não conta capítulo. */
-export const NO_STORY: StoryProgress = { chapter: 1, checksInChapter: 0, completed: true };
+export const NO_STORY: StoryProgress = { chapter: 1, completed: true };
 
 export function toPlayerState(stats: UserStats, story: StoryProgress = NO_STORY): PlayerState {
   return {

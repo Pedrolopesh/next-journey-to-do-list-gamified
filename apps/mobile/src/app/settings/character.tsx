@@ -1,18 +1,20 @@
 import type { CharacterLayers } from '@nextjourney/contracts';
+import { IconChevronLeft } from '@tabler/icons-react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { putCharacter } from '@/api/endpoints';
 import { toApiError } from '@/api/errors';
 import { queryKeys, useMe } from '@/api/queries';
 import { CharacterForm } from '@/components/character-form';
 import { CharacterPreview } from '@/components/character-preview';
-import { ScreenFrame } from '@/components/screen-frame';
 import { toast } from '@/features/feedback/toast-store';
 import { characterLayers } from '@/features/qg/character-layers';
+import { colors, radius, size, space } from '@/theme';
 
 /** Editar o personagem (RF-37). Cosméticos de conquista aparecem liberados aqui. */
 export default function EditCharacterScreen() {
@@ -20,14 +22,27 @@ export default function EditCharacterScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: me } = useMe();
+  const insets = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<CharacterLayers | null>(null);
 
   return (
-    <ScreenFrame title={t('profile.customize')} scroll={false}>
-      {/* Prévia fixa no topo: as opções rolam embaixo */}
-      <CharacterPreview layers={preview ?? characterLayers(me?.character ?? null)} />
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Banner de ponta a ponta no topo, como na Home: as opções rolam embaixo */}
+      <View>
+        <CharacterPreview layers={preview ?? characterLayers(me?.character ?? null)} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          onPress={() => {
+            router.back();
+          }}
+          style={styles.back}
+        >
+          <IconChevronLeft size={22} color={colors.text.primary} strokeWidth={2} />
+        </Pressable>
+      </View>
       <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
         <CharacterForm
           initial={me?.character ?? null}
@@ -59,8 +74,22 @@ export default function EditCharacterScreen() {
           }}
         />
       </ScrollView>
-    </ScreenFrame>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({ form: { paddingBottom: 40 } });
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg.base },
+  form: { padding: space.screenMargin, paddingBottom: 40, gap: space[12] },
+  back: {
+    position: 'absolute',
+    top: space[8],
+    left: space[8],
+    width: size.touchTarget,
+    height: size.touchTarget,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(15, 15, 25, 0.55)',
+  },
+});

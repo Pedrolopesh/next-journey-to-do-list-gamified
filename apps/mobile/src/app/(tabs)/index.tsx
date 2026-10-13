@@ -42,6 +42,8 @@ export default function HomeScreen() {
     <TabScreen
       title={t('tabs.home')}
       scene="qg"
+      bannerLabel={t('qg.sceneTitle')}
+      bannerCaption={t('qg.sceneCaption')}
       bannerRef={banner}
       debug={false}
       onBannerMessage={(message) => {
@@ -68,23 +70,30 @@ export default function HomeScreen() {
         <View style={styles.qgActions}>
           <View style={styles.qgAction}>
             <Button
-              label={showEnvironment ? t('qg.hide') : t('qg.show')}
-              variant="secondary"
-              onPress={() => {
-                setShowEnvironment((open) => !open);
-              }}
-            />
-          </View>
-          <View style={styles.qgAction}>
-            <Button
-              label={t('qg.character')}
+              label={t('qg.changeCharacter')}
               variant="secondary"
               onPress={() => {
                 router.push('/settings/character');
               }}
             />
           </View>
+          <View style={styles.qgAction}>
+            <Button
+              label={t('qg.changeStory')}
+              variant="secondary"
+              onPress={() => {
+                router.push('/story/timeline');
+              }}
+            />
+          </View>
         </View>
+        <Button
+          label={showEnvironment ? t('qg.closeScenario') : t('qg.changeScenario')}
+          variant="secondary"
+          onPress={() => {
+            setShowEnvironment((open) => !open);
+          }}
+        />
         {showEnvironment ? <QgControls /> : null}
 
         {home.isPending ? (
@@ -122,17 +131,15 @@ export default function HomeScreen() {
                     style={[
                       styles.barFill,
                       {
-                        width: `${Math.round((home.data.story.checksInChapter / home.data.story.requiredChecks) * 100)}%`,
+                        width: `${Math.round(Math.min(1, home.data.story.expInLevel / home.data.story.expForNextLevel) * 100)}%`,
                       },
                     ]}
                   />
                 </View>
                 <Text style={styles.storyProgress}>
-                  {t('home.itemsToAdvance', {
-                    left: Math.max(
-                      0,
-                      home.data.story.requiredChecks - home.data.story.checksInChapter,
-                    ),
+                  {t('progress.exp', {
+                    exp: home.data.story.expInLevel,
+                    next: home.data.story.expForNextLevel,
                   })}
                 </Text>
               </View>

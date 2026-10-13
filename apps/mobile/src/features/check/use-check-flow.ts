@@ -130,7 +130,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
               levelUp: result.leveledUp,
             });
             useFeedbackStore.getState().rememberCheck(item.id, checkId);
-            setToast(t('feedback.expToast', { exp: result.expGained }));
+            setToast(t('feedback.expToast', { exp: result.expGained, coins: result.coinsGained }));
 
             const { now, afterBanner } = buildModalQueue(result);
             useFeedbackStore.getState().enqueue([...now, ...afterBanner]);

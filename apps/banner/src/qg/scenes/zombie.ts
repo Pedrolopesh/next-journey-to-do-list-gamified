@@ -467,7 +467,6 @@ const BASE_PERIOD = 1100;
 /** O fundo anda mais devagar que o chão: a base passa em segundo plano. */
 const BASE_FACTOR = 0.45;
 const MOUNTAIN_FACTOR = 0.04;
-const MOUNTAIN_PERIOD = 520;
 const BASE_LINE = 146;
 const FENCE_LINE = 154;
 const FENCE_TOP_H = 24;
@@ -475,43 +474,32 @@ const BASE_START = -20;
 const BASE_END = 590;
 const BASE_WIDTH = BASE_END - BASE_START + 40;
 
-/** Montanhas: algumas arredondadas, outras bem pontudas, repetindo devagar. */
-const PEAKS: { x: number; h: number; w: number; sharp: boolean }[] = [
-  { x: 40, h: 14, w: 60, sharp: false },
-  { x: 130, h: 34, w: 46, sharp: true },
-  { x: 215, h: 15, w: 62, sharp: false },
-  { x: 300, h: 26, w: 40, sharp: true },
-  { x: 372, h: 12, w: 54, sharp: false },
-  { x: 450, h: 38, w: 38, sharp: true },
+/** Duas montanhas pontudas lado a lado, que reaparecem a cada volta (o resto são as ondas de sempre). */
+const PEAK_PAIR_PERIOD = 900;
+const PEAKS: { x: number; h: number; w: number }[] = [
+  { x: 330, h: 30, w: 30 },
+  { x: 372, h: 34, w: 32 },
 ];
 
-function mountainHeight(x: number): { h: number; shade: boolean } {
-  let best = 0;
-  let shade = false;
+/** Montanhas distantes: as mesmas ondas da cena parada, rolando devagar; sem emendas por ser uma função contínua. */
+function mountainHeight(x: number): number {
+  let h = 7 + Math.abs(Math.sin(x * 0.045 + 1)) * 12;
   for (const peak of PEAKS) {
-    let dx =
-      ((((x - peak.x + MOUNTAIN_PERIOD / 2) % MOUNTAIN_PERIOD) + MOUNTAIN_PERIOD) %
-        MOUNTAIN_PERIOD) -
-      MOUNTAIN_PERIOD / 2;
-    const side = dx > 0;
-    dx = Math.abs(dx);
-    if (dx >= peak.w) continue;
-    const t = 1 - dx / peak.w;
-    const h = peak.sharp ? peak.h * t : peak.h * Math.sin((t * Math.PI) / 2);
-    if (h > best) {
-      best = h;
-      shade = side && peak.sharp;
-    }
+    const dx = Math.abs(
+      ((((x - peak.x + PEAK_PAIR_PERIOD / 2) % PEAK_PAIR_PERIOD) + PEAK_PAIR_PERIOD) %
+        PEAK_PAIR_PERIOD) -
+        PEAK_PAIR_PERIOD / 2,
+    );
+    if (dx < peak.w) h = Math.max(h, peak.h * (1 - dx / peak.w));
   }
-  return { h: best + 5, shade };
+  return h;
 }
 
 function journeyMountains(env: SceneEnv): void {
   const shift = env.scroll * MOUNTAIN_FACTOR;
   for (let x = 0; x < SCENE_W; x += 2) {
-    const { h, shade } = mountainHeight(x + shift);
-    rect(env, x, HORIZON - h, 2, h + 1, shade ? '#8c6e56' : '#a58468');
-    if (!shade && h > 20) rect(env, x, HORIZON - h, 2, 1, '#cfb496');
+    const h = mountainHeight(x + shift);
+    rect(env, x, HORIZON - h, 2, h + 1, '#a58468');
   }
 }
 

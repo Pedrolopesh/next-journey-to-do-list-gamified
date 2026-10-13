@@ -1,4 +1,5 @@
 import type { BannerToAppMessage } from '@nextjourney/contracts';
+import { IconChevronLeft } from '@tabler/icons-react-native';
 import {
   type ReactNode,
   type RefObject,
@@ -22,6 +23,7 @@ import {
 import { characterLayers } from '@/features/qg/character-layers';
 import { journeyView } from '@/features/qg/journey-progress';
 import { useJourneyStore } from '@/features/qg/journey-store';
+import { DEFAULT_STORY_SCENARIO, isStoryScenario } from '@/features/qg/options';
 import { useQgPrefs } from '@/features/qg/qg-store';
 import { useTimeOfDay } from '@/features/qg/use-time-of-day';
 import { colors, radius, size, space } from '@/theme';
@@ -36,6 +38,12 @@ type Props = {
   bannerRef?: RefObject<BannerViewHandle | null>;
   /** Mensagens do banner (ex.: CHAPTER_TRANSITION_DONE abre o modal do capítulo). */
   onBannerMessage?: (message: BannerToAppMessage) => void;
+  /** Texto pequeno em cima do banner (ex.: "QG"). */
+  bannerLabel?: string;
+  /** Texto discreto embaixo do banner. */
+  bannerCaption?: string;
+  /** Mostra um botão de voltar sobre o banner (telas empilhadas). */
+  onBack?: () => void;
   /** Botões de simulação (só em desenvolvimento) para exercitar o banner sem a API. */
   debug?: boolean;
   children?: ReactNode;
@@ -47,6 +55,9 @@ export function TabScreen({
   scene = 'journey',
   bannerRef,
   onBannerMessage,
+  bannerLabel,
+  bannerCaption,
+  onBack,
   debug = true,
   children,
 }: Props) {
@@ -55,7 +66,10 @@ export function TabScreen({
   const ownRef = useRef<BannerViewHandle>(null);
   const banner = bannerRef ?? ownRef;
   const { data: me } = useMe();
-  const { scenario, storyScenario, timeMode } = useQgPrefs();
+  const { scenario, timeMode } = useQgPrefs();
+  // A jornada usa o cenário da história ativa (história = cenário)
+  const storySlug = me?.story?.slug;
+  const storyScenario = isStoryScenario(storySlug) ? storySlug : DEFAULT_STORY_SCENARIO;
   const qgTime = useTimeOfDay(timeMode);
   const userId = me?.user.id;
   const level = me?.player.level;
@@ -117,12 +131,30 @@ export function TabScreen({
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <BannerView
-        ref={banner}
-        initMessage={initMessage}
-        onMessage={handleBannerMessage}
-        aspectRatio={QG_ASPECT_RATIO}
-      />
+      {bannerLabel ? (
+        <Text style={styles.bannerLabel} accessibilityRole="header">
+          {bannerLabel}
+        </Text>
+      ) : null}
+      <View>
+        <BannerView
+          ref={banner}
+          initMessage={initMessage}
+          onMessage={handleBannerMessage}
+          aspectRatio={QG_ASPECT_RATIO}
+        />
+        {onBack ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+            onPress={onBack}
+            style={styles.back}
+          >
+            <IconChevronLeft size={22} color={colors.text.primary} strokeWidth={2} />
+          </Pressable>
+        ) : null}
+      </View>
+      {bannerCaption ? <Text style={styles.bannerCaption}>{bannerCaption}</Text> : null}
       <View style={styles.body}>
         {children ?? (
           <>
@@ -156,6 +188,33 @@ export function TabScreen({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg.base },
   body: { flex: 1, padding: space.screenMargin, gap: space[8] },
+  bannerLabel: {
+    color: colors.text.secondary,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    paddingVertical: space[4],
+  },
+  bannerCaption: {
+    color: colors.text.muted,
+    fontSize: 12,
+    textAlign: 'center',
+    paddingHorizontal: space.screenMargin,
+    paddingTop: space[8],
+  },
+  back: {
+    position: 'absolute',
+    top: space[8],
+    left: space[8],
+    width: size.touchTarget,
+    height: size.touchTarget,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(15, 15, 25, 0.55)',
+  },
   title: {
     color: colors.text.primary,
     fontSize: 22,

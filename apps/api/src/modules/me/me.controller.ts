@@ -16,11 +16,7 @@ import { ZodValidationPipe } from '../../common/zod-validation.pipe.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AccountService } from '../account/account.service.js';
-import {
-  ACHIEVEMENT_CATALOG,
-  checksParaCapitulo,
-  expParaNivel,
-} from '../progression/domain/index.js';
+import { ACHIEVEMENT_CATALOG, expParaNivel } from '../progression/domain/index.js';
 import { GameConfigService } from '../progression/game-config.service.js';
 import { NO_STORY, toPlayerState } from '../progression/player-state.js';
 import { StoriesService } from '../stories/stories.service.js';
@@ -68,11 +64,7 @@ export class MeController {
     const config = await this.gameConfig.load();
     const active = await this.stories.active(this.prisma, userId);
     const progress = active
-      ? {
-          chapter: active.progress.chapter,
-          checksInChapter: active.progress.checksInChapter,
-          completed: active.progress.completed,
-        }
+      ? { chapter: active.progress.chapter, completed: active.progress.completed }
       : NO_STORY;
     const player = toPlayerState(user.stats, progress);
 
@@ -96,7 +88,6 @@ export class MeController {
       player: {
         ...player,
         expForNextLevel: expParaNivel(player.level, config),
-        requiredChecksInChapter: checksParaCapitulo(progress.chapter, config),
       },
       character: user.character
         ? {

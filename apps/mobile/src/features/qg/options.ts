@@ -13,7 +13,7 @@ export const SCENARIOS = [
 export type Scenario = (typeof SCENARIOS)[number];
 export const DEFAULT_SCENARIO: Scenario = 'cabin';
 
-/** Cenários da história principal (abas de itens): os mesmos do QG, menos a cabana. */
+/** Cenários das histórias (uma história por cenário): os mesmos do QG, menos a cabana. */
 export const STORY_SCENARIOS = [
   'beach',
   'rooftop',

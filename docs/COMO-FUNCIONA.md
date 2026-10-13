@@ -4,7 +4,7 @@ Atualizado em 2026-10-12. Este documento descreve **o que existe hoje** no repos
 
 ## 1. O produto em uma frase
 
-Um to-do list de uso pessoal para iOS e Android em que cada item marcado rende EXP e moedas e faz um personagem pixel art (LPC) avançar por uma história em 5 capítulos. Três tipos de item (diário, tarefa, hábito) usam o mesmo check. Sem social, sem loja, sem penalidades na v1.
+Um to-do list de uso pessoal para iOS e Android em que cada item marcado rende EXP e moedas e faz um personagem pixel art (LPC) avançar por uma história em 5 capítulos (6 histórias, uma por cenário; cada nível ganho conclui um capítulo). Três tipos de item (diário, tarefa, hábito) usam o mesmo check. Sem social, sem loja, sem penalidades na v1.
 
 ## 2. Estado atual do repositório (2026-10-12)
 
@@ -69,15 +69,15 @@ Toda a regra de EXP, moedas, nível, capítulo, sequência (streak), desfazer e 
 Fluxo de um check:
 
 1. O usuário toca no checkbox. O app vibra, anima (180 ms) e marca o item no cache **na hora** (otimista, só o estado do check).
-2. O app gera um `checkId` (UUID v4), manda `ITEM_CHECKED` ao banner com o progresso estimado do capítulo e chama `POST /v1/items/:id/checks`.
-3. A API, em uma única transação (`prisma.$transaction`): valida o check, grava em `item_checks`, atualiza sequência, `user_stats` e `story_progress`, avalia conquistas, e responde um `CheckResult` (EXP, moedas, nível, se subiu de nível, progresso do capítulo, se concluiu o capítulo, conquistas desbloqueadas).
-4. O app reconcilia o cache com o `CheckResult` e mostra o toast de EXP. Subida de nível e conquistas entram numa fila de modais, um de cada vez.
-5. Se `chapterCompleted` vier verdadeiro, o app envia `CHAPTER_COMPLETED`; quando o banner devolve `CHAPTER_TRANSITION_DONE`, abre o modal do capítulo.
+2. O app gera um `checkId` (UUID v4), manda `ITEM_CHECKED` ao banner na posição atual e chama `POST /v1/items/:id/checks`.
+3. A API, em uma única transação (`prisma.$transaction`): valida o check, grava em `item_checks`, atualiza sequência, `user_stats` e `story_progress`, avalia conquistas, e responde um `CheckResult` (EXP, moedas, nível, se subiu de nível, progresso do capítulo (EXP do nível), se concluiu o capítulo, conquistas desbloqueadas).
+4. O app reconcilia o cache com o `CheckResult` e mostra o toast de EXP e moedas; o personagem corre até a posição nova (a EXP do nível). Subida de nível e conquistas entram numa fila de modais, um de cada vez.
+5. Subiu de nível: o personagem chega ao portal e espera; o modal do capítulo concluído abre junto do de nível. No check seguinte o app envia `CHAPTER_COMPLETED` (fade da troca de cena) e o personagem recomeça na posição da EXP.
 6. Erro de rede: o check vai para a fila offline e continua marcado. Erro de regra (4xx): o app desfaz o otimismo e mostra o motivo.
 
 O `checkId` torna o check **idempotente**: repetir a chamada (ou reenviar pela fila offline) não duplica EXP.
 
-Valores iniciais (ficam na tabela `game_config`, ajustáveis sem novo build): EXP 5/10/20 e moedas 1/2/4 por dificuldade (fácil/médio/difícil); EXP de nível n para n+1 = 75n − 25; checks para fechar o capítulo n = min(10 + 5(n − 1), 40); bônus de 10 moedas ao subir de nível; 5 capítulos por história; hábitos sem limite diário de checks; virada do dia às 00:00 no fuso do perfil. O restante das regras (desfazer, conquistas, casos de borda) está em REQUISITOS.MD, seção "Regras complementares".
+Valores iniciais (ficam na tabela `game_config`, ajustáveis sem novo build): EXP 5/10/20 e moedas 1/2/4 por dificuldade (fácil/médio/difícil); EXP de nível n para n+1 = 75n − 25; cada nível ganho conclui um capítulo da história ativa; bônus de 10 moedas ao subir de nível; 5 capítulos por história; hábitos sem limite diário de checks; virada do dia às 00:00 no fuso do perfil. O restante das regras (desfazer, conquistas, casos de borda) está em REQUISITOS.MD, seção "Regras complementares".
 
 ## 6. Stack por projeto
 

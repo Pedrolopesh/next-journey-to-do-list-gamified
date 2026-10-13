@@ -164,7 +164,7 @@ export function CharacterForm({
         />
         <Button
           label={t('character.randomize')}
-          variant="secondary"
+          variant="primary"
           onPress={() => {
             applyLook(randomLook());
             toast.success(t('character.randomized'));

@@ -87,7 +87,7 @@
     "invalidForm": "Revise os campos destacados.",
     "saved": "Salvo.",
     "queuedOffline": "Sem conexão: o check será enviado quando a internet voltar.",
-    "expToast": "+{{exp}} EXP",
+    "expToast": "+{{exp}} EXP · +{{coins}} moedas",
     "alreadyDone": "Este item já foi marcado hoje.",
     "checkFailed": "Não foi possível marcar. Tente de novo.",
     "undo": "Desfazer",
@@ -186,12 +186,21 @@
   },
   "timeline": {
     "chapter": "Capítulo {{number}}",
-    "condition": "{{current}} de {{total}} itens para avançar",
     "state": {
       "completed": "concluído",
       "current": "capítulo atual",
       "locked": "bloqueado"
-    }
+    },
+    "playStory": "Jogar esta história",
+    "activeBadge": "Ativa",
+    "chaptersDone": "{{done}} de {{total}} capítulos",
+    "storySelected": "História trocada: {{name}}.",
+    "storyFailed": "Não foi possível trocar de história.",
+    "pickStory": "Escolha o cenário da sua jornada",
+    "chapters": "Capítulos",
+    "progress": "{{exp}} de {{next}} EXP para o próximo capítulo",
+    "lockedHint": "Suba de nível nesta história para desbloquear.",
+    "storyTab": "História {{name}}"
   },
   "achievements": {
     "unlocked": "desbloqueada",
@@ -376,7 +385,6 @@
   "qg": {
     "customize": "Personalizar QG",
     "scenario": "Cenário do QG",
-    "storyScenario": "Cenário da história principal",
     "time": "Hora do dia",
     "scenarioSaved": "Cenário: {{name}}.",
     "timeSaved": "Hora do dia: {{name}}.",
@@ -398,7 +406,13 @@
       "afternoon": "Tarde",
       "night": "Noite"
     },
-    "timeAutoNow": "Automática ({{name}})"
+    "timeAutoNow": "Automática ({{name}})",
+    "sceneTitle": "QG",
+    "sceneCaption": "Aqui é o cenário onde o seu personagem descansa e se prepara para a longa jornada que está prestes a começar.",
+    "changeCharacter": "Mudar personagem",
+    "changeStory": "Mudar história principal",
+    "changeScenario": "Mudar cenário do QG",
+    "closeScenario": "Fechar cenário do QG"
   },
   "examples": {
     "added": "Adicionamos alguns itens de exemplo. Edite ou apague quando quiser.",
@@ -438,5 +452,13 @@
       "rest": "Descansar os olhos da tela",
       "gratitude": "Agradecer por algo"
     }
+  },
+  "progress": {
+    "label": "Progresso da história",
+    "chapter": "Capítulo {{number}}: {{title}}",
+    "storyDone": "História concluída",
+    "level": "Nível {{level}}",
+    "coins": "{{count}} moedas",
+    "exp": "{{exp}}/{{next}} EXP"
   }
 }

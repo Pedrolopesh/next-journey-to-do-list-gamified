@@ -11,6 +11,7 @@ import { Fab } from '@/components/fab';
 import { ItemRow } from '@/components/item-row';
 import { Pills } from '@/components/pills';
 import { EmptyState, ErrorState, SkeletonList } from '@/components/states';
+import { StoryProgressBar } from '@/components/story-progress-bar';
 import { TabScreen } from '@/components/tab-screen';
 import { useCheckFlow } from '@/features/check/use-check-flow';
 import { lastUndoableCheck, useFeedbackStore } from '@/features/feedback/feedback-store';
@@ -78,6 +79,7 @@ export function ItemListScreen({
       debug={false}
       onBannerMessage={flow.onBannerMessage}
     >
+      <StoryProgressBar />
       <Text style={styles.heading} accessibilityRole="header">
         {title}
       </Text>

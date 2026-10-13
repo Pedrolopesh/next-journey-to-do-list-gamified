@@ -16,8 +16,8 @@ export type UndoResult =
  * Desfaz um check. Função pura.
  *
  * - Só no mesmo dia local do check ('OUTRO_DIA' caso contrário).
- * - Capítulo fechado é definitivo: o check que fechou o capítulo, e os de capítulos já fechados,
- *   não voltam ('CAPITULO_FECHADO').
+ * - Capítulo fechado é definitivo: o check que subiu de nível (e fechou capítulo), e os de capítulos
+ *   já fechados, não voltam ('CAPITULO_FECHADO').
  * - O nível nunca cai: se a reversão passar do início do nível, o EXP para em 0 do nível atual.
  * - O bônus de moedas por nível não é revertido.
  */
@@ -47,12 +47,6 @@ export function desfazerCheck(
       expTotal: state.expTotal - expRemoved,
       coins: state.coins - coinsRemoved,
       totalChecks: Math.max(0, state.totalChecks - 1),
-      story: record.countsForChapter
-        ? {
-            ...state.story,
-            checksInChapter: Math.max(0, state.story.checksInChapter - 1),
-          }
-        : state.story,
     },
     summary: { expDevolvido: expRemoved, moedasDevolvidas: coinsRemoved },
   };

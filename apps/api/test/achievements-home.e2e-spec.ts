@@ -218,10 +218,10 @@ describe('conquistas e home', () => {
     const res = await ctx.http().get('/v1/home').set('authorization', bearer(auth)).expect(200);
     expect(res.body.counters).toEqual({ pendingDailies: 1, pendingTasks: 3, bestStreak: 1 });
     expect(res.body.story).toMatchObject({
-      slug: 'empreendedor',
+      slug: 'beach',
       chapter: 1,
-      checksInChapter: 1,
-      requiredChecks: 10,
+      expInLevel: 10,
+      expForNextLevel: 50,
     });
     const titles = res.body.today.map((i: { title: string }) => i.title).sort();
     expect(titles).toEqual(['Atrasada', 'Hoje', 'Treinar']); // Futura e o diário já feito ficam de fora

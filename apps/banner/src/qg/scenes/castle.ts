@@ -297,20 +297,21 @@ function chest(env: SceneEnv, x: number, base: number): void {
   if (Math.sin(env.t * 3) > 0.4) rect(env, x + 10, base - 30, 2, 2, GOLD_LIGHT);
 }
 
-function windowAbove(env: SceneEnv): void {
+/** Janela em arco com o céu da hora do dia (noite: estrelas e lua). `r` é o raio do arco. */
+function windowAt(env: SceneEnv, cx: number, r: number, archY: number, bottom: number): void {
   const { ctx } = env;
   const path = (): void => {
     ctx.beginPath();
-    ctx.moveTo(CX - 23, 52);
-    ctx.lineTo(CX - 23, 28);
-    ctx.arc(CX, 28, 23, Math.PI, Math.PI * 2);
-    ctx.lineTo(CX + 23, 52);
+    ctx.moveTo(cx - r, bottom);
+    ctx.lineTo(cx - r, archY);
+    ctx.arc(cx, archY, r, Math.PI, Math.PI * 2);
+    ctx.lineTo(cx + r, bottom);
     ctx.closePath();
   };
   ctx.save();
   path();
   ctx.clip();
-  sky(env, CX - 23, 4, 46, 50, false);
+  sky(env, cx - r, archY - r, r * 2, bottom - archY + r, false);
   ctx.restore();
   ctx.save();
   path();
@@ -322,9 +323,13 @@ function windowAbove(env: SceneEnv): void {
   ctx.lineWidth = 4;
   ctx.stroke();
   ctx.restore();
-  rect(env, CX - 1, 6, 2, 46, '#4a4f58');
-  rect(env, CX - 23, 32, 46, 2, '#4a4f58');
-  block(env, CX - 28, 52, 56, 4, '#8b93a1', '#5b6272', '#b3bbc9');
+  rect(env, cx - 1, archY - r + 2, 2, bottom - archY + r - 6, '#4a4f58');
+  rect(env, cx - r, archY + 4, r * 2, 2, '#4a4f58');
+  block(env, cx - r - 5, bottom, r * 2 + 10, 4, '#8b93a1', '#5b6272', '#b3bbc9');
+}
+
+function windowAbove(env: SceneEnv): void {
+  windowAt(env, CX, 23, 28, 52);
 }
 
 const WALL_FACTOR = 0.8;
@@ -337,25 +342,6 @@ const CARPET_BOTTOM = 197;
 function noise(a: number, b: number): number {
   const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
   return v - Math.floor(v);
-}
-
-/** Duas espadas cruzadas sobre uma placa de madeira. */
-function crossedSwords(env: SceneEnv, x: number, y: number): void {
-  block(env, x - 11, y + 2, 22, 28, '#5a3a1e', '#3a2410', '#7a5030');
-  for (const flip of [1, -1]) {
-    for (let i = 0; i < 24; i++) {
-      const px = x - 11 * flip + i * flip;
-      rect(env, px - 1, y + 1 + i, 4, 3, OUT);
-    }
-  }
-  for (const flip of [1, -1]) {
-    for (let i = 0; i < 24; i++) {
-      const px = x - 11 * flip + i * flip;
-      rect(env, px, y + 2 + i, 2, 1, i % 2 ? STEEL : STEEL_LIGHT);
-    }
-    rect(env, x - 13 * flip - 2, y + 25, 6, 3, GOLD_DARK);
-  }
-  rect(env, x - 2, y + 11, 4, 4, GOLD);
 }
 
 /** Espada pendurada na horizontal, presa por dois suportes. */
@@ -374,18 +360,22 @@ function wallSword(env: SceneEnv, x: number, y: number): void {
 }
 
 /** Sequências espalhadas, de propósito sem ritmo fixo. */
-const WALL_SET: { kind: 'banner' | 'torch' | 'cross' | 'sword' | 'pillar'; x: number }[] = [
+const WALL_SET: {
+  kind: 'banner' | 'torch' | 'bigWindow' | 'window' | 'sword' | 'pillar';
+  x: number;
+}[] = [
   { kind: 'banner', x: 90 },
   { kind: 'torch', x: 205 },
-  { kind: 'cross', x: 330 },
+  { kind: 'bigWindow', x: 330 },
   { kind: 'torch', x: 455 },
   { kind: 'sword', x: 560 },
   { kind: 'pillar', x: 660 },
   { kind: 'banner', x: 775 },
-  { kind: 'torch', x: 905 },
-  { kind: 'cross', x: 1010 },
-  { kind: 'sword', x: 1090 },
-  { kind: 'torch', x: 1190 },
+  { kind: 'window', x: 865 },
+  { kind: 'torch', x: 940 },
+  { kind: 'window', x: 1020 },
+  { kind: 'sword', x: 1100 },
+  { kind: 'bigWindow', x: 1190 },
 ];
 const ARMORS: { kind: ArmorKind; x: number }[] = [
   { kind: 'spear', x: 150 },
@@ -397,7 +387,6 @@ const ARMORS: { kind: ArmorKind; x: number }[] = [
   { kind: 'shield', x: 1170 },
 ];
 const RACK_X = 610;
-const CHESTS = [330, 880];
 const CANDLES = [120, 540, 770];
 
 const wallX = (env: SceneEnv, world: number): number =>
@@ -431,7 +420,8 @@ function journey(env: SceneEnv): void {
     if (x < -40 || x > SCENE_W + 40) continue;
     if (item.kind === 'banner') banner(env, x - 11);
     else if (item.kind === 'torch') torch(env, x);
-    else if (item.kind === 'cross') crossedSwords(env, x, 36);
+    else if (item.kind === 'bigWindow') windowAt(env, x, 28, 32, 58);
+    else if (item.kind === 'window') windowAt(env, x, 18, 36, 58);
     else if (item.kind === 'sword') wallSword(env, x, 56);
     else pillar(env, x);
   }
@@ -458,11 +448,14 @@ function journey(env: SceneEnv): void {
   }
 
   for (const world of CANDLES) candelabra(env, floorX(env, world));
-  for (const world of CHESTS) {
-    const x = floorX(env, world);
-    if (x > -50 && x < SCENE_W + 20) chest(env, x, 166);
+  if (env.arrivedFor !== null) {
+    // O baú só aparece no fim do caminho, ao lado do portal
+    env.ctx.save();
+    env.ctx.globalAlpha = Math.min(1, env.arrivedFor / 0.6);
+    chest(env, 300, 166);
+    env.ctx.restore();
+    portal(env, env.arrivedFor, 166);
   }
-  if (env.arrivedFor !== null) portal(env, env.arrivedFor, 166);
 }
 
 /** Luzes da jornada: tochas e velas que passam e o luar. */

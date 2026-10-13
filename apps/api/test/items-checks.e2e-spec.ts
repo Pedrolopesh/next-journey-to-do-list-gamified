@@ -32,7 +32,7 @@ describe('itens e check', () => {
     expect(res.body).toMatchObject({ expGained: 20, coinsGained: 4, level: 1, leveledUp: false });
     const state = await me(ctx, auth);
     expect(state.player).toMatchObject({ expTotal: 20, coins: 4, totalChecks: 1 });
-    expect(state.player.story.checksInChapter).toBe(1);
+    expect(state.player.story).toEqual({ chapter: 1, completed: false }); // sem subir de nível o capítulo não muda
   });
 
   it('IDEMPOTENTE: repetir o mesmo checkId devolve o mesmo resultado sem duplicar EXP', async () => {
@@ -178,22 +178,19 @@ describe('itens e check', () => {
       .expect(200); // ainda é o mesmo dia local
   });
 
-  it('o check que fecha o capítulo é definitivo (CHECK_LOCKED)', async () => {
+  it('o check que sobe de nível e fecha o capítulo é definitivo (CHECK_LOCKED)', async () => {
     reset();
     const auth = await registerUser(ctx);
-    await ctx.prisma.storyProgress.updateMany({
+    await ctx.prisma.userStats.update({
       where: { userId: auth.user.id },
-      data: { checksInChapter: 9 },
+      data: { expInLevel: 45, expTotal: 45 },
     });
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const checkId = randomUUID();
     const res = await check(ctx, auth, item.id, checkId).expect(200);
     expect(res.body.chapterCompleted).toBe(true);
-    expect((await me(ctx, auth)).player.story).toEqual({
-      chapter: 2,
-      checksInChapter: 0,
-      completed: false,
-    });
+    expect(res.body).toMatchObject({ leveledUp: true, level: 2 });
+    expect((await me(ctx, auth)).player.story).toEqual({ chapter: 2, completed: false });
     const locked = await ctx
       .http()
       .delete(`/v1/items/${item.id}/checks/${checkId}`)

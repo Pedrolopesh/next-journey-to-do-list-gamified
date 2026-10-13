@@ -1,0 +1,6 @@
+- [x] Contratos: progresso por EXP (check, home, story, player) e `StorySummary.currentChapter`
+- [x] API: `aplicarCheck` e `desfazerCheck` por nível, testes unitários
+- [x] API: checks, me, home, stories (timeline por slug), seed de 6 histórias, e2e
+- [x] App: toast com EXP e moedas, barra de progresso nas abas, ícones de dificuldade
+- [x] App: Minha história (banner, escolha de história, capítulos), Home (QG, botões), perfil e personagem
+- [x] Docs: `docs/REQUISITOS.MD`, `docs/COMO-FUNCIONA.md`, `docs/QA.md`, `HANDOFF.md`

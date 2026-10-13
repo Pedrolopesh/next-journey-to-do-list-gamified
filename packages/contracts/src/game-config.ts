@@ -9,16 +9,13 @@ const perDifficulty = z.object({
 /**
  * Valores da tabela `game_config`. Ficam no back-end para ajustar sem publicar o app.
  * EXP de um nível n para n+1 = levelExpSlope * n - levelExpOffset.
- * Checks do capítulo n = min(chapterBaseChecks + chapterChecksStep * (n - 1), chapterMaxChecks).
+ * Cada nível ganho conclui um capítulo da história ativa (até chaptersPerStory).
  */
 export const gameConfigSchema = z.object({
   expByDifficulty: perDifficulty,
   coinsByDifficulty: perDifficulty,
   levelUpBonusCoins: z.number().int().nonnegative(),
   chaptersPerStory: z.number().int().positive(),
-  chapterBaseChecks: z.number().int().positive(),
-  chapterChecksStep: z.number().int().nonnegative(),
-  chapterMaxChecks: z.number().int().positive(),
   levelExpSlope: z.number().int().positive(),
   levelExpOffset: z.number().int().nonnegative(),
 });
@@ -30,9 +27,6 @@ export const DEFAULT_GAME_CONFIG: GameConfig = {
   coinsByDifficulty: { easy: 1, medium: 2, hard: 4 },
   levelUpBonusCoins: 10,
   chaptersPerStory: 5,
-  chapterBaseChecks: 10,
-  chapterChecksStep: 5,
-  chapterMaxChecks: 40,
   levelExpSlope: 75,
   levelExpOffset: 25,
 };

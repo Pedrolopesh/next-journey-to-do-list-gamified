@@ -64,7 +64,7 @@ São **40 requisitos em 10 módulos**. *Obrigatório* bloqueia o lançamento; *D
 | RF-09 | Splash com logo e nome do app enquanto a sessão é verificada. | Obrigatório |
 | RF-10 | Tutorial de 3 slides, pulável, exibido só no primeiro acesso. | Obrigatório |
 | RF-11 | Criação do personagem: nome, título (Herói, Heroína, Aventureiro), tom de pele, cabelo, roupa e acessório, salvos como chaves de camada LPC. | Obrigatório |
-| RF-12 | Escolha de 1 entre 5 histórias. | Obrigatório |
+| RF-12 | Escolha de 1 entre 6 histórias, uma por cenário (praia, cidade, apocalipse zumbi, castelo, floresta, inferno). A história escolhida define o cenário do banner das abas. | Obrigatório |
 | RF-13 | O onboarding retoma do passo onde parou; o app só libera as abas com personagem e história definidos. | Obrigatório |
 
 ### Itens
@@ -94,9 +94,9 @@ São **40 requisitos em 10 módulos**. *Obrigatório* bloqueia o lançamento; *D
 
 | ID | Requisito | Prioridade |
 |---|---|---|
-| RF-27 | Header de progresso com história ativa, capítulo atual e barra "itens para avançar". | Obrigatório |
+| RF-27 | Barra de progresso embaixo do banner das abas: capítulo atual, barra de EXP do nível, nível e moedas. | Obrigatório |
 | RF-28 | Ao completar um capítulo: modal com thumbnail, título, texto de 2 a 3 linhas e botão Continuar. | Obrigatório |
-| RF-29 | Tela Minha história: linha do tempo com capítulos concluídos (check verde), atual (borda roxa + condição) e futuros (cadeado). | Obrigatório |
+| RF-29 | Tela Minha história: banner da jornada, escolha da história (cenário) e os capítulos dela: concluídos (check verde), atual (borda roxa + progresso) e futuros (cadeado). Dá para ver os capítulos de qualquer história sem trocar a ativa. | Obrigatório |
 | RF-30 | Trocar de história; o progresso de cada história fica salvo e é retomado ao voltar para ela. | Obrigatório |
 | RF-31 | Escolha narrativa de 2 opções no fim de alguns capítulos, registrada na linha do tempo. | **Backlog** (fora da v1, decidido em 2026-10-02) |
 
@@ -118,7 +118,7 @@ São **40 requisitos em 10 módulos**. *Obrigatório* bloqueia o lançamento; *D
 
 ## 3. Regras de negócio
 
-Todo check vale EXP e moedas pela dificuldade do item, e qualquer tipo de item conta 1 passo para o capítulo. Os valores abaixo são o ponto de partida e ficam em configuração no back-end (tabela `game_config`), para ajustar sem publicar o app de novo.
+Todo check vale EXP e moedas pela dificuldade do item. Cada nível ganho conclui um capítulo da história ativa. Os valores abaixo são o ponto de partida e ficam em configuração no back-end (tabela `game_config`), para ajustar sem publicar o app de novo.
 
 | Parâmetro | Valor inicial |
 |---|---|
@@ -126,7 +126,7 @@ Todo check vale EXP e moedas pela dificuldade do item, e qualquer tipo de item c
 | Moedas por check (Fácil / Médio / Difícil) | 1 / 2 / 4 |
 | Bônus ao subir de nível | 10 moedas |
 | Checks de hábito por dia | Sem limite: todo check rende EXP e moedas |
-| Checks para completar o capítulo `n` | `10 + 5 × (n − 1)`, máximo 40 |
+| Capítulo | Cada nível ganho conclui um capítulo da história ativa (o progresso do capítulo é a EXP dentro do nível) |
 | Capítulos por história na v1 | 5 |
 | Virada do dia | 00:00 no fuso salvo no perfil do usuário |
 | Faixas da cena do QG | manhã 05h–12h, tarde 12h–18h, noite 18h–05h |
@@ -137,14 +137,15 @@ Todo check vale EXP e moedas pela dificuldade do item, e qualquer tipo de item c
 
 - **Diário:** um check por dia agendado. Se um dia agendado termina sem check, o item aparece como atrasado no dia seguinte e a sequência zera. Dias não agendados não quebram a sequência. Marcar um diário atrasado conta para o dia de hoje.
 - **Tarefa:** um check único. Depois de marcada, sai da lista em 600 ms e vai para o histórico. Uma tarefa vencida continua valendo o EXP cheio (sem penalidade na v1).
-- **Hábito:** pode ser marcado várias vezes por dia. Cada check soma no contador e rende EXP, moedas e um passo do capítulo, sem limite diário.
+- **Hábito:** pode ser marcado várias vezes por dia. Cada check soma no contador e rende EXP e moedas, sem limite diário.
 
 ### Desmarcar e progressão
 
-- Só é possível desmarcar **no mesmo dia** do check. A ação reverte o EXP, as moedas e o passo do capítulo daquele check.
+- Só é possível desmarcar **no mesmo dia** do check. A ação reverte o EXP e as moedas daquele check. No app, o próprio check desmarca ao tocar (só para checks feitos neste aparelho no mesmo dia).
 - O **nível nunca cai**: se a reversão passar do início do nível, o EXP para no mínimo do nível atual. Conquistas já ganhas não são removidas, e o banner não anima recuo na v1.
-- EXP, nível e moedas são **globais**. O progresso de capítulo é **separado por história**.
-- A posição do personagem no banner é o progresso do capítulo: 0% na borda direita e 100% na esquerda. Ao chegar a 100%, o capítulo fecha, o banner faz o fade e o modal do capítulo abre.
+- EXP, nível e moedas são **globais**. O capítulo atual (e os concluídos) é **separado por história**.
+- **História = cenário** (2026-10-13): são 6 histórias, uma por cenário do banner, com 5 capítulos cada. Trocar de história é livre e preserva o progresso de cada uma; os capítulos concluídos ficam desbloqueados. O cenário das abas é o da história ativa; o cenário do QG (Home) é escolha à parte, só no aparelho.
+- **Capítulo = nível** (2026-10-13): cada nível ganho conclui o capítulo atual da história ativa e abre o seguinte (vários níveis num check concluem vários capítulos). A posição do personagem no banner é a EXP dentro do nível; ao subir de nível ele chega ao portal e espera, e a cena só troca (fade) no check seguinte. Não existe mais contagem de checks por capítulo.
 - Moedas só acumulam na v1, sem loja. O item Stats do Perfil fica bloqueado até o nível 10.
 
 ### Catálogo inicial de conquistas
@@ -167,11 +168,11 @@ Todo check vale EXP e moedas pela dificuldade do item, e qualquer tipo de item c
 Pontos que a especificação deixava abertos. Cada um vira teste no módulo `progression` e entra no ADR-004.
 
 **Desmarcar e progressão**
-- **Capítulo fechado é definitivo:** o check que fechou o capítulo (e os anteriores) não pode ser desmarcado; a API responde `409` com `code: CHECK_LOCKED`. Só checks do capítulo ainda aberto revertem o passo.
+- **Capítulo fechado é definitivo:** o check que subiu de nível (e fechou o capítulo), e os feitos antes dele no mesmo capítulo, não podem ser desmarcados; a API responde `409` com `code: CHECK_LOCKED`.
 - O bônus de 10 moedas por subir de nível **não é revertido** ao desmarcar, já que o nível nunca cai.
 - O EXP que sobra ao subir de nível é carregado para o próximo (`exp_in_level`); um check pode subir mais de um nível, e o modal mostra o nível final.
-- Ao concluir o capítulo 5, a história fica concluída: os checks seguem rendendo EXP e moedas, o progresso de capítulo não avança e o app oferece escolher outra história.
-- Hábito sem limite diário (decidido em 2026-10-02): cada check rende EXP, moedas e um passo do capítulo; desmarcar reverte o check específico (`checkId`).
+- Ao concluir o capítulo 5 (5º nível ganho na história), a história fica concluída: os checks seguem rendendo EXP e moedas, o capítulo não avança e o app oferece escolher outra história.
+- Hábito sem limite diário (decidido em 2026-10-02): cada check rende EXP e moedas; desmarcar reverte o check específico (`checkId`).
 
 **Diários, tarefas e itens**
 - Desmarcar diário restaura `last_checked_on` e a sequência anteriores (campo `streak_before` em `item_checks`). Desmarcar tarefa a devolve à lista (`completed_at` nulo).

@@ -5,7 +5,7 @@ import { Clock } from '../../common/clock.js';
 import { CurrentUserId } from '../../common/current-user.decorator.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { ItemsService } from '../items/items.service.js';
-import { checksParaCapitulo, diaLocal } from '../progression/domain/index.js';
+import { diaLocal, expParaNivel } from '../progression/domain/index.js';
 import { GameConfigService } from '../progression/game-config.service.js';
 import { StoriesService } from '../stories/stories.service.js';
 
@@ -29,11 +29,12 @@ export class HomeController {
     const now = this.clock.now();
     const hoje = diaLocal(now, user.timezone);
 
-    const [dailies, todos, active, config] = await Promise.all([
+    const [dailies, todos, active, config, stats] = await Promise.all([
       this.items.list(userId, 'daily', undefined),
       this.items.list(userId, 'todo', undefined),
       this.stories.active(this.prisma, userId),
       this.gameConfig.load(),
+      this.prisma.userStats.findUniqueOrThrow({ where: { userId } }),
     ]);
 
     const pendingDailies = dailies.filter((item) => !item.doneToday);
@@ -54,8 +55,8 @@ export class HomeController {
         name: active.story.name,
         chapter: active.progress.chapter,
         chapterTitle: chapter?.title ?? '',
-        checksInChapter: active.progress.checksInChapter,
-        requiredChecks: checksParaCapitulo(active.progress.chapter, config),
+        expInLevel: stats.expInLevel,
+        expForNextLevel: expParaNivel(stats.level, config),
         completed: active.progress.completed,
       };
     }

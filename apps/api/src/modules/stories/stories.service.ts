@@ -4,7 +4,7 @@ import { ERROR_CODES, type StorySummary, type Timeline } from '@nextjourney/cont
 import { AppError } from '../../common/app-error.js';
 import type { Prisma, Story, StoryProgress } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { checksParaCapitulo } from '../progression/domain/index.js';
+import { expParaNivel } from '../progression/domain/index.js';
 import { GameConfigService } from '../progression/game-config.service.js';
 
 export type ActiveStory = { story: Story; progress: StoryProgress };
@@ -51,6 +51,7 @@ export class StoriesService {
       themeColor: story.themeColor,
       description: story.description,
       chapterCount: story._count.chapters,
+      currentChapter: progress.find((entry) => entry.storyId === story.id)?.chapter ?? 1,
       chaptersCompleted: completedByStory.get(story.id) ?? 0,
       isActive: progress.some((entry) => entry.storyId === story.id && entry.isActive),
     }));
@@ -78,23 +79,43 @@ export class StoriesService {
     return summary;
   }
 
-  /** Minha história (RF-29). O texto só aparece nos capítulos já concluídos. */
-  async timeline(userId: string): Promise<Timeline> {
+  /**
+   * Minha história (RF-29). Sem `slug`, a história ativa; com `slug`, qualquer história do catálogo.
+   * O texto só aparece nos capítulos já concluídos; o progresso (EXP do nível) só no capítulo atual
+   * da história ativa.
+   */
+  async timeline(userId: string, slug?: string): Promise<Timeline> {
     const active = await this.active(this.prisma, userId);
-    if (!active) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Nenhuma história escolhida');
-    const config = await this.gameConfig.load();
-    const chapters = await this.prisma.chapter.findMany({
-      where: { storyId: active.story.id },
-      orderBy: { number: 'asc' },
+    const story = slug
+      ? await this.prisma.story.findUnique({ where: { slug } })
+      : (active?.story ?? null);
+    if (!story) {
+      throw new AppError(
+        404,
+        ERROR_CODES.NOT_FOUND,
+        slug ? 'História não encontrada' : 'Nenhuma história escolhida',
+      );
+    }
+    const isActive = active?.story.id === story.id;
+    const progress = await this.prisma.storyProgress.findUnique({
+      where: { userId_storyId: { userId, storyId: story.id } },
     });
-    const summary = (await this.list(userId)).find((entry) => entry.slug === active.story.slug);
+    const [chapters, stats, config, summaries] = await Promise.all([
+      this.prisma.chapter.findMany({ where: { storyId: story.id }, orderBy: { number: 'asc' } }),
+      this.prisma.userStats.findUniqueOrThrow({ where: { userId } }),
+      this.gameConfig.load(),
+      this.list(userId),
+    ]);
+    const summary = summaries.find((entry) => entry.slug === story.slug);
     if (!summary) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'História não encontrada');
+    const currentNumber = progress?.chapter ?? 1;
 
     return {
       story: summary,
       chapters: chapters.map((chapter) => {
-        const completed = active.progress.completed || chapter.number < active.progress.chapter;
-        const current = !active.progress.completed && chapter.number === active.progress.chapter;
+        const completed = (progress?.completed ?? false) || chapter.number < currentNumber;
+        const current = !completed && chapter.number === currentNumber;
+        const showProgress = current && isActive;
         return {
           number: chapter.number,
           title: chapter.title,
@@ -103,8 +124,8 @@ export class StoriesService {
             : current
               ? ('current' as const)
               : ('locked' as const),
-          requiredChecks: checksParaCapitulo(chapter.number, config),
-          checksInChapter: current ? active.progress.checksInChapter : null,
+          expInLevel: showProgress ? stats.expInLevel : null,
+          expForNextLevel: showProgress ? expParaNivel(stats.level, config) : null,
           text: completed ? chapter.text : null,
         };
       }),

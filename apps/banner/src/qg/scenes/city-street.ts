@@ -4,12 +4,12 @@ import type { Light, SceneEnv } from './types';
 import { SCENE_W } from './types';
 
 /** Linhas da avenida (y de tela). O personagem anda na calçada, com os pés em `groundY` da cena. */
-export const FAR_SIDEWALK = 142;
-export const ROAD_TOP = 147;
-export const ROAD_MID = 160;
-export const CURB = 172;
+export const FAR_SIDEWALK = 140;
+export const ROAD_TOP = 146;
+export const ROAD_MID = 163;
+export const CURB = 179;
 const SIDEWALK_END = 220;
-const LAMP_BASE = 186;
+const LAMP_BASE = 188;
 const STOP_BASE = 188;
 const OUT = '#14161c';
 
@@ -62,6 +62,8 @@ type Car = {
   dir: 1 | -1;
   model: Model;
   color: string;
+  /** Tamanho do desenho: a faixa de trás é um pouco menor, para dar profundidade. */
+  scale: number;
 };
 
 const MODELS: readonly Model[] = ['hatch', 'sedan', 'van'];
@@ -77,14 +79,15 @@ const CAR_COLORS = [
   '#b8bec9',
   '#17a2b8',
 ];
+/** Comprimento de cada modelo em unidades (multiplicado pela escala da faixa). */
 const LENGTH: Record<Model, number> = { hatch: 28, sedan: 34, van: 34 };
 
-/** Faixa da avenida: o carro da faixa de cima vai com o personagem; o da de baixo vem contra. */
+/** Faixa da avenida: a de cima vai com o personagem; a de baixo vem contra. */
 const LANES = [
-  { y: ROAD_MID - 1, dir: 1 as const, speed: 110, offset: 0 },
-  { y: CURB - 1, dir: -1 as const, speed: 130, offset: 700 },
+  { y: ROAD_MID - 2, dir: 1 as const, speed: 110, offset: 0, scale: 2.3 },
+  { y: CURB - 6, dir: -1 as const, speed: 130, offset: 700, scale: 2.8 },
 ];
-const TRAFFIC_PERIOD = 1500;
+const TRAFFIC_PERIOD = 1700;
 const SLOTS = 3;
 
 /** Número fixo entre 0 e 1 para a mesma entrada: modelo, cor e ausência do carro sem sortear a cada quadro. */
@@ -103,14 +106,14 @@ export function traffic(env: SceneEnv): Car[] {
     for (let slot = 0; slot < SLOTS; slot++) {
       const raw =
         lane.offset + slot * (TRAFFIC_PERIOD / SLOTS) + lane.dir * lane.speed * env.t - env.scroll;
-      const cycle = Math.floor((raw + 60) / TRAFFIC_PERIOD);
+      const cycle = Math.floor((raw + 120) / TRAFFIC_PERIOD);
       const seed = slot * 7 + laneIndex * 3;
-      if (hash(seed, cycle, 1) > 0.78) continue;
+      if (hash(seed, cycle, 1) > 0.8) continue;
       const model = MODELS[Math.floor(hash(seed, cycle, 2) * MODELS.length)] ?? 'hatch';
       const color = CAR_COLORS[Math.floor(hash(seed, cycle, 3) * CAR_COLORS.length)] ?? '#d93a3a';
-      const x = raw - cycle * TRAFFIC_PERIOD - 60 + (hash(seed, cycle, 4) - 0.5) * 80;
-      if (x < -50 || x > SCENE_W + 10) continue;
-      out.push({ x, y: lane.y, dir: lane.dir, model, color });
+      const x = raw - cycle * TRAFFIC_PERIOD - 120 + (hash(seed, cycle, 4) - 0.5) * 80;
+      if (x < -130 || x > SCENE_W + 10) continue;
+      out.push({ x, y: lane.y, dir: lane.dir, model, color, scale: lane.scale });
     }
   });
   return out;
@@ -130,7 +133,7 @@ function mix(hex: string, amount: number): string {
 
 type Part = [dx: number, dy: number, w: number, h: number, kind: 'body' | 'glass'];
 
-/** Peças de cada modelo, de lado e virado para a direita; y sobe a partir das rodas. */
+/** Peças de cada modelo, de lado e virado para a direita; y sobe a partir das rodas (em unidades). */
 const SHAPES: Record<Model, Part[]> = {
   hatch: [
     [0, -8, 28, 5, 'body'],
@@ -152,39 +155,153 @@ const SHAPES: Record<Model, Part[]> = {
     [21, -14, 5, 5, 'glass'],
   ],
 };
-const WHEELS: Record<Model, [number, number]> = { hatch: [4, 19], sedan: [5, 25], van: [5, 24] };
+const WHEELS: Record<Model, [number, number]> = { hatch: [6, 22], sedan: [7, 27], van: [7, 27] };
+
+/** Roda redonda com pneu, aro e cubo. */
+function wheel(env: SceneEnv, cx: number, cy: number, radius: number): void {
+  const { ctx } = env;
+  ctx.fillStyle = OUT;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius + 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#25262d';
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#b8bcc6';
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius * 0.55, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#6a6e78';
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius * 0.22, 0, Math.PI * 2);
+  ctx.fill();
+}
 
 function drawCar(env: SceneEnv, car: Car): void {
-  const length = LENGTH[car.model];
-  const at = (dx: number, w: number): number =>
-    Math.round(car.x + (car.dir > 0 ? dx : length - dx - w));
+  const S = car.scale;
+  const length = Math.round(LENGTH[car.model] * S);
+  const flip = (dx: number, w: number): number =>
+    Math.round(car.x + (car.dir > 0 ? dx * S : length - (dx + w) * S));
   const shape = SHAPES[car.model];
-  rect(env, car.x + 1, car.y, length - 2, 1, 'rgba(0,0,0,0.3)');
+  // sombra no asfalto
+  rect(env, car.x + 3, car.y - 1, length - 6, 3, 'rgba(0,0,0,0.28)');
   for (const [dx, dy, w, h, kind] of shape) {
-    if (kind === 'body') rect(env, at(dx - 1, w + 2), car.y + dy - 1, w + 2, h + 2, OUT);
+    if (kind === 'body') rect(env, flip(dx, w) - 1, car.y + dy * S - 1, w * S + 2, h * S + 2, OUT);
+  }
+  const wheelR = Math.round(2.6 * S);
+  const wheelY = car.y - wheelR;
+  for (const wx of WHEELS[car.model]) {
+    // cava da roda escura por baixo da carroceria
+    rect(env, flip(wx - 3.2, 6.4), wheelY - wheelR - 2, Math.round(6.4 * S), wheelR + 6, OUT);
   }
   for (const [dx, dy, w, h, kind] of shape) {
     if (kind === 'body') {
-      rect(env, at(dx, w), car.y + dy, w, h, car.color);
-      rect(env, at(dx, w), car.y + dy, w, 1, mix(car.color, 0.35));
+      rect(env, flip(dx, w), car.y + dy * S, w * S, h * S, car.color);
+      rect(env, flip(dx, w), car.y + dy * S, w * S, 2, mix(car.color, 0.38));
     } else {
-      rect(env, at(dx, w), car.y + dy, w, h, '#9fd4f0');
-      rect(env, at(dx, w), car.y + dy, w, 1, '#d8f0fb');
+      rect(env, flip(dx, w), car.y + dy * S, w * S, h * S, '#9fd4f0');
+      rect(env, flip(dx, w), car.y + dy * S, w * S, 2, '#e4f5fd');
+      rect(env, flip(dx, w), car.y + dy * S + h * S - 2, w * S, 2, '#6aa6c8');
     }
   }
-  rect(env, at(0, length), car.y - 4, length, 1, mix(car.color, -0.3));
-  for (const wheel of WHEELS[car.model]) {
-    rect(env, at(wheel - 1, 7), car.y - 6, 7, 6, OUT);
-    rect(env, at(wheel, 5), car.y - 5, 5, 5, '#2a2c33');
-    rect(env, at(wheel + 1, 3), car.y - 4, 3, 3, '#b8bcc6');
+  // faixa escura da parte de baixo, soleira e linhas das portas
+  const lowerTop = car.model === 'van' ? -15 : -8;
+  const lowerH = car.model === 'van' ? 12 : 5;
+  rect(env, flip(0, LENGTH[car.model]), car.y - 3.2 * S, length, 2, mix(car.color, -0.35));
+  rect(
+    env,
+    flip(0, LENGTH[car.model]),
+    car.y + (lowerTop + lowerH * 0.55) * S,
+    length,
+    1,
+    mix(car.color, -0.2),
+  );
+  const seams = car.model === 'van' ? [9, 17] : [9, 18];
+  for (const sx of seams) {
+    rect(
+      env,
+      flip(sx, 0.4),
+      car.y + lowerTop * S,
+      1,
+      Math.round(lowerH * S) - 2,
+      mix(car.color, -0.45),
+    );
+    rect(
+      env,
+      flip(sx + 1, 2),
+      car.y + (lowerTop + 1.4) * S,
+      Math.round(1.2 * S),
+      2,
+      mix(car.color, 0.5),
+    );
   }
-  rect(env, at(length - 2, 2), car.y - 7, 2, 2, '#fff2b0');
-  rect(env, at(0, 1), car.y - 7, 1, 2, '#e0302c');
+  for (const wx of WHEELS[car.model])
+    wheel(env, flip(wx - 0.2, 0) + Math.round(wheelR * 0.0), wheelY, wheelR);
+  // faróis e lanternas, para-choques
+  const frontX = car.dir > 0 ? car.x + length - 5 : car.x;
+  const rearX = car.dir > 0 ? car.x : car.x + length - 3;
+  rect(env, frontX, car.y + (lowerTop + lowerH * 0.2) * S, 5, 4, '#fff2b0');
+  rect(env, rearX, car.y + (lowerTop + lowerH * 0.2) * S, 3, 5, '#e0302c');
+  rect(env, car.dir > 0 ? car.x + length - 3 : car.x, car.y - 4.2 * S, 3, 3, '#6a6e78');
+  rect(env, car.dir > 0 ? car.x : car.x + length - 3, car.y - 4.2 * S, 3, 3, '#6a6e78');
 }
 
 export function drawTraffic(env: SceneEnv, lane: 'far' | 'near'): void {
   const y = lane === 'far' ? LANES[0]?.y : LANES[1]?.y;
   for (const car of traffic(env)) if (car.y === y) drawCar(env, car);
+}
+
+/** Onde o ônibus fica parado: no meio-fio, junto do ponto (anda com a calçada). */
+const BUS_LENGTH = 132;
+const BUS_BASE = CURB - 2;
+
+function busLeft(env: SceneEnv): number {
+  const margin = 220;
+  const center =
+    ((((BUS_STOP_WORLD - env.scroll + margin) % STREET_PERIOD) + STREET_PERIOD) % STREET_PERIOD) -
+    margin;
+  return Math.round(center - BUS_LENGTH / 2);
+}
+
+/** Ônibus parado no ponto, virado para a esquerda (mão da faixa de baixo). Desenhado por último na rua: os carros passam atrás. */
+export function drawBus(env: SceneEnv): void {
+  const x = busLeft(env);
+  if (x > SCENE_W + 10 || x + BUS_LENGTH < -10) return;
+  const night = env.time === 'night';
+  const body = '#2f6fe0';
+  const y = BUS_BASE;
+  // virado para a esquerda: a frente é o lado esquerdo
+  const at = (dx: number, w: number): number => x + BUS_LENGTH - dx - w;
+  rect(env, x + 4, y - 1, BUS_LENGTH - 8, 3, 'rgba(0,0,0,0.3)');
+  rect(env, x - 1, y - 57, BUS_LENGTH + 2, 52, OUT);
+  rect(env, x, y - 56, BUS_LENGTH, 50, body);
+  rect(env, x, y - 56, BUS_LENGTH, 3, mix(body, 0.4));
+  rect(env, x, y - 20, BUS_LENGTH, 4, '#f4f4f6');
+  rect(env, x, y - 12, BUS_LENGTH, 6, mix(body, -0.4));
+  // ar-condicionado no teto
+  rect(env, at(40, 44) - 1, y - 61, 46, 6, OUT);
+  rect(env, at(40, 44), y - 60, 44, 4, '#c9ced6');
+  // janelas
+  for (let i = 0; i < 7; i++) {
+    const wx = 18 + i * 14;
+    rect(env, at(wx, 11), y - 50, 11, 18, night ? '#ffe9a8' : '#9fd4f0');
+    rect(env, at(wx, 11), y - 50, 11, 2, night ? '#fff6d0' : '#e4f5fd');
+  }
+  // porta da frente e para-brisa
+  rect(env, at(2, 12), y - 50, 12, 36, night ? '#ffe9a8' : '#9fd4f0');
+  rect(env, at(8, 1), y - 50, 1, 36, body);
+  // letreiro do destino
+  rect(env, at(2, 20), y - 54, 20, 4, OUT);
+  for (let k = 0; k < 6; k++) rect(env, at(4 + k * 3, 2), y - 53, 2, 2, '#ffb000');
+  // rodas e cavas
+  for (const wx of [24, 100]) {
+    rect(env, at(wx - 10, 20), y - 20, 20, 20, OUT);
+    wheel(env, at(wx - 8, 0) + 8, y - 9, 8.5);
+  }
+  // faróis e lanterna
+  rect(env, at(0, 4), y - 16, 4, 6, '#fff2b0');
+  rect(env, at(BUS_LENGTH - 3, 3), y - 16, 3, 6, '#e0302c');
 }
 
 /** Ponto de ônibus: abrigo com vidro, banco e placa azul com o ônibus desenhado. */
@@ -234,9 +351,18 @@ export function streetLights(env: SceneEnv): Light[] {
   const stop = scrolled(BUS_STOP_WORLD, env.scroll, STREET_PERIOD);
   out.push({ x: stop, y: STOP_BASE - 34, radius: 48, color: [255, 240, 190], intensity: 0.5 });
   for (const car of traffic(env)) {
-    const length = LENGTH[car.model];
-    const front = car.dir > 0 ? car.x + length + 6 : car.x - 6;
-    out.push({ x: front, y: car.y - 6, radius: 30, color: [255, 238, 180], intensity: 0.7 });
+    const length = LENGTH[car.model] * car.scale;
+    const front = car.dir > 0 ? car.x + length + 8 : car.x - 8;
+    out.push({ x: front, y: car.y - 9, radius: 44, color: [255, 238, 180], intensity: 0.75 });
   }
+  const bus = busLeft(env);
+  out.push({ x: bus + 20, y: BUS_BASE - 14, radius: 44, color: [255, 238, 180], intensity: 0.7 });
+  out.push({
+    x: bus + BUS_LENGTH / 2,
+    y: BUS_BASE - 34,
+    radius: 70,
+    color: [255, 235, 170],
+    intensity: 0.4,
+  });
   return out.filter((light) => light.x > -80 && light.x < SCENE_W + 80);
 }

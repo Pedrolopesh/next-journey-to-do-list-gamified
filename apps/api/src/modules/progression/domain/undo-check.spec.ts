@@ -18,7 +18,7 @@ const inicial: PlayerState = {
   expTotal: 0,
   coins: 0,
   totalChecks: 0,
-  story: { chapter: 1, checksInChapter: 0, completed: false },
+  story: { chapter: 1, completed: false },
 };
 
 const input = (difficulty: Difficulty, localDate = HOJE): CheckInput => ({
@@ -29,7 +29,7 @@ const input = (difficulty: Difficulty, localDate = HOJE): CheckInput => ({
 });
 
 describe('desfazerCheck', () => {
-  it('no mesmo dia devolve EXP, moedas e o passo do capítulo', () => {
+  it('no mesmo dia devolve EXP e moedas', () => {
     const feito = aplicarCheck(inicial, input('medium'), config);
     const undo = desfazerCheck(feito.state, feito.record, HOJE);
     expect(undo.ok).toBe(true);
@@ -46,8 +46,13 @@ describe('desfazerCheck', () => {
     });
   });
 
-  it('o nível nunca cai e o bônus de moedas não é revertido', () => {
-    const quase: PlayerState = { ...inicial, expInLevel: 45, expTotal: 45 };
+  it('com a história concluída, o nível nunca cai e o bônus de moedas não é revertido', () => {
+    const quase: PlayerState = {
+      ...inicial,
+      expInLevel: 45,
+      expTotal: 45,
+      story: { chapter: 5, completed: true },
+    };
     const feito = aplicarCheck(quase, input('easy'), config); // sobe para o nível 2
     expect(feito.state.level).toBe(2);
     const undo = desfazerCheck(feito.state, feito.record, HOJE);
@@ -59,12 +64,10 @@ describe('desfazerCheck', () => {
     expect(undo.summary.expDevolvido).toBe(0);
   });
 
-  it('o check que fechou o capítulo não pode ser desmarcado', () => {
-    const quase: PlayerState = {
-      ...inicial,
-      story: { chapter: 1, checksInChapter: 9, completed: false },
-    };
+  it('o check que subiu de nível (fechou o capítulo) não pode ser desmarcado', () => {
+    const quase: PlayerState = { ...inicial, expInLevel: 45, expTotal: 45 };
     const feito = aplicarCheck(quase, input('easy'), config);
+    expect(feito.record.closedChapter).toBe(true);
     expect(desfazerCheck(feito.state, feito.record, HOJE)).toEqual({
       ok: false,
       motivo: 'CAPITULO_FECHADO',
@@ -72,12 +75,9 @@ describe('desfazerCheck', () => {
   });
 
   it('check de um capítulo que já fechou também fica travado', () => {
-    const quase: PlayerState = {
-      ...inicial,
-      story: { chapter: 1, checksInChapter: 8, completed: false },
-    };
-    const primeiro = aplicarCheck(quase, input('easy'), config); // 9 de 10
-    const fechou = aplicarCheck(primeiro.state, input('easy'), config); // fecha
+    const quase: PlayerState = { ...inicial, expInLevel: 40, expTotal: 40 };
+    const primeiro = aplicarCheck(quase, input('easy'), config); // 45 de 50
+    const fechou = aplicarCheck(primeiro.state, input('easy'), config); // sobe de nível
     expect(fechou.summary.capituloConcluido).toBe(true);
     expect(desfazerCheck(fechou.state, primeiro.record, HOJE)).toEqual({
       ok: false,
@@ -88,7 +88,7 @@ describe('desfazerCheck', () => {
   it('check depois da história concluída (não conta para capítulo) pode ser desfeito', () => {
     const concluida: PlayerState = {
       ...inicial,
-      story: { chapter: 5, checksInChapter: 30, completed: true },
+      story: { chapter: 5, completed: true },
     };
     const feito = aplicarCheck(concluida, input('hard'), config);
     const undo = desfazerCheck(feito.state, feito.record, HOJE);
@@ -117,22 +117,16 @@ const stateArb = fc
     totalChecks: fc.integer({ min: 0, max: 5000 }),
     chapter: fc.integer({ min: 1, max: 5 }),
     seed: fc.double({ min: 0, max: 0.999, noNaN: true }),
-    chapterSeed: fc.double({ min: 0, max: 0.999, noNaN: true }),
   })
-  .map(({ level, coins, totalChecks, chapter, seed, chapterSeed }): PlayerState => {
+  .map(({ level, coins, totalChecks, chapter, seed }): PlayerState => {
     const expInLevel = Math.floor(seed * expParaNivel(level));
-    const required = Math.min(10 + 5 * (chapter - 1), 40);
     return {
       level,
       expInLevel,
       expTotal: expInLevel + 1000,
       coins,
       totalChecks: Math.max(totalChecks, 1),
-      story: {
-        chapter,
-        checksInChapter: Math.floor(chapterSeed * required),
-        completed: false,
-      },
+      story: { chapter, completed: false },
     };
   });
 

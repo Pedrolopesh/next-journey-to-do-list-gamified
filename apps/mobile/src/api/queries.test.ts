@@ -6,7 +6,7 @@ vi.mock('./endpoints', () => ({}));
 
 const { chapterProgress } = await import('./queries');
 
-const me = (checks: number, required: number, completed = false): MeResponse => ({
+const me = (exp: number, next: number): MeResponse => ({
   user: {
     id: '3f1f4c2e-5a7b-4f3e-9c1d-2b8a6d4e7f10',
     name: 'P',
@@ -16,13 +16,12 @@ const me = (checks: number, required: number, completed = false): MeResponse => 
   },
   player: {
     level: 1,
-    expInLevel: 0,
+    expInLevel: exp,
     expTotal: 0,
     coins: 0,
     totalChecks: 0,
-    story: { chapter: 1, checksInChapter: checks, completed },
-    expForNextLevel: 50,
-    requiredChecksInChapter: required,
+    story: { chapter: 1, completed: false },
+    expForNextLevel: next,
   },
   character: null,
   story: null,
@@ -30,12 +29,12 @@ const me = (checks: number, required: number, completed = false): MeResponse => 
 });
 
 describe('chapterProgress', () => {
-  it('é a fração de checks do capítulo', () => {
-    expect(chapterProgress(me(5, 10))).toBe(0.5);
-    expect(chapterProgress(me(0, 10))).toBe(0);
+  it('é a fração de EXP dentro do nível (cada nível conclui um capítulo)', () => {
+    expect(chapterProgress(me(25, 50))).toBe(0.5);
+    expect(chapterProgress(me(0, 50))).toBe(0);
   });
-  it('sem dados vale 0 e história concluída vale 1', () => {
+  it('sem dados vale 0 e nunca passa de 1', () => {
     expect(chapterProgress(undefined)).toBe(0);
-    expect(chapterProgress(me(30, 30, true))).toBe(1);
+    expect(chapterProgress(me(80, 50))).toBe(1);
   });
 });

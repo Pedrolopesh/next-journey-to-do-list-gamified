@@ -9,9 +9,9 @@ import { AchievementsService } from '../achievements/achievements.service.js';
 import {
   aplicarCheck,
   calcularStreak,
-  checksParaCapitulo,
   desfazerCheck,
   diaLocal,
+  expParaNivel,
 } from '../progression/domain/index.js';
 import { GameConfigService } from '../progression/game-config.service.js';
 import { NO_STORY, statsColumns, toPlayerState } from '../progression/player-state.js';
@@ -70,11 +70,7 @@ export class ChecksService {
       const config = await this.gameConfig.load(tx);
       const active = await this.stories.active(tx, userId);
       const storyProgress = active
-        ? {
-            chapter: active.progress.chapter,
-            checksInChapter: active.progress.checksInChapter,
-            completed: active.progress.completed,
-          }
+        ? { chapter: active.progress.chapter, completed: active.progress.completed }
         : NO_STORY;
 
       const applied = aplicarCheck(
@@ -84,22 +80,26 @@ export class ChecksService {
       );
       const { summary, record } = applied;
 
-      // Capítulo concluído: grava a conclusão e devolve o conteúdo do modal (RF-28)
+      // Capítulos concluídos (um por nível ganho): grava as conclusões e devolve o modal do último (RF-28)
       let completedChapter: CheckResult['completedChapter'] = null;
-      if (active && record.closedChapter && record.chapterAtCheck !== null) {
-        const chapter = await tx.chapter.findUnique({
-          where: { storyId_number: { storyId: active.story.id, number: record.chapterAtCheck } },
+      if (active && summary.capitulosConcluidos.length > 0) {
+        const chapters = await tx.chapter.findMany({
+          where: { storyId: active.story.id, number: { in: summary.capitulosConcluidos } },
+          orderBy: { number: 'asc' },
         });
-        if (chapter) {
+        for (const chapter of chapters) {
           await tx.chapterCompletion.upsert({
             where: { userId_chapterId: { userId, chapterId: chapter.id } },
             create: { userId, chapterId: chapter.id, completedAt: now },
             update: {},
           });
+        }
+        const last = chapters.at(-1);
+        if (last) {
           completedChapter = {
-            number: chapter.number,
-            title: chapter.title,
-            text: chapter.text,
+            number: last.number,
+            title: last.title,
+            text: last.text,
             storyCompleted: summary.historiaConcluida,
           };
         }
@@ -111,7 +111,6 @@ export class ChecksService {
           where: { userId_storyId: { userId, storyId: active.story.id } },
           data: {
             chapter: applied.state.story.chapter,
-            checksInChapter: applied.state.story.checksInChapter,
             completed: applied.state.story.completed,
           },
         });
@@ -125,8 +124,8 @@ export class ChecksService {
         leveledUp: summary.subiuDeNivel,
         chapterProgress: {
           chapter: summary.progressoCapitulo.capitulo,
-          checksInChapter: summary.progressoCapitulo.checks,
-          requiredChecks: summary.progressoCapitulo.necessarios,
+          expInLevel: summary.progressoCapitulo.expNoNivel,
+          expForNextLevel: summary.progressoCapitulo.expParaProximo,
         },
         chapterCompleted: summary.capituloConcluido,
         completedChapter,
@@ -210,11 +209,7 @@ export class ChecksService {
           })
         : null;
       const storyProgress = progress
-        ? {
-            chapter: progress.chapter,
-            checksInChapter: progress.checksInChapter,
-            completed: progress.completed,
-          }
+        ? { chapter: progress.chapter, completed: progress.completed }
         : NO_STORY;
 
       const stats = await tx.userStats.findUniqueOrThrow({ where: { userId } });
@@ -237,12 +232,6 @@ export class ChecksService {
       }
 
       await tx.userStats.update({ where: { userId }, data: statsColumns(undone.state) });
-      if (progress && check.countsForChapter) {
-        await tx.storyProgress.update({
-          where: { userId_storyId: { userId, storyId: progress.storyId } },
-          data: { checksInChapter: undone.state.story.checksInChapter },
-        });
-      }
       await tx.itemCheck.update({ where: { id: checkId }, data: { revertedAt: now } });
 
       if (item.type === 'daily') {
@@ -262,8 +251,8 @@ export class ChecksService {
         leveledUp: false,
         chapterProgress: {
           chapter: story.chapter,
-          checksInChapter: story.checksInChapter,
-          requiredChecks: checksParaCapitulo(story.chapter, config),
+          expInLevel: undone.state.expInLevel,
+          expForNextLevel: expParaNivel(undone.state.level, config),
         },
         chapterCompleted: false,
         completedChapter: null,

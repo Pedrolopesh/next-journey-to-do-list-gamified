@@ -103,6 +103,11 @@ export async function chooseStory(slug: string): Promise<StorySummary> {
   return storySummarySchema.parse(data);
 }
 
+export async function fetchStoryTimeline(slug: string): Promise<Timeline> {
+  const { data } = await http.get<unknown>(`/stories/${encodeURIComponent(slug)}/timeline`);
+  return timelineSchema.parse(data);
+}
+
 export async function fetchTimeline(): Promise<Timeline> {
   const { data } = await http.get<unknown>('/me/story/timeline');
   return timelineSchema.parse(data);

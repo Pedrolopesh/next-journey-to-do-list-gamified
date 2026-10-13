@@ -5,7 +5,7 @@ import { colors, radius, size, softGlow, softGlowOutline } from '@/theme';
 type Props = {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   loading?: boolean;
   disabled?: boolean;
 };
@@ -35,16 +35,33 @@ export function Button({
           (inactive
             ? styles.secondaryInactive
             : softGlowOutline(colors.brand.primary, { pressed })),
+        // Sair e ações destrutivas: mesmo contorno do secundário, em vermelho
+        variant === 'danger' &&
+          (inactive ? styles.dangerInactive : softGlowOutline(colors.status.danger, { pressed })),
         pressed && styles.pressed,
         inactive && styles.disabled,
       ]}
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? colors.text.onPrimary : colors.brand.primaryLight}
+          color={
+            variant === 'primary'
+              ? colors.text.onPrimary
+              : variant === 'danger'
+                ? colors.status.danger
+                : colors.brand.primaryLight
+          }
         />
       ) : (
-        <Text style={[styles.label, variant !== 'primary' && styles.ghostLabel]}>{label}</Text>
+        <Text
+          style={[
+            styles.label,
+            variant !== 'primary' && styles.ghostLabel,
+            variant === 'danger' && styles.dangerLabel,
+          ]}
+        >
+          {label}
+        </Text>
       )}
     </Pressable>
   );
@@ -65,8 +82,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(124, 58, 237, 0.4)',
   },
   ghost: { backgroundColor: 'transparent' },
+  danger: { backgroundColor: 'transparent' },
+  dangerInactive: { borderWidth: 1.5, borderColor: 'rgba(239, 68, 68, 0.4)' },
   pressed: { transform: [{ scale: 0.98 }] },
   disabled: { opacity: 0.45 },
   label: { color: colors.text.onPrimary, fontSize: 15, fontWeight: '600' },
   ghostLabel: { color: colors.brand.primaryLight },
+  dangerLabel: { color: colors.status.danger },
 });
