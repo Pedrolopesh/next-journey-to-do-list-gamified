@@ -1,6 +1,7 @@
 - [x] Contrato: `journey` em `sceneKindSchema`
 - [x] Motor do QG: modo jornada, rolagem e velocidade por animação; animação de andar embutida
-- [x] Praia: `journey(env)` com céu, mar, ilha, areia e objetos que passam
+- [x] Praia: `journey(env)` com céu, mar, ilha, areia e objetos que passam, mais o portal do fim
+- [x] Progresso do capítulo em 6 paradas, corrida até a parada ao marcar item
 - [x] Controlador: `INIT journey` e testes
 - [x] Laboratório: modo "Jornada"
 - [x] App: `storyScenario`, seletor na Home, abas enviando `journey`, rótulo "Cidade"

@@ -209,7 +209,7 @@ const SEA = {
 };
 
 /** Posição da fogueira (só à noite) na distância percorrida. */
-const FIRE_WORLD = 700;
+const FIRE_WORLD = 520;
 
 /** Praia na jornada: céu e mar ao fundo se movem devagar, a areia e os objetos passam rápido. */
 function journey(env: SceneEnv): void {
@@ -258,17 +258,62 @@ function journey(env: SceneEnv): void {
     );
   }
   const at = (world: number): number => scrolled(world, env.scroll, JOURNEY_PERIOD);
-  palm(env, at(60), SAND_LANE, 1.6);
-  palm(env, at(380), SAND_LANE + 4, -1.4);
+  // Trechos variados da praia: cadeira ao lado da canga, duas cadeiras juntas, canga com cooler
+  palm(env, at(30), SAND_LANE, 1.6);
+  beachChair(env, at(140), SAND_LANE + 6);
+  towel(env, at(180), SAND_LANE - 12, 58, 14);
+  palm(env, at(330), SAND_LANE + 4, -1.4);
+  beachChair(env, at(420), SAND_LANE + 6);
+  beachChair(env, at(462), SAND_LANE + 6);
   palm(env, at(560), SAND_LANE, 1.2);
-  towel(env, at(230), SAND_LANE - 12, 58, 14);
-  cooler(env, at(300), SAND_LANE - 10);
-  beachChair(env, at(470), SAND_LANE + 6);
+  towel(env, at(640), SAND_LANE - 12, 58, 14);
+  cooler(env, at(712), SAND_LANE - 10);
   if (env.time === 'night') {
     const fireX = at(FIRE_WORLD);
     rect(env, fireX - 7, SAND_LANE + 4, 14, 3, '#5a3412');
     flame(env, fireX, SAND_LANE + 4, 2);
   }
+  if (env.arrivedFor !== null) portal(env, env.arrivedFor);
+}
+
+/** Portal no fim da jornada: abre aos poucos, com anel azul e roxo e um miolo que gira. */
+function portal(env: SceneEnv, since: number): void {
+  const { ctx } = env;
+  const open = Math.min(1, since / 0.9);
+  const cx = 350;
+  const cy = SAND_LANE - 22;
+  const rx = 15 * open;
+  const ry = 30 * open;
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(cx, SAND_LANE + 6, rx + 4, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const glowing = ctx.createRadialGradient(cx, cy, 2, cx, cy, ry + 14);
+  glowing.addColorStop(0, 'rgba(160,120,255,0.55)');
+  glowing.addColorStop(1, 'rgba(160,120,255,0)');
+  ctx.fillStyle = glowing;
+  ctx.fillRect(cx - ry - 14, cy - ry - 14, (ry + 14) * 2, (ry + 14) * 2);
+  ctx.fillStyle = '#2a1458';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx + 3, ry + 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#6b3fe0';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+  for (let i = 0; i < 4; i++) {
+    const turn = env.t * 1.6 + i * 1.57;
+    ctx.fillStyle = i % 2 ? '#a98bff' : '#45c8ff';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx * (0.85 - i * 0.18), ry * (0.85 - i * 0.18), turn, 0, Math.PI * 1.1);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#e9e0ff';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx * 0.2, ry * 0.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
 export const beach: SceneDef = {

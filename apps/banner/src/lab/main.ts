@@ -5,7 +5,7 @@ import {
   creditsFor,
   type Direction,
 } from '../qg/compose';
-import { createQgEngine, loadImage, type QgState } from '../qg/engine';
+import { createQgEngine, JOURNEY_STOPS, loadImage, type QgState } from '../qg/engine';
 import { SCENES } from '../qg/scenes';
 import { type TimeOfDay, TIMES } from '../qg/scenes/types';
 
@@ -73,6 +73,7 @@ const state: QgState = {
   direction: 'down',
   sceneId: 'cabin',
   journey: false,
+  stop: 0,
   time: 'afternoon',
 };
 
@@ -264,6 +265,14 @@ buttons<'still' | 'journey'>(
   (v) => {
     state.journey = v === 'journey';
     if (state.journey && state.anim === 'idle') state.anim = 'walk';
+  },
+);
+buttons<string>(
+  $('c-stop'),
+  Array.from({ length: JOURNEY_STOPS + 1 }, (_, n) => ({ value: String(n), label: String(n) })),
+  () => String(state.stop),
+  (v) => {
+    state.stop = Number(v);
   },
 );
 buttons<string>(

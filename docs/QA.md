@@ -34,10 +34,11 @@ Marque cada item e anote data, versão e aparelho no `docs/DIARIO.md`.
 - [ ] Sem internet, o check mostra erro claro e o item volta ao estado anterior (a fila offline é da Fase 7).
 
 ## 4c. Jornada das abas (Diários, Tarefas, Hábitos)
-- [ ] O banner mostra o personagem escolhido andando virado para a esquerda; na praia, o mar, a ilha, a areia e os objetos passam atrás dele.
+- [ ] O banner mostra o personagem escolhido andando no lado esquerdo; na praia, o mar, a ilha, a areia e os objetos passam atrás dele, variando (cadeira e canga, duas cadeiras, canga com cooler).
 - [ ] Home > Ambiente mostra "Cenário da história principal" abaixo do cenário do QG, sem a cabana e com "Cidade" no lugar de "Topo do prédio".
 - [ ] Trocar o cenário da história muda as três abas; a hora (automática ou fixa) vale na jornada.
-- [ ] Marcar um item faz o personagem correr por alguns segundos e voltar a andar.
+- [ ] Marcar um item que muda de parada faz o personagem correr até a parada (cenário acelera) e voltar a andar ali; são até 6 paradas.
+- [ ] Na última parada o personagem e o cenário param e um portal aparece no lado direito.
 - [ ] Na primeira abertura sem itens aparecem 5 diários, 5 tarefas e 5 hábitos de exemplo e um toast avisa.
 
 ## 4b. QG da Home (cenário e personagem)

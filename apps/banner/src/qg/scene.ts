@@ -4,7 +4,7 @@ import type { CharacterLayers } from '@nextjourney/contracts';
 
 import { catalog, loadTiles, sheetSrc } from './assets';
 import { selectionFromLayers } from './character-map';
-import { createQgEngine, type QgEngine } from './engine';
+import { createQgEngine, JOURNEY_STOPS, type QgEngine } from './engine';
 import { SCENES } from './scenes';
 import type { TimeOfDay } from './scenes/types';
 
@@ -21,13 +21,21 @@ export type QgScene = {
   setJourney: (journey: boolean) => void;
   setTime: (time: TimeOfDay) => void;
   setCharacter: (layers: CharacterLayers) => void;
-  /** Check feito: o personagem comemora por alguns instantes. */
-  celebrate: () => void;
+  /** Progresso do capítulo (0 a 1): na jornada vira a parada do personagem. */
+  setProgress: (progress: number, options?: { animate?: boolean }) => void;
+  /** Check feito: o personagem comemora; na jornada, corre até a parada do novo progresso. */
+  celebrate: (progress: number) => void;
   pause: () => void;
   resume: () => void;
   fadeOut: () => void;
   fadeIn: () => void;
 };
+
+/** Parada da jornada (0 a `JOURNEY_STOPS`) para o progresso do capítulo. */
+export function stopFor(progress: number): number {
+  if (progress >= 1) return JOURNEY_STOPS;
+  return Math.max(0, Math.floor(progress * JOURNEY_STOPS));
+}
 
 function isQgSceneId(id: string): boolean {
   return SCENES.some((scene) => scene.id === id);
@@ -57,6 +65,8 @@ export function createQgScene(root: HTMLElement): QgScene {
     sceneId: QG_DEFAULT_SCENE,
     time: 'afternoon' as TimeOfDay,
     journey: false,
+    stop: 0,
+    snap: true,
     layers: null as CharacterLayers | null,
   };
 
@@ -65,6 +75,9 @@ export function createQgScene(root: HTMLElement): QgScene {
     engine.state.sceneId = isQgSceneId(pending.sceneId) ? pending.sceneId : QG_DEFAULT_SCENE;
     engine.state.time = pending.time;
     engine.state.journey = pending.journey;
+    if (pending.snap) engine.placeHero(pending.stop);
+    else engine.state.stop = pending.stop;
+    pending.snap = false;
     if (!pending.journey && engine.state.anim === 'walk') engine.state.anim = 'idle';
     if (pending.journey && engine.state.anim === 'idle') engine.state.anim = 'walk';
     if (pending.layers) engine.state.selection = selectionFromLayers(pending.layers);
@@ -88,6 +101,7 @@ export function createQgScene(root: HTMLElement): QgScene {
             sceneId: QG_DEFAULT_SCENE,
             time: 'afternoon',
             journey: false,
+            stop: 0,
           },
           maxFps: 30,
           maxScale: 3,
@@ -131,7 +145,15 @@ export function createQgScene(root: HTMLElement): QgScene {
       pending.layers = layers;
       apply();
     },
-    celebrate() {
+    setProgress(progress, options) {
+      pending.stop = stopFor(progress);
+      pending.snap = !(options?.animate ?? true);
+      apply();
+    },
+    celebrate(progress) {
+      pending.stop = stopFor(progress);
+      pending.snap = false;
+      apply();
       if (!engine) return;
       engine.state.anim = 'run';
       clearTimeout(celebrateTimer);

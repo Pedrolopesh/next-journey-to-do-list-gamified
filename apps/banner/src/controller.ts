@@ -20,6 +20,7 @@ type Options = {
     | 'setTime'
     | 'setCharacter'
     | 'celebrate'
+    | 'setProgress'
     | 'pause'
     | 'resume'
     | 'fadeOut'
@@ -65,6 +66,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
     transitionTimers = [];
     qg?.fadeOut();
     later(() => {
+      qg?.setProgress(0, { animate: false });
       qg?.fadeIn();
     }, FADE_MS);
     later(() => {
@@ -91,6 +93,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
             root.dataset.timeOfDay = message.payload.timeOfDay;
             qg.setJourney(message.payload.scene === 'journey');
             qg.setScene(message.payload.sceneKey);
+            qg.setProgress(message.payload.progress, { animate: false });
             qg.setTime(message.payload.timeOfDay);
             qg.setCharacter(message.payload.character);
             qg.show();
@@ -105,7 +108,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
           return;
         }
         case 'ITEM_CHECKED':
-          if (active === 'qg') qg?.celebrate();
+          if (active === 'qg') qg?.celebrate(message.payload.progress);
           else scene.run(message.payload.progress);
           return;
         case 'CHAPTER_COMPLETED':

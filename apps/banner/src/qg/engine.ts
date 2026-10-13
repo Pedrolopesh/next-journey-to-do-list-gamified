@@ -16,7 +16,19 @@ import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay } from './scenes/types'
 
 const FPS: Record<AnimationName, number> = { idle: 2, walk: 9, run: 12 };
 /** Velocidade do cenário (px lógicos por segundo) quando o personagem anda ou corre na jornada. */
-const JOURNEY_SPEED: Record<AnimationName, number> = { idle: 0, walk: 34, run: 72 };
+const JOURNEY_SPEED: Record<AnimationName, number> = { idle: 0, walk: 34, run: 80 };
+/** Paradas da jornada: o personagem chega ao fim depois deste número de corridas. */
+export const JOURNEY_STOPS = 6;
+const JOURNEY_START_X = 64;
+const JOURNEY_END_X = 296;
+/** Velocidade do personagem pela tela durante uma corrida (px lógicos por segundo). */
+const JOURNEY_RUN_SPEED = 18;
+
+/** Posição do personagem na tela em cada parada da jornada. */
+export function journeyX(stop: number): number {
+  const fraction = Math.min(1, Math.max(0, stop / JOURNEY_STOPS));
+  return JOURNEY_START_X + (JOURNEY_END_X - JOURNEY_START_X) * fraction;
+}
 /** Folhas recoloridas guardadas em memória; passando disso, as mais antigas saem do cache. */
 const MAX_CACHED_SHEETS = 64;
 
@@ -26,8 +38,10 @@ export type QgState = {
   direction: Direction;
   sceneId: string;
   time: TimeOfDay;
-  /** Jornada: o personagem anda para a esquerda e o cenário rola atrás dele. */
+  /** Jornada: o personagem anda para a direita e o cenário rola para a esquerda atrás dele. */
   journey: boolean;
+  /** Parada da jornada (0 a `JOURNEY_STOPS`); mudar o valor faz o personagem correr até lá. */
+  stop: number;
 };
 
 export type QgEngineOptions = {
@@ -50,6 +64,8 @@ export type QgEngine = {
   start: () => void;
   pause: () => void;
   resume: () => void;
+  /** Põe o personagem direto numa parada da jornada, sem correr. */
+  placeHero: (stop: number) => void;
   /** Recalcula a resolução interna (depois de mudar o tamanho do canvas). */
   resize: () => void;
   /** Resolve quando as folhas do estado atual estão prontas (útil para o primeiro quadro). */
@@ -145,14 +161,24 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
   let resolvedKey = '';
   let resolving: Promise<void> = Promise.resolve();
 
+  let heroX = journeyX(state.stop);
+  const moving = (): boolean => Math.abs(journeyX(state.stop) - heroX) > 0.5;
+  const arrived = (): boolean => state.stop >= JOURNEY_STOPS && !moving();
+  /** Animação em cena: na jornada, correr enquanto avança e parar ao chegar ao fim. */
+  const currentAnim = (): AnimationName => {
+    if (!state.journey) return state.anim;
+    if (moving()) return 'run';
+    return arrived() ? 'idle' : state.anim;
+  };
+
   const sync = (): Promise<void> => {
     const def = SCENES.find((scene) => scene.id === state.sceneId) ?? SCENES[0];
-    const key = `${state.sceneId}|${selectionKey(state.selection, state.anim)}`;
+    const anim = currentAnim();
+    const key = `${state.sceneId}|${selectionKey(state.selection, anim)}`;
     if (key === resolvedKey) return resolving;
     resolvedKey = key;
-    const anim = state.anim;
     const run = async (): Promise<void> => {
-      const nextHero = await resolveLayers(state.selection, state.anim);
+      const nextHero = await resolveLayers(state.selection, anim);
       const nextExtras = await Promise.all(
         (def?.extras ?? []).map(async (extra, index) => ({
           index,
@@ -222,7 +248,15 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     const def = SCENES.find((scene) => scene.id === state.sceneId) ?? SCENES[0];
     if (!def) return;
     const walking = state.journey && def.journey !== undefined;
-    const env: SceneEnv = { ctx, time: state.time, t: clock, scroll, tiles, journey: walking };
+    const env: SceneEnv = {
+      ctx,
+      time: state.time,
+      t: clock,
+      scroll,
+      tiles,
+      journey: walking,
+      arrivedFor: arrived() ? clock - arrivedAt : null,
+    };
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     ctx.imageSmoothingEnabled = false; // sprites e tiles continuam nítidos
     ctx.clearRect(0, 0, SCENE_W, SCENE_H);
@@ -233,8 +267,9 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
         if (extra) drawCharacter(layers, extra.anim, extra.direction, extra.x, extra.feetY, clock);
       }
     }
-    const direction = state.journey ? 'left' : state.direction;
-    drawCharacter(hero, heroAnim, direction, SCENE_W / 2, def.groundY, clock);
+    const direction = state.journey ? 'right' : state.direction;
+    const heroPosition = state.journey ? heroX : SCENE_W / 2;
+    drawCharacter(hero, heroAnim, direction, heroPosition, def.groundY, clock);
     if (!walking) def.front?.(env);
     applyTint(env, def.tint?.[state.time]);
     drawLights(env, def.lights?.(env) ?? []);
@@ -248,6 +283,8 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
   let clock = 0;
   let lastDraw = 0;
   let scroll = 0;
+  let arrivedAt = 0;
+  let wasArrived = false;
   const minGap = 1000 / maxFps - 1;
 
   const tick = (now: number): void => {
@@ -256,7 +293,17 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     const dt = Math.min(0.25, (now - last) / 1000);
     clock += dt;
     last = now;
-    if (state.journey) scroll += JOURNEY_SPEED[state.anim] * dt;
+    if (state.journey) {
+      const target = journeyX(state.stop);
+      if (moving())
+        heroX +=
+          Math.sign(target - heroX) * Math.min(Math.abs(target - heroX), JOURNEY_RUN_SPEED * dt);
+      else heroX = target;
+      scroll += JOURNEY_SPEED[currentAnim()] * dt;
+      const isArrived = arrived();
+      if (isArrived && !wasArrived) arrivedAt = clock;
+      wasArrived = isArrived;
+    }
     if (now - lastDraw < minGap) return;
     lastDraw = now;
     void sync();
@@ -277,6 +324,10 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     pause() {
       running = false;
       cancelAnimationFrame(raf);
+    },
+    placeHero(stop) {
+      state.stop = stop;
+      heroX = journeyX(stop);
     },
     resize,
     ready: () => sync(),

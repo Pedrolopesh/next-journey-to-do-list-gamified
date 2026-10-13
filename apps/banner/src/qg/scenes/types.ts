@@ -16,11 +16,13 @@ export type SceneEnv = {
   time: TimeOfDay;
   /** Segundos desde o início, para animações (chamas, ondas, estrelas). */
   t: number;
-  /** Distância percorrida (px lógicos) na jornada; o cenário se desloca para a direita. */
+  /** Distância percorrida (px lógicos) na jornada; o cenário se desloca para a esquerda. */
   scroll: number;
   tiles: Record<string, HTMLImageElement>;
   /** Cena desenhada na jornada (personagem andando): as luzes seguem o cenário que rola. */
   journey: boolean;
+  /** Segundos desde que o personagem chegou ao fim da jornada; `null` enquanto ainda anda. */
+  arrivedFor: number | null;
 };
 
 export type Light = {

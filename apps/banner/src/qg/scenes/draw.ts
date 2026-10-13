@@ -42,12 +42,12 @@ export function shadedBlock(
 }
 
 /**
- * Posição na tela de um objeto do cenário que rola: o cenário passa da esquerda para a direita e
+ * Posição na tela de um objeto do cenário que rola: o cenário passa da direita para a esquerda e
  * recomeça a cada `period` px. `factor` menor que 1 faz camadas distantes andarem mais devagar.
  */
 export function scrolled(world: number, scroll: number, period: number, factor = 1): number {
   const margin = 100;
-  return ((((world + scroll * factor + margin) % period) + period) % period) - margin;
+  return ((((world - scroll * factor + margin) % period) + period) % period) - margin;
 }
 
 /** Escolhe um valor conforme a hora do dia. */
