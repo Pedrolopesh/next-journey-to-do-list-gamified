@@ -1,47 +1,42 @@
 import { DEFAULT_GAME_CONFIG } from '@nextjourney/contracts';
+import { IconCoin } from '@tabler/icons-react-native';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { chapterProgress, useMe } from '@/api/queries';
 import { colors, radius, rgba, space } from '@/theme';
 
 import { PixelArt } from './pixel-art';
 
 type Props = {
-  name: string;
-  chapter: number;
-  chapterTitle: string;
-  level: number;
-  expInLevel: number;
-  expForNextLevel: number;
-  completed: boolean;
+  /** Mostra o saldo de moedas no rodapé (as abas mostram; a Home já tem o indicador de moedas). */
+  showCoins?: boolean;
 };
 
 /**
- * Avanço da história na Home: nome, capítulo, nível e uma barra em trechos, um por capítulo.
- * Trechos anteriores ficam cheios; o do capítulo atual enche com a EXP do nível.
+ * Avanço da história, o mesmo na Home e nas abas: cenário, nome, capítulo, nível e uma barra em
+ * trechos, um por capítulo. Os anteriores ficam cheios; o do capítulo atual enche com a EXP do
+ * nível (a mesma que move o personagem). Cada nível ganho conclui um capítulo.
  */
-export function HomeStoryCard({
-  name,
-  chapter,
-  chapterTitle,
-  level,
-  expInLevel,
-  expForNextLevel,
-  completed,
-}: Props) {
+export function StoryProgressCard({ showCoins = false }: Props) {
   const { t } = useTranslation();
+  const { data: me } = useMe();
+  if (!me) return null;
+  const { player, story } = me;
   const total = DEFAULT_GAME_CONFIG.chaptersPerStory;
-  const ratio = completed ? 1 : Math.min(1, Math.max(0, expInLevel / expForNextLevel));
+  const { completed, chapter } = player.story;
+  const ratio = completed ? 1 : chapterProgress(me);
   const subtitle = completed
     ? t('progress.storyDone')
-    : t('home.chapter', { number: chapter, title: chapterTitle });
+    : t('progress.chapter', { number: chapter, title: story?.chapterTitle ?? '' });
+  const name = story?.name ?? t('progress.label');
 
   return (
     <View
       style={styles.card}
       accessible
       accessibilityRole="progressbar"
-      accessibilityLabel={`${t('home.storyCard', { name })}. ${subtitle}. ${t('progress.level', { level })}`}
+      accessibilityLabel={`${t('progress.label')}: ${name}. ${subtitle}. ${t('progress.level', { level: player.level })}. ${t('progress.coins', { count: player.coins })}`}
       accessibilityValue={{ min: 0, max: 100, now: Math.round(ratio * 100) }}
     >
       <View style={styles.top}>
@@ -53,7 +48,7 @@ export function HomeStoryCard({
           </Text>
         </View>
         <View style={styles.level}>
-          <Text style={styles.levelText}>{t('progress.level', { level })}</Text>
+          <Text style={styles.levelText}>{t('progress.level', { level: player.level })}</Text>
         </View>
       </View>
       <View style={styles.segments}>
@@ -70,8 +65,14 @@ export function HomeStoryCard({
         <Text style={styles.footText}>
           {t('home.chapterOf', { number: Math.min(chapter, total), total })}
         </Text>
+        {showCoins ? (
+          <View style={styles.coins}>
+            <IconCoin size={14} color={colors.brand.gold} strokeWidth={1.75} />
+            <Text style={styles.coinsText}>{player.coins}</Text>
+          </View>
+        ) : null}
         <Text style={styles.footText}>
-          {t('progress.exp', { exp: expInLevel, next: expForNextLevel })}
+          {t('progress.exp', { exp: player.expInLevel, next: player.expForNextLevel })}
         </Text>
       </View>
     </View>
@@ -107,6 +108,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   fill: { height: '100%', backgroundColor: colors.brand.primary },
-  foot: { flexDirection: 'row', justifyContent: 'space-between' },
+  foot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   footText: { color: colors.text.muted, fontSize: 12 },
+  coins: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
+  coinsText: { color: colors.brand.gold, fontSize: 13, fontWeight: '700' },
 });

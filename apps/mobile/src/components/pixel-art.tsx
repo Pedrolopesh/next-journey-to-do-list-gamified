@@ -1,127 +1,8 @@
 import Svg, { Rect } from 'react-native-svg';
 
-/** Paleta da pixel art; "." é transparente. */
-const PALETTE: Record<string, string> = {
-  o: '#1a1233',
-  H: '#6b4423',
-  S: '#f2c9a0',
-  e: '#1a1233',
-  B: '#7c3aed',
-  C: '#f5e6c8',
-  l: '#b89968',
-  y: '#f59e0b',
-  Y: '#fde68a',
-  G: '#8b7bd8',
-  g: '#10b981',
-  P: '#a78bfa',
-  r: '#ef4444',
-  R: '#f97316',
-  W: '#f1f5f9',
-};
+import { PIXEL_ART, PIXEL_PALETTE, type PixelArtName } from './pixel-art-data';
 
-/** Ícones 12x12; cada letra é uma cor da paleta. */
-export const PIXEL_ART = {
-  character: [
-    '....oooo....',
-    '...oHHHHo...',
-    '..oHHHHHHo..',
-    '..oHSSSSHo..',
-    '..oSeSSeSo..',
-    '..oSSSSSSo..',
-    '...oSSSSo...',
-    '..oBBBBBBo..',
-    '.oBBBBBBBBo.',
-    '.oBBBBBBBBo.',
-    '.oBBBBBBBBo.',
-    '.oooooooooo.',
-  ],
-  story: [
-    '............',
-    '.oooooooooo.',
-    '.oPPPooPPPo.',
-    '.oCllCoCllCo',
-    '.oCCCCoCCCCo',
-    '.oCllCoCllCo',
-    '.oCCCCoCCCCo',
-    '.oCllCoCllCo',
-    '.oCCCCoCCCCo',
-    '.oooooooooo.',
-    '..oPPPPPPo..',
-    '............',
-  ],
-  scenery: [
-    '............',
-    '.......yy...',
-    '......yyyy..',
-    '.......yy...',
-    '...o........',
-    '..oGo...o...',
-    '.oGGGo.oGo..',
-    'oGGGGGoGGGo.',
-    'GGGGGGGGGGGo',
-    'gggggggggggg',
-    'gggggggggggg',
-    '............',
-  ],
-  dailies: [
-    '............',
-    '.oooooooooo.',
-    '.orrrrrrrro.',
-    '.oooooooooo.',
-    '.oWWWWWWWWo.',
-    '.oWWWWWgWWo.',
-    '.oWWWWgWWWo.',
-    '.ogWWgWWWWo.',
-    '.oWgggWWWWo.',
-    '.oWWgWWWWWo.',
-    '.oooooooooo.',
-    '............',
-  ],
-  tasks: [
-    '....oooo....',
-    '.oooPPPPooo.',
-    '.oCCCCCCCCo.',
-    '.oCgCllllCo.',
-    '.oCCCCCCCCo.',
-    '.oCgCllllCo.',
-    '.oCCCCCCCCo.',
-    '.oCgCllllCo.',
-    '.oCCCCCCCCo.',
-    '.oooooooooo.',
-    '............',
-    '............',
-  ],
-  streak: [
-    '.....o......',
-    '....oyo.....',
-    '....oyyo....',
-    '...oyyyoo...',
-    '..oyyRyyyo..',
-    '..oyRRRyyo..',
-    '.oyyRRRRyyo.',
-    '.oyRRYYRRyo.',
-    '.oyRYYYYRyo.',
-    '.oyyYYYYyyo.',
-    '..ooyyyyoo..',
-    '....oooo....',
-  ],
-  coin: [
-    '....oooo....',
-    '..ooyyyyoo..',
-    '.oyyYYYYyyo.',
-    '.oyYyyyyYyo.',
-    'oyYyyYYyyYyo',
-    'oyYyyYYyyYyo',
-    'oyYyyYYyyYyo',
-    'oyYyyYYyyYyo',
-    '.oyYyyyyYyo.',
-    '.oyyYYYYyyo.',
-    '..ooyyyyoo..',
-    '....oooo....',
-  ],
-} as const;
-
-export type PixelArtName = keyof typeof PIXEL_ART;
+export type { PixelArtName };
 
 type Run = { x: number; y: number; w: number; fill: string };
 
@@ -132,7 +13,7 @@ function runs(rows: readonly string[]): Run[] {
     let x = 0;
     while (x < row.length) {
       const ch = row[x] ?? '.';
-      const fill = PALETTE[ch];
+      const fill = PIXEL_PALETTE[ch];
       if (!fill) {
         x += 1;
         continue;

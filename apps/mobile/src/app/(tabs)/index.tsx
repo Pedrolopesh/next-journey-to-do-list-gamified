@@ -5,10 +5,10 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native
 
 import { useHome, useMe } from '@/api/queries';
 import { ActionButton } from '@/components/action-button';
-import { HomeStoryCard } from '@/components/home-story-card';
 import { QgControls } from '@/components/qg-controls';
 import { StatCard } from '@/components/stat-card';
 import { ErrorState, SkeletonList } from '@/components/states';
+import { StoryProgressCard } from '@/components/story-progress-card';
 import { TabScreen } from '@/components/tab-screen';
 import { colors, space } from '@/theme';
 
@@ -80,17 +80,7 @@ export default function HomeScreen() {
               />
             </View>
 
-            {home.data.story ? (
-              <HomeStoryCard
-                name={home.data.story.name}
-                chapter={home.data.story.chapter}
-                chapterTitle={home.data.story.chapterTitle}
-                level={me?.player.level ?? 1}
-                expInLevel={home.data.story.expInLevel}
-                expForNextLevel={home.data.story.expForNextLevel}
-                completed={home.data.story.completed}
-              />
-            ) : null}
+            <StoryProgressCard />
           </>
         )}
 

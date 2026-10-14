@@ -184,7 +184,8 @@
     "back": "Voltar",
     "save": "Salvar",
     "cancel": "Cancelar",
-    "error": "Algo deu errado."
+    "error": "Algo deu errado.",
+    "close": "Fechar"
   },
   "timeline": {
     "chapter": "Capítulo {{number}}",
@@ -207,7 +208,9 @@
   "achievements": {
     "unlocked": "desbloqueada",
     "locked": "bloqueada",
-    "reward": "Recompensa: {{reward}}"
+    "reward": "Recompensa: {{reward}}",
+    "unlockedAt": "Desbloqueada em {{date}}",
+    "progress": "{{current}} de {{target}}"
   },
   "tutorial": {
     "next": "Próximo",
