@@ -178,7 +178,7 @@ export function ItemListScreen({
 }
 
 const styles = StyleSheet.create({
-  heading: { color: colors.text.primary, fontSize: 20, fontWeight: '600' },
+  heading: { color: colors.text.primary, fontSize: 20, fontWeight: '600', marginTop: space[8] },
   error: { color: colors.status.danger, fontSize: 13 },
   section: {
     color: colors.text.secondary,

@@ -6,6 +6,8 @@ import { colors, radius, space } from '@/theme';
 
 import { BottomSheet } from './bottom-sheet';
 import { Button } from './button';
+import { PixelArt } from './pixel-art';
+import { achievementArt } from './pixel-art-data';
 
 type Props = { achievement: Achievement | null; onClose: () => void };
 
@@ -21,6 +23,9 @@ export function AchievementSheet({ achievement, onClose }: Props) {
     <BottomSheet visible={achievement !== null} onClose={onClose}>
       {achievement ? (
         <>
+          <View style={[styles.art, !achievement.unlocked && styles.dimmed]}>
+            <PixelArt name={achievementArt(achievement.iconKey)} size={96} />
+          </View>
           <Text style={styles.title} accessibilityRole="header">
             {achievement.unlocked ? '★ ' : ''}
             {achievement.name}
@@ -67,8 +72,10 @@ export function AchievementSheet({ achievement, onClose }: Props) {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text.primary, fontSize: 20, fontWeight: '700' },
-  state: { color: colors.brand.gold, fontSize: 13, fontWeight: '600' },
+  art: { alignItems: 'center' },
+  dimmed: { opacity: 0.45 },
+  title: { color: colors.text.primary, fontSize: 20, fontWeight: '700', textAlign: 'center' },
+  state: { color: colors.brand.gold, fontSize: 13, fontWeight: '600', textAlign: 'center' },
   description: { color: colors.text.secondary, fontSize: 15 },
   progress: { gap: space[4] },
   bar: {
