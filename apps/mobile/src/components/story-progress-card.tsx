@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { chapterProgress, useMe } from '@/api/queries';
-import { colors, radius, rgba, space } from '@/theme';
+import { colors, radius, rgba, space, tonedCard } from '@/theme';
 
 import { PixelArt } from './pixel-art';
 
@@ -82,9 +82,7 @@ export function StoryProgressCard({ showCoins = false }: Props) {
 const styles = StyleSheet.create({
   card: {
     gap: space[12],
-    borderWidth: 1.5,
-    borderColor: rgba(colors.brand.primary, 0.7),
-    backgroundColor: rgba(colors.brand.primary, 0.08),
+    ...tonedCard(colors.brand.primary),
     borderRadius: radius.card,
     padding: space[16],
   },

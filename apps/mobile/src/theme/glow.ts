@@ -107,3 +107,12 @@ export function softGlowOutline(
         ],
   };
 }
+
+/** Cartão contornado na cor do tom (indicadores e card de história): borda forte e fundo leve. */
+export function tonedCard(color: string): ViewStyle {
+  return {
+    borderWidth: 1.5,
+    borderColor: rgba(color, 0.7),
+    backgroundColor: rgba(color, 0.08),
+  };
+}

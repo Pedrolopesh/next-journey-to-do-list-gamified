@@ -15,7 +15,7 @@ Um to-do list de uso pessoal para iOS e Android em que cada item marcado rende E
 | `packages/contracts` | Schemas Zod compartilhados (auth, itens, check, histórias, personagem, protocolo do banner), com testes; build com `tsup` |
 | `packages/tsconfig`, `packages/eslint-config` | Prontos |
 | `apps/api` | NestJS + Prisma + PostgreSQL: auth, itens, check, progressão, histórias, conquistas, personagem, `GET /home`, exclusão de conta; testes unitários e e2e |
-| `apps/banner` | Vite + TypeScript: cena Mapa (CSS) e cena QG (canvas, 7 cenários, personagem LPC); laboratórios de desenvolvimento (`lab.html`, `buttons.html`, `dev.html`) fora do build |
+| `apps/banner` | Vite + TypeScript: cena Mapa (CSS) e cena QG (canvas, 7 cenários, personagem LPC); laboratório de desenvolvimento em páginas (`lab.html`: botões, indicadores, conquistas, cenários, personagem e créditos) e painel de debug (`dev.html`), ambos fora do build |
 | `apps/mobile` | Expo + React Native: cadastro, onboarding, Home com o QG, abas de itens, perfil, configurações e créditos |
 | Hospedagem | Decidida: servidor próprio em contêineres. Ainda sem deploy do Next Journey |
 

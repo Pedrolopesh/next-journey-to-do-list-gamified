@@ -1,0 +1,116 @@
+/* Indicadores: números do dia, saldo e avanço da história */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px 12px;
+  border: 1.5px solid rgb(var(--sc) / 0.7);
+  border-radius: 16px;
+  background: rgb(var(--sc) / 0.08);
+  box-shadow: 0 0 12px rgb(var(--sc) / 0.18);
+  --sc: 124 58 237;
+}
+.stat.amber {
+  --sc: 245 158 11;
+}
+.stat.flame {
+  --sc: 249 115 22;
+}
+.stat.ok {
+  --sc: 16 185 129;
+}
+.stat .pix {
+  width: 34px;
+  height: 34px;
+  image-rendering: pixelated;
+}
+.stat .num {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: rgb(var(--sc));
+}
+.stat .info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.stat .lb {
+  color: var(--muted);
+  font-size: 12px;
+}
+.story {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border: 1.5px solid rgb(124 58 237 / 0.7);
+  border-radius: 16px;
+  background: rgb(124 58 237 / 0.08);
+  box-shadow: 0 0 14px rgb(124 58 237 / 0.22);
+}
+.story .top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.story .pix {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+}
+.story .name {
+  font-size: 16px;
+  font-weight: 600;
+}
+.story .chap {
+  color: var(--muted);
+  font-size: 13px;
+}
+.story .lvl {
+  margin-left: auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgb(124 58 237 / 0.3);
+  color: #c4b5fd;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.segs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+.seg {
+  height: 10px;
+  border-radius: 3px;
+  background: #12122a;
+  overflow: hidden;
+}
+.seg > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+.story .foot {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+}
+.story .foot b {
+  color: var(--text);
+  font-weight: 600;
+}

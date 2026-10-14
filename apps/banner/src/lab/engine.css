@@ -1,0 +1,95 @@
+/* Páginas com o canvas do motor do QG (cenários e personagem) */
+.stage {
+  max-width: 760px;
+  margin-bottom: 16px;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+.stage canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 390 / 220;
+}
+.panel {
+  max-width: 760px;
+  margin-bottom: 16px;
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.panel h2 {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.row > label {
+  min-width: 84px;
+  color: var(--muted);
+}
+.row select {
+  background: #0f3460;
+  color: var(--text);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font: inherit;
+}
+.swatch {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.swatch[aria-pressed='true'] {
+  border-color: #fff;
+}
+.license-banner {
+  max-width: 760px;
+  margin-bottom: 16px;
+  background: #3b2a05;
+  border: 1px solid var(--warn, #f59e0b);
+  color: #fde68a;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.license-banner strong {
+  color: #fff;
+}
+.credits {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.credits th,
+.credits td {
+  text-align: left;
+  padding: 4px 6px;
+  border-bottom: 1px solid #243352;
+  vertical-align: top;
+}
+.badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #10b981;
+  color: #04210f;
+  font-weight: 700;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.meta {
+  color: var(--muted);
+  font-size: 12px;
+}

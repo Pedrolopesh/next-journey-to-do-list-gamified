@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, rgba, space } from '@/theme';
+import { colors, radius, space, tonedCard } from '@/theme';
 
 import { PixelArt, type PixelArtName } from './pixel-art';
 
@@ -16,7 +16,7 @@ type Props = {
 export function StatCard({ art, value, label, tone = colors.brand.primary }: Props) {
   return (
     <View
-      style={[styles.card, { borderColor: rgba(tone, 0.7), backgroundColor: rgba(tone, 0.08) }]}
+      style={[styles.card, tonedCard(tone)]}
       accessible
       accessibilityLabel={`${label}: ${value}`}
     >
@@ -37,7 +37,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: space[8],
-    borderWidth: 1.5,
     borderRadius: radius.card,
     paddingVertical: space[12],
     paddingHorizontal: space[12],
