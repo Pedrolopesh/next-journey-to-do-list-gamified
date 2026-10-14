@@ -696,8 +696,9 @@
       .stat {
         position: relative;
         display: flex;
-        flex-direction: column;
-        gap: 2px;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
         padding: 12px 14px 12px;
         border: 1.5px solid rgb(var(--sc) / 0.7);
         border-radius: 16px;
@@ -720,11 +721,17 @@
         image-rendering: pixelated;
       }
       .stat .num {
-        margin-top: 6px;
-        font-size: 30px;
+        font-size: 26px;
         font-weight: 700;
         line-height: 1.1;
         color: rgb(var(--sc));
+      }
+      .stat .info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
       }
       .stat .lb {
         color: var(--muted);
@@ -1235,7 +1242,7 @@
       ];
       document.getElementById('stats').innerHTML = STATS.map(
         ([art, num, label, tone]) =>
-          `<div class="stat ${tone}">${pixelSvg(art)}<span class="num">${num}</span><span class="lb">${label}</span></div>`,
+          `<div class="stat ${tone}"><div class="info">${pixelSvg(art)}<span class="lb">${label}</span></div><span class="num">${num}</span></div>`,
       ).join('');
       // Capítulo 1 de 5, 145/350 EXP do nível
       const pct = Math.round((145 / 350) * 100);

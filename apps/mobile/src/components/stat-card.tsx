@@ -12,7 +12,7 @@ type Props = {
   tone?: string;
 };
 
-/** Indicador da Home: pixel art, número grande e rótulo, com contorno na cor do tom. */
+/** Indicador da Home: pixel art com o rótulo embaixo e o número grande ao lado, com contorno na cor do tom. */
 export function StatCard({ art, value, label, tone = colors.brand.primary }: Props) {
   return (
     <View
@@ -20,9 +20,11 @@ export function StatCard({ art, value, label, tone = colors.brand.primary }: Pro
       accessible
       accessibilityLabel={`${label}: ${value}`}
     >
-      <PixelArt name={art} size={36} />
+      <View style={styles.info}>
+        <PixelArt name={art} size={36} />
+        <Text style={styles.label}>{label}</Text>
+      </View>
       <Text style={[styles.value, { color: tone }]}>{value}</Text>
-      <Text style={styles.label}>{label}</Text>
     </View>
   );
 }
@@ -31,12 +33,16 @@ const styles = StyleSheet.create({
   card: {
     flexBasis: '48%',
     flexGrow: 1,
-    gap: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: space[8],
     borderWidth: 1.5,
     borderRadius: radius.card,
     paddingVertical: space[12],
     paddingHorizontal: space[12],
   },
-  value: { marginTop: space[4], fontSize: 30, fontWeight: '700' },
+  info: { flex: 1, gap: space[4] },
   label: { color: colors.text.secondary, fontSize: 12 },
+  value: { fontSize: 26, fontWeight: '700' },
 });
