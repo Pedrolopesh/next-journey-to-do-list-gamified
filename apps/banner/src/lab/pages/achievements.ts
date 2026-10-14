@@ -1,8 +1,10 @@
 import './achievements.css';
 
 import { ACHIEVEMENT_CATALOG } from '../../../../api/src/modules/progression/domain/achievements';
+import { achievementArt } from '../../../../mobile/src/components/pixel-art-data';
 import { h } from '../dom';
 import type { LabPage } from '../page';
+import { pixelSvg } from '../pixel';
 
 type Sample = { unlocked: boolean; progress: [number, number] | null };
 type Entry = (typeof ACHIEVEMENT_CATALOG)[number];
@@ -16,28 +18,38 @@ const SAMPLE: Record<string, Sample> = {
   aprendiz: { unlocked: true, progress: null },
   veterano: { unlocked: false, progress: [5, 10] },
   'novo-capitulo': { unlocked: true, progress: null },
+  madrugador: { unlocked: true, progress: null },
+  equilibrio: { unlocked: true, progress: null },
 };
 const NONE: Sample = { unlocked: false, progress: null };
 
 function card(entry: Entry, sample: Sample, onOpen: () => void): HTMLElement {
   const button = h('button', `ach${sample.unlocked ? '' : ' locked'}`);
   button.type = 'button';
+  const art = h('span', 'art');
+  art.innerHTML = pixelSvg(achievementArt(entry.iconKey));
   button.append(
-    h('span', 'name', `${sample.unlocked ? '★ ' : ''}${entry.name}`),
-    h('span', 'desc', entry.description),
+    art,
+    h('span', 'name', entry.name),
+    sample.unlocked
+      ? h('span', 'done', 'desbloqueada')
+      : h(
+          'span',
+          'prog',
+          sample.progress ? `${sample.progress[0]}/${sample.progress[1]}` : 'bloqueada',
+        ),
   );
-  if (sample.progress && !sample.unlocked) {
-    button.append(h('span', 'prog', `${sample.progress[0]}/${sample.progress[1]}`));
-  }
-  if (entry.rewardKey) button.append(h('span', 'reward', `Recompensa: ${entry.rewardKey}`));
   button.onclick = onOpen;
   return button;
 }
 
 function sheetContent(entry: Entry, sample: Sample, close: () => void): HTMLElement {
   const box = h('div', 'sheet');
+  const art = h('div', `art big${sample.unlocked ? '' : ' dim'}`);
+  art.innerHTML = pixelSvg(achievementArt(entry.iconKey));
   box.append(
     h('div', 'handle'),
+    art,
     h('h3', 'title', `${sample.unlocked ? '★ ' : ''}${entry.name}`),
     h('span', 'state', sample.unlocked ? 'Desbloqueada em 12/10/2026' : 'bloqueada'),
     h('span', 'desc', entry.description),
@@ -88,9 +100,9 @@ export const achievementsPage: LabPage = {
       h(
         'p',
         'lead',
-        'As conquistas do catálogo da API no formato do app: dourado quando desbloqueada, apagado quando não. Toque numa para ver o modal de detalhes que sobe do rodapé. O progresso mostrado é de exemplo.',
+        'Galeria com todas as conquistas do catálogo da API, cada uma com a sua pixel art: dourada quando desbloqueada, apagada quando não. Toque numa para ver o modal de detalhes que sobe do rodapé. O progresso mostrado é de exemplo.',
       ),
-      h('section', 'style', h('h2', '', 'Cartões de conquista'), h('div', 'app-phone', list)),
+      h('section', 'style', h('h2', '', 'Galeria de conquistas'), h('div', 'app-phone', list)),
       root,
     );
     return close;

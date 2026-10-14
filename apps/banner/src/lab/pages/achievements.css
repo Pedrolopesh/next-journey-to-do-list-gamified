@@ -1,20 +1,23 @@
 .ach-list {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .ach {
   display: flex;
+  flex: 1 1 48%;
   flex-direction: column;
+  align-items: center;
   gap: 4px;
-  width: 100%;
   padding: 12px;
-  border: 1px solid #f59e0b;
+  border: 1.5px solid rgb(245 158 11 / 0.75);
   border-radius: 12px;
-  background: var(--surface);
+  background:
+    linear-gradient(180deg, rgb(245 158 11 / 0.14), rgb(245 158 11 / 0.04)), var(--surface);
+  box-shadow: 0 0 14px rgb(245 158 11 / 0.18);
   color: var(--text);
   font: inherit;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   transition: transform 0.16s ease;
 }
@@ -22,27 +25,47 @@
   transform: scale(0.98);
 }
 .ach.locked {
-  border-color: #1e293b;
-  opacity: 0.7;
+  border: 1px solid #1e293b;
+  background: var(--surface);
+  box-shadow: none;
+}
+.ach .art .pix {
+  width: 60px;
+  height: 60px;
+  image-rendering: pixelated;
+}
+.ach.locked .art,
+.sheet .art.dim {
+  opacity: 0.45;
 }
 .ach .name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
-.ach .desc,
+.ach .done {
+  color: #f59e0b;
+  font-size: 12px;
+  font-weight: 600;
+}
+.ach .prog,
+.sheet .prog {
+  color: var(--muted);
+  font-size: 12px;
+}
 .sheet .desc {
   color: var(--muted);
   font-size: 13px;
 }
-.ach .prog,
-.sheet .prog {
-  color: #a78bfa;
-  font-size: 12px;
-}
-.ach .reward,
 .sheet .reward {
   color: #f59e0b;
   font-size: 12px;
+}
+.sheet .art {
+  align-self: center;
+}
+.sheet .art .pix {
+  width: 96px;
+  height: 96px;
 }
 
 /* Modal que sobe do rodapé (detalhes da conquista) */
