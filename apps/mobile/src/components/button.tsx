@@ -35,9 +35,8 @@ export function Button({
           (inactive
             ? styles.secondaryInactive
             : softGlowOutline(colors.brand.primary, { pressed })),
-        // Sair e ações destrutivas: mesmo contorno do secundário, em vermelho
-        variant === 'danger' &&
-          (inactive ? styles.dangerInactive : softGlowOutline(colors.status.danger, { pressed })),
+        // Sair e ações destrutivas: preenchido em vermelho, como o principal
+        !inactive && variant === 'danger' && softGlow(colors.status.danger, { pressed }),
         pressed && styles.pressed,
         inactive && styles.disabled,
       ]}
@@ -45,20 +44,14 @@ export function Button({
       {loading ? (
         <ActivityIndicator
           color={
-            variant === 'primary'
+            variant === 'primary' || variant === 'danger'
               ? colors.text.onPrimary
-              : variant === 'danger'
-                ? colors.status.danger
-                : colors.brand.primaryLight
+              : colors.brand.primaryLight
           }
         />
       ) : (
         <Text
-          style={[
-            styles.label,
-            variant !== 'primary' && styles.ghostLabel,
-            variant === 'danger' && styles.dangerLabel,
-          ]}
+          style={[styles.label, variant !== 'primary' && variant !== 'danger' && styles.ghostLabel]}
         >
           {label}
         </Text>
@@ -82,11 +75,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(124, 58, 237, 0.4)',
   },
   ghost: { backgroundColor: 'transparent' },
-  danger: { backgroundColor: 'transparent' },
-  dangerInactive: { borderWidth: 1.5, borderColor: 'rgba(239, 68, 68, 0.4)' },
+  danger: { backgroundColor: colors.status.danger },
   pressed: { transform: [{ scale: 0.98 }] },
   disabled: { opacity: 0.45 },
   label: { color: colors.text.onPrimary, fontSize: 15, fontWeight: '600' },
   ghostLabel: { color: colors.brand.primaryLight },
-  dangerLabel: { color: colors.status.danger },
 });

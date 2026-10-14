@@ -68,32 +68,25 @@ export default function HomeScreen() {
         </Text>
 
         <View style={styles.qgActions}>
-          <View style={styles.qgAction}>
-            <Button
-              label={t('qg.changeCharacter')}
-              variant="secondary"
-              onPress={() => {
-                router.push('/settings/character');
-              }}
-            />
-          </View>
-          <View style={styles.qgAction}>
-            <Button
-              label={t('qg.changeStory')}
-              variant="secondary"
-              onPress={() => {
-                router.push('/story/timeline');
-              }}
-            />
-          </View>
+          <Button
+            label={t('qg.changeCharacter')}
+            onPress={() => {
+              router.push('/settings/character');
+            }}
+          />
+          <Button
+            label={t('qg.changeStory')}
+            onPress={() => {
+              router.push('/story/timeline');
+            }}
+          />
+          <Button
+            label={showEnvironment ? t('qg.closeScenario') : t('qg.changeScenario')}
+            onPress={() => {
+              setShowEnvironment((open) => !open);
+            }}
+          />
         </View>
-        <Button
-          label={showEnvironment ? t('qg.closeScenario') : t('qg.changeScenario')}
-          variant="secondary"
-          onPress={() => {
-            setShowEnvironment((open) => !open);
-          }}
-        />
         {showEnvironment ? <QgControls /> : null}
 
         {home.isPending ? (
@@ -180,8 +173,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   content: { gap: space[12], paddingBottom: space[40] },
   greeting: { color: colors.text.primary, fontSize: 20, fontWeight: '600' },
-  qgActions: { flexDirection: 'row', gap: space[8] },
-  qgAction: { flex: 1 },
+  qgActions: { gap: space[8] },
   counters: { flexDirection: 'row', gap: space[8] },
   counter: {
     flex: 1,
