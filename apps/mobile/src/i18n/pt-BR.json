@@ -143,7 +143,9 @@
     "chapter": "Capítulo {{number}}: {{title}}",
     "itemsToAdvance": "{{left}} itens para avançar",
     "today": "Para hoje",
-    "todayEmpty": "Nada pendente para hoje"
+    "todayEmpty": "Nada pendente para hoje",
+    "coins": "Moedas",
+    "chapterOf": "Capítulo {{number}} de {{total}}"
   },
   "itemForm": {
     "created": "Item criado!",
@@ -412,7 +414,10 @@
     "changeCharacter": "Mudar personagem",
     "changeStory": "Mudar história principal",
     "changeScenario": "Mudar cenário do QG",
-    "closeScenario": "Fechar cenário do QG"
+    "closeScenario": "Fechar cenário do QG",
+    "changeCharacterDesc": "Troque o visual do seu herói",
+    "changeStoryDesc": "Escolha por qual aventura seguir",
+    "changeScenarioDesc": "Altere o fundo e a hora do dia"
   },
   "examples": {
     "added": "Adicionamos alguns itens de exemplo. Edite ou apague quando quiser.",

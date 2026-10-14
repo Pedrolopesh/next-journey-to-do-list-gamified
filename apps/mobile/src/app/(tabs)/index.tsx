@@ -6,23 +6,16 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native
 
 import { useHome, useMe } from '@/api/queries';
 import type { BannerViewHandle } from '@/banner/banner-view';
-import { Button } from '@/components/button';
+import { ActionButton } from '@/components/action-button';
 import { ExpToast } from '@/components/exp-toast';
+import { HomeStoryCard } from '@/components/home-story-card';
 import { ItemRow } from '@/components/item-row';
 import { QgControls } from '@/components/qg-controls';
+import { StatCard } from '@/components/stat-card';
 import { EmptyState, ErrorState, SkeletonList } from '@/components/states';
 import { TabScreen } from '@/components/tab-screen';
 import { useCheckFlow } from '@/features/check/use-check-flow';
-import { colors, radius, space } from '@/theme';
-
-function Counter({ value, label }: { value: number; label: string }) {
-  return (
-    <View style={styles.counter} accessibilityLabel={`${label}: ${value}`}>
-      <Text style={styles.counterValue}>{value}</Text>
-      <Text style={styles.counterLabel}>{label}</Text>
-    </View>
-  );
-}
+import { colors, space } from '@/theme';
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -68,20 +61,26 @@ export default function HomeScreen() {
         </Text>
 
         <View style={styles.qgActions}>
-          <Button
-            label={t('qg.changeCharacter')}
+          <ActionButton
+            art="character"
+            title={t('qg.changeCharacter')}
+            description={t('qg.changeCharacterDesc')}
             onPress={() => {
               router.push('/settings/character');
             }}
           />
-          <Button
-            label={t('qg.changeStory')}
+          <ActionButton
+            art="story"
+            title={t('qg.changeStory')}
+            description={t('qg.changeStoryDesc')}
             onPress={() => {
               router.push('/story/timeline');
             }}
           />
-          <Button
-            label={showEnvironment ? t('qg.closeScenario') : t('qg.changeScenario')}
+          <ActionButton
+            art="scenery"
+            title={showEnvironment ? t('qg.closeScenario') : t('qg.changeScenario')}
+            description={t('qg.changeScenarioDesc')}
             onPress={() => {
               setShowEnvironment((open) => !open);
             }}
@@ -102,40 +101,40 @@ export default function HomeScreen() {
         ) : (
           <>
             <View style={styles.counters}>
-              <Counter value={home.data.counters.pendingDailies} label={t('home.pendingDailies')} />
-              <Counter value={home.data.counters.pendingTasks} label={t('home.pendingTasks')} />
-              <Counter value={home.data.counters.bestStreak} label={t('home.bestStreak')} />
+              <StatCard
+                art="dailies"
+                value={home.data.counters.pendingDailies}
+                label={t('home.pendingDailies')}
+              />
+              <StatCard
+                art="tasks"
+                value={home.data.counters.pendingTasks}
+                label={t('home.pendingTasks')}
+              />
+              <StatCard
+                art="streak"
+                value={home.data.counters.bestStreak}
+                label={t('home.bestStreak')}
+                tone={colors.status.warning}
+              />
+              <StatCard
+                art="coin"
+                value={me?.player.coins ?? 0}
+                label={t('home.coins')}
+                tone={colors.brand.gold}
+              />
             </View>
 
             {home.data.story ? (
-              <View
-                style={styles.story}
-                accessibilityLabel={t('home.storyCard', { name: home.data.story.name })}
-              >
-                <Text style={styles.storyName}>{home.data.story.name}</Text>
-                <Text style={styles.storyChapter}>
-                  {t('home.chapter', {
-                    number: home.data.story.chapter,
-                    title: home.data.story.chapterTitle,
-                  })}
-                </Text>
-                <View style={styles.bar}>
-                  <View
-                    style={[
-                      styles.barFill,
-                      {
-                        width: `${Math.round(Math.min(1, home.data.story.expInLevel / home.data.story.expForNextLevel) * 100)}%`,
-                      },
-                    ]}
-                  />
-                </View>
-                <Text style={styles.storyProgress}>
-                  {t('progress.exp', {
-                    exp: home.data.story.expInLevel,
-                    next: home.data.story.expForNextLevel,
-                  })}
-                </Text>
-              </View>
+              <HomeStoryCard
+                name={home.data.story.name}
+                chapter={home.data.story.chapter}
+                chapterTitle={home.data.story.chapterTitle}
+                level={me?.player.level ?? 1}
+                expInLevel={home.data.story.expInLevel}
+                expForNextLevel={home.data.story.expForNextLevel}
+                completed={home.data.story.completed}
+              />
             ) : null}
 
             <Text style={styles.sectionTitle}>{t('home.today')}</Text>
@@ -174,37 +173,7 @@ const styles = StyleSheet.create({
   content: { gap: space[12], paddingBottom: space[40] },
   greeting: { color: colors.text.primary, fontSize: 20, fontWeight: '600' },
   qgActions: { gap: space[8] },
-  counters: { flexDirection: 'row', gap: space[8] },
-  counter: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: colors.bg.surface,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    paddingVertical: space[12],
-  },
-  counterValue: { color: colors.brand.gold, fontSize: 22, fontWeight: '700' },
-  counterLabel: { color: colors.text.secondary, fontSize: 11, textAlign: 'center' },
-  story: {
-    gap: space[4],
-    backgroundColor: colors.bg.surface,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    padding: space[12],
-  },
-  storyName: { color: colors.text.primary, fontSize: 15, fontWeight: '600' },
-  storyChapter: { color: colors.text.secondary, fontSize: 13 },
-  bar: {
-    height: 8,
-    borderRadius: radius.pill,
-    backgroundColor: colors.bg.sunken,
-    overflow: 'hidden',
-    marginVertical: space[4],
-  },
-  barFill: { height: '100%', backgroundColor: colors.brand.primary },
-  storyProgress: { color: colors.text.muted, fontSize: 12 },
+  counters: { flexDirection: 'row', flexWrap: 'wrap', gap: space[8] },
   sectionTitle: {
     color: colors.text.secondary,
     fontSize: 13,
