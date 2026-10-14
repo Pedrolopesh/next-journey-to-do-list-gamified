@@ -686,6 +686,116 @@
         font-size: 11px;
         vertical-align: 2px;
       }
+
+      /* Indicadores: números do dia, saldo e avanço da história */
+      .stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .stat {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 12px 14px 12px;
+        border: 1.5px solid rgb(var(--sc) / 0.7);
+        border-radius: 16px;
+        background: rgb(var(--sc) / 0.08);
+        box-shadow: 0 0 12px rgb(var(--sc) / 0.18);
+        --sc: 124 58 237;
+      }
+      .stat.amber {
+        --sc: 245 158 11;
+      }
+      .stat.flame {
+        --sc: 249 115 22;
+      }
+      .stat.ok {
+        --sc: 16 185 129;
+      }
+      .stat .pix {
+        width: 34px;
+        height: 34px;
+        image-rendering: pixelated;
+      }
+      .stat .num {
+        margin-top: 6px;
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.1;
+        color: rgb(var(--sc));
+      }
+      .stat .lb {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .story {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+        padding: 14px 16px;
+        border: 1.5px solid rgb(124 58 237 / 0.7);
+        border-radius: 16px;
+        background: rgb(124 58 237 / 0.08);
+        box-shadow: 0 0 14px rgb(124 58 237 / 0.22);
+      }
+      .story .top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .story .pix {
+        flex: none;
+        width: 48px;
+        height: 48px;
+        image-rendering: pixelated;
+      }
+      .story .name {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .story .chap {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .story .lvl {
+        margin-left: auto;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgb(124 58 237 / 0.3);
+        color: #c4b5fd;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .segs {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+      }
+      .seg {
+        height: 10px;
+        border-radius: 3px;
+        background: #12122a;
+        overflow: hidden;
+      }
+      .seg > i {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      }
+      .story .foot {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .story .foot b {
+        color: var(--text);
+        font-weight: 600;
+      }
     </style>
   </head>
   <body data-theme="roxo" data-size="m">
@@ -693,6 +803,7 @@
       <h2>Laboratório</h2>
       <button type="button" data-view="luz" aria-current="page">Botões</button>
       <button type="button" data-view="app">Botões do aplicativo</button>
+      <button type="button" data-view="ind">Indicadores</button>
     </nav>
     <main id="view-luz" class="view">
       <h1>Botões com efeito de luz</h1>
@@ -765,6 +876,26 @@
         <div class="app-phone" id="acts"></div>
         <p class="note">Estado desabilitado (exemplo):</p>
         <div class="app-phone" id="acts-off" style="margin-top: 8px"></div>
+      </section>
+    </main>
+
+    <main id="view-ind" class="view" hidden>
+      <h1>Indicadores da Home</h1>
+      <p class="lead">
+        Proposta para os números da tela inicial (hoje são três caixas simples) e para o avanço da
+        história. Mesma linguagem dos botões de ação: contorno colorido, brilho suave e pixel art. O
+        saldo de moedas entra como o quarto indicador.
+      </p>
+      <section class="style">
+        <h2>Proposta: indicadores com pixel art <span class="tag">novo</span></h2>
+        <div class="app-phone" style="margin-top: 12px">
+          <div class="stats" id="stats"></div>
+          <div class="story" id="story"></div>
+        </div>
+        <p class="note">
+          A barra da história tem 5 trechos, um por capítulo: o trecho do capítulo atual enche
+          conforme a EXP do nível. O nível aparece como etiqueta ao lado do nome.
+        </p>
       </section>
     </main>
 
@@ -949,6 +1080,7 @@
           b.setAttribute('aria-current', 'page');
           document.getElementById('view-luz').hidden = b.dataset.view !== 'luz';
           document.getElementById('view-app').hidden = b.dataset.view !== 'app';
+          document.getElementById('view-ind').hidden = b.dataset.view !== 'ind';
         });
       });
 
@@ -1031,6 +1163,92 @@
       }
       document.getElementById('acts').innerHTML = ACTS.map((a) => actButton(a, false)).join('');
       document.getElementById('acts-off').innerHTML = actButton(ACTS[0], true);
+
+      // ---- Indicadores
+      PAL.r = '#ef4444';
+      PAL.R = '#f97316';
+      PAL.Y = '#fde68a';
+      PAL.W = '#f1f5f9';
+      Object.assign(ART, {
+        diarios: [
+          '............',
+          '.oooooooooo.',
+          '.orrrrrrrro.',
+          '.oooooooooo.',
+          '.oWWWWWWWWo.',
+          '.oWWWWWgWWo.',
+          '.oWWWWgWWWo.',
+          '.ogWWgWWWWo.',
+          '.oWgggWWWWo.',
+          '.oWWgWWWWWo.',
+          '.oooooooooo.',
+          '............',
+        ],
+        tarefas: [
+          '....oooo....',
+          '.oooPPPPooo.',
+          '.oCCCCCCCCo.',
+          '.oCgCllllCo.',
+          '.oCCCCCCCCo.',
+          '.oCgCllllCo.',
+          '.oCCCCCCCCo.',
+          '.oCgCllllCo.',
+          '.oCCCCCCCCo.',
+          '.oooooooooo.',
+          '............',
+          '............',
+        ],
+        sequencia: [
+          '.....o......',
+          '....oyo.....',
+          '....oyyo....',
+          '...oyyyoo...',
+          '..oyyRyyyo..',
+          '..oyRRRyyo..',
+          '.oyyRRRRyyo.',
+          '.oyRRYYRRyo.',
+          '.oyRYYYYRyo.',
+          '.oyyYYYYyyo.',
+          '..ooyyyyoo..',
+          '....oooo....',
+        ],
+        moeda: [
+          '....oooo....',
+          '..ooyyyyoo..',
+          '.oyyYYYYyyo.',
+          '.oyYyyyyYyo.',
+          'oyYyyYYyyYyo',
+          'oyYyyYYyyYyo',
+          'oyYyyYYyyYyo',
+          'oyYyyYYyyYyo',
+          '.oyYyyyyYyo.',
+          '.oyyYYYYyyo.',
+          '..ooyyyyoo..',
+          '....oooo....',
+        ],
+      });
+      const STATS = [
+        ['diarios', '100', 'Diários pendentes', ''],
+        ['tarefas', '5', 'Tarefas abertas', ''],
+        ['sequencia', '2', 'Maior sequência', 'flame'],
+        ['moeda', '199', 'Moedas', 'amber'],
+      ];
+      document.getElementById('stats').innerHTML = STATS.map(
+        ([art, num, label, tone]) =>
+          `<div class="stat ${tone}">${pixelSvg(art)}<span class="num">${num}</span><span class="lb">${label}</span></div>`,
+      ).join('');
+      // Capítulo 1 de 5, 145/350 EXP do nível
+      const pct = Math.round((145 / 350) * 100);
+      document.getElementById('story').innerHTML = `
+        <div class="top">
+          ${pixelSvg('cenario')}
+          <div><div class="name">Castelo</div><div class="chap">Capítulo 1: O portão do castelo</div></div>
+          <span class="lvl">Nível 5</span>
+        </div>
+        <div class="segs">${[0, 1, 2, 3, 4]
+          .map((i) => `<div class="seg"><i style="width:${i === 0 ? pct : 0}%"></i></div>`)
+          .join('')}</div>
+        <div class="foot"><span>Capítulo <b>1</b> de 5</span><span><b>145</b>/350 EXP</span></div>`;
     </script>
   </body>
 </html>
