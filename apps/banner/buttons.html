@@ -494,10 +494,207 @@
           transition: none;
         }
       }
+
+      /* ------------------------------------------------------------------ */
+      /* Menu lateral e tela "Botões do aplicativo"                          */
+      /* ------------------------------------------------------------------ */
+      body {
+        display: flex;
+        gap: 0;
+        padding: 0;
+      }
+      .side {
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
+        flex: none;
+        width: 210px;
+        height: 100vh;
+        padding: 24px 12px;
+        background: var(--surface);
+        border-right: 1px solid var(--line);
+      }
+      .side h2 {
+        margin: 0 8px 14px;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .side button {
+        display: block;
+        width: 100%;
+        margin-bottom: 6px;
+        padding: 10px 12px;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        background: transparent;
+        color: var(--text);
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .side button[aria-current='page'] {
+        background: rgb(var(--c) / 0.2);
+        border-color: rgb(var(--c) / 0.6);
+      }
+      .view {
+        flex: 1;
+        min-width: 0;
+        padding: 28px 20px 80px;
+      }
+      .view[hidden] {
+        display: none;
+      }
+      @media (max-width: 720px) {
+        body {
+          flex-direction: column;
+        }
+        .side {
+          position: static;
+          width: auto;
+          height: auto;
+          display: flex;
+          gap: 6px;
+          padding: 10px;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .side h2 {
+          display: none;
+        }
+        .side button {
+          margin: 0;
+        }
+      }
+      .app-phone {
+        max-width: 420px;
+        padding: 18px;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .rn {
+        min-height: 54px;
+        padding: 0 16px;
+        border-radius: 12px;
+        border: 0;
+        font:
+          600 15px/1 system-ui,
+          sans-serif;
+        color: #fff;
+        cursor: pointer;
+      }
+      .rn.primary {
+        background: #7c3aed;
+        box-shadow: 0 6px 18px rgb(124 58 237 / 0.4);
+      }
+      .rn.secondary {
+        background: transparent;
+        color: #a78bfa;
+        border: 1.5px solid #7c3aed;
+      }
+      .rn.ghost {
+        background: transparent;
+        color: #a78bfa;
+      }
+      .rn.danger {
+        background: #ef4444;
+        box-shadow: 0 6px 18px rgb(239 68 68 / 0.4);
+      }
+      .rn.off {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .rn:active {
+        transform: scale(0.98);
+      }
+      .app-row {
+        display: grid;
+        grid-template-columns: 130px 1fr;
+        gap: 12px;
+        align-items: center;
+      }
+      .app-row > small {
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      /* Proposta: botão de ação com pixel art, título e descrição */
+      .act {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+        padding: 14px 16px;
+        border: 1.5px solid rgb(124 58 237 / 0.85);
+        border-radius: 16px;
+        background: rgb(124 58 237 / 0.08);
+        color: var(--text);
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+        box-shadow: 0 0 14px rgb(124 58 237 / 0.25);
+        transition:
+          transform 0.16s ease,
+          background 0.2s,
+          box-shadow 0.2s;
+      }
+      .act:hover {
+        background: rgb(124 58 237 / 0.16);
+        box-shadow: 0 0 20px rgb(124 58 237 / 0.4);
+      }
+      .act:active {
+        transform: scale(0.98);
+      }
+      .act .pix {
+        flex: none;
+        width: 56px;
+        height: 56px;
+        image-rendering: pixelated;
+      }
+      .act .tx {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+      }
+      .act .tt {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .act .ds {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .act.is-off {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .tag {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: rgb(var(--ok) / 0.2);
+        color: rgb(var(--ok));
+        font-size: 11px;
+        vertical-align: 2px;
+      }
     </style>
   </head>
   <body data-theme="roxo" data-size="m">
-    <main>
+    <nav class="side" aria-label="Laboratório">
+      <h2>Laboratório</h2>
+      <button type="button" data-view="luz" aria-current="page">Botões</button>
+      <button type="button" data-view="app">Botões do aplicativo</button>
+    </nav>
+    <main id="view-luz" class="view">
       <h1>Botões com efeito de luz</h1>
       <p class="lead">
         Sete formatos para escolher o estilo. Cada um mostra os estados que o app precisa: normal,
@@ -527,6 +724,48 @@
         no Android (a sombra do Android não tem cor). Por isso este laboratório serve para escolher
         o formato; o efeito exato sai do que o aparelho suportar.
       </p>
+    </main>
+
+    <main id="view-app" class="view" hidden>
+      <h1>Botões do aplicativo</h1>
+      <p class="lead">
+        Primeiro, os botões que já existem no app hoje (padrão roxo cheio, contornado, texto e
+        vermelho cheio). Depois, a proposta nova para as ações da tela inicial: botão contornado,
+        maior, com pixel art ao lado, título e uma descrição curta.
+      </p>
+
+      <section class="style">
+        <h2>Botões que já existem no app</h2>
+        <div class="app-phone" style="margin-top: 12px">
+          <div class="app-row">
+            <small>Principal</small><button class="rn primary" type="button">Entrar</button>
+          </div>
+          <div class="app-row">
+            <small>Secundário</small><button class="rn secondary" type="button">Criar conta</button>
+          </div>
+          <div class="app-row">
+            <small>Texto</small><button class="rn ghost" type="button">Esqueci minha senha</button>
+          </div>
+          <div class="app-row">
+            <small>Perigo</small><button class="rn danger" type="button">Sair</button>
+          </div>
+          <div class="app-row">
+            <small>Desabilitado</small
+            ><button class="rn primary off" type="button" disabled>Salvar</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="style">
+        <h2>Proposta: botão de ação com pixel art <span class="tag">novo</span></h2>
+        <p class="note" style="margin-bottom: 12px">
+          Contornado, com brilho suave. Os três usam a mesma estrutura; só muda a pixel art, o
+          título e a descrição.
+        </p>
+        <div class="app-phone" id="acts"></div>
+        <p class="note">Estado desabilitado (exemplo):</p>
+        <div class="app-phone" id="acts-off" style="margin-top: 8px"></div>
+      </section>
     </main>
 
     <script>
@@ -700,6 +939,98 @@
         el.style.setProperty('--mx', `${event.clientX - rect.left}px`);
         el.style.setProperty('--my', `${event.clientY - rect.top}px`);
       });
+
+      // ---- Menu lateral
+      document.querySelectorAll('.side button').forEach((b) => {
+        b.addEventListener('click', () => {
+          document
+            .querySelectorAll('.side button')
+            .forEach((o) => o.removeAttribute('aria-current'));
+          b.setAttribute('aria-current', 'page');
+          document.getElementById('view-luz').hidden = b.dataset.view !== 'luz';
+          document.getElementById('view-app').hidden = b.dataset.view !== 'app';
+        });
+      });
+
+      // ---- Pixel art 12x12 (cada letra é uma cor da paleta; "." é transparente)
+      const PAL = {
+        o: '#1a1233',
+        H: '#6b4423',
+        S: '#f2c9a0',
+        e: '#1a1233',
+        B: '#7c3aed',
+        C: '#f5e6c8',
+        l: '#b89968',
+        y: '#f59e0b',
+        G: '#8b7bd8',
+        g: '#10b981',
+        P: '#a78bfa',
+      };
+      const ART = {
+        personagem: [
+          '....oooo....',
+          '...oHHHHo...',
+          '..oHHHHHHo..',
+          '..oHSSSSHo..',
+          '..oSeSSeSo..',
+          '..oSSSSSSo..',
+          '...oSSSSo...',
+          '..oBBBBBBo..',
+          '.oBBBBBBBBo.',
+          '.oBBBBBBBBo.',
+          '.oBBBBBBBBo.',
+          '.oooooooooo.',
+        ],
+        historia: [
+          '............',
+          '.oooooooooo.',
+          '.oPPPooPPPo.',
+          '.oCllCoCllCo',
+          '.oCCCCoCCCCo',
+          '.oCllCoCllCo',
+          '.oCCCCoCCCCo',
+          '.oCllCoCllCo',
+          '.oCCCCoCCCCo',
+          '.oooooooooo.',
+          '..oPPPPPPo..',
+          '............',
+        ],
+        cenario: [
+          '............',
+          '.......yy...',
+          '......yyyy..',
+          '.......yy...',
+          '...o........',
+          '..oGo...o...',
+          '.oGGGo.oGo..',
+          'oGGGGGoGGGo.',
+          'GGGGGGGGGGGo',
+          'gggggggggggg',
+          'gggggggggggg',
+          '............',
+        ],
+      };
+      function pixelSvg(name) {
+        const rows = ART[name];
+        let rects = '';
+        rows.forEach((row, y) => {
+          [...row].forEach((ch, x) => {
+            if (PAL[ch])
+              rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${PAL[ch]}"/>`;
+          });
+        });
+        return `<svg class="pix" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true">${rects}</svg>`;
+      }
+      const ACTS = [
+        ['personagem', 'Mudar personagem', 'Troque o visual do seu herói'],
+        ['historia', 'Mudar história principal', 'Escolha por qual aventura seguir'],
+        ['cenario', 'Mudar cenário do QG', 'Altere o fundo e a hora do dia'],
+      ];
+      function actButton([art, title, desc], off) {
+        return `<button type="button" class="act${off ? ' is-off' : ''}"${off ? ' disabled' : ''}>${pixelSvg(art)}<span class="tx"><span class="tt">${title}</span><span class="ds">${desc}</span></span></button>`;
+      }
+      document.getElementById('acts').innerHTML = ACTS.map((a) => actButton(a, false)).join('');
+      document.getElementById('acts-off').innerHTML = actButton(ACTS[0], true);
     </script>
   </body>
 </html>
