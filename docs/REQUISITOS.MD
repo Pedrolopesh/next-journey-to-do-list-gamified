@@ -107,7 +107,7 @@ São **40 requisitos em 10 módulos**. *Obrigatório* bloqueia o lançamento; *D
 | RF-32 | Conquistas | Catálogo de conquistas com critério, progresso e estado (bloqueada ou conquistada). | Obrigatório |
 | RF-33 | Conquistas | Modal de conquista (topo dourado, ícone LPC, Continuar) exibido no momento em que ela é desbloqueada. | Obrigatório |
 | RF-34 | Conquistas | Conquistas liberam itens cosméticos de customização (ex.: 7 dias seguidos libera uma roupa especial). | Obrigatório |
-| RF-35 | Home | Banner QG com cena conforme o horário, saudação, 3 contadores, card da história e lista "Para hoje". | Obrigatório |
+| RF-35 | Home | Banner QG com cena conforme o horário, saudação, 4 indicadores (diários, tarefas, sequência e moedas), card da história e, no fim, os botões de mudar personagem, história e cenário. A lista "Para hoje" saiu da Home (os itens ficam nas abas). | Obrigatório |
 | RF-36 | Banner | Banner das abas: caminhada em loop, corrida de 5s a cada check, fade de troca de capítulo e posição do personagem salva entre sessões. | Obrigatório |
 | RF-37 | Perfil | Avatar, nome, título, nível, EXP, moedas, atalhos para conquistas, história e personalização. | Obrigatório |
 | RF-38 | Perfil | Configurações: cor tema (história), categorias, conta, notificações e sobre. | Obrigatório |
