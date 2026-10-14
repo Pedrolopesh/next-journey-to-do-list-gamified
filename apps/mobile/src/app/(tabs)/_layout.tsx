@@ -22,8 +22,13 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      detachInactiveScreens={false}
       screenOptions={{
         headerShown: false,
+        // Troca de aba com fade curto, sem corte seco
+        animation: 'fade',
+        // Todas as abas montam de uma vez: a primeira visita a cada uma não espera o banner subir
+        lazy: false,
         sceneStyle: { backgroundColor: colors.bg.base },
         tabBarActiveTintColor: colors.brand.primaryLight,
         tabBarInactiveTintColor: colors.text.secondary,

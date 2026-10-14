@@ -97,6 +97,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
             qg.setTime(message.payload.timeOfDay);
             qg.setCharacter(message.payload.character);
             qg.show();
+            root.dataset.ready = '1';
             return;
           }
           active = 'map';
@@ -105,6 +106,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
           root.dataset.sceneKey = message.payload.sceneKey;
           root.dataset.timeOfDay = message.payload.timeOfDay;
           scene.setProgress(message.payload.progress, { animate: false });
+          root.dataset.ready = '1';
           return;
         }
         case 'ITEM_CHECKED':

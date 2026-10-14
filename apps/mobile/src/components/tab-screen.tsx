@@ -1,5 +1,6 @@
 import type { BannerToAppMessage } from '@nextjourney/contracts';
 import { IconChevronLeft } from '@tabler/icons-react-native';
+import { useFocusEffect } from 'expo-router';
 import {
   type ReactNode,
   type RefObject,
@@ -78,6 +79,16 @@ export function TabScreen({
   useEffect(() => {
     if (userId && level !== undefined) useJourneyStore.getState().reconcile(userId, level);
   }, [userId, level]);
+  // Aba fora de foco continua montada (troca instantânea), mas o banner fica parado
+  const [focused, setFocused] = useState(true);
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      return () => {
+        setFocused(false);
+      };
+    }, []),
+  );
   const [simProgress, setSimProgress] = useState(0);
   const [lastEvent, setLastEvent] = useState('-');
 
@@ -142,6 +153,7 @@ export function TabScreen({
           initMessage={initMessage}
           onMessage={handleBannerMessage}
           aspectRatio={QG_ASPECT_RATIO}
+          focused={focused}
         />
         {onBack ? (
           <Pressable

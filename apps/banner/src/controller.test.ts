@@ -54,6 +54,17 @@ describe('controlador do banner', () => {
     expect(document.getElementById('hero')?.style.getPropertyValue('--hero-x')).toBe('0px');
   });
 
+  it('o banner só fica visível (data-ready) depois do primeiro INIT', () => {
+    const { root, receive } = setup();
+    expect(root.dataset.ready).toBeUndefined();
+    receive({
+      v: 1,
+      type: 'INIT',
+      payload: { scene: 'map', character, sceneKey: 'forest-1', progress: 0, timeOfDay: 'night' },
+    });
+    expect(root.dataset.ready).toBe('1');
+  });
+
   it('INIT com a cena QG responde ERROR (ainda não suportada)', () => {
     const { receive, sent } = setup();
     receive({
