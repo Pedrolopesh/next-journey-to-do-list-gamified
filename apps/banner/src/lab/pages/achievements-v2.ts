@@ -2,7 +2,7 @@ import './achievements-v2.css';
 
 import { choiceGroup, h, panel } from '../dom';
 import type { LabPage } from '../page';
-import { pixelSvg } from '../pixel';
+import { insigniaSvg } from '../pixel';
 import { PROPOSAL, type Proposal, type Source, TIERS, TRAILS } from './achievements-v2-data';
 
 const SOURCE_LABEL: Record<Source, string> = {
@@ -11,13 +11,13 @@ const SOURCE_LABEL: Record<Source, string> = {
   novo: 'Precisa de dado novo',
 };
 
-/** Insígnia: pixel art (glifo) dentro da moldura da classe (bronze, prata, ouro, diamante). */
+/** Insígnia: insígnia em pixel art dentro da moldura da classe (bronze, prata, ouro, diamante). */
 function badge(item: Pick<Proposal, 'glyph' | 'tier'>, locked: boolean, size = ''): HTMLElement {
   const box = h(
     'span',
     `insignia t${item.tier}${locked ? ' locked' : ''}${size ? ` ${size}` : ''}`,
   );
-  box.innerHTML = pixelSvg(item.glyph);
+  box.innerHTML = insigniaSvg(item.glyph);
   return box;
 }
 
@@ -149,11 +149,11 @@ export const achievementsV2Page: LabPage = {
         ),
       ),
       panel(
-        'Arte: glifo + moldura',
+        'Arte: insígnia + moldura',
         h(
           'p',
           'lead',
-          `Em vez de uma arte por conquista, cada família usa um glifo em pixel art e a classe vem da moldura. Os ${glyphs.length} glifos desta proposta cobrem as ${PROPOSAL.length} conquistas (9 são desenhos novos). Uma conquista nova da mesma família só precisa de uma moldura, sem arte nova.`,
+          `Em vez de uma arte por conquista, cada família usa uma insígnia em pixel art e a classe vem da moldura. As ${glyphs.length} insígnias desta proposta cobrem as ${PROPOSAL.length} conquistas (desenhadas no Figma, em 24x24). Uma conquista nova da mesma família só precisa de uma moldura, sem arte nova.`,
         ),
         h(
           'div',
@@ -162,18 +162,18 @@ export const achievementsV2Page: LabPage = {
             h(
               'figure',
               '',
-              badge({ glyph: 'streak', tier: t.tier }, false, 'big'),
+              badge({ glyph: 'chama', tier: t.tier }, false, 'big'),
               h('figcaption', '', t.name),
             ),
           ),
           h(
             'figure',
             '',
-            badge({ glyph: 'streak', tier: 1 }, true, 'big'),
+            badge({ glyph: 'chama', tier: 1 }, true, 'big'),
             h('figcaption', '', 'Bloqueada'),
           ),
         ),
-        h('p', 'hint', 'Glifos usados (cada um aparece em até 4 classes):'),
+        h('p', 'hint', 'Insígnias usadas (cada uma aparece em até 4 classes):'),
         h('div', 'v2-glyphs', ...glyphs.map((g) => badge({ glyph: g, tier: 1 }, false))),
       ),
       panel(

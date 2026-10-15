@@ -1,4 +1,4 @@
-import type { PixelArtName } from '../../../../mobile/src/components/pixel-art-data';
+import type { InsigniaName } from './insignias-data';
 
 /** Proposta de conquistas v2 (só mérito, sem recompensa de item). Dados para validar no laboratório. */
 
@@ -13,7 +13,7 @@ export type Proposal = {
   tier: Tier;
   name: string;
   desc: string;
-  glyph: PixelArtName;
+  glyph: InsigniaName;
   source: Source;
   /** Conquista surpresa: a descrição só aparece depois de desbloquear. */
   secret?: true;
@@ -49,7 +49,7 @@ const a = (
   id: string,
   name: string,
   desc: string,
-  glyph: PixelArtName,
+  glyph: InsigniaName,
   source: Source,
   secret?: true,
 ): Proposal => ({ id, trail, tier, name, desc, glyph, source, ...(secret ? { secret } : {}) });
@@ -62,7 +62,7 @@ export const PROPOSAL: Proposal[] = [
     'primeiro-passo',
     'Primeiro passo',
     'Faça o seu primeiro check',
-    'first-step',
+    'pegada',
     'pronto',
   ),
   a(
@@ -71,7 +71,7 @@ export const PROPOSAL: Proposal[] = [
     'diario-inaugural',
     'Diário inaugural',
     'Crie o seu primeiro diário',
-    'dailies',
+    'livro',
     'consulta',
   ),
   a(
@@ -80,7 +80,7 @@ export const PROPOSAL: Proposal[] = [
     'primeira-tarefa',
     'Primeira tarefa',
     'Crie a sua primeira tarefa',
-    'tasks',
+    'pergaminho',
     'consulta',
   ),
   a(
@@ -89,7 +89,7 @@ export const PROPOSAL: Proposal[] = [
     'primeiro-habito',
     'Primeiro hábito',
     'Crie o seu primeiro hábito',
-    'sprout',
+    'broto',
     'consulta',
   ),
   a(
@@ -107,7 +107,7 @@ export const PROPOSAL: Proposal[] = [
     'tarefa-cumprida',
     'Tarefa cumprida',
     'Conclua a sua primeira tarefa',
-    'flag',
+    'bandeira',
     'consulta',
   ),
   a(
@@ -116,11 +116,11 @@ export const PROPOSAL: Proposal[] = [
     'habito-em-acao',
     'Hábito em ação',
     'Marque o seu primeiro hábito',
-    'bolt',
+    'raio',
     'consulta',
   ),
-  a('inicio', 1, 'cara-nova', 'Cara nova', 'Mude o visual do seu personagem', 'character', 'novo'),
-  a('inicio', 1, 'voltou', 'Voltou!', 'Marque itens em 2 dias diferentes', 'calendar', 'consulta'),
+  a('inicio', 1, 'cara-nova', 'Cara nova', 'Mude o visual do seu personagem', 'pocao', 'novo'),
+  a('inicio', 1, 'voltou', 'Voltou!', 'Marque itens em 2 dias diferentes', 'casa', 'consulta'),
   // Diários
   a(
     'diarios',
@@ -128,17 +128,17 @@ export const PROPOSAL: Proposal[] = [
     'rotina-em-marcha',
     'Rotina em marcha',
     'Marque 5 diários',
-    'dailies',
+    'relogio',
     'consulta',
   ),
-  a('diarios', 2, 'rotina-firme', 'Rotina firme', 'Marque 25 diários', 'dailies', 'consulta'),
+  a('diarios', 2, 'rotina-firme', 'Rotina firme', 'Marque 25 diários', 'relogio', 'consulta'),
   a(
     'diarios',
     3,
     'rotina-de-ferro',
     'Rotina de ferro',
     'Marque 100 diários',
-    'dailies',
+    'relogio',
     'consulta',
   ),
   a(
@@ -147,7 +147,7 @@ export const PROPOSAL: Proposal[] = [
     'mestre-da-rotina',
     'Mestre da rotina',
     'Marque 300 diários',
-    'dailies',
+    'relogio',
     'consulta',
   ),
   a(
@@ -156,7 +156,7 @@ export const PROPOSAL: Proposal[] = [
     'dia-perfeito',
     'Dia perfeito',
     'Conclua todos os diários de um dia (com 3 ou mais agendados)',
-    'target',
+    'alvo',
     'consulta',
   ),
   a(
@@ -165,7 +165,7 @@ export const PROPOSAL: Proposal[] = [
     'chama-3-dias',
     'Chama de 3 dias',
     'Conclua todos os diários agendados por 3 dias seguidos',
-    'streak',
+    'chama',
     'pronto',
   ),
   a(
@@ -174,7 +174,7 @@ export const PROPOSAL: Proposal[] = [
     'chama-7-dias',
     'Chama de 7 dias',
     'Conclua todos os diários agendados por 7 dias seguidos',
-    'streak',
+    'chama',
     'pronto',
   ),
   a(
@@ -183,7 +183,7 @@ export const PROPOSAL: Proposal[] = [
     'chama-14-dias',
     'Chama de 14 dias',
     'Conclua todos os diários agendados por 14 dias seguidos',
-    'streak',
+    'chama',
     'pronto',
   ),
   a(
@@ -192,20 +192,20 @@ export const PROPOSAL: Proposal[] = [
     'chama-30-dias',
     'Chama de 30 dias',
     'Conclua todos os diários agendados por 30 dias seguidos',
-    'streak',
+    'chama',
     'pronto',
   ),
   // Tarefas
-  a('tarefas', 1, 'pe-na-lista', 'Pé na lista', 'Conclua 5 tarefas', 'tasks', 'consulta'),
-  a('tarefas', 2, 'executor', 'Executor', 'Conclua 25 tarefas', 'tasks', 'consulta'),
-  a('tarefas', 3, 'imparavel', 'Imparável', 'Conclua 100 tarefas', 'tasks', 'consulta'),
+  a('tarefas', 1, 'pe-na-lista', 'Pé na lista', 'Conclua 5 tarefas', 'espada', 'consulta'),
+  a('tarefas', 2, 'executor', 'Executor', 'Conclua 25 tarefas', 'espada', 'consulta'),
+  a('tarefas', 3, 'imparavel', 'Imparável', 'Conclua 100 tarefas', 'espada', 'consulta'),
   a(
     'tarefas',
     4,
     'maquina-de-entregas',
     'Máquina de entregas',
     'Conclua 300 tarefas',
-    'tasks',
+    'espada',
     'consulta',
   ),
   a(
@@ -214,7 +214,7 @@ export const PROPOSAL: Proposal[] = [
     'lista-zerada',
     'Lista zerada',
     'Conclua todas as tarefas abertas (tendo ao menos 3)',
-    'flag',
+    'estrela',
     'consulta',
   ),
   a(
@@ -223,7 +223,7 @@ export const PROPOSAL: Proposal[] = [
     'no-prazo',
     'No prazo',
     'Conclua 5 tarefas antes do vencimento',
-    'target',
+    'ampulheta',
     'consulta',
   ),
   a(
@@ -232,19 +232,11 @@ export const PROPOSAL: Proposal[] = [
     'resgate',
     'Resgate',
     'Conclua uma tarefa que estava atrasada',
-    'bolt',
+    'chave',
     'consulta',
     true,
   ),
-  a(
-    'tarefas',
-    2,
-    'peso-pesado',
-    'Peso pesado',
-    'Conclua 5 tarefas difíceis',
-    'veteran',
-    'consulta',
-  ),
+  a('tarefas', 2, 'peso-pesado', 'Peso pesado', 'Conclua 5 tarefas difíceis', 'escudo', 'consulta'),
   // Hábitos (contam dias com marcação, não cliques)
   a(
     'habitos',
@@ -252,17 +244,17 @@ export const PROPOSAL: Proposal[] = [
     'semente',
     'Semente',
     'Marque hábitos em 10 dias diferentes',
-    'sprout',
+    'arvore',
     'consulta',
   ),
-  a('habitos', 2, 'raiz', 'Raiz', 'Marque hábitos em 40 dias diferentes', 'sprout', 'consulta'),
+  a('habitos', 2, 'raiz', 'Raiz', 'Marque hábitos em 40 dias diferentes', 'arvore', 'consulta'),
   a(
     'habitos',
     3,
     'arvore',
     'Árvore',
     'Marque hábitos em 120 dias diferentes',
-    'sprout',
+    'arvore',
     'consulta',
   ),
   a(
@@ -271,7 +263,7 @@ export const PROPOSAL: Proposal[] = [
     'floresta',
     'Floresta',
     'Marque hábitos em 365 dias diferentes',
-    'sprout',
+    'arvore',
     'consulta',
   ),
   a(
@@ -280,7 +272,7 @@ export const PROPOSAL: Proposal[] = [
     'habito-em-chama',
     'Hábito em chama',
     'Mantenha um mesmo hábito por 3 dias seguidos',
-    'streak',
+    'tocha',
     'consulta',
   ),
   a(
@@ -289,7 +281,7 @@ export const PROPOSAL: Proposal[] = [
     'habito-de-7',
     'Hábito de 7 dias',
     'Mantenha um mesmo hábito por 7 dias seguidos',
-    'streak',
+    'tocha',
     'consulta',
   ),
   a(
@@ -298,7 +290,7 @@ export const PROPOSAL: Proposal[] = [
     'habito-de-30',
     'Hábito de 30 dias',
     'Mantenha um mesmo hábito por 30 dias seguidos',
-    'streak',
+    'tocha',
     'consulta',
   ),
   a(
@@ -307,19 +299,19 @@ export const PROPOSAL: Proposal[] = [
     'dia-de-foco',
     'Dia de foco',
     'Marque 5 hábitos diferentes no mesmo dia',
-    'bolt',
+    'bussola',
     'consulta',
   ),
   // Organização e constância
-  a('constancia', 1, 'organizado', 'Organizado', 'Crie 10 itens', 'chest', 'pronto'),
-  a('constancia', 2, 'planejador', 'Planejador', 'Crie 25 itens', 'chest', 'pronto'),
+  a('constancia', 1, 'organizado', 'Organizado', 'Crie 10 itens', 'mochila', 'pronto'),
+  a('constancia', 2, 'planejador', 'Planejador', 'Crie 25 itens', 'mochila', 'pronto'),
   a(
     'constancia',
     3,
     'arquiteto-da-rotina',
     'Arquiteto da rotina',
     'Crie 50 itens',
-    'chest',
+    'mochila',
     'pronto',
   ),
   a(
@@ -328,7 +320,7 @@ export const PROPOSAL: Proposal[] = [
     'semana-inteira',
     'Semana inteira',
     'Marque itens em 7 dias seguidos',
-    'calendar',
+    'calendario',
     'consulta',
   ),
   a(
@@ -337,7 +329,7 @@ export const PROPOSAL: Proposal[] = [
     'mes-de-constancia',
     'Mês de constância',
     'Marque itens em 30 dias seguidos',
-    'calendar',
+    'calendario',
     'consulta',
   ),
   a(
@@ -346,18 +338,18 @@ export const PROPOSAL: Proposal[] = [
     'madrugador',
     'Madrugador',
     'Faça um check antes das 07h',
-    'early-bird',
+    'sol',
     'pronto',
     true,
   ),
-  a('constancia', 1, 'coruja', 'Coruja', 'Faça um check depois das 22h', 'moon', 'pronto', true),
+  a('constancia', 1, 'coruja', 'Coruja', 'Faça um check depois das 22h', 'lua', 'pronto', true),
   a(
     'constancia',
     2,
     'equilibrio',
     'Equilíbrio',
     'Faça checks em 3 categorias no mesmo dia',
-    'balance',
+    'balanca',
     'pronto',
   ),
   a(
@@ -366,33 +358,41 @@ export const PROPOSAL: Proposal[] = [
     'vida-em-equilibrio',
     'Vida em equilíbrio',
     'Faça checks em 5 categorias no mesmo dia',
-    'balance',
+    'balanca',
     'consulta',
   ),
-  a('constancia', 1, 'do-meu-jeito', 'Do meu jeito', 'Crie uma categoria própria', 'flag', 'novo'),
+  a(
+    'constancia',
+    1,
+    'do-meu-jeito',
+    'Do meu jeito',
+    'Crie uma categoria própria',
+    'engrenagem',
+    'novo',
+  ),
   // Jornada
-  a('jornada', 1, 'aprendiz', 'Aprendiz', 'Chegue ao nível 5', 'apprentice', 'pronto'),
-  a('jornada', 2, 'veterano', 'Veterano', 'Chegue ao nível 10', 'veteran', 'pronto'),
-  a('jornada', 3, 'mestre', 'Mestre', 'Chegue ao nível 20', 'trophy', 'pronto'),
-  a('jornada', 4, 'lenda-do-nivel', 'Lenda', 'Chegue ao nível 30', 'trophy', 'pronto'),
+  a('jornada', 1, 'aprendiz', 'Aprendiz', 'Chegue ao nível 5', 'foguete', 'pronto'),
+  a('jornada', 2, 'veterano', 'Veterano', 'Chegue ao nível 10', 'foguete', 'pronto'),
+  a('jornada', 3, 'mestre', 'Mestre', 'Chegue ao nível 20', 'foguete', 'pronto'),
+  a('jornada', 4, 'lenda-do-nivel', 'Lenda', 'Chegue ao nível 30', 'foguete', 'pronto'),
   a(
     'jornada',
     1,
     'novo-capitulo',
     'Novo capítulo',
     'Complete o primeiro capítulo',
-    'story',
+    'mapa',
     'pronto',
   ),
-  a('jornada', 2, 'livro-aberto', 'Livro aberto', 'Complete 5 capítulos', 'story', 'pronto'),
-  a('jornada', 3, 'lenda-viva', 'Lenda viva', 'Complete uma história inteira', 'legend', 'pronto'),
+  a('jornada', 2, 'livro-aberto', 'Livro aberto', 'Complete 5 capítulos', 'mapa', 'pronto'),
+  a('jornada', 3, 'lenda-viva', 'Lenda viva', 'Complete uma história inteira', 'coroa', 'pronto'),
   a(
     'jornada',
     4,
     'colecionador',
     'Colecionador de histórias',
     'Complete 3 histórias',
-    'legend',
+    'bau',
     'pronto',
   ),
   a(
@@ -401,10 +401,10 @@ export const PROPOSAL: Proposal[] = [
     'troca-de-ares',
     'Troca de ares',
     'Troque de história ou de cenário',
-    'scenery',
+    'lupa',
     'novo',
   ),
-  a('jornada', 1, 'cofrinho', 'Cofrinho', 'Junte 100 moedas', 'coin', 'consulta'),
-  a('jornada', 2, 'tesouro', 'Tesouro', 'Junte 500 moedas', 'coin', 'consulta'),
-  a('jornada', 3, 'fortuna', 'Fortuna', 'Junte 2.000 moedas', 'coin', 'consulta'),
+  a('jornada', 1, 'cofrinho', 'Cofrinho', 'Junte 100 moedas', 'moeda', 'consulta'),
+  a('jornada', 2, 'tesouro', 'Tesouro', 'Junte 500 moedas', 'moeda', 'consulta'),
+  a('jornada', 3, 'fortuna', 'Fortuna', 'Junte 2.000 moedas', 'moeda', 'consulta'),
 ];

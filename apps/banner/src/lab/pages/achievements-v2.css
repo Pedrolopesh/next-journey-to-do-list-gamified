@@ -22,8 +22,8 @@
   --tc: 103 232 249;
 }
 .insignia .pix {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   image-rendering: pixelated;
 }
 .insignia.big {
@@ -31,8 +31,8 @@
   height: 88px;
 }
 .insignia.big .pix {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
 }
 .insignia.locked {
   border-color: #334155;
