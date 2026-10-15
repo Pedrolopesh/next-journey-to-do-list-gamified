@@ -21,6 +21,10 @@ await prisma.gameConfig.upsert({
   update: {},
 });
 
+// O catálogo é fixo: histórias que saíram dele (ex.: as temáticas antigas) são removidas, junto com o
+// progresso delas (cascata do banco). Quem tinha uma ativa volta à escolha de história.
+await prisma.story.deleteMany({ where: { slug: { notIn: STORIES.map((story) => story.slug) } } });
+
 for (const [position, story] of STORIES.entries()) {
   const saved = await prisma.story.upsert({
     where: { slug: story.slug },
@@ -42,8 +46,8 @@ for (const [position, story] of STORIES.entries()) {
     const number = index + 1;
     await prisma.chapter.upsert({
       where: { storyId_number: { storyId: saved.id, number } },
-      create: { storyId: saved.id, number, title, text, sceneKey: `${story.slug}-${number}` },
-      update: { title, text, sceneKey: `${story.slug}-${number}` },
+      create: { storyId: saved.id, number, title, text, sceneKey: story.slug },
+      update: { title, text, sceneKey: story.slug },
     });
   }
 }

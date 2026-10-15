@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Put } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Put } from '@nestjs/common';
 import {
   type PutStoryRequest,
   putStoryRequestSchema,
@@ -30,5 +30,11 @@ export class StoriesController {
   @Get('me/story/timeline')
   timeline(@CurrentUserId() userId: string): Promise<Timeline> {
     return this.stories.timeline(userId);
+  }
+
+  /** Capítulos de qualquer história do catálogo (o texto só nos já concluídos). */
+  @Get('stories/:slug/timeline')
+  timelineOf(@CurrentUserId() userId: string, @Param('slug') slug: string): Promise<Timeline> {
+    return this.stories.timeline(userId, slug);
   }
 }

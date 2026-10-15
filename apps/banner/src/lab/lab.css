@@ -1,0 +1,250 @@
+/* Laboratório: base, menu lateral e peças comuns às páginas */
+/*
+ * Laboratório de botões com efeito de luz (só em desenvolvimento, fora do build).
+ * Serve para validar o formato, as cores e os estados antes de levar um estilo ao app.
+ * Cores vêm dos tokens do app (apps/mobile/src/theme/colors.ts).
+ */
+@property --angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --line: #334155;
+  /* cor do tema em "R G B" (para usar com rgb(var(--c) / alfa)) e cor do texto sobre ela */
+  --c: 124 58 237;
+  --on: #ffffff;
+  --ok: 16 185 129;
+}
+[data-theme='azul'] {
+  --c: 59 130 246;
+}
+[data-theme='ciano'] {
+  --c: 34 211 238;
+  --on: #0b1220;
+}
+[data-theme='verde'] {
+  --c: 16 185 129;
+}
+[data-theme='ambar'] {
+  --c: 245 158 11;
+  --on: #1a1a2e;
+}
+[data-theme='rosa'] {
+  --c: 236 72 153;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  padding: 28px 20px 80px;
+  background:
+    radial-gradient(900px 500px at 15% -10%, rgb(var(--c) / 0.16), transparent 60%), var(--bg);
+  color: var(--text);
+  font:
+    14px/1.5 system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  transition: background 0.4s;
+}
+main {
+  max-width: 980px;
+  margin: 0 auto;
+}
+h1 {
+  font-size: 22px;
+  margin: 0 0 4px;
+}
+h2 {
+  font-size: 16px;
+  margin: 0 0 2px;
+}
+p.lead,
+p.note {
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+p.note {
+  font-size: 12px;
+  margin: 6px 0 0;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 28px;
+  align-items: center;
+  margin: 18px 0 8px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.toolbar label {
+  color: var(--muted);
+  font-size: 12px;
+  margin-right: 8px;
+}
+.chips {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.chip {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+.chip[aria-pressed='true'] {
+  background: rgb(var(--c) / 0.22);
+  border-color: rgb(var(--c) / 0.7);
+}
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
+section.style {
+  margin-top: 22px;
+  padding: 18px 18px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.states {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 18px 14px;
+  margin-top: 14px;
+}
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.cell small {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.live {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Menu lateral e tela "Botões do aplicativo"                          */
+/* ------------------------------------------------------------------ */
+body {
+  display: flex;
+  gap: 0;
+  padding: 0;
+}
+.side {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  flex: none;
+  width: 210px;
+  height: 100vh;
+  padding: 24px 12px;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+}
+.side h2 {
+  margin: 0 8px 14px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.side button {
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.side button[aria-current='page'] {
+  background: rgb(var(--c) / 0.2);
+  border-color: rgb(var(--c) / 0.6);
+}
+.view {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 20px 80px;
+}
+.view[hidden] {
+  display: none;
+}
+@media (max-width: 720px) {
+  body {
+    flex-direction: column;
+  }
+  .side {
+    position: static;
+    width: auto;
+    height: auto;
+    display: flex;
+    gap: 6px;
+    padding: 10px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .side h2 {
+    display: none;
+  }
+  .side button {
+    margin: 0;
+  }
+}
+.app-phone {
+  max-width: 420px;
+  padding: 18px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgb(var(--ok) / 0.2);
+  color: rgb(var(--ok));
+  font-size: 11px;
+  vertical-align: 2px;
+}
+
+.hint {
+  color: var(--muted);
+}

@@ -15,8 +15,8 @@ export const homeResponseSchema = z.object({
       name: z.string(),
       chapter: z.number().int().positive(),
       chapterTitle: z.string(),
-      checksInChapter: z.number().int().nonnegative(),
-      requiredChecks: z.number().int().positive(),
+      expInLevel: z.number().int().nonnegative(),
+      expForNextLevel: z.number().int().positive(),
       completed: z.boolean(),
     })
     .nullable(),

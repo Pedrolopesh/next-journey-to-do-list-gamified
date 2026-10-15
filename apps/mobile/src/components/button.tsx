@@ -5,7 +5,7 @@ import { colors, radius, size, softGlow, softGlowOutline } from '@/theme';
 type Props = {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   loading?: boolean;
   disabled?: boolean;
 };
@@ -35,16 +35,26 @@ export function Button({
           (inactive
             ? styles.secondaryInactive
             : softGlowOutline(colors.brand.primary, { pressed })),
+        // Sair e ações destrutivas: preenchido em vermelho, como o principal
+        !inactive && variant === 'danger' && softGlow(colors.status.danger, { pressed }),
         pressed && styles.pressed,
         inactive && styles.disabled,
       ]}
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? colors.text.onPrimary : colors.brand.primaryLight}
+          color={
+            variant === 'primary' || variant === 'danger'
+              ? colors.text.onPrimary
+              : colors.brand.primaryLight
+          }
         />
       ) : (
-        <Text style={[styles.label, variant !== 'primary' && styles.ghostLabel]}>{label}</Text>
+        <Text
+          style={[styles.label, variant !== 'primary' && variant !== 'danger' && styles.ghostLabel]}
+        >
+          {label}
+        </Text>
       )}
     </Pressable>
   );
@@ -65,6 +75,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(124, 58, 237, 0.4)',
   },
   ghost: { backgroundColor: 'transparent' },
+  danger: { backgroundColor: colors.status.danger },
   pressed: { transform: [{ scale: 0.98 }] },
   disabled: { opacity: 0.45 },
   label: { color: colors.text.onPrimary, fontSize: 15, fontWeight: '600' },

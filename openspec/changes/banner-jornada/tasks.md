@@ -1,0 +1,12 @@
+- [x] Contrato: `journey` em `sceneKindSchema`
+- [x] Motor do QG: modo jornada, rolagem e velocidade por animação; animação de andar embutida
+- [x] Praia: `journey(env)` com céu, mar, ilha, areia e objetos que passam, mais o portal do fim
+- [x] Progresso do capítulo em 6 paradas, corrida até a parada ao marcar item
+- [x] Controlador: `INIT journey` e testes
+- [x] Laboratório: modo "Jornada"
+- [x] App: `storyScenario`, seletor na Home, abas enviando `journey`, rótulo "Cidade"
+- [x] App: itens de exemplo e testes
+- [x] Jornada dos demais cenários: cidade (avenida), zumbi (base militar), castelo (tapete), floresta (antes paraíso) e inferno
+- [x] App: posição do personagem pela EXP do nível, portal ao subir de nível e troca de cena só no check seguinte
+- [x] App: ícone de dificuldade à direita e check que também desmarca (sem botão Desfazer)
+- [ ] Medir o desempenho em aparelho real (ver HANDOFF)

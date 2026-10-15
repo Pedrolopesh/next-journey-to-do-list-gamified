@@ -1,4 +1,14 @@
-import { byTime as by, gradientRect, rect, rng, sky, sprite, tileArea } from './draw';
+import {
+  byTime as by,
+  gradientRect,
+  portal,
+  rect,
+  rng,
+  scrolled,
+  sky,
+  sprite,
+  tileArea,
+} from './draw';
 import type { Light, SceneDef, SceneEnv } from './types';
 import { SCENE_H, SCENE_W } from './types';
 
@@ -65,18 +75,21 @@ function mountains(env: SceneEnv): void {
   }
 }
 
-function hills(env: SceneEnv): void {
+function hills(env: SceneEnv, farShift = 0, nearShift = 0): void {
   const { ctx } = env;
-  const layers: [number, number, number, string, string][] = [
-    [HORIZON - 4, 8, 0.6, by(env.time, '#7dcf8a', '#6fd07f', '#1c4a4a'), 'far'],
-    [HORIZON + 8, 7, 2.4, by(env.time, '#5fbf72', '#52c26a', '#16403f'), 'near'],
+  const layers: [number, number, number, string, number][] = [
+    [HORIZON - 4, 8, 0.6, by(env.time, '#7dcf8a', '#6fd07f', '#1c4a4a'), farShift],
+    [HORIZON + 8, 7, 2.4, by(env.time, '#5fbf72', '#52c26a', '#16403f'), nearShift],
   ];
-  for (const [base, amp, phase, color] of layers) {
+  for (const [base, amp, phase, color, shift] of layers) {
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.moveTo(0, 150);
     for (let x = 0; x <= SCENE_W; x += 4)
-      ctx.lineTo(x, base + Math.sin(x / 31 + phase) * amp + Math.sin(x / 11) * 1.5);
+      ctx.lineTo(
+        x,
+        base + Math.sin((x + shift) / 31 + phase) * amp + Math.sin((x + shift) / 11) * 1.5,
+      );
     ctx.lineTo(SCENE_W, 150);
     ctx.fill();
   }
@@ -159,11 +172,13 @@ function cabin(env: SceneEnv, cx: number, base: number): void {
 
 const LAKE = { cx: 76, cy: 182, rx: 62, ry: 24 };
 
-function lake(env: SceneEnv): void {
+type LakeBox = { cx: number; cy: number; rx: number; ry: number };
+
+function lake(env: SceneEnv, L: LakeBox = LAKE): void {
   const { ctx } = env;
   const path = (grow = 0): void => {
     ctx.beginPath();
-    ctx.ellipse(LAKE.cx, LAKE.cy, LAKE.rx + grow, LAKE.ry + grow * 0.6, 0, 0, Math.PI * 2);
+    ctx.ellipse(L.cx, L.cy, L.rx + grow, L.ry + grow * 0.6, 0, 0, Math.PI * 2);
   };
   // margem de terra e pedras
   path(3);
@@ -178,24 +193,14 @@ function lake(env: SceneEnv): void {
   ctx.clip();
   gradientRect(
     env,
-    LAKE.cx - LAKE.rx,
-    LAKE.cy - LAKE.ry,
-    LAKE.rx * 2,
-    LAKE.ry * 2,
+    L.cx - L.rx,
+    L.cy - L.ry,
+    L.rx * 2,
+    L.ry * 2,
     by(env.time, ['#5ec8dc', '#2f9ac4'], ['#4fc3e8', '#2a8cd0'], ['#173a6a', '#0e2a55']),
   );
-  tileArea(
-    env,
-    env.tiles.water,
-    0,
-    160,
-    LAKE.cx - LAKE.rx,
-    LAKE.cy - LAKE.ry,
-    LAKE.rx * 2,
-    LAKE.ry * 2,
-    env.t * 6,
-  );
-  gradientRect(env, LAKE.cx - LAKE.rx, LAKE.cy - LAKE.ry, LAKE.rx * 2, 10, [
+  tileArea(env, env.tiles.water, 0, 160, L.cx - L.rx, L.cy - L.ry, L.rx * 2, L.ry * 2, env.t * 6);
+  gradientRect(env, L.cx - L.rx, L.cy - L.ry, L.rx * 2, 10, [
     'rgba(255,255,255,0.35)',
     'rgba(255,255,255,0)',
   ]);
@@ -206,8 +211,8 @@ function lake(env: SceneEnv): void {
     if (phase > 0.2)
       rect(
         env,
-        LAKE.cx - 50 + random() * 100,
-        LAKE.cy - 14 + random() * 28,
+        L.cx - 50 + random() * 100,
+        L.cy - 14 + random() * 28,
         4,
         1,
         'rgba(255,255,255,0.7)',
@@ -225,16 +230,16 @@ function lake(env: SceneEnv): void {
     const bob = Math.sin(env.t * 1.2 + dx) * 0.6;
     ctx.fillStyle = '#1f6f3a';
     ctx.beginPath();
-    ctx.ellipse(LAKE.cx + dx, LAKE.cy + dy + bob + 1, 8, 3.2, 0, 0, Math.PI * 2);
+    ctx.ellipse(L.cx + dx, L.cy + dy + bob + 1, 8, 3.2, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#46c25f';
     ctx.beginPath();
-    ctx.ellipse(LAKE.cx + dx, LAKE.cy + dy + bob, 8, 3.2, 0, 0, Math.PI * 2);
+    ctx.ellipse(L.cx + dx, L.cy + dy + bob, 8, 3.2, 0, 0, Math.PI * 2);
     ctx.fill();
     if (flower) {
-      rect(env, LAKE.cx + dx - 2, LAKE.cy + dy + bob - 4, 5, 3, '#ff8fd0');
-      rect(env, LAKE.cx + dx - 1, LAKE.cy + dy + bob - 6, 3, 3, '#ffc2e6');
-      rect(env, LAKE.cx + dx, LAKE.cy + dy + bob - 4, 1, 2, '#ffe14a');
+      rect(env, L.cx + dx - 2, L.cy + dy + bob - 4, 5, 3, '#ff8fd0');
+      rect(env, L.cx + dx - 1, L.cy + dy + bob - 6, 3, 3, '#ffc2e6');
+      rect(env, L.cx + dx, L.cy + dy + bob - 4, 1, 2, '#ffe14a');
     }
   }
   // juncos na margem
@@ -247,9 +252,9 @@ function lake(env: SceneEnv): void {
     [30, -22],
   ] as const) {
     const sway = Math.round(Math.sin(env.t * 1.5 + dx) * 1);
-    rect(env, LAKE.cx + dx, LAKE.cy + dy - 14, 1, 14, '#2f8a47');
-    rect(env, LAKE.cx + dx + sway, LAKE.cy + dy - 18, 2, 5, '#6b4a2a');
-    rect(env, LAKE.cx + dx + 2, LAKE.cy + dy - 10, 1, 10, '#46c25f');
+    rect(env, L.cx + dx, L.cy + dy - 14, 1, 14, '#2f8a47');
+    rect(env, L.cx + dx + sway, L.cy + dy - 18, 2, 5, '#6b4a2a');
+    rect(env, L.cx + dx + 2, L.cy + dy - 10, 1, 10, '#46c25f');
   }
 }
 
@@ -328,12 +333,176 @@ function fireflies(env: SceneEnv): void {
   }
 }
 
+const FOREST_PERIOD = 1400;
+const HOUSE_FACTOR = 0.45;
+const MID_FACTOR = 0.7;
+const HOUSE_X = 190;
+const PATH_TOP = 172;
+const PATH_BOTTOM = 196;
+
+type TreeKind = 'pineA' | 'pineB' | 'bushA' | 'bushB';
+type Tree = { x: number; kind: TreeKind };
+
+/** Recortes da folha de árvores: [x, y, largura, altura]. */
+const TREE_SHEET: Record<TreeKind, [number, number, number, number]> = {
+  pineA: [4, 101, 85, 107],
+  pineB: [102, 101, 85, 107],
+  bushA: [1, 0, 94, 96],
+  bushB: [98, 0, 94, 96],
+};
+
+function tree(env: SceneEnv, kind: TreeKind, x: number, baseY: number, scale: number): void {
+  const image = env.tiles.treetop;
+  if (!image) return;
+  const [sx, sy, sw, sh] = TREE_SHEET[kind];
+  const w = Math.round(sw * scale);
+  const h = Math.round(sh * scale);
+  const left = Math.round(x - w / 2);
+  if (left > SCENE_W || left + w < 0) return;
+  env.ctx.drawImage(image, sx, sy, sw, sh, left, Math.round(baseY - h), w, h);
+}
+
+/** Árvores e arbustos espalhados com espaços irregulares, mas sem amontoar. */
+function scatter(
+  seed: number,
+  from: number,
+  minGap: number,
+  maxGap: number,
+  bushy: number,
+): Tree[] {
+  const random = rng(seed);
+  const out: Tree[] = [];
+  let x = from;
+  while (x < FOREST_PERIOD - 60) {
+    const bush = random() < bushy;
+    const pick = random() < 0.5;
+    out.push({ x, kind: bush ? (pick ? 'bushA' : 'bushB') : pick ? 'pineA' : 'pineB' });
+    x += minGap + random() * (maxGap - minGap);
+  }
+  return out;
+}
+
+const FAR_TREES: Tree[] = [
+  { x: 270, kind: 'pineA' },
+  { x: 318, kind: 'pineB' },
+  ...scatter(41, 470, 120, 210, 0.3),
+];
+const MID_TREES: Tree[] = [{ x: 352, kind: 'pineB' }, ...scatter(53, 560, 150, 260, 0.45)];
+const NEAR_TREES: Tree[] = scatter(67, 640, 230, 380, 0.6);
+
+const TREE_LAYERS: { trees: Tree[]; factor: number; base: number; scale: number; bush: number }[] =
+  [
+    { trees: FAR_TREES, factor: HOUSE_FACTOR, base: 136, scale: 0.5, bush: 0.5 },
+    { trees: MID_TREES, factor: MID_FACTOR, base: 154, scale: 0.72, bush: 0.5 },
+    { trees: NEAR_TREES, factor: 1, base: 172, scale: 1, bush: 0.5 },
+  ];
+
+const lakeBox = (env: SceneEnv): LakeBox => ({
+  cx: Math.round(scrolled(60, env.scroll, FOREST_PERIOD, HOUSE_FACTOR)),
+  cy: 144,
+  rx: 52,
+  ry: 11,
+});
+
+/** Flores e grama alta presas ao chão: passam sob os pés, sem poças d'água no caminho. */
+function journeyFlowers(env: SceneEnv): void {
+  const random = rng(17);
+  const colors = ['#ff6fa8', '#ffd23f', '#ffffff', '#b08aff', '#ff8a3d', '#6fd3ff'];
+  for (let i = 0; i < 80; i++) {
+    const x = scrolled(random() * 820, env.scroll, 820);
+    const y = HORIZON + 26 + Math.floor(random() * 88);
+    if (y > PATH_TOP - 4 && y < PATH_BOTTOM + 2) continue;
+    const color = colors[i % colors.length] ?? '#fff';
+    const sway = Math.round(Math.sin(env.t * 1.6 + i) * 0.6);
+    rect(env, x, y + 2, 1, 3, '#2f9a4a');
+    rect(env, x - 1 + sway, y, 3, 1, color);
+    rect(env, x + sway, y - 1, 1, 3, color);
+    rect(env, x + sway, y, 1, 1, '#ffe14a');
+  }
+  for (let i = 0; i < 40; i++) {
+    const x = scrolled(random() * 820, env.scroll, 820);
+    const y = HORIZON + 28 + random() * 86;
+    rect(env, x, y, 1, 3, 'rgba(30,110,50,0.55)');
+    rect(env, x + 2, y + 1, 1, 2, 'rgba(30,110,50,0.55)');
+  }
+}
+
+/** Floresta na jornada: a casa com o lago passa devagar ao fundo, as árvores em três profundidades. */
+function journey(env: SceneEnv): void {
+  sky(env, 0, 0, SCENE_W, HORIZON + 8);
+  env.ctx.save();
+  env.ctx.translate(-((env.scroll * 0.02) % SCENE_W), 0);
+  rainbow(env);
+  mountains(env);
+  env.ctx.translate(SCENE_W, 0);
+  rainbow(env);
+  mountains(env);
+  env.ctx.restore();
+  birds(env);
+  if (env.time !== 'night') {
+    for (let i = 0; i < 4; i++) rect(env, 70 + i * 70, 0, 12, HORIZON, 'rgba(255,255,220,0.08)');
+  }
+  hills(env, env.scroll * 0.08, env.scroll * 0.16);
+  const house = Math.round(scrolled(HOUSE_X, env.scroll, FOREST_PERIOD, HOUSE_FACTOR));
+  cabin(env, house, HORIZON + 24);
+  tileArea(
+    env,
+    env.tiles.grass,
+    0,
+    160,
+    0,
+    HORIZON + 24,
+    SCENE_W,
+    SCENE_H - HORIZON - 24,
+    env.scroll,
+  );
+  gradientRect(env, 0, HORIZON + 22, SCENE_W, 36, [
+    by(env.time, 'rgba(255,240,220,0.35)', 'rgba(255,255,240,0.28)', 'rgba(120,150,220,0.18)'),
+    'rgba(255,255,255,0)',
+  ]);
+  lake(env, lakeBox(env));
+  // Caminho de terra batida sob os pés
+  rect(
+    env,
+    0,
+    PATH_TOP,
+    SCENE_W,
+    PATH_BOTTOM - PATH_TOP,
+    by(env.time, '#c9b27a', '#cdb67e', '#6a5a3c'),
+  );
+  rect(env, 0, PATH_TOP, SCENE_W, 1, 'rgba(90,60,30,0.35)');
+  rect(env, 0, PATH_BOTTOM - 1, SCENE_W, 1, 'rgba(90,60,30,0.35)');
+  const pebbles = rng(5);
+  for (let i = 0; i < 26; i++) {
+    rect(
+      env,
+      scrolled(pebbles() * 820, env.scroll, 820),
+      PATH_TOP + 3 + pebbles() * (PATH_BOTTOM - PATH_TOP - 6),
+      2,
+      1,
+      'rgba(110,80,40,0.45)',
+    );
+  }
+  journeyFlowers(env);
+  for (const layer of TREE_LAYERS) {
+    for (const item of layer.trees) {
+      const x = scrolled(item.x, env.scroll, FOREST_PERIOD, layer.factor);
+      const bush = item.kind === 'bushA' || item.kind === 'bushB';
+      tree(env, item.kind, x, layer.base, bush ? layer.scale * 0.55 : layer.scale);
+    }
+  }
+  butterflies(env);
+  fireflies(env);
+  if (env.arrivedFor !== null) portal(env, env.arrivedFor, 168);
+}
+
 export const paradise: SceneDef = {
   id: 'paradise',
-  name: 'Paraíso',
+  name: 'Floresta',
   blurb:
-    'Campo florido com lago e lótus, cabana com fumaça na chaminé, pinheiros, arco-íris e borboletas.',
+    'Campo florido com lago e lótus, cabana com fumaça na chaminé, pinheiros e arbustos, arco-íris e borboletas.',
   groundY: 180,
+  journey,
   back(env) {
     sky(env, 0, 0, SCENE_W, HORIZON + 8);
     rainbow(env);
@@ -361,6 +530,21 @@ export const paradise: SceneDef = {
     fireflies(env);
   },
   lights: (env): Light[] => {
+    if (env.journey) {
+      const box = lakeBox(env);
+      const house = scrolled(HOUSE_X, env.scroll, FOREST_PERIOD, HOUSE_FACTOR);
+      const out: Light[] = [
+        { x: 304, y: 30, radius: 300, color: [160, 190, 255], intensity: 0.34 },
+        { x: 195, y: 150, radius: 230, color: [150, 190, 240], intensity: 0.26 },
+        { x: box.cx, y: box.cy, radius: 60, color: [140, 230, 255], intensity: 0.4 },
+        { x: house + 4, y: HORIZON + 14, radius: 40, color: [255, 210, 120], intensity: 0.7 },
+      ];
+      for (let i = 0; i < 16; i++) {
+        const f = fireflyPos(i, env.t);
+        if (f.on) out.push({ x: f.x, y: f.y, radius: 12, color: [220, 255, 120], intensity: 0.9 });
+      }
+      return out;
+    }
     const out: Light[] = [
       { x: 304, y: 30, radius: 300, color: [160, 190, 255], intensity: 0.34 },
       { x: 195, y: 150, radius: 230, color: [150, 190, 240], intensity: 0.26 },

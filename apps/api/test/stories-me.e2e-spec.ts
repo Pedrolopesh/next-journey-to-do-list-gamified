@@ -22,10 +22,10 @@ describe('histórias, personagem e perfil', () => {
   });
   beforeAll(() => ctx?.clock.set(NOON_09));
 
-  it('o catálogo tem 5 histórias com 5 capítulos cada', async () => {
+  it('o catálogo tem 6 histórias (uma por cenário) com 5 capítulos cada', async () => {
     const auth = await registerUser(ctx, undefined, { story: false });
     const res = await ctx.http().get('/v1/stories').set('authorization', bearer(auth)).expect(200);
-    expect(res.body).toHaveLength(5);
+    expect(res.body).toHaveLength(6);
     expect(res.body.every((s: { chapterCount: number }) => s.chapterCount === 5)).toBe(true);
     expect(res.body.some((s: { isActive: boolean }) => s.isActive)).toBe(false);
   });
@@ -56,7 +56,7 @@ describe('histórias, personagem e perfil', () => {
       .http()
       .put('/v1/me/story')
       .set('authorization', bearer(auth))
-      .send({ slug: 'guerreiro' })
+      .send({ slug: 'castle' })
       .expect(200);
     await ctx
       .http()
@@ -73,8 +73,8 @@ describe('histórias, personagem e perfil', () => {
     });
     expect(after.body.character).toMatchObject({ name: 'Aria', title: 'Heroína' });
     expect(after.body.story).toMatchObject({
-      slug: 'guerreiro',
-      chapterTitle: 'O campo de treino',
+      slug: 'castle',
+      chapterTitle: 'O portão do castelo',
     });
   });
 
@@ -159,75 +159,62 @@ describe('histórias, personagem e perfil', () => {
     expect(res.body.code).toBe('COSMETIC_LOCKED');
   });
 
+  const levelUpNext = (auth: Awaited<ReturnType<typeof registerUser>>) =>
+    ctx.prisma.userStats.update({
+      where: { userId: auth.user.id },
+      data: { expInLevel: 45, expTotal: 45 },
+    });
+  const activate = (auth: Awaited<ReturnType<typeof registerUser>>, slug: string) =>
+    ctx.http().put('/v1/me/story').set('authorization', bearer(auth)).send({ slug }).expect(200);
+
   it('o progresso de cada história fica salvo ao trocar de história (RF-30)', async () => {
-    const auth = await registerUser(ctx, undefined, { story: 'empreendedor' });
+    const auth = await registerUser(ctx, undefined, { story: 'beach' });
+    await levelUpNext(auth);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
-    for (let i = 0; i < 3; i += 1) await check(ctx, auth, item.id).expect(200);
+    await check(ctx, auth, item.id).expect(200); // sobe de nível: capítulo 1 da praia concluído
 
-    await ctx
-      .http()
-      .put('/v1/me/story')
-      .set('authorization', bearer(auth))
-      .send({ slug: 'explorador' })
-      .expect(200);
+    await activate(auth, 'zombie');
     const other = await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
-    expect(other.body.player.story.checksInChapter).toBe(0);
-    await check(ctx, auth, item.id).expect(200);
+    expect(other.body.player.story).toEqual({ chapter: 1, completed: false });
 
-    await ctx
-      .http()
-      .put('/v1/me/story')
-      .set('authorization', bearer(auth))
-      .send({ slug: 'empreendedor' })
-      .expect(200);
+    await activate(auth, 'beach');
     const back = await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
-    expect(back.body.player.story.checksInChapter).toBe(3); // retomado de onde parou
-    // EXP, nível e moedas são globais: 4 checks fáceis no total
-    expect(back.body.player.totalChecks).toBe(4);
+    expect(back.body.player.story).toEqual({ chapter: 2, completed: false }); // retomado de onde parou
+    // EXP, nível e moedas são globais
+    expect(back.body.player).toMatchObject({ level: 2, totalChecks: 1 });
   });
 
-  it('desfazer volta o passo na história em que o check contou, mesmo depois de trocar', async () => {
-    const auth = await registerUser(ctx, undefined, { story: 'empreendedor' });
+  it('desfazer funciona depois de trocar de história (check que não subiu de nível)', async () => {
+    const auth = await registerUser(ctx, undefined, { story: 'beach' });
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const checkId = randomUUID();
     await check(ctx, auth, item.id, checkId).expect(200);
-    await ctx
-      .http()
-      .put('/v1/me/story')
-      .set('authorization', bearer(auth))
-      .send({ slug: 'lenda' })
-      .expect(200);
+    await activate(auth, 'hell');
     await ctx
       .http()
       .delete(`/v1/items/${item.id}/checks/${checkId}`)
       .set('authorization', bearer(auth))
       .expect(200);
 
-    await ctx
-      .http()
-      .put('/v1/me/story')
-      .set('authorization', bearer(auth))
-      .send({ slug: 'empreendedor' })
-      .expect(200);
+    await activate(auth, 'beach');
     const me = await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
-    expect(me.body.player.story.checksInChapter).toBe(0);
+    expect(me.body.player).toMatchObject({ expInLevel: 0, totalChecks: 0 });
+    expect(me.body.player.story).toEqual({ chapter: 1, completed: false });
   });
 
-  it('concluir um capítulo devolve o conteúdo do modal e grava a conclusão', async () => {
+  it('subir de nível conclui o capítulo, devolve o modal e grava a conclusão', async () => {
     const auth = await registerUser(ctx);
-    await ctx.prisma.storyProgress.updateMany({
-      where: { userId: auth.user.id },
-      data: { checksInChapter: 9 },
-    });
+    await levelUpNext(auth);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const res = await check(ctx, auth, item.id).expect(200);
-    expect(res.body.chapterCompleted).toBe(true);
+    expect(res.body).toMatchObject({ leveledUp: true, level: 2, chapterCompleted: true });
     expect(res.body.completedChapter).toMatchObject({
       number: 1,
-      title: 'O primeiro quiosque',
+      title: 'A chegada',
       storyCompleted: false,
     });
     expect(res.body.completedChapter.text.length).toBeGreaterThan(10);
+    expect(res.body.chapterProgress).toEqual({ chapter: 2, expInLevel: 0, expForNextLevel: 125 });
 
     const timeline = await ctx
       .http()
@@ -236,17 +223,60 @@ describe('histórias, personagem e perfil', () => {
       .expect(200);
     const states = timeline.body.chapters.map((c: { state: string }) => c.state);
     expect(states).toEqual(['completed', 'current', 'locked', 'locked', 'locked']);
-    // texto só nos capítulos concluídos; o atual mostra o progresso
+    // texto só nos capítulos concluídos; o atual mostra o progresso (EXP do nível)
     expect(timeline.body.chapters[0].text).toBeTruthy();
     expect(timeline.body.chapters[1].text).toBeNull();
-    expect(timeline.body.chapters[1]).toMatchObject({ checksInChapter: 0, requiredChecks: 15 });
+    expect(timeline.body.chapters[1]).toMatchObject({ expInLevel: 0, expForNextLevel: 125 });
+  });
+
+  it('mostra os capítulos de outra história sem trocar a ativa; slug inexistente é 404', async () => {
+    const auth = await registerUser(ctx, undefined, { story: 'beach' });
+    const other = await ctx
+      .http()
+      .get('/v1/stories/castle/timeline')
+      .set('authorization', bearer(auth))
+      .expect(200);
+    expect(other.body.story).toMatchObject({ slug: 'castle', isActive: false, currentChapter: 1 });
+    expect(other.body.chapters).toHaveLength(5);
+    // nunca jogada: o capítulo 1 é o atual, sem progresso nem texto
+    expect(other.body.chapters[0]).toMatchObject({
+      state: 'current',
+      expInLevel: null,
+      text: null,
+    });
+    const active = await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
+    expect(active.body.story.slug).toBe('beach');
+    await ctx
+      .http()
+      .get('/v1/stories/nao-existe/timeline')
+      .set('authorization', bearer(auth))
+      .expect(404);
+  });
+
+  it('a linha do tempo exige login e a de cada história é só do próprio usuário', async () => {
+    await ctx.http().get('/v1/stories/beach/timeline').expect(401);
+    const a = await registerUser(ctx, undefined, { story: 'beach' });
+    const b = await registerUser(ctx, undefined, { story: 'beach' });
+    await levelUpNext(a);
+    const item = await createItem(ctx, a, { type: 'habit', difficulty: 'easy' });
+    await check(ctx, a, item.id).expect(200);
+    const mine = await ctx
+      .http()
+      .get('/v1/stories/beach/timeline')
+      .set('authorization', bearer(b))
+      .expect(200);
+    expect(mine.body.chapters[0]).toMatchObject({ state: 'current', text: null });
   });
 
   it('concluir a história inteira e continuar rendendo EXP sem avançar capítulo', async () => {
     const auth = await registerUser(ctx);
     await ctx.prisma.storyProgress.updateMany({
       where: { userId: auth.user.id },
-      data: { chapter: 5, checksInChapter: 29 },
+      data: { chapter: 5 },
+    });
+    await ctx.prisma.userStats.update({
+      where: { userId: auth.user.id },
+      data: { level: 5, expInLevel: 345, expTotal: 345 },
     });
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const fim = await check(ctx, auth, item.id).expect(200);
@@ -258,9 +288,9 @@ describe('histórias, personagem e perfil', () => {
       .get('/v1/stories')
       .set('authorization', bearer(auth))
       .expect(200);
-    expect(
-      stories.body.find((s: { slug: string }) => s.slug === 'empreendedor').chaptersCompleted,
-    ).toBe(1);
+    expect(stories.body.find((s: { slug: string }) => s.slug === 'beach').chaptersCompleted).toBe(
+      1,
+    );
   });
 
   it('PATCH /me: fuso do perfil e lembrete; fuso inválido é 400', async () => {

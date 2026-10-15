@@ -106,7 +106,7 @@ describe('check, jogo e erros', () => {
       coinsGained: 2,
       level: 3,
       leveledUp: false,
-      chapterProgress: { chapter: 1, checksInChapter: 4, requiredChecks: 10 },
+      chapterProgress: { chapter: 1, expInLevel: 20, expForNextLevel: 50 },
       chapterCompleted: false,
       completedChapter: null,
       achievementsUnlocked: [{ slug: 'primeiro-passo', name: 'Primeiro passo', rewardKey: null }],
@@ -127,7 +127,7 @@ describe('check, jogo e erros', () => {
       expTotal: 0,
       coins: 0,
       totalChecks: 0,
-      story: { chapter: 1, checksInChapter: 0, completed: false },
+      story: { chapter: 1, completed: false },
     };
     expect(playerStateSchema.safeParse(state).success).toBe(true);
     expect(

@@ -33,6 +33,22 @@ Marque cada item e anote data, versão e aparelho no `docs/DIARIO.md`.
 - [ ] Desfazer no mesmo dia devolve EXP e moedas; no capítulo fechado mostra o aviso.
 - [ ] Sem internet, o check mostra erro claro e o item volta ao estado anterior (a fila offline é da Fase 7).
 
+## 4c. Jornada das abas (Diários, Tarefas, Hábitos)
+- [ ] O banner mostra o personagem escolhido andando no lado esquerdo, com o cenário passando atrás dele, nos seis cenários (praia, cidade, zumbi, castelo, floresta, inferno), de manhã, tarde e noite.
+- [ ] Cidade: avenida com carros dos dois sentidos (3 modelos, cores variadas), postes e ponto de ônibus; o fundo de prédios passa devagar sobre o rio. Zumbi: base militar com cerca e zumbis parados ao fundo, helicóptero. Castelo: tapete real em todo o caminho, sem trono, cavaleiros de 3 tipos e espadas na parede. Floresta: casa e lago passam devagar, árvores em profundidades diferentes. Inferno: lava e vulcão ao fundo, sem trono.
+- [ ] Home > Ambiente mostra "Cenário da história principal" abaixo do cenário do QG, sem a cabana, com "Cidade" no lugar de "Topo do prédio" e "Floresta" no lugar de "Paraíso".
+- [ ] Trocar o cenário da história muda as três abas; a hora (automática ou fixa) vale na jornada.
+- [ ] A posição do personagem segue a EXP do nível: cada check o aproxima do portal em até 6 paradas, com corrida e o cenário acelerando.
+- [ ] Ao subir de nível ele chega ao portal no lado direito, e tudo para. A cena só troca (fade) no check seguinte, e o personagem recomeça no nível novo. Fechar e abrir o app mantém o portal esperando.
+- [ ] Na lista, a dificuldade aparece como ícone à direita (folha, raio, caveira) e o check desmarca ao tocar; não existe botão "Desfazer".
+- [ ] Na primeira abertura sem itens aparecem 20 diários, 5 tarefas e 5 hábitos de exemplo e um toast avisa.
+- [ ] Embaixo do banner de Diários, Tarefas e Hábitos há a barra de progresso: capítulo, EXP do nível, nível e moedas; o toast do check mostra EXP e moedas.
+- [ ] Home: "QG" em cima do banner, descrição discreta embaixo, botões "Mudar personagem", "Mudar história principal" e "Mudar cenário do QG" acima dos números.
+- [ ] Perfil: "Sair" em vermelho; "Personalizar personagem" abre o banner de ponta a ponta com o formulário embaixo; "Sortear aparência" é roxo cheio.
+- [ ] Minha história: banner da jornada em cima, escolha das 6 histórias, "Jogar esta história" troca com loading e toast; capítulos concluídos mostram o texto, o atual mostra a barra, os demais mostram cadeado. Ver outra história não troca a ativa.
+- [ ] Subir de nível conclui um capítulo da história ativa; o check que sobe de nível não desmarca (mensagem de capítulo concluído).
+- [ ] A dificuldade aparece como barras (1 = fácil, 2 = médio, 3 = difícil), nunca como texto.
+
 ## 4b. QG da Home (cenário e personagem)
 - [ ] A Home mostra o QG (cenário parado com o personagem) e o personagem salvo, com a hora do aparelho (manhã, tarde ou noite).
 - [ ] "Ambiente" na Home abre cenário e hora; trocar muda o banner na hora e mostra toast; o valor continua depois de fechar o app.

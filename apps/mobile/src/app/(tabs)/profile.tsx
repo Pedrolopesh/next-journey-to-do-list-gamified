@@ -75,7 +75,7 @@ export default function ProfileScreen() {
         <LinkRow label={t('profile.settings')} href="/settings" />
         <Button
           label={t('auth.logout')}
-          variant="secondary"
+          variant="danger"
           loading={signingOut}
           onPress={() => void signOut()}
         />

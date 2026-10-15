@@ -14,18 +14,3 @@ export function expParaNivel(
   assertPositiveInteger(nivel, 'nivel');
   return config.levelExpSlope * nivel - config.levelExpOffset;
 }
-
-/** Checks para completar o capítulo n: 10 + 5(n - 1), no máximo 40. */
-export function checksParaCapitulo(
-  capitulo: number,
-  config: Pick<
-    GameConfig,
-    'chapterBaseChecks' | 'chapterChecksStep' | 'chapterMaxChecks'
-  > = DEFAULT_GAME_CONFIG,
-): number {
-  assertPositiveInteger(capitulo, 'capitulo');
-  return Math.min(
-    config.chapterBaseChecks + config.chapterChecksStep * (capitulo - 1),
-    config.chapterMaxChecks,
-  );
-}

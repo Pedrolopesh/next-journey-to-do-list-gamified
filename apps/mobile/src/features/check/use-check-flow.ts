@@ -1,4 +1,10 @@
-import type { BannerToAppMessage, Item, ItemType } from '@nextjourney/contracts';
+import type {
+  BannerToAppMessage,
+  CheckResult,
+  Item,
+  ItemType,
+  MeResponse,
+} from '@nextjourney/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 import * as Haptics from 'expo-haptics';
@@ -6,16 +12,18 @@ import { type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 
 import { isRetryableError, toApiError } from '@/api/errors';
-import { chapterProgress, useCheckItem, useMe, useUndoCheck } from '@/api/queries';
+import { queryKeys, useCheckItem, useMe, useUndoCheck } from '@/api/queries';
 import type { BannerViewHandle } from '@/banner/banner-view';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
-import { buildModalQueue, type ModalEntry } from '@/features/feedback/modal-queue';
+import { buildModalQueue } from '@/features/feedback/modal-queue';
 import { toast as showToast } from '@/features/feedback/toast-store';
 import { useOfflineStore } from '@/features/offline/offline-store';
+import { journeyView, levelProgress } from '@/features/qg/journey-progress';
+import { useJourneyStore } from '@/features/qg/journey-store';
 import { log } from '@/logging';
 
-/** Se o banner não confirmar a transição de capítulo, o modal abre mesmo assim depois deste prazo. */
-const CHAPTER_MODAL_FALLBACK_MS = 3500;
+/** Se o banner não confirmar a troca de cena, o personagem é reposicionado mesmo assim depois deste prazo. */
+const TRANSITION_FALLBACK_MS = 3500;
 
 type Options = { type: ItemType; bannerRef: RefObject<BannerViewHandle | null> };
 
@@ -35,50 +43,76 @@ export function useCheckFlow({ type, bannerRef }: Options) {
   useEffect(() => {
     if (error) showToast.error(error);
   }, [error]);
-  const pendingChapter = useRef<ModalEntry[]>([]);
+  const afterTransition = useRef<(() => void) | null>(null);
   const fallbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const releaseChapterModal = useCallback(() => {
+  /** Fim da troca de cena: o personagem recomeça no novo nível, na posição da EXP. */
+  const runAfterTransition = useCallback(() => {
     clearTimeout(fallbackTimer.current);
-    if (pendingChapter.current.length > 0) {
-      useFeedbackStore.getState().enqueue(pendingChapter.current);
-      pendingChapter.current = [];
-    }
+    const next = afterTransition.current;
+    afterTransition.current = null;
+    next?.();
   }, []);
 
-  /** Mensagens do banner: ao terminar a transição de capítulo, abre o modal do capítulo. */
   const onBannerMessage = useCallback(
     (message: BannerToAppMessage) => {
-      if (message.type === 'CHAPTER_TRANSITION_DONE') releaseChapterModal();
+      if (message.type === 'CHAPTER_TRANSITION_DONE') runAfterTransition();
     },
-    [releaseChapterModal],
+    [runAfterTransition],
   );
 
   const resetBanner = useCallback(() => {
-    // volta o banner à posição real, sem animação
-    bannerRef.current?.send({
-      v: 1,
-      type: 'INIT',
-      payload: {
-        scene: 'map',
-        character: { skin: 'light', hair: 'short-brown', outfit: 'tunic-purple' },
-        sceneKey: `story-${me?.story?.slug ?? '1'}-chapter-${me?.player.story.chapter ?? 1}`,
-        progress: chapterProgress(me),
-        timeOfDay: 'night',
-      },
-    });
-  }, [bannerRef, me]);
+    bannerRef.current?.reset();
+  }, [bannerRef]);
+
+  /**
+   * Posição do personagem pela EXP do nível. Subiu de nível: corre até o portal e espera. Se o portal
+   * já estava esperando, este check troca a cena (fade) e o personagem recomeça no nível novo.
+   */
+  const moveHero = useCallback(
+    async (result: CheckResult, userId: string | undefined, portalWasPending: boolean) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+      const fresh = queryClient.getQueryData<MeResponse>(queryKeys.me);
+      if (!fresh) return;
+      const send = (progress: number): void => {
+        bannerRef.current?.send({ v: 1, type: 'ITEM_CHECKED', payload: { progress } });
+      };
+      if (portalWasPending && userId) {
+        afterTransition.current = () => {
+          useJourneyStore.getState().settle(userId, fresh.player.level);
+          send(levelProgress(fresh.player));
+        };
+        bannerRef.current?.send({
+          v: 1,
+          type: 'CHAPTER_COMPLETED',
+          payload: { nextSceneKey: `story-level-${result.level}` },
+        });
+        clearTimeout(fallbackTimer.current);
+        fallbackTimer.current = setTimeout(runAfterTransition, TRANSITION_FALLBACK_MS);
+        return;
+      }
+      send(result.leveledUp ? 1 : levelProgress(fresh.player));
+    },
+    [bannerRef, queryClient, runAfterTransition],
+  );
 
   const handleCheck = useCallback(
     (item: Item) => {
       setError(null);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-      // 1) Banner na hora, com o progresso estimado (checks do capítulo + 1 sobre o necessário)
-      if (me) {
-        const { story, requiredChecksInChapter } = me.player;
-        const estimated = Math.min(1, (story.checksInChapter + 1) / requiredChecksInChapter);
-        bannerRef.current?.send({ v: 1, type: 'ITEM_CHECKED', payload: { progress: estimated } });
+      // 1) Banner na hora: o personagem comemora na posição atual (a posição nova vem com a resposta).
+      // Com o portal esperando, nada se mexe agora: a troca de cena só acontece com o check confirmado.
+      const userId = me?.user.id;
+      const shown = userId ? useJourneyStore.getState().shownLevel[userId] : undefined;
+      const view = me ? journeyView(me.player, shown) : null;
+      const portalWasPending = view?.portalPending ?? false;
+      if (view && !portalWasPending) {
+        bannerRef.current?.send({
+          v: 1,
+          type: 'ITEM_CHECKED',
+          payload: { progress: view.progress },
+        });
       }
 
       // 2) API: o servidor decide EXP, nível, capítulo e conquistas
@@ -96,27 +130,11 @@ export function useCheckFlow({ type, bannerRef }: Options) {
               levelUp: result.leveledUp,
             });
             useFeedbackStore.getState().rememberCheck(item.id, checkId);
-            setToast(t('feedback.expToast', { exp: result.expGained }));
+            setToast(t('feedback.expToast', { exp: result.expGained, coins: result.coinsGained }));
 
             const { now, afterBanner } = buildModalQueue(result);
-            useFeedbackStore.getState().enqueue(now);
-            if (result.chapterCompleted) {
-              pendingChapter.current = afterBanner;
-              bannerRef.current?.send({
-                v: 1,
-                type: 'CHAPTER_COMPLETED',
-                payload: { nextSceneKey: `story-chapter-${result.chapterProgress.chapter}` },
-              });
-              clearTimeout(fallbackTimer.current);
-              fallbackTimer.current = setTimeout(releaseChapterModal, CHAPTER_MODAL_FALLBACK_MS);
-            } else {
-              const { checksInChapter, requiredChecks } = result.chapterProgress;
-              bannerRef.current?.send({
-                v: 1,
-                type: 'ITEM_CHECKED',
-                payload: { progress: Math.min(1, checksInChapter / requiredChecks) },
-              });
-            }
+            useFeedbackStore.getState().enqueue([...now, ...afterBanner]);
+            void moveHero(result, userId, portalWasPending);
           },
           onError: (cause) => {
             // Sem rede: guarda na fila e segue (sincroniza sozinho ao voltar a conexão)
@@ -145,7 +163,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
         },
       );
     },
-    [bannerRef, check, me, releaseChapterModal, resetBanner, t, type],
+    [bannerRef, check, me, moveHero, resetBanner, t, type],
   );
 
   const handleUndo = useCallback(
@@ -157,6 +175,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
         useOfflineStore.getState().remove([checkId]);
         useFeedbackStore.getState().forgetCheck(item.id, checkId);
         void queryClient.invalidateQueries({ queryKey: ['items'] });
+        showToast.success(t('feedback.undone'));
         resetBanner();
         return;
       }
@@ -165,6 +184,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
         {
           onSuccess: () => {
             useFeedbackStore.getState().forgetCheck(item.id, checkId);
+            showToast.success(t('feedback.undone'));
             resetBanner();
           },
           onError: (cause) => {

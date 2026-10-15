@@ -53,6 +53,7 @@ export function Pills<T extends string>({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.scroller}
         contentContainerStyle={[styles.row, styles.scrollRow]}
       >
         {content}
@@ -73,6 +74,8 @@ export function Pills<T extends string>({
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: space[8], alignItems: 'center' },
   wrap: { flexWrap: 'wrap' },
+  // altura fixa (pill + folga do brilho): a lista não encolhe nem pula quando o filtro muda
+  scroller: { flexGrow: 0, flexShrink: 0, height: size.touchTarget + 16 },
   // folga para o brilho do chip selecionado não ser cortado pela lista
   scrollRow: { paddingVertical: 8, paddingHorizontal: 4 },
   pill: {

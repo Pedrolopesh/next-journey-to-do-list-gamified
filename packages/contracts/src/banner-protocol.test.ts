@@ -63,6 +63,16 @@ describe('aparência LPC detalhada (look)', () => {
     feetColor: 'brown',
   };
 
+  it('INIT aceita a cena journey e recusa cena desconhecida', () => {
+    const init = (scene: string) => ({
+      v: 1,
+      type: 'INIT',
+      payload: { scene, sceneKey: 'beach', progress: 0, timeOfDay: 'night', character },
+    });
+    expect(parseAppToBannerMessage(init('journey')).ok).toBe(true);
+    expect(parseAppToBannerMessage(init('espaco')).ok).toBe(false);
+  });
+
   it('INIT aceita o personagem com look e sem look', () => {
     const base = {
       v: 1,

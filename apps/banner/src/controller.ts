@@ -16,9 +16,11 @@ type Options = {
     | 'show'
     | 'hide'
     | 'setScene'
+    | 'setJourney'
     | 'setTime'
     | 'setCharacter'
     | 'celebrate'
+    | 'setProgress'
     | 'pause'
     | 'resume'
     | 'fadeOut'
@@ -64,6 +66,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
     transitionTimers = [];
     qg?.fadeOut();
     later(() => {
+      qg?.setProgress(0, { animate: false });
       qg?.fadeIn();
     }, FADE_MS);
     later(() => {
@@ -80,7 +83,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
     handleMessage(message: AppToBannerMessage): void {
       switch (message.type) {
         case 'INIT': {
-          if (message.payload.scene === 'qg') {
+          if (message.payload.scene === 'qg' || message.payload.scene === 'journey') {
             if (!qg) {
               send(createErrorMessage('UNSUPPORTED_SCENE', 'Cena QG indisponível neste banner'));
               return;
@@ -88,10 +91,13 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
             active = 'qg';
             root.dataset.sceneKey = message.payload.sceneKey;
             root.dataset.timeOfDay = message.payload.timeOfDay;
+            qg.setJourney(message.payload.scene === 'journey');
             qg.setScene(message.payload.sceneKey);
+            qg.setProgress(message.payload.progress, { animate: false });
             qg.setTime(message.payload.timeOfDay);
             qg.setCharacter(message.payload.character);
             qg.show();
+            root.dataset.ready = '1';
             return;
           }
           active = 'map';
@@ -100,10 +106,11 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
           root.dataset.sceneKey = message.payload.sceneKey;
           root.dataset.timeOfDay = message.payload.timeOfDay;
           scene.setProgress(message.payload.progress, { animate: false });
+          root.dataset.ready = '1';
           return;
         }
         case 'ITEM_CHECKED':
-          if (active === 'qg') qg?.celebrate();
+          if (active === 'qg') qg?.celebrate(message.payload.progress);
           else scene.run(message.payload.progress);
           return;
         case 'CHAPTER_COMPLETED':

@@ -100,7 +100,7 @@ export async function registerUser(
     .expect(201);
   const auth = response.body as AuthResponse;
   // A maioria dos testes precisa de uma história ativa (onboarding completo)
-  const story = options.story === undefined ? 'empreendedor' : options.story;
+  const story = options.story === undefined ? 'beach' : options.story;
   if (story) {
     await ctx
       .http()
@@ -159,7 +159,7 @@ export async function me(ctx: TestContext, auth: AuthResponse) {
       expTotal: number;
       coins: number;
       totalChecks: number;
-      story: { chapter: number; checksInChapter: number; completed: boolean };
+      story: { chapter: number; completed: boolean };
     };
   };
 }

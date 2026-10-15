@@ -47,14 +47,21 @@ describe('ItemRow', () => {
     expect(screen.getByText('Hoje 2 · Semana 0')).toBeTruthy();
   });
 
-  it('mostra atraso e sequência, e o Desfazer só quando há check de hoje', async () => {
-    const onUndo = jest.fn();
-    await render(
-      <ItemRow item={{ ...base, overdue: true, streak: 3 }} onCheck={jest.fn()} onUndo={onUndo} />,
-    );
+  it('mostra atraso e sequência e a dificuldade como ícone, sem o botão Desfazer', async () => {
+    await render(<ItemRow item={{ ...base, overdue: true, streak: 3 }} onCheck={jest.fn()} />);
     expect(screen.getByText('Atrasado')).toBeTruthy();
     expect(screen.getByLabelText('3 dias seguidos')).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button', { name: 'Desfazer' }));
+    expect(screen.getByLabelText('Dificuldade: Médio')).toBeTruthy();
+    expect(screen.queryByText('Médio')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Desfazer' })).toBeNull();
+  });
+
+  it('check feito hoje neste aparelho desmarca ao tocar', async () => {
+    const onCheck = jest.fn();
+    const onUndo = jest.fn();
+    await render(<ItemRow item={{ ...base, doneToday: true }} onCheck={onCheck} onUndo={onUndo} />);
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Desmarcar Treinar' }));
     expect(onUndo).toHaveBeenCalledWith(expect.objectContaining({ title: 'Treinar' }));
+    expect(onCheck).not.toHaveBeenCalled();
   });
 });

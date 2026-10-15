@@ -4,9 +4,9 @@ import { loadImage } from './engine';
 
 /**
  * Arte do QG embutida no bundle único do banner (data URLs): só as animações usadas no app
- * (parado e correndo) e os tiles que os cenários desenham. O banner nunca baixa nada.
+ * (parado, andando e correndo) e os tiles que os cenários desenham. O banner nunca baixa nada.
  */
-const sheets = import.meta.glob<string>('../../lab/assets/lpc/**/{idle,run}.png', {
+const sheets = import.meta.glob<string>('../../lab/assets/lpc/**/{idle,walk,run}.png', {
   eager: true,
   query: '?inline',
   import: 'default',

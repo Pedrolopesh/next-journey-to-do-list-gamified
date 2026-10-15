@@ -12,7 +12,7 @@ type QgPrefs = {
 };
 
 /**
- * Preferências do QG (cenário e hora). Ficam só neste aparelho: não são dado sensível e não
+ * Preferências do QG (cenário e hora). O cenário da jornada vem da história ativa, não daqui. Ficam só neste aparelho: não são dado sensível e não
  * mudam a progressão, por isso não passam pela API.
  */
 export const useQgPrefs = create<QgPrefs>()(
@@ -30,7 +30,10 @@ export const useQgPrefs = create<QgPrefs>()(
     {
       name: 'nextjourney.qg.v1',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ scenario: state.scenario, timeMode: state.timeMode }),
+      partialize: (state) => ({
+        scenario: state.scenario,
+        timeMode: state.timeMode,
+      }),
       // Valor salvo inválido (ou de uma versão futura) volta ao padrão
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<Pick<QgPrefs, 'scenario' | 'timeMode'>>;

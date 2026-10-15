@@ -7,7 +7,14 @@ import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, AppState, StyleSheet, Text, View } from 'react-native';
+import {
+  AccessibilityInfo,
+  ActivityIndicator,
+  AppState,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { colors } from '@/theme';
@@ -21,12 +28,16 @@ const ASPECT_RATIO = 390 / 180;
 export const QG_ASPECT_RATIO = 390 / 220;
 /** Se o banner não mandar READY neste prazo, o app mostra o fallback estático. */
 const READY_TIMEOUT_MS = 2000;
+/** Tempo do fade-in do banner depois do INIT; só então o indicador de carregamento some. */
+const REVEAL_MS = 350;
 
 export type InitMessage = Extract<AppToBannerMessage, { type: 'INIT' }>;
 
 export type BannerViewHandle = {
   /** Envia uma mensagem tipada ao banner (já validada pelo tipo do contrato). */
   send: (message: AppToBannerMessage) => void;
+  /** Reenvia o INIT atual da tela: volta o banner à posição real (ex.: um check que falhou). */
+  reset: () => void;
 };
 
 type Props = {
@@ -34,6 +45,8 @@ type Props = {
   aspectRatio?: number;
   /** Enviada ao banner assim que ele avisa READY. */
   initMessage: InitMessage;
+  /** Tela em foco; fora de foco o banner fica pausado (padrão: em foco). */
+  focused?: boolean;
   /** Mensagens válidas vindas do banner (READY, CHAPTER_TRANSITION_DONE, ERROR). */
   onMessage?: (message: BannerToAppMessage) => void;
 };
@@ -46,13 +59,14 @@ async function loadBannerHtml(): Promise<string> {
 }
 
 export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerView(
-  { initMessage, onMessage, aspectRatio = ASPECT_RATIO },
+  { initMessage, onMessage, aspectRatio = ASPECT_RATIO, focused = true },
   ref,
 ) {
   const { t } = useTranslation();
   const webViewRef = useRef<WebView>(null);
   const [html, setHtml] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const readyRef = useRef(false);
   const initRef = useRef(initMessage);
   initRef.current = initMessage;
@@ -61,7 +75,11 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
     webViewRef.current?.postMessage(JSON.stringify(message));
   }, []);
 
-  useImperativeHandle(ref, () => ({ send }), [send]);
+  const reset = useCallback(() => {
+    send(initRef.current);
+  }, [send]);
+
+  useImperativeHandle(ref, () => ({ send, reset }), [send, reset]);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,9 +97,11 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
 
   // Pausa o banner em segundo plano e quando o sistema pede para reduzir movimento
   const reduceMotionRef = useRef(false);
+  const focusedRef = useRef(focused);
+  focusedRef.current = focused;
   const syncPlayback = useCallback(() => {
     if (!readyRef.current) return;
-    const play = shouldPlay(AppState.currentState, reduceMotionRef.current);
+    const play = shouldPlay(AppState.currentState, reduceMotionRef.current, focusedRef.current);
     send({ v: 1, type: play ? 'RESUME' : 'PAUSE' });
   }, [send]);
 
@@ -100,6 +120,10 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
       appState.remove();
     };
   }, [syncPlayback]);
+
+  useEffect(() => {
+    syncPlayback();
+  }, [focused, syncPlayback]);
 
   // Se o INIT mudar depois do READY (ex.: o GET /me chegou), posiciona de novo, sem animação
   useEffect(() => {
@@ -128,6 +152,9 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
         // O app só envia INIT depois do READY
         send(initRef.current);
         syncPlayback();
+        setTimeout(() => {
+          setRevealed(true);
+        }, REVEAL_MS);
       }
       onMessage?.(message);
     },
@@ -163,6 +190,11 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
             setFailed(true);
           }}
         />
+      )}
+      {!revealed && !failed && (
+        <View style={styles.fallback} pointerEvents="none">
+          <ActivityIndicator color={colors.brand.primaryLight} />
+        </View>
       )}
       {failed && (
         <View style={styles.fallback}>

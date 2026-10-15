@@ -2,11 +2,17 @@ import { storySchema } from '@nextjourney/contracts';
 import { describe, expect, it } from 'vitest';
 
 import { ACHIEVEMENTS, STORIES } from '../../../prisma/seed-data.js';
-import { checksParaCapitulo } from '../progression/domain/index.js';
 
 describe('conteúdo versionado (seed)', () => {
-  it('tem 5 histórias com 5 capítulos cada', () => {
-    expect(STORIES).toHaveLength(5);
+  it('tem 6 histórias, uma por cenário do banner, com 5 capítulos cada', () => {
+    expect(STORIES.map((story) => story.slug)).toEqual([
+      'beach',
+      'rooftop',
+      'zombie',
+      'castle',
+      'paradise',
+      'hell',
+    ]);
     for (const story of STORIES) expect(story.chapters).toHaveLength(5);
   });
 
@@ -21,8 +27,7 @@ describe('conteúdo versionado (seed)', () => {
           number: index + 1,
           title,
           text,
-          requiredChecks: checksParaCapitulo(index + 1),
-          sceneKey: `${story.slug}-${index + 1}`,
+          sceneKey: story.slug,
         })),
       });
       expect(parsed.success, story.slug).toBe(true);

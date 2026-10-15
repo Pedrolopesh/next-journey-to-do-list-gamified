@@ -8,7 +8,7 @@ const base: CheckResult = {
   coinsGained: 2,
   level: 1,
   leveledUp: false,
-  chapterProgress: { chapter: 1, checksInChapter: 1, requiredChecks: 10 },
+  chapterProgress: { chapter: 1, expInLevel: 10, expForNextLevel: 50 },
   chapterCompleted: false,
   completedChapter: null,
   achievementsUnlocked: [],

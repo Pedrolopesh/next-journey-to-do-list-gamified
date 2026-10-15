@@ -45,6 +45,12 @@ body {
   max-width: 100%;
   overflow: hidden;
   image-rendering: pixelated;
+  transition: opacity 0.3s ease;
+}
+
+/* Antes do primeiro INIT o banner fica invisível: nunca mostra a cena antiga (Mapa em CSS) */
+.banner:not([data-ready]) {
+  opacity: 0;
 }
 
 .scene {

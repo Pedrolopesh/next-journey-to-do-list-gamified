@@ -1,4 +1,14 @@
-import { celestial, gradientRect, rect, rng, shadedBlock, stars, tileArea } from './draw';
+import {
+  celestial,
+  gradientRect,
+  portal,
+  rect,
+  rng,
+  scrolled,
+  shadedBlock,
+  stars,
+  tileArea,
+} from './draw';
 import { drawLampCones, drawLampPost, type Lamp, lampLights } from './lampposts';
 import type { ExtraCharacter, Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_H, SCENE_W } from './types';
@@ -451,11 +461,249 @@ function crowd(side: 'left' | 'right'): ExtraCharacter[] {
     }));
 }
 
+/** Rodada em que a base se repete (distância percorrida pela calçada de areia). */
+const JOURNEY_PERIOD = 820;
+const BASE_PERIOD = 1100;
+/** O fundo anda mais devagar que o chão: a base passa em segundo plano. */
+const BASE_FACTOR = 0.45;
+const MOUNTAIN_FACTOR = 0.04;
+const BASE_LINE = 146;
+const FENCE_LINE = 154;
+const FENCE_TOP_H = 24;
+const BASE_START = -20;
+const BASE_END = 590;
+const BASE_WIDTH = BASE_END - BASE_START + 40;
+
+/** Duas montanhas pontudas lado a lado, que reaparecem a cada volta (o resto são as ondas de sempre). */
+const PEAK_PAIR_PERIOD = 900;
+const PEAKS: { x: number; h: number; w: number }[] = [
+  { x: 330, h: 30, w: 30 },
+  { x: 372, h: 34, w: 32 },
+];
+
+/** Montanhas distantes: as mesmas ondas da cena parada, rolando devagar; sem emendas por ser uma função contínua. */
+function mountainHeight(x: number): number {
+  let h = 7 + Math.abs(Math.sin(x * 0.045 + 1)) * 12;
+  for (const peak of PEAKS) {
+    const dx = Math.abs(
+      ((((x - peak.x + PEAK_PAIR_PERIOD / 2) % PEAK_PAIR_PERIOD) + PEAK_PAIR_PERIOD) %
+        PEAK_PAIR_PERIOD) -
+        PEAK_PAIR_PERIOD / 2,
+    );
+    if (dx < peak.w) h = Math.max(h, peak.h * (1 - dx / peak.w));
+  }
+  return h;
+}
+
+function journeyMountains(env: SceneEnv): void {
+  const shift = env.scroll * MOUNTAIN_FACTOR;
+  for (let x = 0; x < SCENE_W; x += 2) {
+    const h = mountainHeight(x + shift);
+    rect(env, x, HORIZON - h, 2, h + 1, '#a58468');
+  }
+}
+
+function journeyDunes(env: SceneEnv): void {
+  const { ctx } = env;
+  for (const [base, amp, phase, color, factor] of [
+    [HORIZON + 1, 4, 0.5, '#c99a66', 0.12],
+    [HORIZON + 8, 5, 2.2, '#d6aa70', 0.2],
+  ] as const) {
+    const shift = env.scroll * factor;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, 140);
+    for (let x = 0; x <= SCENE_W; x += 6) {
+      const wx = x + shift;
+      ctx.lineTo(x, base + Math.sin(wx * 0.021 + phase) * amp + Math.sin(wx * 0.07) * 1.2);
+    }
+    ctx.lineTo(SCENE_W, 140);
+    ctx.fill();
+  }
+}
+
+type Walker = { x: number; feet: number; variant: number };
+
+/** Zumbis parados encostados na cerca, em grupos de tamanhos diferentes. */
+const WALKERS: Walker[] = (() => {
+  const random = rng(5);
+  const centers: [number, number][] = [
+    [40, 3],
+    [150, 2],
+    [285, 4],
+    [415, 3],
+    [535, 2],
+  ];
+  const out: Walker[] = [];
+  for (const [cx, count] of centers) {
+    for (let i = 0; i < count; i++) {
+      out.push({
+        x: cx + (i - count / 2) * 11 + random() * 6,
+        feet: FENCE_LINE + 4 + Math.floor(random() * 10),
+        variant: Math.floor(random() * 4),
+      });
+    }
+  }
+  return out;
+})();
+const SHIRTS = ['#6b4a3a', '#3f5a7a', '#7a7a3a', '#5a3f6e'];
+const PANTS = ['#2f3440', '#4a3a2a', '#26323a', '#3a3a3a'];
+const SKINS = ['#7fa05a', '#8fb56a', '#6f9467', '#9bb27a'];
+
+/** Zumbi pequeno visto de costas, de braços erguidos para a cerca; balança de leve. */
+function miniZombie(env: SceneEnv, z: Walker, index: number): void {
+  const sway = Math.round(Math.sin(env.t * 1.6 + index * 1.9));
+  const x = Math.round(z.x) + sway;
+  const y = z.feet;
+  const skin = SKINS[z.variant] ?? '#7fa05a';
+  rect(env, x - 3, y - 17, 7, 18, OUT);
+  rect(env, x - 2, y - 5, 2, 5, PANTS[z.variant] ?? '#2f3440');
+  rect(env, x + 1, y - 5, 2, 5, PANTS[z.variant] ?? '#2f3440');
+  rect(env, x - 2, y - 11, 5, 6, SHIRTS[z.variant] ?? '#6b4a3a');
+  const lift = Math.round(Math.sin(env.t * 3 + index) * 1);
+  rect(env, x - 4, y - 16 + lift, 1, 6, skin);
+  rect(env, x + 3, y - 16 - lift, 1, 6, skin);
+  rect(env, x - 1, y - 16, 3, 4, skin);
+  rect(env, x - 1, y - 16, 3, 1, '#4a3a2a');
+}
+
+function journeyFence(env: SceneEnv, dx: number): void {
+  fence(
+    env,
+    {
+      ax: dx + BASE_START,
+      ay: FENCE_LINE,
+      ah: FENCE_TOP_H,
+      bx: dx + BASE_END,
+      by: FENCE_LINE,
+      bh: FENCE_TOP_H,
+    },
+    42,
+  );
+}
+
+/** Faíscas na cerca visível: a mesma conta alimenta o desenho e a luz. */
+function journeySparks(env: SceneEnv): { x: number; y: number }[] {
+  const out: { x: number; y: number }[] = [];
+  const slot = Math.floor(env.t * 8);
+  for (const { dx } of baseSegments(env)) {
+    const random = rng(slot * 7 + 3);
+    if (random() > 0.5) continue;
+    const x = dx + BASE_START + 20 + random() * (BASE_END - BASE_START - 40);
+    if (x > 0 && x < SCENE_W) out.push({ x, y: FENCE_LINE - FENCE_TOP_H + 4 });
+  }
+  return out;
+}
+
+function baseSegments(env: SceneEnv): { dx: number; k: number }[] {
+  const shift = env.scroll * BASE_FACTOR;
+  const first = Math.floor((shift - BASE_WIDTH) / BASE_PERIOD);
+  const out: { dx: number; k: number }[] = [];
+  for (let k = first; k <= first + 3; k++) {
+    const dx = k * BASE_PERIOD - shift;
+    if (dx + BASE_START < SCENE_W + 40 && dx + BASE_END > -40) out.push({ dx, k });
+  }
+  return out;
+}
+
+/** Posição (tela) dos pontos de luz da base: lâmpada do hangar e refletor da torre. */
+function baseLights(env: SceneEnv): Light[] {
+  const out: Light[] = [];
+  for (const { dx } of baseSegments(env)) {
+    out.push({ x: dx + 90, y: 118, radius: 40, color: [255, 220, 150], intensity: 0.5 });
+    out.push({ x: dx + 262, y: 92, radius: 30, color: [255, 220, 140], intensity: 0.6 });
+    out.push({ x: dx + 400, y: 118, radius: 40, color: [255, 220, 150], intensity: 0.5 });
+  }
+  return out;
+}
+
+/** Jornada: deserto com a base militar passando ao fundo e o personagem sozinho na estrada de areia. */
+function journey(env: SceneEnv): void {
+  gradientRect(env, 0, 0, SCENE_W, HORIZON + 16, SKY_BY_TIME[env.time]);
+  stars(env, 0, 0, SCENE_W, 90, 11, 50);
+  celestial(env, 0, 0, SCENE_W, HORIZON);
+  journeyMountains(env);
+  journeyDunes(env);
+  gradientRect(env, 0, HORIZON + 8, SCENE_W, SCENE_H - HORIZON - 8, [
+    '#d6aa70',
+    '#cda068',
+    '#c08f5a',
+  ]);
+  const random = rng(23);
+  for (let i = 0; i < 70; i++) {
+    const dark = random() > 0.5;
+    rect(
+      env,
+      scrolled(random() * JOURNEY_PERIOD, env.scroll, JOURNEY_PERIOD),
+      132 + random() * 88,
+      2 + random() * 3,
+      1,
+      dark ? 'rgba(120,80,40,0.22)' : 'rgba(255,230,170,0.22)',
+    );
+  }
+  for (const { dx } of baseSegments(env)) {
+    rect(
+      env,
+      dx + BASE_START,
+      BASE_LINE,
+      BASE_END - BASE_START,
+      FENCE_LINE - BASE_LINE + 1,
+      '#8f9088',
+    );
+    rect(env, dx + BASE_START, BASE_LINE, BASE_END - BASE_START, 1, 'rgba(0,0,0,0.25)');
+    hangar(env, dx + 90, BASE_LINE);
+    radar(env, dx + 190, BASE_LINE);
+    flag(env, dx + 214, BASE_LINE);
+    tower(env, dx + 262, BASE_LINE + 2);
+    hangar(env, dx + 400, BASE_LINE);
+    crate(env, dx + 330, BASE_LINE + 6, 11);
+    crate(env, dx + 343, BASE_LINE + 6, 9);
+    barrel(env, dx + 322, BASE_LINE + 8, '#3f5a2e');
+    sandbags(env, dx + 470, BASE_LINE + 8, 3, 2);
+    journeyFence(env, dx);
+    sign(env, dx + 30, FENCE_LINE - 30);
+    sign(env, dx + 300, FENCE_LINE - 30);
+    sign(env, dx + 560, FENCE_LINE - 30);
+    WALKERS.forEach((walker, i) => {
+      miniZombie(env, { ...walker, x: dx + walker.x }, i);
+    });
+  }
+  // Zumbis soltos no deserto, longe da base
+  for (const { dx } of baseSegments(env)) {
+    miniZombie(env, { x: dx + 780, feet: 158, variant: 1 }, 40);
+    miniZombie(env, { x: dx + 960, feet: 164, variant: 3 }, 41);
+  }
+  const at = (world: number): number => scrolled(world, env.scroll, JOURNEY_PERIOD);
+  cactus(env, at(70), 172);
+  cactus(env, at(430), 168);
+  sandbags(env, at(250), 178, 2, 2);
+  barrel(env, at(560), 176, '#6b7a4a');
+  cactus(env, at(700), 174);
+  // faíscas na cerca
+  const { ctx } = env;
+  ctx.save();
+  for (const s of journeySparks(env)) {
+    ctx.strokeStyle = 'rgba(150,225,255,0.95)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(s.x - 4, s.y + 2);
+    ctx.lineTo(s.x - 1, s.y - 2);
+    ctx.lineTo(s.x + 1, s.y + 2);
+    ctx.lineTo(s.x + 4, s.y - 2);
+    ctx.stroke();
+    rect(env, s.x - 1, s.y, 2, 1, '#ffffff');
+  }
+  ctx.restore();
+  helicopter(env);
+  if (env.arrivedFor !== null) portal(env, env.arrivedFor, 170);
+}
+
 export const zombie: SceneDef = {
   id: 'zombie',
   name: 'Apocalipse zumbi',
   blurb: 'Base militar no deserto, cerca elétrica, zumbis nas bordas e um helicóptero em ronda.',
   groundY: 182,
+  journey,
   back(env) {
     const { ctx } = env;
     // céu
@@ -559,6 +807,23 @@ export const zombie: SceneDef = {
     helicopter(env);
   },
   lights(env): Light[] {
+    if (env.journey) {
+      const heli = heliPos(env.t);
+      return [
+        ...journeySparks(env).map((s) => ({
+          x: s.x,
+          y: s.y,
+          radius: 22,
+          color: [120, 200, 255] as [number, number, number],
+          intensity: 0.7,
+          at: ['morning', 'afternoon', 'night'] as TimeOfDay[],
+        })),
+        ...baseLights(env),
+        { x: 304, y: 34, radius: 320, color: [160, 175, 255], intensity: 0.34 },
+        { x: 195, y: 150, radius: 240, color: [150, 165, 240], intensity: 0.28 },
+        { x: heli.x + 28, y: 196, radius: 38, color: [255, 245, 210], intensity: 0.6 },
+      ];
+    }
     const lights: Light[] = sparks(env.t).map((s) => ({
       x: s.x,
       y: s.y,

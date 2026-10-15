@@ -17,6 +17,7 @@ import {
   resolveTime,
   SCENARIOS,
   SKIN_TONES,
+  STORY_SCENARIOS,
   timeOfDayFor,
   TORSO_PARTS,
 } from './options';
@@ -63,6 +64,8 @@ describe('hora do dia', () => {
 describe('validações e chaves simples', () => {
   it('reconhece cenário e modo de hora válidos', () => {
     expect(SCENARIOS.every(isScenario)).toBe(true);
+    expect(STORY_SCENARIOS).not.toContain('cabin');
+    expect(STORY_SCENARIOS).toHaveLength(SCENARIOS.length - 1);
     expect(isScenario('lua')).toBe(false);
     expect(isTimeMode('auto')).toBe(true);
     expect(isTimeMode('meio-dia')).toBe(false);

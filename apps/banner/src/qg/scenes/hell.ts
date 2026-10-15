@@ -1,4 +1,4 @@
-import { byTime, flame, glow, gradientRect, rect, rng, tileArea } from './draw';
+import { byTime, flame, glow, gradientRect, portal, rect, rng, scrolled, tileArea } from './draw';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_H, SCENE_W } from './types';
 
@@ -96,9 +96,9 @@ function mountainLayer(
   }
 }
 
-function volcano(env: SceneEnv): void {
+function volcano(env: SceneEnv, x: number = VOLCANO.x): void {
   const { ctx } = env;
-  const { x, peak } = VOLCANO;
+  const { peak } = VOLCANO;
   const body = by(env.time, '#2a0a0c', '#150507');
   ctx.fillStyle = body;
   ctx.beginPath();
@@ -138,12 +138,16 @@ function volcano(env: SceneEnv): void {
   }
 }
 
-function lavaLake(env: SceneEnv): void {
+function lavaLake(
+  env: SceneEnv,
+  shift = 0,
+  geyserXs: readonly number[] = GEYSERS.map((g) => g.x),
+): void {
   const { ctx } = env;
   // margem inferior ondulada, de ponta a ponta
   const shore: [number, number][] = [[LAKE.x0, LAKE.top]];
   for (let x = LAKE.x0; x <= SCENE_W + 10; x += 20)
-    shore.push([x, LAKE.bottom + Math.round(Math.sin(x / 37) * 2)]);
+    shore.push([x, LAKE.bottom + Math.round(Math.sin((x + shift) / 37) * 2)]);
   shore.push([SCENE_W + 10, LAKE.top]);
   const path = (): void => {
     ctx.beginPath();
@@ -172,7 +176,7 @@ function lavaLake(env: SceneEnv): void {
     LAKE.top,
     w,
     LAKE.bottom - LAKE.top + 4,
-    env.t * 10,
+    env.t * 10 + shift,
   );
   gradientRect(env, LAKE.x0 - 10, LAKE.top, w, LAKE.bottom - LAKE.top + 4, [
     'rgba(120,20,6,0.45)',
@@ -205,7 +209,8 @@ function lavaLake(env: SceneEnv): void {
   }
   ctx.restore();
   // gêiseres de lava
-  for (const g of GEYSERS) {
+  for (const [gi, g0] of GEYSERS.entries()) {
+    const g = { x: geyserXs[gi] ?? g0.x, phase: g0.phase };
     const h = geyserHeight(env.t, g.phase);
     if (h <= 0) continue;
     rect(env, g.x - 3, GEYSER_BASE - h, 6, h, '#ff6a1a');
@@ -477,12 +482,153 @@ function groundCracks(env: SceneEnv): void {
   }
 }
 
+const HELL_PERIOD = 1300;
+const MOUNTAIN_PERIOD = 900;
+
+/** Número fixo entre 0 e 1 por posição, para as montanhas não mudarem de forma enquanto rolam. */
+function noise(a: number, b: number): number {
+  const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
+  return v - Math.floor(v);
+}
+
+/** Faixa de montanhas que rola devagar; cada pico mantém a forma ao passar. */
+function journeyMountains(
+  env: SceneEnv,
+  seed: number,
+  base: number,
+  minH: number,
+  span: number,
+  color: string,
+  rim: string,
+  shift: number,
+): void {
+  const { ctx } = env;
+  const first = Math.floor((shift - 60) / 34);
+  for (let i = first; i < first + 16; i++) {
+    const x = i * 34 - shift;
+    if (x < -50 || x > SCENE_W + 30) continue;
+    const h = minH + noise(seed, i) * span;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x - 8, base);
+    ctx.lineTo(x + 6, base - h * 0.62);
+    ctx.lineTo(x + 12, base - h * 0.7);
+    ctx.lineTo(x + 18, base - h);
+    ctx.lineTo(x + 25, base - h * 0.55);
+    ctx.lineTo(x + 31, base - h * 0.6);
+    ctx.lineTo(x + 46, base);
+    ctx.fill();
+    ctx.strokeStyle = rim;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + 18, base - h);
+    ctx.lineTo(x + 25, base - h * 0.55);
+    ctx.stroke();
+  }
+}
+
+const routeX = (env: SceneEnv, world: number): number =>
+  Math.round(scrolled(world, env.scroll, HELL_PERIOD));
+const farX = (env: SceneEnv, world: number, factor: number, period: number): number =>
+  Math.round(scrolled(world, env.scroll, period, factor));
+
+/** Peças do caminho, espalhadas sem ritmo fixo. */
+const ROUTE: {
+  kind: 'brazier' | 'stalagmite' | 'skull' | 'ribcage' | 'trident' | 'pike';
+  x: number;
+}[] = [
+  { kind: 'brazier', x: 140 },
+  { kind: 'skull', x: 300 },
+  { kind: 'stalagmite', x: 410 },
+  { kind: 'trident', x: 560 },
+  { kind: 'ribcage', x: 690 },
+  { kind: 'brazier', x: 800 },
+  { kind: 'pike', x: 930 },
+  { kind: 'stalagmite', x: 1030 },
+  { kind: 'skull', x: 1120 },
+  { kind: 'trident', x: 1230 },
+];
+const GEYSER_WORLD = [60, 420, 760] as const;
+
+function geyserScreenXs(env: SceneEnv): number[] {
+  return GEYSERS.map((_, i) => farX(env, GEYSER_WORLD[i] ?? 60, 0.5, 900));
+}
+
+/** Inferno na jornada: lava, vulcão e montanhas passam ao fundo; ossos, braseiros e tridentes pelo caminho. */
+function journey(env: SceneEnv): void {
+  gradientRect(env, 0, 0, SCENE_W, HORIZON, [...SKY_BY_TIME[env.time]]);
+  const sunY = env.time === 'morning' ? 96 : 40;
+  glow(env, 300, sunY, 80, env.time === 'night' ? [200, 40, 30] : [255, 150, 60], 0.6);
+  const orb = env.ctx.createRadialGradient(300, sunY, 0, 300, sunY, 14);
+  orb.addColorStop(0, env.time === 'night' ? '#d83a2a' : '#fff0b0');
+  orb.addColorStop(1, env.time === 'night' ? '#7a1414' : '#ff9a3c');
+  env.ctx.fillStyle = orb;
+  env.ctx.beginPath();
+  env.ctx.arc(300, sunY, 14, 0, Math.PI * 2);
+  env.ctx.fill();
+  smokeBanks(env);
+  journeyMountains(
+    env,
+    41,
+    HORIZON,
+    34,
+    34,
+    by(env.time, '#3a0f12', '#1b080b'),
+    'rgba(255,120,40,0.5)',
+    env.scroll * 0.04,
+  );
+  volcano(env, farX(env, VOLCANO.x, 0.1, MOUNTAIN_PERIOD));
+  journeyMountains(
+    env,
+    59,
+    HORIZON + 2,
+    22,
+    30,
+    by(env.time, '#2a0b0b', '#14060a'),
+    'rgba(255,100,30,0.6)',
+    env.scroll * 0.08,
+  );
+  tileArea(env, env.tiles.lavarock, 0, 160, 0, HORIZON, SCENE_W, SCENE_H - HORIZON, env.scroll);
+  gradientRect(env, 0, HORIZON, SCENE_W, 26, ['rgba(255,90,30,0.4)', 'rgba(255,90,30,0)']);
+  rect(env, 0, HORIZON - 1, SCENE_W, 2, 'rgba(0,0,0,0.5)');
+  lavaLake(env, env.scroll * 0.5, geyserScreenXs(env));
+  const random = rng(8);
+  for (let i = 0; i < 12; i++) {
+    const x = scrolled(random() * 820, env.scroll, 820);
+    const y = 168 + random() * 50;
+    const len = 10 + random() * 22;
+    const pulse = 0.6 + 0.4 * Math.sin(env.t * 1.6 + i);
+    rect(
+      env,
+      x,
+      y,
+      len,
+      1,
+      `rgba(255,${Math.round(110 + 60 * pulse)},26,${(0.55 + pulse * 0.4).toFixed(2)})`,
+    );
+    rect(env, x + len * 0.3, y + 1, len * 0.3, 1, 'rgba(255,170,60,0.6)');
+  }
+  for (const item of ROUTE) {
+    const x = routeX(env, item.x);
+    if (x < -60 || x > SCENE_W + 60) continue;
+    if (item.kind === 'brazier') brazier(env, x);
+    else if (item.kind === 'stalagmite') stalagmite(env, x, 176, 34, item.x % 2 ? 1 : -1);
+    else if (item.kind === 'skull') skull(env, x, 176);
+    else if (item.kind === 'ribcage') ribcage(env, x, 178);
+    else if (item.kind === 'trident') trident(env, x, 176);
+    else skullPike(env, x, 174);
+  }
+  embers(env);
+  if (env.arrivedFor !== null) portal(env, env.arrivedFor, 170);
+}
+
 export const hell: SceneDef = {
   id: 'hell',
   name: 'Inferno',
   blurb:
     'Trono infernal no centro, rio de lava correndo ao fundo, vulcão, braseiros e brasas subindo.',
   groundY: 182,
+  journey,
   back(env) {
     gradientRect(env, 0, 0, SCENE_W, HORIZON, [...SKY_BY_TIME[env.time]]);
     const sunY = env.time === 'morning' ? 96 : 40;
@@ -535,6 +681,67 @@ export const hell: SceneDef = {
   },
   lights: (env): Light[] => {
     const all: TimeOfDay[] = ['morning', 'afternoon', 'night'];
+    if (env.journey) {
+      const out: Light[] = [
+        {
+          x: 100,
+          y: 142,
+          radius: 130,
+          color: [255, 110, 30],
+          intensity: 0.5,
+          flicker: true,
+          at: all,
+        },
+        {
+          x: 300,
+          y: 138,
+          radius: 130,
+          color: [255, 110, 30],
+          intensity: 0.55,
+          flicker: true,
+          at: all,
+        },
+        {
+          x: farX(env, VOLCANO.x, 0.1, MOUNTAIN_PERIOD),
+          y: VOLCANO.peak,
+          radius: 80,
+          color: [255, 120, 40],
+          intensity: 0.45,
+          flicker: true,
+          at: all,
+        },
+      ];
+      for (const item of ROUTE) {
+        if (item.kind !== 'brazier') continue;
+        const x = routeX(env, item.x);
+        if (x > -80 && x < SCENE_W + 80) {
+          out.push({
+            x,
+            y: BRAZIER_BASE - 26,
+            radius: 70,
+            color: [255, 130, 40],
+            intensity: 0.7,
+            flicker: true,
+            at: all,
+          });
+        }
+      }
+      const gx = geyserScreenXs(env);
+      GEYSERS.forEach((g, i) => {
+        const h = geyserHeight(env.t, g.phase);
+        if (h > 0) {
+          out.push({
+            x: gx[i] ?? g.x,
+            y: GEYSER_BASE - h,
+            radius: 60,
+            color: [255, 150, 50],
+            intensity: 0.6,
+            at: all,
+          });
+        }
+      });
+      return out;
+    }
     const out: Light[] = [
       {
         x: 100,

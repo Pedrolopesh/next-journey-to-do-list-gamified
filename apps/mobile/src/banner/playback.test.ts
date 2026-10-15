@@ -9,4 +9,9 @@ describe('shouldPlay', () => {
     expect(shouldPlay('inactive', false)).toBe(false);
     expect(shouldPlay('active', true)).toBe(false);
   });
+
+  it('tela fora de foco fica parada', () => {
+    expect(shouldPlay('active', false, false)).toBe(false);
+    expect(shouldPlay('active', false, true)).toBe(true);
+  });
 });

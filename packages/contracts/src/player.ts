@@ -3,11 +3,10 @@ import { z } from 'zod';
 import { characterSchema } from './character';
 import { timezoneSchema } from './common';
 
-/** Progresso do capítulo na história ativa. O progresso é separado por história. */
+/** Capítulo da história ativa. Cada nível ganho conclui um capítulo; o progresso é separado por história. */
 export const storyProgressSchema = z.object({
   /** Capítulo atual, a partir de 1. */
   chapter: z.number().int().positive(),
-  checksInChapter: z.number().int().nonnegative(),
   /** True quando o último capítulo da história foi concluído. */
   completed: z.boolean(),
 });
@@ -36,7 +35,6 @@ export const meResponseSchema = z.object({
   }),
   player: playerStateSchema.extend({
     expForNextLevel: z.number().int().positive(),
-    requiredChecksInChapter: z.number().int().positive(),
   }),
   character: characterSchema.nullable(),
   story: z

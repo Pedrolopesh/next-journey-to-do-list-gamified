@@ -16,6 +16,7 @@ import {
   fetchItems,
   fetchMe,
   fetchStories,
+  fetchStoryTimeline,
   fetchTimeline,
   undoCheck,
   updateCategory,
@@ -61,6 +62,16 @@ export const useStories = () => {
 export const useTimeline = () => {
   const enabled = useSignedIn();
   return useQuery({ queryKey: queryKeys.timeline, queryFn: fetchTimeline, enabled });
+};
+
+/** Capítulos de qualquer história do catálogo (Minha história: ver outra sem trocar a ativa). */
+export const useStoryTimeline = (slug: string | null) => {
+  const enabled = useSignedIn() && slug !== null;
+  return useQuery({
+    queryKey: [...queryKeys.timeline, slug] as const,
+    queryFn: () => fetchStoryTimeline(slug ?? ''),
+    enabled,
+  });
 };
 
 export const useAchievements = () => {
@@ -182,10 +193,9 @@ export function useCategoryMutations() {
   };
 }
 
-/** Progresso do capítulo (0 a 1) a partir do GET /me, para posicionar o banner. */
+/** Progresso do capítulo (0 a 1): a EXP dentro do nível, que também move o personagem no banner. */
 export function chapterProgress(me: MeResponse | undefined): number {
   if (!me) return 0;
-  const { story, requiredChecksInChapter } = me.player;
-  if (story.completed) return 1;
-  return Math.min(1, story.checksInChapter / requiredChecksInChapter);
+  const { expInLevel, expForNextLevel } = me.player;
+  return Math.min(1, Math.max(0, expInLevel / expForNextLevel));
 }

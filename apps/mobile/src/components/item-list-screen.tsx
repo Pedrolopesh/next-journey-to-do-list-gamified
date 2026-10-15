@@ -11,6 +11,7 @@ import { Fab } from '@/components/fab';
 import { ItemRow } from '@/components/item-row';
 import { Pills } from '@/components/pills';
 import { EmptyState, ErrorState, SkeletonList } from '@/components/states';
+import { StoryProgressCard } from '@/components/story-progress-card';
 import { TabScreen } from '@/components/tab-screen';
 import { useCheckFlow } from '@/features/check/use-check-flow';
 import { lastUndoableCheck, useFeedbackStore } from '@/features/feedback/feedback-store';
@@ -78,6 +79,7 @@ export function ItemListScreen({
       debug={false}
       onBannerMessage={flow.onBannerMessage}
     >
+      <StoryProgressCard showCoins />
       <Text style={styles.heading} accessibilityRole="header">
         {title}
       </Text>
@@ -176,7 +178,7 @@ export function ItemListScreen({
 }
 
 const styles = StyleSheet.create({
-  heading: { color: colors.text.primary, fontSize: 20, fontWeight: '600' },
+  heading: { color: colors.text.primary, fontSize: 20, fontWeight: '600', marginTop: space[8] },
   error: { color: colors.status.danger, fontSize: 13 },
   section: {
     color: colors.text.secondary,

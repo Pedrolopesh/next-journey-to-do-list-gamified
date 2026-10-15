@@ -28,10 +28,11 @@ export const checkResultSchema = z.object({
   coinsGained: z.number().int(),
   level: z.number().int().positive(),
   leveledUp: z.boolean(),
+  /** Capítulo atual e o progresso dele: a EXP dentro do nível (cada nível ganho conclui um capítulo). */
   chapterProgress: z.object({
     chapter: z.number().int().positive(),
-    checksInChapter: z.number().int().nonnegative(),
-    requiredChecks: z.number().int().positive(),
+    expInLevel: z.number().int().nonnegative(),
+    expForNextLevel: z.number().int().positive(),
   }),
   chapterCompleted: z.boolean(),
   /** Presente quando este check fechou um capítulo. */

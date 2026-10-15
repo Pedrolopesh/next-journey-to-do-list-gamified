@@ -54,6 +54,17 @@ describe('controlador do banner', () => {
     expect(document.getElementById('hero')?.style.getPropertyValue('--hero-x')).toBe('0px');
   });
 
+  it('o banner só fica visível (data-ready) depois do primeiro INIT', () => {
+    const { root, receive } = setup();
+    expect(root.dataset.ready).toBeUndefined();
+    receive({
+      v: 1,
+      type: 'INIT',
+      payload: { scene: 'map', character, sceneKey: 'forest-1', progress: 0, timeOfDay: 'night' },
+    });
+    expect(root.dataset.ready).toBe('1');
+  });
+
   it('INIT com a cena QG responde ERROR (ainda não suportada)', () => {
     const { receive, sent } = setup();
     receive({
@@ -109,9 +120,11 @@ describe('controlador do banner', () => {
         show: () => calls.push('show'),
         hide: () => calls.push('hide'),
         setScene: (id: string) => calls.push(`scene:${id}`),
+        setJourney: (journey: boolean) => calls.push(`journey:${journey}`),
         setTime: (time: string) => calls.push(`time:${time}`),
         setCharacter: () => calls.push('character'),
-        celebrate: () => calls.push('celebrate'),
+        setProgress: (progress: number) => calls.push(`progress:${progress}`),
+        celebrate: (progress: number) => calls.push(`celebrate:${progress}`),
         pause: () => calls.push('pause'),
         resume: () => calls.push('resume'),
         fadeOut: () => calls.push('fadeOut'),
@@ -143,9 +156,29 @@ describe('controlador do banner', () => {
     it('INIT qg configura cenário, hora e personagem e mostra o QG', () => {
       const { calls, root, receive, sent } = setupQg();
       receive(init);
-      expect(calls).toEqual(['scene:castle', 'time:night', 'character', 'show']);
+      expect(calls).toEqual([
+        'journey:false',
+        'scene:castle',
+        'progress:0',
+        'time:night',
+        'character',
+        'show',
+      ]);
       expect(root.dataset.sceneKey).toBe('castle');
       expect(sent).toHaveLength(0);
+    });
+
+    it('INIT journey liga a jornada (personagem anda e o cenário rola)', () => {
+      const { calls, receive } = setupQg();
+      receive({ ...init, payload: { ...init.payload, scene: 'journey', sceneKey: 'beach' } });
+      expect(calls).toEqual([
+        'journey:true',
+        'scene:beach',
+        'progress:0',
+        'time:night',
+        'character',
+        'show',
+      ]);
     });
 
     it('SET_TIME_OF_DAY e SET_CHARACTER chegam ao QG', () => {
@@ -161,7 +194,7 @@ describe('controlador do banner', () => {
       const { calls, root, receive } = setupQg();
       receive(init);
       receive({ v: 1, type: 'ITEM_CHECKED', payload: { progress: 0.4 } });
-      expect(calls).toContain('celebrate');
+      expect(calls).toContain('celebrate:0.4');
       expect(root.classList.contains('running')).toBe(false);
     });
 
