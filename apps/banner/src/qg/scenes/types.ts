@@ -23,6 +23,8 @@ export type SceneEnv = {
   journey: boolean;
   /** Segundos desde que o personagem chegou ao fim da jornada; `null` enquanto ainda anda. */
   arrivedFor: number | null;
+  /** Nível do cenário (1 a `SceneDef.levels`): o mesmo lugar com mais vida a cada nível. */
+  level: number;
 };
 
 export type Light = {
@@ -44,6 +46,8 @@ export type ExtraCharacter = {
   anim: AnimationName;
   direction: Direction;
   selection: Partial<Selection>;
+  /** Vai e volta entre dois pontos (px) em vez de ficar parado; `anim` diz se anda ou corre. */
+  patrol?: { from: number; to: number; speed: number };
 };
 
 export type Tint = { color: string; alpha: number };
@@ -60,6 +64,10 @@ export type SceneDef = {
   front?: (env: SceneEnv) => void;
   lights?: (env: SceneEnv) => Light[];
   extras?: ExtraCharacter[];
+  /** Quantos níveis o cenário tem (padrão 1). */
+  levels?: number;
+  /** Figurantes de cada nível; quando existe, vale no lugar de `extras`. */
+  extrasFor?: (level: number) => ExtraCharacter[];
   /** Cor aplicada sobre toda a cena por hora do dia (multiplicação). */
   tint?: Partial<Record<TimeOfDay, Tint>>;
 };

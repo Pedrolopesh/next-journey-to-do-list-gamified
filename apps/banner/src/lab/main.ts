@@ -5,6 +5,7 @@ import type { LabPage } from './page';
 import { achievementsPage } from './pages/achievements';
 import { achievementsV2Page } from './pages/achievements-v2';
 import { appButtonsPage } from './pages/app-buttons';
+import { beachLevelsPage } from './pages/beach-levels';
 import { characterPage } from './pages/character';
 import { glowPage } from './pages/glow';
 import { indicatorsPage } from './pages/indicators';
@@ -18,6 +19,7 @@ const PAGES: LabPage[] = [
   achievementsPage,
   achievementsV2Page,
   scenesPage,
+  beachLevelsPage,
   characterPage,
 ];
 

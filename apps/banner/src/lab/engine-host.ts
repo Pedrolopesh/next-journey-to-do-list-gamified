@@ -46,6 +46,7 @@ export const initialState = (): QgState => ({
   sceneId: 'cabin',
   journey: false,
   stop: 0,
+  level: 1,
   time: 'afternoon',
 });
 
