@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm run build:lab",
+  "outputDirectory": "dist-lab",
+  "rewrites": [{ "source": "/", "destination": "/lab.html" }]
+}
