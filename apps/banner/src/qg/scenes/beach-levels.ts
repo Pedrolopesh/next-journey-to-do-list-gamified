@@ -467,7 +467,7 @@ const QG_PROPS: Record<number, Prop[]> = {
   ],
   2: [
     { k: 'palm', x: 14, y: 204, lean: 1.5 },
-    { k: 'kiosk', x: 40, y: 186, awning: RED },
+    { k: 'kiosk', x: 40, y: 168, awning: RED },
     { k: 'palm', x: 144, y: 206, lean: 1.1 },
     { k: 'umbrella', x: 262, y: 188, color: RED },
     { k: 'towel', x: 242, y: 196, w: 40, h: 11 },
@@ -517,14 +517,14 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
   ],
   2: [
     { k: 'palm', x: 20, y: SL, lean: 1.5 },
-    { k: 'kiosk', x: 90, y: SL + 6, awning: RED },
+    { k: 'kiosk', x: 90, y: SL - 6, awning: RED },
     { k: 'umbrella', x: 250, y: SL + 6, color: RED },
     { k: 'towel', x: 232, y: SL - 6, w: 40, h: 11 },
     { k: 'palm', x: 340, y: SL + 4, lean: -1.4 },
     { k: 'umbrella', x: 430, y: SL + 8, color: BLUE },
     { k: 'chair', x: 500, y: SL + 6 },
     { k: 'palm', x: 580, y: SL, lean: 1.2 },
-    { k: 'kiosk', x: 650, y: SL + 6, awning: '#ffc93c' },
+    { k: 'kiosk', x: 650, y: SL - 6, awning: '#ffc93c' },
     { k: 'cooler', x: 760, y: SL - 6 },
   ],
   3: [
@@ -1032,8 +1032,8 @@ export function beachJourneyExtras(level: number): ExtraCharacter[] {
       return [
         drifter(3, 'run', 200, 40, lane + 30),
         drifter(2, 'walk', 460, 15, lane + 8),
-        still(4, 640, lane - 6, 'up'),
-        still(7, 664, lane - 6, 'up'),
+        still(4, 606, lane - 6, 'up'),
+        still(7, 630, lane - 6, 'up'),
       ];
     case 4:
       return [

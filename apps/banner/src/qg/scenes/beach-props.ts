@@ -197,7 +197,7 @@ export function palm(env: SceneEnv, x: number, baseY: number, lean: number): voi
   }
   ctx.stroke();
 
-  const sway = Math.sin(env.t * 0.7 + x) * 1.1;
+  const sway = Math.sin(env.t * 0.45 + x) * 0.5;
   ctx.lineCap = 'round';
   FRONDS.forEach((frond, index) => {
     const len = 36 + (index % 2) * 3;
