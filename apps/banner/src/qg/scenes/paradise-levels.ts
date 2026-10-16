@@ -55,9 +55,9 @@ export const FOREST_LEVELS: LevelInfo[] = [
     blurb:
       'A mágica acorda: cogumelos gigantes brilham, luzes flutuam entre as árvores e há uma fada guia por perto.',
     changes: [
-      'Cogumelos gigantes que brilham e pó de luz pelo ar.',
+      'Cogumelos de verdade, grandes e pequenos, que brilham ao longo de todo o caminho.',
       'Luzes (fadas) flutuando entre as árvores; elas acendem também de dia.',
-      'Uma guia da floresta parada e gente caminhando em silêncio.',
+      'Uma guia da floresta e gente de vários tons de pele ao lado da cabana e do lago.',
     ],
   },
   {
@@ -67,7 +67,7 @@ export const FOREST_LEVELS: LevelInfo[] = [
     changes: [
       'Lanternas penduradas entre postes de madeira (nunca soltas no ar).',
       'Mesas de piquenique com frutas, fogueira central e fogos à noite.',
-      'A turma dançando em volta do fogo e gente indo e vindo.',
+      'A turma dançando em volta do fogo, mais gente diversa e gente indo e vindo.',
     ],
   },
 ];
@@ -150,6 +150,101 @@ const GUIDE: Look = {
 };
 const hiker = (i: number): Look => HIKER[i % HIKER.length] ?? {};
 
+/** Gente de vários tons de pele e jeitos, para a floresta encantada e o festival. */
+const FOLK: Look[] = [
+  {
+    bodyType: 'female',
+    skin: 'black',
+    hair: 'hair-natural',
+    hairColor: 'black',
+    torso: 'torso-tshirt',
+    torsoColor: 'yellow',
+    legs: 'legs-shorts',
+    legsColor: 'navy',
+    feet: 'feet-sandals',
+  },
+  {
+    bodyType: 'male',
+    skin: 'light',
+    hair: 'hair-curly-short',
+    hairColor: 'ginger',
+    torso: 'torso-longsleeve-2',
+    torsoColor: 'forest',
+    legs: 'legs-pants',
+    legsColor: 'brown',
+    feet: 'feet-revised-boots',
+    feetColor: 'brown',
+  },
+  {
+    bodyType: 'female',
+    skin: 'green',
+    hair: 'hair-bob',
+    hairColor: 'green',
+    torso: 'torso-sleeveless-2',
+    torsoColor: 'lavender',
+    legs: 'legs-leggings',
+    legsColor: 'purple',
+    feet: 'feet-sandals',
+  },
+  {
+    bodyType: 'male',
+    skin: 'brown',
+    hair: 'hair-buzzcut',
+    hairColor: 'black',
+    torso: 'torso-tshirt',
+    torsoColor: 'orange',
+    legs: 'legs-pants',
+    legsColor: 'slate',
+    feet: 'feet-basic-shoes',
+  },
+  {
+    bodyType: 'female',
+    skin: 'light',
+    hair: 'hair-half-up',
+    hairColor: 'platinum',
+    torso: 'torso-cardigan',
+    torsoColor: 'rose',
+    legs: 'legs-pants',
+    legsColor: 'navy',
+    feet: 'feet-basic-shoes',
+  },
+  {
+    bodyType: 'male',
+    skin: 'bright_green',
+    hair: null,
+    hairColor: 'black',
+    torso: 'torso-longsleeve-2',
+    torsoColor: 'sky',
+    legs: 'legs-shorts',
+    legsColor: 'tan',
+    feet: 'feet-sandals',
+  },
+  {
+    bodyType: 'female',
+    skin: 'blue',
+    hair: 'hair-bangs-bun',
+    hairColor: 'navy',
+    torso: 'torso-tshirt',
+    torsoColor: 'white',
+    legs: 'legs-pants',
+    legsColor: 'teal',
+    feet: 'feet-basic-shoes',
+  },
+  {
+    bodyType: 'male',
+    skin: 'black',
+    hair: 'hair-curly-short',
+    hairColor: 'black',
+    torso: 'torso-sleeveless-2',
+    torsoColor: 'red',
+    legs: 'legs-pants',
+    legsColor: 'charcoal',
+    feet: 'feet-revised-boots',
+    feetColor: 'black',
+  },
+];
+const folk = (i: number): Look => FOLK[i % FOLK.length] ?? {};
+
 // ---------------------------------------------------------------------------------------------
 // Objetos
 // ---------------------------------------------------------------------------------------------
@@ -198,7 +293,10 @@ function stump(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 1, y - 13, 3, 1, WOOD);
 }
 
-/** Cogumelo grande: haste clara, chapéu redondo com pintas; os brilhantes pulsam. */
+/**
+ * Cogumelo: haste clara que alarga na base e chapéu em cúpula bem mais largo que ela, com borda
+ * escura por baixo (as lamelas) e pintas. Os brilhantes têm um halo que pulsa.
+ */
 function shroom(
   env: SceneEnv,
   x: number,
@@ -208,25 +306,55 @@ function shroom(
   glow: boolean,
 ): void {
   const s = size;
-  rect(env, x - 3 * s - 1, y, 6 * s + 2, 2, 'rgba(0,0,0,0.18)');
-  rect(env, x - 2 * s - 1, y - 7 * s, 4 * s + 2, 7 * s + 1, OUT);
-  rect(env, x - 2 * s, y - 7 * s + 1, 4 * s, 7 * s, '#f2e9d0');
-  rect(env, x - 2 * s, y - 7 * s + 1, s, 7 * s, '#ffffff');
-  const pulse = glow && Math.sin(env.t * 1.6 + x * 0) > 0 ? 1 : 0;
-  disc(env, x, y - 8 * s, 6 * s + 1, OUT);
-  rect(env, x - 6 * s - 1, y - 8 * s, 12 * s + 3, 4 * s, '#00000000');
-  for (let dy = -6 * s; dy <= 0; dy++) {
-    const half = Math.round(Math.sqrt((6 * s) ** 2 - dy * dy));
-    rect(env, x - half, y - 8 * s + dy, half * 2 + 1, 1, color);
+  const stemH = 6 * s;
+  const capH = 6 * s;
+  const capW = 8 * s;
+  const capTop = y - stemH - capH;
+  rect(env, x - 5 * s, y, 10 * s, 2, 'rgba(0,0,0,0.18)');
+  if (glow && Math.sin(env.t * 1.6) > -0.3) {
+    env.ctx.globalAlpha = 0.18;
+    disc(env, x, y - stemH - capH / 2, capW + 3 * s, color);
+    env.ctx.globalAlpha = 1;
   }
-  rect(env, x - 6 * s, y - 8 * s, 12 * s + 1, 1, OUT);
-  rect(env, x - 4 * s, y - 12 * s, 2 * s, s, 'rgba(255,255,255,0.45)');
-  for (const [dx, dy] of [
-    [-3, -4],
-    [1, -5],
-    [3, -3],
+  // haste: mais fina no alto e aberta na base
+  for (let r = 0; r < stemH; r++) {
+    const half = Math.round(1.5 * s + (r / stemH) * 1.2 * s);
+    rect(env, x - half - 1, y - stemH + r, half * 2 + 3, 1, OUT);
+  }
+  for (let r = 0; r < stemH; r++) {
+    const half = Math.round(1.5 * s + (r / stemH) * 1.2 * s);
+    rect(env, x - half, y - stemH + r, half * 2 + 1, 1, '#f2e9d0');
+    rect(env, x - half, y - stemH + r, Math.max(1, s), 1, '#ffffff');
+  }
+  // chapéu: meia elipse larga
+  const half = (r: number): number => Math.round(capW * Math.sqrt(1 - ((capH - r) / capH) ** 2));
+  for (let r = 0; r <= capH; r++) rect(env, x - half(r) - 1, capTop + r, half(r) * 2 + 3, 1, OUT);
+  for (let r = 0; r <= capH; r++) rect(env, x - half(r), capTop + r, half(r) * 2 + 1, 1, color);
+  // sombra do lado direito e brilho do lado esquerdo
+  for (let r = 1; r <= capH; r++) {
+    rect(env, x + half(r) - Math.max(1, s), capTop + r, Math.max(1, s), 1, 'rgba(0,0,0,0.22)');
+  }
+  rect(env, x - capW + 2 * s, capTop + s, 3 * s, s, 'rgba(255,255,255,0.5)');
+  // lamelas por baixo do chapéu
+  rect(env, x - capW, capTop + capH, capW * 2 + 1, Math.max(1, s), '#caa77a');
+  rect(env, x - capW, capTop + capH + Math.max(1, s), capW * 2 + 1, 1, OUT);
+  // pintas
+  const lit = glow && Math.sin(env.t * 1.6) > 0;
+  for (const [dx, dy, r] of [
+    [-4, 2, 1],
+    [1, 1, 1.4],
+    [5, 3.5, 1],
+    [-1, 4, 0.8],
   ] as const) {
-    rect(env, x + dx * s, y - 8 * s + dy * s, s * 2, s * 2, glow && pulse ? '#ffffff' : '#fff6e0');
+    const sd = Math.max(1, Math.round(r * s));
+    rect(
+      env,
+      x + Math.round(dx * s),
+      capTop + Math.round(dy * s),
+      sd + 1,
+      sd,
+      lit ? '#ffffff' : '#fff6e0',
+    );
   }
 }
 
@@ -451,17 +579,23 @@ const QG_PROPS: Record<number, Prop[]> = {
     { k: 'shroom', x: 372, y: 206, color: '#ff7a2e', size: 1 },
   ],
   3: [
-    { k: 'tent', x: 142, y: 164, color: '#e07b39' },
-    { k: 'tent', x: 268, y: 164, color: '#2f8f93' },
-    { k: 'log', x: 144, y: 190, w: 28 },
-    { k: 'log', x: 238, y: 190, w: 28 },
-    { k: 'camp', x: 200, y: 176 },
+    { k: 'tent', x: 142, y: 154, color: '#e07b39' },
+    { k: 'tent', x: 268, y: 154, color: '#2f8f93' },
+    { k: 'log', x: 142, y: 174, w: 28 },
+    { k: 'log', x: 240, y: 174, w: 28 },
+    { k: 'camp', x: 200, y: 164 },
   ],
   4: [
     { k: 'shroom', x: 40, y: 152, color: '#8f6bff', size: 3, glow: true },
     { k: 'shroom', x: 352, y: 170, color: '#35e0ff', size: 3, glow: true },
     { k: 'shroom', x: 150, y: 204, color: '#ff6fa8', size: 1, glow: true },
     { k: 'shroom', x: 262, y: 206, color: '#6bff9a', size: 2, glow: true },
+    { k: 'shroom', x: 92, y: 176, color: '#35e0ff', size: 1, glow: true },
+    { k: 'shroom', x: 120, y: 196, color: '#6bff9a', size: 1, glow: true },
+    { k: 'shroom', x: 300, y: 188, color: '#ff6fa8', size: 2, glow: true },
+    { k: 'shroom', x: 330, y: 208, color: '#8f6bff', size: 1, glow: true },
+    { k: 'shroom', x: 24, y: 200, color: '#6bff9a', size: 2, glow: true },
+    { k: 'shroom', x: 376, y: 196, color: '#35e0ff', size: 1, glow: true },
     { k: 'wisp', x: 104, y: 86, ph: 0 },
     { k: 'wisp', x: 194, y: 112, ph: 1.7 },
     { k: 'wisp', x: 292, y: 92, ph: 3.1 },
@@ -493,11 +627,11 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
     { k: 'shroom', x: 770, y: LANE + 28, color: '#ff7a2e', size: 1 },
   ],
   3: [
-    { k: 'tent', x: CAMP_WORLD - 90, y: LANE - 10, color: '#e07b39', p: RARE },
-    { k: 'tent', x: CAMP_WORLD + 90, y: LANE - 10, color: '#2f8f93', p: RARE },
-    { k: 'log', x: CAMP_WORLD - 50, y: LANE + 4, w: 28, p: RARE },
-    { k: 'log', x: CAMP_WORLD + 22, y: LANE + 4, w: 28, p: RARE },
-    { k: 'camp', x: CAMP_WORLD, y: LANE - 6, p: RARE },
+    { k: 'tent', x: CAMP_WORLD - 90, y: LANE - 24, color: '#e07b39', p: RARE },
+    { k: 'tent', x: CAMP_WORLD + 90, y: LANE - 24, color: '#2f8f93', p: RARE },
+    { k: 'log', x: CAMP_WORLD - 50, y: LANE - 8, w: 28, p: RARE },
+    { k: 'log', x: CAMP_WORLD + 22, y: LANE - 8, w: 28, p: RARE },
+    { k: 'camp', x: CAMP_WORLD, y: LANE - 14, p: RARE },
   ],
   4: [
     { k: 'shroom', x: 120, y: LANE - 14, color: '#8f6bff', size: 3, glow: true },
@@ -505,6 +639,16 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
     { k: 'shroom', x: 300, y: LANE + 30, color: '#ff6fa8', size: 1, glow: true },
     { k: 'shroom', x: 680, y: LANE + 32, color: '#6bff9a', size: 2, glow: true },
     { k: 'shroom', x: 760, y: LANE - 12, color: '#8f6bff', size: 2, glow: true },
+    { k: 'shroom', x: 60, y: LANE + 26, color: '#35e0ff', size: 1, glow: true },
+    { k: 'shroom', x: 210, y: LANE - 8, color: '#6bff9a', size: 1, glow: true },
+    { k: 'shroom', x: 370, y: LANE + 34, color: '#8f6bff', size: 2, glow: true },
+    { k: 'shroom', x: 520, y: LANE - 10, color: '#ff6fa8', size: 1, glow: true },
+    { k: 'shroom', x: 590, y: LANE + 30, color: '#35e0ff', size: 1, glow: true },
+    { k: 'shroom', x: 860, y: LANE + 24, color: '#6bff9a', size: 2, glow: true },
+    { k: 'shroom', x: 940, y: LANE - 12, color: '#ff6fa8', size: 3, glow: true },
+    { k: 'shroom', x: 1060, y: LANE + 30, color: '#35e0ff', size: 1, glow: true },
+    { k: 'shroom', x: 1180, y: LANE - 10, color: '#8f6bff', size: 2, glow: true },
+    { k: 'shroom', x: 1290, y: LANE + 28, color: '#6bff9a', size: 1, glow: true },
     { k: 'wisp', x: 90, y: 90, ph: 0 },
     { k: 'wisp', x: 240, y: 120, ph: 1.7 },
     { k: 'wisp', x: 400, y: 84, ph: 3.1 },
@@ -608,12 +752,21 @@ export function forestExtras(n: number): ExtraCharacter[] {
       return [stand(hiker(0), 196, 174, 'left'), roamer(hiker(1), 'walk', 150, 340, 15, 214)];
     case 3:
       return [
-        stand(hiker(2), 176, 188, 'right'),
-        stand(hiker(3), 232, 188, 'left'),
+        stand(hiker(2), 160, 172, 'right'),
+        stand(hiker(3), 252, 172, 'left'),
         roamer(hiker(4), 'walk', 150, 350, 14, 214),
       ];
     case 4:
-      return [stand(GUIDE, 176, 190, 'left'), roamer(hiker(0), 'walk', 150, 340, 11, 214)];
+      return [
+        stand(GUIDE, 176, 190, 'left'),
+        roamer(hiker(0), 'walk', 150, 340, 11, 214),
+        // ao lado da cabana e do lago
+        stand(folk(0), 236, 148, 'down'),
+        stand(folk(1), 262, 152, 'left'),
+        stand(folk(2), 96, 158, 'right'),
+        stand(folk(3), 152, 156, 'left'),
+        stand(folk(5), 340, 192, 'left'),
+      ];
     case 5:
       return [
         stand(hiker(0), 164, 188, 'right'),
@@ -621,11 +774,25 @@ export function forestExtras(n: number): ExtraCharacter[] {
         stand(hiker(2), 200, 166, 'down'),
         roamer(hiker(3), 'run', 30, 360, 44, 214),
         roamer(hiker(4), 'walk', 350, 60, 12, 206),
+        stand(folk(4), 232, 148, 'down'),
+        stand(folk(6), 100, 158, 'right'),
+        stand(folk(7), 150, 156, 'left'),
+        stand(folk(2), 120, 194, 'right'),
+        stand(folk(5), 290, 194, 'left'),
       ];
     default:
       return [];
   }
 }
+
+/** Gente ao lado da cabana (mundo 190) e do lago (mundo 90), parada no gramado ao fundo. */
+const cabinFolk = (): ExtraCharacter[] => [
+  stander(folk(0), 178, 150, 'down'),
+  stander(folk(1), 214, 152, 'left'),
+  stander(folk(2), 70, 152, 'right'),
+  stander(folk(3), 116, 150, 'left'),
+  stander(folk(4), 94, 158, 'up'),
+];
 
 export function forestJourneyExtras(n: number): ExtraCharacter[] {
   const lane = LANE;
@@ -638,8 +805,8 @@ export function forestJourneyExtras(n: number): ExtraCharacter[] {
       ];
     case 3:
       return [
-        { ...stander(hiker(2), CAMP_WORLD - 26, lane - 2, 'right', RARE) },
-        { ...stander(hiker(3), CAMP_WORLD + 26, lane - 2, 'left', RARE) },
+        { ...stander(hiker(2), CAMP_WORLD - 26, lane - 10, 'right', RARE) },
+        { ...stander(hiker(3), CAMP_WORLD + 26, lane - 10, 'left', RARE) },
         walker(hiker(0), 'walk', 100, 12, lane + 16),
         walker(hiker(4), 'walk', 800, -10, lane + 12),
       ];
@@ -648,6 +815,7 @@ export function forestJourneyExtras(n: number): ExtraCharacter[] {
         stander(GUIDE, 330, lane - 6, 'left'),
         walker(hiker(1), 'walk', 120, 11, lane + 16),
         walker(hiker(3), 'walk', 620, -9, lane + 12),
+        ...cabinFolk(),
       ];
     case 5:
       return [
@@ -656,6 +824,9 @@ export function forestJourneyExtras(n: number): ExtraCharacter[] {
         { ...stander(hiker(2), FEST_WORLD + 20, lane - 2, 'up', RARE) },
         walker(hiker(3), 'run', 80, 44, lane + 16),
         walker(hiker(4), 'walk', 640, -11, lane + 14),
+        ...cabinFolk(),
+        stander(folk(6), 720, lane - 6, 'right'),
+        stander(folk(7), 770, lane - 10, 'left'),
       ];
     default:
       return [];

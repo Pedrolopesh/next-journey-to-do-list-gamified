@@ -1,4 +1,5 @@
 import type { AnimationName, Direction, Selection } from '../compose';
+import type { Outfit } from '../outfits';
 
 export type TimeOfDay = 'morning' | 'afternoon' | 'night';
 export const TIMES: { value: TimeOfDay; label: string }[] = [
@@ -56,6 +57,8 @@ export type ExtraCharacter = {
    * Na jornada, fica na tela junto do personagem em vez de no mundo: `offset` px à frente dele
    * (negativo = atrás), balançando `sway` px a `rate` rad/s. Some para o lado quando o cenário para.
    */
+  /** Roupa desenhada por cima (cavaleiro, mago). */
+  outfit?: Outfit;
   follow?: { offset: number; sway: number; rate: number; phase: number };
 };
 

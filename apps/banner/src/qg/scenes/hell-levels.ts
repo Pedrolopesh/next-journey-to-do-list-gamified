@@ -69,6 +69,7 @@ export const HELL_LEVELS: LevelInfo[] = [
       'Pilares de fogo e estandartes de chifres dos dois lados do tapete.',
       'Relâmpagos cruzam o céu, obeliscos de runas acesos.',
       'Guardas em formação, um arauto correndo e demônios da corte.',
+      'Jornada: um trono do rei demônio passa ao fundo.',
     ],
   },
 ];

@@ -179,12 +179,16 @@ function cabin(env: SceneEnv, cx: number, base: number): void {
   }
 }
 
-const LAKE = { cx: 76, cy: 182, rx: 62, ry: 24 };
+/** Lago ao lado da cabana, na altura do chão dela (no QG, à esquerda da cabana em 222). */
+const LAKE = { cx: 126, cy: 141, rx: 46, ry: 10 };
 
 type LakeBox = { cx: number; cy: number; rx: number; ry: number };
 
 function lake(env: SceneEnv, L: LakeBox = LAKE): void {
   const { ctx } = env;
+  // os detalhes foram desenhados para um lago de 62 x 24; aqui acompanham o tamanho dele
+  const sx = L.rx / 62;
+  const sy = L.ry / 24;
   const path = (grow = 0): void => {
     ctx.beginPath();
     ctx.ellipse(L.cx, L.cy, L.rx + grow, L.ry + grow * 0.6, 0, 0, Math.PI * 2);
@@ -220,8 +224,8 @@ function lake(env: SceneEnv, L: LakeBox = LAKE): void {
     if (phase > 0.2)
       rect(
         env,
-        L.cx - 50 + random() * 100,
-        L.cy - 14 + random() * 28,
+        L.cx - 50 * sx + random() * 100 * sx,
+        L.cy - 14 * sy + random() * 28 * sy,
         4,
         1,
         'rgba(255,255,255,0.7)',
@@ -237,18 +241,20 @@ function lake(env: SceneEnv, L: LakeBox = LAKE): void {
     [-44, 8, false],
   ] as const) {
     const bob = Math.sin(env.t * 1.2 + dx) * 0.6;
+    const lx = Math.round(L.cx + dx * sx);
+    const ly = L.cy + dy * sy;
     ctx.fillStyle = '#1f6f3a';
     ctx.beginPath();
-    ctx.ellipse(L.cx + dx, L.cy + dy + bob + 1, 8, 3.2, 0, 0, Math.PI * 2);
+    ctx.ellipse(lx, ly + bob + 1, 7 * sx + 1, 3 * sy + 0.6, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#46c25f';
     ctx.beginPath();
-    ctx.ellipse(L.cx + dx, L.cy + dy + bob, 8, 3.2, 0, 0, Math.PI * 2);
+    ctx.ellipse(lx, ly + bob, 7 * sx + 1, 3 * sy + 0.6, 0, 0, Math.PI * 2);
     ctx.fill();
     if (flower) {
-      rect(env, L.cx + dx - 2, L.cy + dy + bob - 4, 5, 3, '#ff8fd0');
-      rect(env, L.cx + dx - 1, L.cy + dy + bob - 6, 3, 3, '#ffc2e6');
-      rect(env, L.cx + dx, L.cy + dy + bob - 4, 1, 2, '#ffe14a');
+      rect(env, lx - 2, ly + bob - 4, 5, 3, '#ff8fd0');
+      rect(env, lx - 1, ly + bob - 6, 3, 3, '#ffc2e6');
+      rect(env, lx, ly + bob - 4, 1, 2, '#ffe14a');
     }
   }
   // juncos na margem
@@ -261,9 +267,11 @@ function lake(env: SceneEnv, L: LakeBox = LAKE): void {
     [30, -22],
   ] as const) {
     const sway = Math.round(Math.sin(env.t * 1.5 + dx) * 1);
-    rect(env, L.cx + dx, L.cy + dy - 14, 1, 14, '#2f8a47');
-    rect(env, L.cx + dx + sway, L.cy + dy - 18, 2, 5, '#6b4a2a');
-    rect(env, L.cx + dx + 2, L.cy + dy - 10, 1, 10, '#46c25f');
+    const rx = Math.round(L.cx + dx * sx);
+    const ry = Math.round(L.cy + dy * sy);
+    rect(env, rx, ry - 9, 1, 9, '#2f8a47');
+    rect(env, rx + sway, ry - 12, 2, 4, '#6b4a2a');
+    rect(env, rx + 2, ry - 6, 1, 6, '#46c25f');
   }
 }
 
@@ -343,8 +351,8 @@ function fireflies(env: SceneEnv): void {
 }
 
 const FOREST_PERIOD = 1400;
-const HOUSE_FACTOR = 0.45;
-const MID_FACTOR = 0.7;
+/** Cabana, lago, árvores e arbustos andam juntos com o chão: é uma floresta só. */
+const HOUSE_FACTOR = 1;
 const HOUSE_X = 190;
 const PATH_TOP = 172;
 const PATH_BOTTOM = 196;
@@ -401,16 +409,16 @@ const NEAR_TREES: Tree[] = scatter(67, 640, 230, 380, 0.6);
 
 const TREE_LAYERS: { trees: Tree[]; factor: number; base: number; scale: number; bush: number }[] =
   [
-    { trees: FAR_TREES, factor: HOUSE_FACTOR, base: 136, scale: 0.5, bush: 0.5 },
-    { trees: MID_TREES, factor: MID_FACTOR, base: 154, scale: 0.72, bush: 0.5 },
+    { trees: FAR_TREES, factor: 1, base: 136, scale: 0.5, bush: 0.5 },
+    { trees: MID_TREES, factor: 1, base: 154, scale: 0.72, bush: 0.5 },
     { trees: NEAR_TREES, factor: 1, base: 172, scale: 1, bush: 0.5 },
   ];
 
 const lakeBox = (env: SceneEnv): LakeBox => ({
-  cx: Math.round(scrolled(60, env.scroll, FOREST_PERIOD, HOUSE_FACTOR)),
-  cy: 144,
-  rx: 52,
-  ry: 11,
+  cx: Math.round(scrolled(HOUSE_X - 100, env.scroll, FOREST_PERIOD, HOUSE_FACTOR)),
+  cy: 141,
+  rx: 46,
+  ry: 10,
 });
 
 /** Flores e grama alta presas ao chão: passam sob os pés, sem poças d'água no caminho. */
@@ -434,6 +442,20 @@ function journeyFlowers(env: SceneEnv): void {
     rect(env, x, y, 1, 3, 'rgba(30,110,50,0.55)');
     rect(env, x + 2, y + 1, 1, 2, 'rgba(30,110,50,0.55)');
   }
+}
+
+/** Árvores e arbustos da jornada, na lista por altura dos pés: quem passa por trás ou pela frente é certo. */
+function treeItems(env: SceneEnv): { y: number; draw: () => void }[] {
+  const out: { y: number; draw: () => void }[] = [];
+  for (const layer of TREE_LAYERS) {
+    for (const item of layer.trees) {
+      const x = scrolled(item.x, env.scroll, FOREST_PERIOD, layer.factor);
+      const bush = item.kind === 'bushA' || item.kind === 'bushB';
+      const scale = bush ? layer.scale * 0.55 : layer.scale;
+      out.push({ y: layer.base, draw: () => tree(env, item.kind, x, layer.base, scale) });
+    }
+  }
+  return out;
 }
 
 /** Floresta na jornada: a casa com o lago passa devagar ao fundo, as árvores em três profundidades. */
@@ -494,13 +516,6 @@ function journey(env: SceneEnv): void {
     );
   }
   journeyFlowers(env);
-  for (const layer of TREE_LAYERS) {
-    for (const item of layer.trees) {
-      const x = scrolled(item.x, env.scroll, FOREST_PERIOD, layer.factor);
-      const bush = item.kind === 'bushA' || item.kind === 'bushB';
-      tree(env, item.kind, x, layer.base, bush ? layer.scale * 0.55 : layer.scale);
-    }
-  }
   butterflies(env);
   fireflies(env);
   if (env.arrivedFor !== null) portal(env, env.arrivedFor, 168);
@@ -515,6 +530,10 @@ export const paradise: SceneDef = {
   levels: FOREST_LEVEL_COUNT,
   levelInfo: FOREST_LEVELS,
   ...forestLevelLayers,
+  levelItems: (env) => [
+    ...(forestLevelLayers.levelItems?.(env) ?? []),
+    ...(env.journey ? treeItems(env) : []),
+  ],
   extrasFor: forestExtras,
   journeyExtrasFor: forestJourneyExtras,
   journeyPeriod: 1400,

@@ -44,7 +44,12 @@ Vale para criar, mudar ou revisar qualquer cenário em `apps/banner/src/qg/scene
 Perseguição na jornada: quem corre junto do personagem (`follow` no figurante) fica na tela, pelo
 `heroX`, e não no mundo que rola. Perseguidores levam `offset` negativo (sempre atrás) e quem foge,
 positivo (sempre à frente), com `sway` menor que a folga para ninguém alcançar o personagem. Quando o
-cenário para, eles saem pelo lado de onde vieram. O catálogo LPC não tem armas.
+cenário para, eles saem pelo lado de onde vieram.
+
+O catálogo LPC só tem camisas, calças e sapatos: cavaleiro (elmo e peitoral) e mago (chapéu e túnica)
+são desenhados por cima do figurante (`outfit`, em `qg/outfits.ts`). Árvores, cabana, lago e objetos
+de um mesmo chão andam juntos (mesmo fator de rolagem); o que fica sobre o chão entra na lista
+ordenada por altura dos pés (`levelItems`), nunca desenhado em bloco atrás de todo mundo.
 
 ## 6. Luz e hora do dia
 

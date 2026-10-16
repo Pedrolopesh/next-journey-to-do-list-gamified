@@ -241,8 +241,12 @@ function drawCar(env: SceneEnv, car: Car): void {
   // faróis e lanternas, para-choques
   const frontX = car.dir > 0 ? car.x + length - 5 : car.x;
   const rearX = car.dir > 0 ? car.x : car.x + length - 3;
-  rect(env, frontX, car.y + (lowerTop + lowerH * 0.2) * S, 5, 4, '#fff2b0');
-  rect(env, rearX, car.y + (lowerTop + lowerH * 0.2) * S, 3, 5, '#e0302c');
+  // na altura do capô/porta-malas de todos os modelos (a carroceria baixa vai de -8 a -3 unidades)
+  const lampY = Math.round(car.y - 6.6 * S);
+  const lampH = Math.max(3, Math.round(1.6 * S));
+  rect(env, frontX, lampY, 4, lampH, '#fff2b0');
+  rect(env, frontX + (car.dir > 0 ? 3 : 0), lampY, 1, lampH, '#ffffff');
+  rect(env, rearX, lampY, 3, lampH, '#e0302c');
   rect(env, car.dir > 0 ? car.x + length - 3 : car.x, car.y - 4.2 * S, 3, 3, '#6a6e78');
   rect(env, car.dir > 0 ? car.x : car.x + length - 3, car.y - 4.2 * S, 3, 3, '#6a6e78');
 }
@@ -379,7 +383,13 @@ export function streetLights(env: SceneEnv): Light[] {
   for (const car of traffic(env)) {
     const length = LENGTH[car.model] * car.scale;
     const front = car.dir > 0 ? car.x + length + 8 : car.x - 8;
-    out.push({ x: front, y: car.y - 9, radius: 44, color: [255, 238, 180], intensity: 0.75 });
+    out.push({
+      x: front,
+      y: car.y - 6.6 * car.scale,
+      radius: 44,
+      color: [255, 238, 180],
+      intensity: 0.75,
+    });
   }
   const bus = busLeft(env);
   out.push({ x: bus + 20, y: BUS_BASE - 14, radius: 44, color: [255, 238, 180], intensity: 0.7 });

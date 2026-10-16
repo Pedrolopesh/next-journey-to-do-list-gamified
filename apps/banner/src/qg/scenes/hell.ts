@@ -8,6 +8,7 @@ import {
   hellLevelLayers,
   hellSky,
 } from './hell-levels';
+import { grown } from './level-kit';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_H, SCENE_W } from './types';
 
@@ -259,10 +260,10 @@ function dais(env: SceneEnv): void {
   rect(env, CX + 18, 172, 2, 48, '#ff7a1a');
 }
 
-function throne(env: SceneEnv): void {
+/** Trono do rei demônio; `cx` e `base` dizem onde ele fica (padrão: o tablado do salão). */
+function throne(env: SceneEnv, cx: number = CX, base: number = DAIS_TOP): void {
   const { ctx } = env;
-  const base = DAIS_TOP;
-  const top = 62;
+  const top = base - 84;
   const body = by(env.time, '#2e1822', '#1c0e14');
   const trim = '#8a2a3a';
   const bone = '#e8dcc0';
@@ -278,8 +279,8 @@ function throne(env: SceneEnv): void {
       ctx.lineWidth = width;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(CX + side * 20, top + 36);
-      ctx.quadraticCurveTo(CX + side * 40, top + 30, CX + side * 36, top + 4);
+      ctx.moveTo(cx + side * 20, top + 36);
+      ctx.quadraticCurveTo(cx + side * 40, top + 30, cx + side * 36, top + 4);
       ctx.stroke();
     }
   }
@@ -302,7 +303,7 @@ function throne(env: SceneEnv): void {
   const trace = (grow: number): void => {
     ctx.beginPath();
     outline.forEach(([dx, y], i) => {
-      const x = CX + dx + Math.sign(dx) * grow;
+      const x = cx + dx + Math.sign(dx) * grow;
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
@@ -318,17 +319,17 @@ function throne(env: SceneEnv): void {
   ctx.fillStyle = body;
   ctx.fill();
   // painel interno com runa brilhante
-  rect(env, CX - 12, top + 30, 24, base - top - 64, '#4a1420');
-  rect(env, CX - 12, top + 30, 2, base - top - 64, '#7a2030');
-  rect(env, CX - 1, top + 36, 2, 26, glowColor);
-  rect(env, CX - 7, top + 44, 14, 2, glowColor);
-  rect(env, CX - 5, top + 52, 10, 2, glowColor);
-  rect(env, CX - 3, top + 58, 6, 2, glowColor);
+  rect(env, cx - 12, top + 30, 24, base - top - 64, '#4a1420');
+  rect(env, cx - 12, top + 30, 2, base - top - 64, '#7a2030');
+  rect(env, cx - 1, top + 36, 2, 26, glowColor);
+  rect(env, cx - 7, top + 44, 14, 2, glowColor);
+  rect(env, cx - 5, top + 52, 10, 2, glowColor);
+  rect(env, cx - 3, top + 58, 6, 2, glowColor);
   // crânio no topo
-  skull(env, CX - 6, top - 12);
+  skull(env, cx - 6, top - 12);
   // colunas de ossos nas laterais
   for (const side of [-1, 1]) {
-    const x = side < 0 ? CX - 30 : CX + 24;
+    const x = side < 0 ? cx - 30 : cx + 24;
     rect(env, x - 1, top + 32, 8, base - top - 50, OUT);
     rect(env, x, top + 33, 6, base - top - 52, trim);
     rect(env, x, top + 33, 1, base - top - 52, '#c0485a');
@@ -336,7 +337,7 @@ function throne(env: SceneEnv): void {
   }
   // braços com crânios nas pontas
   for (const side of [-1, 1]) {
-    const x = side < 0 ? CX - 32 : CX + 23;
+    const x = side < 0 ? cx - 32 : cx + 23;
     rect(env, x - 1, base - 30, 12, 9, OUT);
     rect(env, x, base - 29, 10, 7, body);
     rect(env, x, base - 29, 10, 1, trim);
@@ -346,14 +347,14 @@ function throne(env: SceneEnv): void {
     rect(env, x + (side < 0 ? 4 : 7), base - 33, 1, 1, glowColor);
   }
   // assento de couro sangue e base
-  rect(env, CX - 21, base - 23, 42, 8, OUT);
-  rect(env, CX - 20, base - 22, 40, 6, '#7a1420');
-  rect(env, CX - 20, base - 22, 40, 1, '#c0303c');
-  rect(env, CX - 25, base - 15, 50, 15, OUT);
-  rect(env, CX - 24, base - 14, 48, 13, body);
-  rect(env, CX - 24, base - 14, 48, 1, trim);
-  rect(env, CX - 24, base - 2, 48, 1, '#150a0e');
-  for (const dx of [-17, -8, 8, 17]) rect(env, CX + dx, base - 11, 1, 6, glowColor);
+  rect(env, cx - 21, base - 23, 42, 8, OUT);
+  rect(env, cx - 20, base - 22, 40, 6, '#7a1420');
+  rect(env, cx - 20, base - 22, 40, 1, '#c0303c');
+  rect(env, cx - 25, base - 15, 50, 15, OUT);
+  rect(env, cx - 24, base - 14, 48, 13, body);
+  rect(env, cx - 24, base - 14, 48, 1, trim);
+  rect(env, cx - 24, base - 2, 48, 1, '#150a0e');
+  for (const dx of [-17, -8, 8, 17]) rect(env, cx + dx, base - 11, 1, 6, glowColor);
 }
 
 function stalagmite(env: SceneEnv, x: number, base: number, h: number, flip = 1): void {
@@ -492,6 +493,13 @@ function groundCracks(env: SceneEnv): void {
 }
 
 const HELL_PERIOD = 1300;
+const THRONE_WORLD = 1040;
+const THRONE_BASE = 152;
+
+function passingThrone(env: SceneEnv): { y: number; draw: () => void } {
+  const x = Math.round(scrolled(THRONE_WORLD, env.scroll, HELL_PERIOD));
+  return { y: THRONE_BASE, draw: () => grown(env, x, THRONE_BASE, 0.85, () => throne(env, 0, 0)) };
+}
 const MOUNTAIN_PERIOD = 900;
 
 /** Número fixo entre 0 e 1 por posição, para as montanhas não mudarem de forma enquanto rolam. */
@@ -641,6 +649,11 @@ export const hell: SceneDef = {
   levels: HELL_LEVEL_COUNT,
   levelInfo: HELL_LEVELS,
   ...hellLevelLayers,
+  // na corte do rei demônio um trono passa ao fundo da jornada, no mesmo ritmo do chão
+  levelItems: (env) => [
+    ...(hellLevelLayers.levelItems?.(env) ?? []),
+    ...(env.journey && env.level === 5 ? [passingThrone(env)] : []),
+  ],
   extrasFor: hellExtras,
   journeyExtrasFor: hellJourneyExtras,
   journeyPeriod: HELL_PERIOD,

@@ -59,7 +59,7 @@ export const CITY_LEVELS: LevelInfo[] = [
     changes: [
       'Bandeirinhas no corrimão do terraço e entre os postes da rua.',
       'Balões amarrados, mesa de bolo no terraço e barracas de feira na calçada.',
-      'Fogos de artifício à noite.',
+      'Fogos de artifício à noite e um avião rebocando uma faixa de bandeirinhas no céu.',
     ],
   },
   {
@@ -125,6 +125,36 @@ function blimp(env: SceneEnv): void {
   rect(env, x + 26, y - 1, 1, 3, Math.sin(env.t * 20) > 0 ? '#59606e' : '#cfd2d8');
 }
 
+/** Avião de hélice com uma faixa de bandeirinhas atrás; cruza o céu e some por um tempo. */
+function airplane(env: SceneEnv): void {
+  const span = SCENE_W + 420;
+  const x = Math.round(((env.t * 22 + 60) % span) - 150);
+  const y = 34 + Math.round(Math.sin(env.t * 0.7) * 2);
+  const night = env.time === 'night';
+  const body = night ? '#c9d0ee' : '#f4f4f0';
+  // faixa rebocada: corda e bandeirinhas ondulando
+  const colors = ['#e63946', '#ffc93c', '#6aa8e0', '#7bd88f', '#ff6fa8'];
+  rect(env, x - 18 - 8 * 7, y + 2, 8 * 7 + 6, 1, '#59606e');
+  for (let i = 0; i < 9; i++) {
+    const fx = x - 18 - i * 7;
+    const fy = y + 2 + Math.round(Math.sin(env.t * 3 - i * 0.9) * 2);
+    rect(env, fx, fy, 6, 1, OUT);
+    rect(env, fx + 1, fy + 1, 4, 5, OUT);
+    rect(env, fx + 2, fy + 1, 2, 4, colors[i % colors.length] ?? '#e63946');
+  }
+  // cauda, fuselagem, asa e hélice
+  rect(env, x - 17, y - 8, 5, 8, OUT);
+  rect(env, x - 16, y - 7, 3, 6, '#e63946');
+  oval(env, x, y, 15, 5, OUT);
+  oval(env, x, y, 14, 4, body);
+  rect(env, x - 12, y + 1, 26, 1, '#c0302f');
+  rect(env, x + 4, y - 4, 6, 3, OUT);
+  rect(env, x + 5, y - 3, 4, 2, night ? '#ffe28a' : '#9fd4f0');
+  rect(env, x - 5, y + 1, 14, 3, OUT);
+  rect(env, x - 4, y + 2, 12, 1, night ? '#9aa6d8' : '#dde1e6');
+  rect(env, x + 15, y - 4, 1, 9, Math.sin(env.t * 30) > 0 ? '#59606e' : '#cfd2d8');
+}
+
 function drones(env: SceneEnv): void {
   for (let i = 0; i < 3; i++) {
     const span = SCENE_W + 80;
@@ -143,6 +173,7 @@ export function citySky(env: SceneEnv): void {
   const level = Math.min(CITY_LEVEL_COUNT, Math.max(1, env.level));
   if (level === 2) pigeons(env);
   if (level === 3) blimp(env);
+  if (level === 4) airplane(env);
   if (level === 4)
     fireworks(env, [
       [70, 40, '#ff6fa8', 0],

@@ -1,3 +1,4 @@
+import { drawThrone } from './castle-throne';
 import { flame, rect } from './draw';
 import {
   disc,
@@ -33,21 +34,20 @@ export const CASTLE_LEVELS: LevelInfo[] = [
   {
     name: 'Guarda real',
     blurb:
-      'O castelo se organiza: guardas flanqueiam o trono, braseiros acesos nas laterais e uma sentinela em ronda.',
+      'O castelo se organiza: cavaleiros de elmo e armadura flanqueiam o trono e braseiros acendem as laterais.',
     changes: [
-      'Dois guardas no tablado e braseiros nos cantos da frente.',
-      'Uma sentinela caminhando pelo salão.',
-      'Jornada: guardas de cada lado do tapete, braseiros e escudos na parede.',
+      'Seis cavaleiros no salão: dois no tablado e os outros nas laterais, com braseiros nos cantos.',
+      'Jornada: cavaleiros de cada lado do tapete, braseiros e escudos na parede.',
     ],
   },
   {
     name: 'Banquete',
     blurb:
-      'Noite de festa: lustres de velas, mesas fartas com convidados e um bobo da corte passando entre eles.',
+      'Noite de festa: lustres de velas e mesas fartas de comida, umas cheias de convidados e outras vazias.',
     changes: [
-      'Dois lustres de velas no alto e duas mesas com comida e taças.',
-      'Convidados em volta das mesas e um bobo da corte caminhando.',
-      'Jornada: uma mesa comprida que passa de vez em quando, com convidados.',
+      'Sem armas na parede: o salão só tem lustres de velas e mesas de banquete.',
+      'Uma mesa com convidados (em dupla e sozinhos, com espaço entre eles) e outra vazia.',
+      'Jornada: três mesas ao longo do caminho, duas com convidados e uma vazia.',
     ],
   },
   {
@@ -56,8 +56,8 @@ export const CASTLE_LEVELS: LevelInfo[] = [
       'O salão vira laboratório arcano: estantes de livros, esferas mágicas flutuando, caldeirão e bola de cristal.',
     changes: [
       'Estantes de livros no lugar das armaduras, esferas flutuantes e luz mágica.',
-      'Caldeirão borbulhando, bola de cristal, um mago e seu aprendiz.',
-      'Jornada: estantes na parede, caldeirão e bola de cristal passando, mago e aprendiz.',
+      'Caldeirão borbulhando, bola de cristal e magos de chapéu pontudo e túnica longa.',
+      'Jornada: estantes na parede ao lado das armaduras, caldeirão, bola de cristal e magos.',
     ],
   },
   {
@@ -66,8 +66,8 @@ export const CASTLE_LEVELS: LevelInfo[] = [
       'O grande dia: bandeirinhas entre os estandartes, almofada com a coroa, vasos de flores, confete caindo e a corte em festa.',
     changes: [
       'Bandeirinhas ligam os estandartes e confete cai pelo salão.',
-      'Almofada com a coroa, vasos de flores e a corte reunida dos dois lados.',
-      'Jornada: bandeirinhas nas paredes, confete, vasos e gente comemorando.',
+      'Almofada com a coroa, vasos de flores e a corte reunida dos dois lados; sem armas à mostra.',
+      'Jornada: bandeirinhas nas paredes, confete, vasos, gente comemorando e um trono passando ao fundo.',
     ],
   },
 ];
@@ -193,6 +193,14 @@ const APPRENTICE: Look = {
   feet: 'feet-basic-shoes',
 };
 const guard = (i: number): Look => GUARD[i % GUARD.length] ?? {};
+const knightOf = (extra: ExtraCharacter): ExtraCharacter => ({
+  ...extra,
+  outfit: { kind: 'knight' },
+});
+const mageOf = (extra: ExtraCharacter, color: string): ExtraCharacter => ({
+  ...extra,
+  outfit: { kind: 'wizard', color },
+});
 const noble = (i: number): Look => NOBLE[i % NOBLE.length] ?? {};
 
 // ---------------------------------------------------------------------------------------------
@@ -208,6 +216,7 @@ type Prop =
   | { k: 'orb'; x: number; y: number; hue: number; f?: number; p?: number }
   | { k: 'cauldron'; x: number; y: number; f?: number; p?: number }
   | { k: 'crystal'; x: number; y: number; f?: number; p?: number }
+  | { k: 'throne'; x: number; y: number; f?: number; p?: number }
   | { k: 'vase'; x: number; y: number; f?: number; p?: number }
   | { k: 'cushion'; x: number; y: number; f?: number; p?: number }
   | { k: 'garland'; x: number; y: number; len: number; drop: number; f?: number; p?: number }
@@ -433,6 +442,8 @@ function drawProp(env: SceneEnv, prop: Prop, x: number): void {
       return grown(env, x, prop.y, 1.2, () => cauldron(env, 0, 0));
     case 'crystal':
       return crystal(env, x, prop.y);
+    case 'throne':
+      return grown(env, x, prop.y, 0.85, () => drawThrone(env, 0, 0));
     case 'vase':
       return grown(env, x, prop.y, 1.2, () => vase(env, 0, 0));
     case 'cushion':
@@ -488,12 +499,15 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
   3: [
     { k: 'chandelier', x: 150, y: 38, ...W },
     { k: 'chandelier', x: 700, y: 38, ...W },
-    { k: 'table', x: 300, y: 162, w: 130, p: 2000 },
+    { k: 'table', x: 200, y: 162, w: 130 },
+    { k: 'table', x: 520, y: 162, w: 110 },
+    { k: 'table', x: 850, y: 162, w: 130 },
   ],
   4: [
-    { k: 'shelf', x: 160, y: 150 },
-    { k: 'shelf', x: 560, y: 150 },
-    { k: 'shelf', x: 960, y: 150 },
+    // na parede (mesmo deslocamento das armaduras), sempre ao lado de uma armadura e longe das tochas
+    { k: 'shelf', x: 108, y: 150, ...W },
+    { k: 'shelf', x: 703, y: 150, ...W },
+    { k: 'shelf', x: 1102, y: 150, ...W },
     { k: 'orb', x: 250, y: 90, hue: 0, ...W },
     { k: 'orb', x: 700, y: 82, hue: 1, ...W },
     { k: 'orb', x: 1000, y: 96, hue: 2, ...W },
@@ -506,6 +520,7 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
     { k: 'vase', x: 160, y: 164 },
     { k: 'vase', x: 560, y: 164 },
     { k: 'cushion', x: 420, y: 164 },
+    { k: 'throne', x: 812, y: 150, ...W },
     { k: 'confetti', x: 0, y: 232 },
   ],
 };
@@ -597,21 +612,22 @@ export function castleExtras(n: number): ExtraCharacter[] {
       return [
         stand(guard(0), 150, 151, 'down'),
         stand(guard(1), 242, 151, 'down'),
-        roamer(guard(0), 'walk', 70, 330, 15, 210),
-      ];
+        stand(guard(0), 88, 180, 'down'),
+        stand(guard(1), 304, 180, 'down'),
+        stand(guard(1), 52, 208, 'right'),
+        stand(guard(0), 338, 208, 'left'),
+      ].map(knightOf);
     case 3:
       return [
-        stand(noble(0), 26, 184, 'down'),
-        stand(noble(1), 56, 186, 'down'),
-        stand(noble(2), 334, 186, 'down'),
-        stand(noble(3), 362, 184, 'down'),
-        roamer(JESTER, 'walk', 90, 290, 18, 212),
+        stand(noble(0), 16, 184, 'down'),
+        stand(noble(1), 38, 186, 'down'),
+        stand(noble(2), 70, 184, 'down'),
       ];
     case 4:
       return [
-        stand(WIZARD, 262, 162, 'left'),
-        stand(APPRENTICE, 78, 190, 'right'),
-        roamer(APPRENTICE, 'walk', 120, 270, 11, 214),
+        mageOf(stand(WIZARD, 262, 162, 'left'), '#5b2e91'),
+        mageOf(stand(APPRENTICE, 78, 190, 'right'), '#2f5fb0'),
+        mageOf(roamer(APPRENTICE, 'walk', 120, 270, 11, 214), '#2a9d8f'),
       ];
     case 5:
       return [
@@ -635,23 +651,27 @@ export function castleJourneyExtras(n: number): ExtraCharacter[] {
         stander(guard(0), 262, 160, 'down'),
         stander(guard(1), 296, 160, 'down'),
         stander(guard(1), 700, 160, 'down'),
-        walker(guard(0), 'walk', 480, 12, 208),
-      ];
+        stander(guard(0), 736, 160, 'down'),
+        stander(guard(0), 120, 162, 'right'),
+        stander(guard(1), 480, 168, 'down'),
+        stander(guard(0), 940, 162, 'left'),
+      ].map(knightOf);
     case 3:
+      // mesa com convidados: dupla, espaço e um sozinho; mesa vazia; mesa com um, espaço e uma dupla
       return [
-        { ...stander(noble(0), 318, 168, 'up', 2000) },
-        { ...stander(noble(1), 352, 168, 'up', 2000) },
-        { ...stander(noble(2), 392, 168, 'up', 2000) },
-        walker(JESTER, 'walk', 140, 16, 208),
-        stander(noble(3), 760, 166, 'left'),
-        walker(noble(4), 'walk', 560, -10, 212),
+        stander(noble(0), 224, 168, 'up'),
+        stander(noble(1), 250, 168, 'up'),
+        stander(noble(2), 306, 168, 'up'),
+        stander(noble(3), 874, 168, 'up'),
+        stander(noble(4), 936, 168, 'up'),
+        stander(noble(1), 962, 168, 'up'),
       ];
     case 4:
       return [
-        stander(WIZARD, 350, 164, 'left'),
-        stander(APPRENTICE, 720, 164, 'right'),
-        walker(APPRENTICE, 'walk', 100, 12, 208),
-        walker(guard(0), 'walk', 820, -9, 212),
+        mageOf(stander(WIZARD, 350, 164, 'left'), '#5b2e91'),
+        mageOf(stander(APPRENTICE, 720, 164, 'right'), '#2f5fb0'),
+        mageOf(walker(APPRENTICE, 'walk', 100, 12, 208), '#2a9d8f'),
+        mageOf(walker(WIZARD, 'walk', 820, -9, 212), '#8f1d1d'),
       ];
     case 5:
       return [
