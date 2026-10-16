@@ -1,5 +1,6 @@
 import {
   BEACH_LEVEL_COUNT,
+  BEACH_LEVELS,
   beachExtras,
   beachJourneyExtras,
   beachLights,
@@ -14,6 +15,7 @@ export const beach: SceneDef = {
   blurb: 'Areia, mar e palmeiras; o nascer e o pôr do sol aparecem no horizonte.',
   groundY: 176,
   levels: BEACH_LEVEL_COUNT,
+  levelInfo: BEACH_LEVELS.map(({ name, blurb, changes }) => ({ name, blurb, changes })),
   back: renderBeach,
   journey: renderBeach,
   extrasFor: beachExtras,

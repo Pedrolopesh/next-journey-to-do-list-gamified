@@ -14,8 +14,8 @@ const STOP_BASE = 188;
 const OUT = '#14161c';
 
 /** Período (px de distância) em que postes e ponto de ônibus se repetem. */
-const STREET_PERIOD = 900;
-const LAMP_WORLD = [80, 380, 680];
+export const STREET_PERIOD = 900;
+export const LAMP_WORLD = [80, 380, 680];
 const BUS_STOP_WORLD = 520;
 
 const LAMPS_SCREEN = (env: SceneEnv): Lamp[] =>
@@ -253,7 +253,7 @@ export function drawTraffic(env: SceneEnv, lane: 'far' | 'near'): void {
 }
 
 /** Onde o ônibus fica parado: no meio-fio, junto do ponto (anda com a calçada). */
-const BUS_LENGTH = 132;
+const BUS_LENGTH = 124;
 const BUS_BASE = CURB - 2;
 
 function busLeft(env: SceneEnv): number {
@@ -264,44 +264,70 @@ function busLeft(env: SceneEnv): number {
   return Math.round(center - BUS_LENGTH / 2);
 }
 
-/** Ônibus parado no ponto, virado para a esquerda (mão da faixa de baixo). Desenhado por último na rua: os carros passam atrás. */
+/** Roda de ônibus: cava escura (só acima do chão), pneu, aro e cubo. */
+function busWheel(env: SceneEnv, cx: number, y: number): void {
+  for (let dy = -9; dy <= 0; dy++) {
+    const half = Math.round(Math.sqrt(81 - dy * dy));
+    rect(env, cx - half, y - 8 + dy, half * 2 + 1, 1, OUT);
+  }
+  const { ctx } = env;
+  const ring = (r: number, color: string): void => {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(cx + 0.5, y - 7.5, r, 0, Math.PI * 2);
+    ctx.fill();
+  };
+  ring(7, '#1b1d24');
+  ring(4, '#aab0ba');
+  ring(2, '#5b616c');
+}
+
+/**
+ * Ônibus parado no ponto, virado para a esquerda (mão da faixa de baixo): carroceria longa com
+ * para-brisa, porta da frente, fileira de janelas, listra, letreiro e duas rodas nas cavas.
+ * Desenhado por último na rua: os carros passam atrás.
+ */
 export function drawBus(env: SceneEnv): void {
   const x = busLeft(env);
   if (x > SCENE_W + 10 || x + BUS_LENGTH < -10) return;
   const night = env.time === 'night';
   const body = '#2f6fe0';
+  const glass = night ? '#ffe9a8' : '#9fd4f0';
+  const glassTop = night ? '#fff6d0' : '#e4f5fd';
   const y = BUS_BASE;
-  // virado para a esquerda: a frente é o lado esquerdo
-  const at = (dx: number, w: number): number => x + BUS_LENGTH - dx - w;
-  rect(env, x + 4, y - 1, BUS_LENGTH - 8, 3, 'rgba(0,0,0,0.3)');
-  rect(env, x - 1, y - 57, BUS_LENGTH + 2, 52, OUT);
-  rect(env, x, y - 56, BUS_LENGTH, 50, body);
-  rect(env, x, y - 56, BUS_LENGTH, 3, mix(body, 0.4));
-  rect(env, x, y - 20, BUS_LENGTH, 4, '#f4f4f6');
-  rect(env, x, y - 12, BUS_LENGTH, 6, mix(body, -0.4));
+  const L = BUS_LENGTH;
+  rect(env, x + 6, y - 1, L - 12, 3, 'rgba(0,0,0,0.3)');
+  // carroceria com contorno, teto mais claro e saia escura
+  rect(env, x - 1, y - 49, L + 2, 44, OUT);
+  rect(env, x, y - 48, L, 42, body);
+  rect(env, x + 2, y - 48, L - 4, 2, mix(body, 0.4));
+  rect(env, x, y - 17, L, 3, '#f4f4f6');
+  rect(env, x, y - 12, L, 6, mix(body, -0.4));
   // ar-condicionado no teto
-  rect(env, at(40, 44) - 1, y - 61, 46, 6, OUT);
-  rect(env, at(40, 44), y - 60, 44, 4, '#c9ced6');
-  // janelas
-  for (let i = 0; i < 7; i++) {
-    const wx = 18 + i * 14;
-    rect(env, at(wx, 11), y - 50, 11, 18, night ? '#ffe9a8' : '#9fd4f0');
-    rect(env, at(wx, 11), y - 50, 11, 2, night ? '#fff6d0' : '#e4f5fd');
+  rect(env, x + 56, y - 53, 38, 5, OUT);
+  rect(env, x + 57, y - 52, 36, 3, '#c9ced6');
+  // para-brisa grande na frente e letreiro do destino
+  rect(env, x + 2, y - 43, 15, 26, glass);
+  rect(env, x + 2, y - 43, 15, 2, glassTop);
+  rect(env, x + 9, y - 43, 1, 26, body);
+  rect(env, x + 3, y - 47, 13, 4, OUT);
+  for (let k = 0; k < 4; k++) rect(env, x + 4 + k * 3, y - 46, 2, 2, '#ffb000');
+  // porta da frente (duas folhas) e janelas laterais
+  rect(env, x + 19, y - 43, 12, 36, OUT);
+  rect(env, x + 20, y - 42, 5, 34, glass);
+  rect(env, x + 26, y - 42, 4, 34, glass);
+  rect(env, x + 20, y - 42, 10, 2, glassTop);
+  for (let i = 0; i < 6; i++) {
+    const wx = x + 35 + i * 14;
+    rect(env, wx, y - 42, 11, 19, glass);
+    rect(env, wx, y - 42, 11, 2, glassTop);
   }
-  // porta da frente e para-brisa
-  rect(env, at(2, 12), y - 50, 12, 36, night ? '#ffe9a8' : '#9fd4f0');
-  rect(env, at(8, 1), y - 50, 1, 36, body);
-  // letreiro do destino
-  rect(env, at(2, 20), y - 54, 20, 4, OUT);
-  for (let k = 0; k < 6; k++) rect(env, at(4 + k * 3, 2), y - 53, 2, 2, '#ffb000');
-  // rodas e cavas
-  for (const wx of [24, 100]) {
-    rect(env, at(wx - 10, 20), y - 20, 20, 20, OUT);
-    wheel(env, at(wx - 8, 0) + 8, y - 9, 8.5);
-  }
-  // faróis e lanterna
-  rect(env, at(0, 4), y - 16, 4, 6, '#fff2b0');
-  rect(env, at(BUS_LENGTH - 3, 3), y - 16, 3, 6, '#e0302c');
+  // rodas nas cavas, faróis, lanterna e para-choque
+  busWheel(env, x + 24, y);
+  busWheel(env, x + L - 26, y);
+  rect(env, x - 2, y - 9, 3, 3, '#2a2d36');
+  rect(env, x, y - 15, 3, 4, '#fff2b0');
+  rect(env, x + L - 3, y - 15, 3, 5, '#e0302c');
 }
 
 /** Ponto de ônibus: abrigo com vidro, banco e placa azul com o ônibus desenhado. */

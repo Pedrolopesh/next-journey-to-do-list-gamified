@@ -273,6 +273,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     ctx.imageSmoothingEnabled = false; // sprites e tiles continuam nítidos
     ctx.clearRect(0, 0, SCENE_W, SCENE_H);
     (walking ? def.journey : def.back)?.(env);
+    def.levelBack?.(env);
     const list = extrasOf(def, state.level, walking);
     // Quem está mais ao fundo (pés mais acima na tela) é desenhado antes do personagem
     const placed = extras
@@ -291,8 +292,9 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     drawCharacter(hero, heroAnim, direction, heroPosition, def.groundY, clock);
     for (const item of placed) if (item.extra.feetY > def.groundY) drawExtra(item);
     if (!walking) def.front?.(env);
+    def.levelFront?.(env);
     applyTint(env, def.tint?.[state.time]);
-    drawLights(env, def.lights?.(env) ?? []);
+    drawLights(env, [...(def.lights?.(env) ?? []), ...(def.levelLights?.(env) ?? [])]);
     vignette(env);
   };
 

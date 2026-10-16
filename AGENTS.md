@@ -12,7 +12,7 @@ To-do list gamificado (diários, tarefas e hábitos rendem EXP e moedas e fazem 
 - `packages/contracts`: schemas Zod compartilhados (API, app, banner)
 - `packages/tsconfig`, `packages/eslint-config`: configuração compartilhada
 
-Docs: `docs/COMO-FUNCIONA.md`, `docs/TURBOREPO.md`, o plano de implementação em fases (documento local do Pedro, fora do Git), `docs/REQUISITOS.MD` (especificação), `docs/SEGURANCA.md`.
+Docs: `docs/CENARIOS.md` (regras de construção e checagem dos cenários do banner; leia antes de criar ou mexer em cenário), `docs/COMO-FUNCIONA.md`, `docs/TURBOREPO.md`, o plano de implementação em fases (documento local do Pedro, fora do Git), `docs/REQUISITOS.MD` (especificação), `docs/SEGURANCA.md`.
 
 ## Stack (FATO, não alterar sem confirmar)
 

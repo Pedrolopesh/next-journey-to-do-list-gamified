@@ -17,36 +17,63 @@ import { SCENE_W } from './types';
 export const BEACH_LEVEL_COUNT = 5;
 
 /** Os cinco níveis da praia: o mesmo lugar, a cada nível com mais vida e uma sensação nova. */
-export const BEACH_LEVELS: { level: number; name: string; blurb: string }[] = [
+export const BEACH_LEVELS: { level: number; name: string; blurb: string; changes: string[] }[] = [
   {
     level: 1,
     name: 'Praia deserta',
     blurb:
       'Calma de primeira manhã: uma ilha, um veleiro, palmeiras e as coisas de quem acabou de chegar.',
+    changes: [
+      'Uma ilha, um veleiro, três coqueiros.',
+      'Toalha, cooler e cadeira; fogueirinha à noite.',
+      'Ninguém por perto: o personagem está sozinho.',
+    ],
   },
   {
     level: 2,
     name: 'Praia movimentada',
     blurb:
       'Duas ilhas, barco a motor, gaivotas, quiosque, guarda-sóis e gente: uma parada, outra caminhando.',
+    changes: [
+      'Duas ilhas e um barco a motor que cruza o mar deixando espuma.',
+      'Gaivotas no céu.',
+      'Quiosque ao fundo, dois guarda-sóis, mais coqueiros.',
+      'Duas pessoas: uma olha o mar parada, outra caminha na beira d’água.',
+    ],
   },
   {
     level: 3,
     name: 'Orla da cidade',
     blurb:
       'Calçadão de ondas, prédios no horizonte, postes, bancos e quiosque. Tem quem corra, quem passeie e quem namore o mar.',
+    changes: [
+      'Muda a sensação: orla de cidade, com poucos prédios e uma rua ao fundo (carros passam; janelas acesas à noite).',
+      'Calçadão de ondas pretas e brancas, postes de luz, bancos e quiosque.',
+      'Corredor, caminhantes e um casal parado olhando o mar.',
+    ],
   },
   {
     level: 4,
     name: 'Píer e farol',
     blurb:
       'Um píer de madeira entra no mar, barcos de pesca atracados, farol no horizonte e pescadores esperando.',
+    changes: [
+      'Píer de madeira entrando no mar, que aparece de vez em quando na jornada.',
+      'Farol no horizonte; à noite o facho gira.',
+      'Barcos de pesca atracados e um barco ao longe.',
+      'Pescadores parados e gente caminhando.',
+    ],
   },
   {
     level: 5,
     name: 'Luau',
     blurb:
       'Bandeirolas, tochas, fogueira, bar de palha e fogos à noite, com a turma reunida em volta do fogo.',
+    changes: [
+      'Festa: bandeirinhas presas entre os coqueiros, tochas e bar de palha com luzinhas.',
+      'Fogueira com a turma em volta (aparece de vez em quando na jornada) e fogos à noite.',
+      'Gente caminhando por perto.',
+    ],
   },
 ];
 

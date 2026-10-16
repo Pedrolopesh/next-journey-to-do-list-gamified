@@ -56,6 +56,14 @@ export type ExtraCharacter = {
 
 export type Tint = { color: string; alpha: number };
 
+/** Texto de um nível do cenário, para o laboratório e para validar o desenho. */
+export type LevelInfo = {
+  name: string;
+  blurb: string;
+  /** O que muda neste nível, em frases curtas. */
+  changes: string[];
+};
+
 export type SceneDef = {
   id: string;
   name: string;
@@ -70,6 +78,14 @@ export type SceneDef = {
   extras?: ExtraCharacter[];
   /** Quantos níveis o cenário tem (padrão 1). */
   levels?: number;
+  /** Nome, descrição e mudanças de cada nível (mesmo tamanho de `levels`). */
+  levelInfo?: LevelInfo[];
+  /** Objetos do nível atrás dos figurantes e do personagem (desenhados logo após o cenário). */
+  levelBack?: (env: SceneEnv) => void;
+  /** Objetos do nível na frente do personagem (pés abaixo da linha dele), no QG e na jornada. */
+  levelFront?: (env: SceneEnv) => void;
+  /** Luzes dos objetos do nível, somadas às do cenário. */
+  levelLights?: (env: SceneEnv) => Light[];
   /** Figurantes de cada nível; quando existe, vale no lugar de `extras`. */
   extrasFor?: (level: number) => ExtraCharacter[];
   /** Figurantes da jornada de cada nível, em posições do mundo. Sem isso, a jornada não tem figurantes. */

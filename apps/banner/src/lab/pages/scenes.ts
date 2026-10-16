@@ -19,10 +19,40 @@ export const scenesPage: LabPage = {
     state.sceneId = SCENES[1]?.id ?? state.sceneId;
 
     const blurb = h('p', 'meta');
+    const levelBox = h('span');
+    const changes = h('ul', 'v2-list');
     const stops = h('span');
+    const current = () => SCENES.find((scene) => scene.id === state.sceneId);
+
     const showBlurb = (): void => {
-      const def = SCENES.find((scene) => scene.id === state.sceneId);
-      blurb.textContent = `${def?.blurb ?? ''}${def?.journey ? '' : ' (sem versão de jornada)'}`;
+      const def = current();
+      const info = def?.levelInfo?.[state.level - 1];
+      const base = `${def?.blurb ?? ''}${def?.journey ? '' : ' (sem versão de jornada)'}`;
+      blurb.textContent = info ? `Nível ${state.level}, ${info.name}: ${info.blurb}` : base;
+      changes.replaceChildren(...(info?.changes ?? []).map((text) => h('li', '', text)));
+    };
+    const renderLevels = (): void => {
+      const infos = current()?.levelInfo ?? [];
+      levelBox.replaceChildren(
+        ...(infos.length > 0
+          ? [
+              row(
+                'Nível',
+                choiceGroup(
+                  infos.map((info, i) => ({
+                    value: String(i + 1),
+                    label: `${i + 1}. ${info.name}`,
+                  })),
+                  () => String(state.level),
+                  (v) => {
+                    state.level = Number(v);
+                    showBlurb();
+                  },
+                ),
+              ),
+            ]
+          : []),
+      );
     };
     const renderStops = (): void => {
       stops.replaceChildren(
@@ -42,6 +72,7 @@ export const scenesPage: LabPage = {
       );
       stops.hidden = !state.journey;
     };
+    renderLevels();
     showBlurb();
 
     host.append(
@@ -49,7 +80,7 @@ export const scenesPage: LabPage = {
       h(
         'p',
         'lead',
-        'Os cenários do QG (personagem parado, como na Home) e as jornadas (o personagem anda e o cenário rola, como nas abas). Cada um com manhã, tarde e noite.',
+        'Os cenários do QG (personagem parado, como na Home) e as jornadas (o personagem anda e o cenário rola, como nas abas). Cada um com manhã, tarde e noite e, nos que já têm, os 5 níveis da história (o mesmo lugar ganhando vida a cada capítulo). Os níveis ainda não estão no app; é só para validar.',
       ),
       wrap,
       panel(
@@ -61,10 +92,13 @@ export const scenesPage: LabPage = {
             () => state.sceneId,
             (v) => {
               state.sceneId = v;
+              state.level = 1;
+              renderLevels();
               showBlurb();
             },
           ),
         ),
+        levelBox,
         row(
           'Hora',
           choiceGroup<TimeOfDay>(
@@ -92,6 +126,7 @@ export const scenesPage: LabPage = {
         ),
         stops,
         blurb,
+        changes,
       ),
     );
     renderStops();

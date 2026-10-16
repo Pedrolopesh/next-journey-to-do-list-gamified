@@ -1,3 +1,14 @@
+import {
+  CITY_GROUND,
+  CITY_LEVEL_COUNT,
+  CITY_LEVELS,
+  cityExtras,
+  cityJourneyExtras,
+  cityLevelLayers,
+  cityRoadMarks,
+  citySky,
+  cityStreetFlags,
+} from './city-levels';
 import { drawBus, drawTraffic, ground, sidewalkProps, streetLights } from './city-street';
 import { bands, gradientRect, portal, rect, rng, scrolled, sky, tileArea } from './draw';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
@@ -208,7 +219,7 @@ const MID_LAYER: LayerOptions = {
   minW: 12,
   maxW: 22,
   x0: -4,
-  x1: 246,
+  x1: 212,
   color: '',
   windows: 'tiny',
   taperFrom: 150,
@@ -231,6 +242,7 @@ const NEAR_LAYER: LayerOptions = {
 function city(env: SceneEnv): void {
   const pal = PAL[env.time];
   sky(env, 0, 0, SCENE_W, SHORE + 8);
+  citySky(env);
   layer(env, { ...FAR_LAYER, color: pal.far });
   haze(env, 60, SHORE + 4, 0.35);
   lake(env);
@@ -678,6 +690,7 @@ function nearVisible(env: SceneEnv): { b: Tall; x: number; index: number }[] {
 function journey(env: SceneEnv): void {
   const pal = PAL[env.time];
   sky(env, 0, 0, SCENE_W, SHORE + 8);
+  citySky(env);
   const farShift = (((env.scroll * FAR_SPEED) % FAR_PERIOD) + FAR_PERIOD) % FAR_PERIOD;
   layer(env, { ...FAR_LAYER, color: pal.far }, -farShift);
   layer(env, { ...FAR_LAYER, color: pal.far }, FAR_PERIOD - farShift);
@@ -686,7 +699,8 @@ function journey(env: SceneEnv): void {
   lake(env, 0, 340);
   MID_SKYLINE.forEach((b, index) => {
     const x = wrapped(env, b.x, MID_PERIOD, MID_SPEED);
-    if (x > -40 && x < SCENE_W + 10) building(env, b, x, index, 132, pal.mid, undefined, 'tiny');
+    if (x > -40 && x < SCENE_W + 10)
+      building(env, b, x, index, SHORE + 1, pal.mid, undefined, 'tiny');
   });
   haze(env, 80, 136, 0.22);
   for (const { b, x, index } of nearVisible(env)) {
@@ -697,10 +711,12 @@ function journey(env: SceneEnv): void {
     }
   }
   ground(env);
+  cityRoadMarks(env);
   drawTraffic(env, 'far');
   drawTraffic(env, 'near');
   drawBus(env);
   sidewalkProps(env);
+  cityStreetFlags(env);
   if (env.arrivedFor !== null) portal(env, env.arrivedFor, 178);
 }
 
@@ -708,7 +724,13 @@ export const rooftop: SceneDef = {
   id: 'rooftop',
   name: 'Cidade',
   blurb: 'Terraço com a cidade em perspectiva e um lago ao fundo; pisca-pisca no corrimão à noite.',
-  groundY: 190,
+  groundY: CITY_GROUND,
+  levels: CITY_LEVEL_COUNT,
+  levelInfo: CITY_LEVELS,
+  ...cityLevelLayers,
+  extrasFor: cityExtras,
+  journeyExtrasFor: cityJourneyExtras,
+  journeyPeriod: 900,
   journey,
   back(env) {
     city(env);
