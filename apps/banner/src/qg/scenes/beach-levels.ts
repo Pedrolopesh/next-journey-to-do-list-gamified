@@ -346,18 +346,18 @@ function lighthouse(env: SceneEnv, cx: number): void {
 
 /** Píer de madeira que entra no mar em perspectiva, com pilares e um poste de luz na ponta. */
 function pier(env: SceneEnv, cx: number): void {
-  const bottom = 172;
+  const bottom = 160;
   const top = HORIZON + 14;
   for (let y = top; y <= bottom; y++) {
     const u = (y - top) / (bottom - top);
-    const w = 16 + u * 58;
+    const w = 12 + u * 34;
     const left = cx - w / 2;
     rect(env, left - 1, y, w + 2, 1, OUTLINE);
     rect(env, left, y, w, 1, (y - top) % 5 === 0 ? '#7a4f26' : '#b8803f');
   }
   for (let y = top + 6; y < bottom; y += 14) {
     const u = (y - top) / (bottom - top);
-    const w = 16 + u * 58;
+    const w = 12 + u * 34;
     for (const side of [-1, 1]) {
       rect(env, cx + side * (w / 2) - 1, y, 3, 8 + u * 6, OUTLINE);
       rect(env, cx + side * (w / 2), y, 1, 7 + u * 6, '#6b4119');
@@ -550,13 +550,13 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
   5: [
     { k: 'palm', x: 20, y: SL, lean: 1.5 },
     { k: 'torch', x: 84, y: SL + 4 },
-    { k: 'bonfire', x: 160, y: SL + 8 },
+    { k: 'bonfire', x: 160, y: SL - 8 },
     { k: 'palm', x: 240, y: SL + 4, lean: -1.2 },
     { k: 'torch', x: 296, y: SL + 4 },
     { k: 'tiki', x: 330, y: SL - 6 },
     { k: 'palm', x: 470, y: SL, lean: 1.3 },
     { k: 'torch', x: 540, y: SL + 4 },
-    { k: 'bonfire', x: 610, y: SL + 8 },
+    { k: 'bonfire', x: 610, y: SL - 8 },
     { k: 'palm', x: 700, y: SL + 4, lean: -1.4 },
   ],
 };
@@ -689,10 +689,12 @@ function farSea(env: SceneEnv, level: number): void {
 
 /** Mundo do píer na jornada: o píer e os barcos amarrados passam juntos, e depois vem mar aberto. */
 const PIER_WORLD = 430;
+/** O píer aparece uma vez a cada tanto de caminhada: bem mais raro que o resto da praia. */
+const PIER_PERIOD = 1900;
 
 /** Centro do píer na tela. */
 const pierCenter = (env: SceneEnv): number =>
-  env.journey ? scrolled(PIER_WORLD, env.scroll, JOURNEY_PERIOD) : 302;
+  env.journey ? scrolled(PIER_WORLD, env.scroll, PIER_PERIOD) : 302;
 
 function nearSea(env: SceneEnv, level: number): void {
   if (level !== 4) boat(env);
@@ -965,8 +967,8 @@ export function beachExtras(level: number): ExtraCharacter[] {
       ];
     case 4:
       return [
-        still(5, 250, 188, 'up'),
-        still(7, 280, 192, 'up'),
+        still(5, 264, 163, 'up'),
+        still(7, 342, 166, 'up'),
         roam(0, 'walk', 40, 210, 12, 168),
       ];
     case 5:
@@ -1016,19 +1018,19 @@ export function beachJourneyExtras(level: number): ExtraCharacter[] {
       ];
     case 4:
       return [
-        still(5, PIER_WORLD - 56, lane + 16, 'up'),
-        still(7, PIER_WORLD + 64, lane + 12, 'up'),
-        drifter(0, 'walk', 120, 12, lane + 4),
-        drifter(6, 'walk', 740, -10, lane + 8),
+        { ...still(5, PIER_WORLD - 42, lane - 1, 'up'), period: PIER_PERIOD },
+        { ...still(7, PIER_WORLD + 44, lane + 2, 'up'), period: PIER_PERIOD },
+        drifter(0, 'walk', 120, 12, lane + 22),
+        drifter(6, 'walk', 740, -10, lane + 26),
       ];
     case 5:
       return [
-        still(2, 160 - 28, lane + 14, 'right'),
-        still(4, 160 + 28, lane + 14, 'left'),
-        still(3, 610 - 28, lane + 14, 'right'),
-        still(7, 610 + 28, lane + 14, 'left'),
-        drifter(6, 'walk', 400, 13, lane + 6),
-        drifter(1, 'walk', 800, -11, lane + 10),
+        still(2, 160 - 28, lane - 10, 'right'),
+        still(4, 160 + 28, lane - 10, 'left'),
+        still(3, 610 - 28, lane - 10, 'right'),
+        still(7, 610 + 28, lane - 10, 'left'),
+        drifter(6, 'walk', 400, 13, lane + 20),
+        drifter(1, 'walk', 800, -11, lane + 24),
       ];
     default:
       return [];

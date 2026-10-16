@@ -50,6 +50,8 @@ export type ExtraCharacter = {
   patrol?: { from: number; to: number; speed: number };
   /** Na jornada, `x` é do mundo (que rola); `drift` é quanto o figurante anda nele (px/s, negativo = para a esquerda). */
   drift?: number;
+  /** Ciclo próprio do mundo na jornada, para quem passa de tempos em tempos (padrão: o do cenário). */
+  period?: number;
 };
 
 export type Tint = { color: string; alpha: number };

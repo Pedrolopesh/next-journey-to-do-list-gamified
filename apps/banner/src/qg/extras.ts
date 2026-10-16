@@ -37,7 +37,7 @@ export function journeySpot(
 ): { x: number; direction: Direction } {
   const drift = extra.drift ?? 0;
   return {
-    x: scrolled(extra.x + drift * clock, scroll, period),
+    x: scrolled(extra.x + drift * clock, scroll, extra.period ?? period),
     direction: drift === 0 ? extra.direction : drift > 0 ? 'right' : 'left',
   };
 }
