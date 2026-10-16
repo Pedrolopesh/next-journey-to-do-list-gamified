@@ -39,21 +39,22 @@ export const ZOMBIE_LEVELS: LevelInfo[] = [
   {
     name: 'Cerco',
     blurb:
-      'Os zumbis se multiplicam: multidão colada na cerca, barris em chamas, holofotes e soldados em posição.',
+      'A base se arma: sem zumbis à vista, só o exército de fuzil na mão, armários de armas abertos, barris em chamas e holofotes.',
     changes: [
-      'Multidão bem maior nos dois lados da cerca.',
+      'Soldados armados em posição e armários de armas abertos para escolher o fuzil.',
       'Barris em chamas e tripés de holofote.',
-      'Jornada: barricada de sacos de areia com zumbis chegando e soldados atrás dela.',
+      'Jornada: barricada de sacos de areia, armários de armas e soldados armados atrás dela.',
     ],
   },
   {
     name: 'Alarme',
     blurb:
-      'Sirene tocando: luzes vermelhas piscando, holofote varrendo a base, fumaça ao longe e soldados correndo.',
+      'Sirene tocando: luzes vermelhas, holofote varrendo a base e fumaça ao longe. Os soldados fogem e os zumbis vêm atrás.',
     changes: [
       'Luzes de alarme vermelhas e holofote da torre varrendo o terreno.',
       'Colunas de fumaça atrás da base.',
-      'Jornada: carro em chamas com fumaça, torres de holofote, zumbis e soldados correndo.',
+      'Jornada: soldados correm à frente do personagem e os zumbis correm atrás dele, sem nunca alcançá-lo.',
+      'Carro em chamas, fumaça e torres de holofote pelo caminho.',
     ],
   },
   {
@@ -185,6 +186,7 @@ type Prop =
   | { k: 'sandwall'; x: number; y: number; cols: number; p?: number }
   | { k: 'firebarrel'; x: number; y: number; p?: number }
   | { k: 'flood'; x: number; y: number; p?: number }
+  | { k: 'armory'; x: number; y: number; p?: number }
   | { k: 'wreck'; x: number; y: number; p?: number }
   | { k: 'smoke'; x: number; y: number; green?: boolean; f?: number; p?: number }
   | { k: 'siren'; x: number; y: number; p?: number }
@@ -306,6 +308,27 @@ function flood(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 6, y - 48, 13, 9, OUT);
   rect(env, x - 5, y - 47, 11, 7, '#8a9096');
   rect(env, x - 4, y - 46, 9, 5, night ? '#fff3b8' : '#d8dde0');
+}
+
+/** Armário de armas: três portas de aço abertas, com um fuzil em cada uma. */
+function armory(env: SceneEnv, x: number, y: number): void {
+  const left = x - 22;
+  rect(env, x - 24, y - 1, 49, 3, 'rgba(0,0,0,0.25)');
+  rect(env, left - 1, y - 33, 46, 34, OUT);
+  rect(env, left, y - 32, 44, 32, '#56624a');
+  rect(env, left, y - 32, 44, 3, '#7a8c58');
+  for (let i = 0; i < 3; i++) {
+    const dx = left + 2 + i * 14;
+    rect(env, dx, y - 27, 12, 25, OUT);
+    rect(env, dx + 1, y - 26, 10, 23, '#1d2118');
+    // fuzil em pé: cano, corpo e coronha
+    rect(env, dx + 5, y - 25, 2, 12, '#7a8087');
+    rect(env, dx + 4, y - 14, 4, 7, '#3a3a3a');
+    rect(env, dx + 4, y - 7, 4, 4, '#6b4a2a');
+    // porta aberta, de lado
+    rect(env, dx + 11, y - 27, 2, 25, '#3f4a2c');
+  }
+  rect(env, left + 2, y - 30, 40, 1, '#c9a227');
 }
 
 /** Carro destruído em chamas, com a carcaça escura e as rodas no chão. */
@@ -444,6 +467,8 @@ function drawProp(env: SceneEnv, prop: Prop, x: number): void {
       return firebarrel(env, x, prop.y);
     case 'flood':
       return flood(env, x, prop.y);
+    case 'armory':
+      return armory(env, x, prop.y);
     case 'wreck':
       return grown(env, x, prop.y, 1.5, () => wreck(env, 0, 0));
     case 'smoke':
@@ -477,6 +502,8 @@ const QG_PROPS: Record<number, Prop[]> = {
     { k: 'firebarrel', x: 304, y: 212 },
     { k: 'flood', x: 96, y: 172 },
     { k: 'flood', x: 296, y: 172 },
+    { k: 'armory', x: 150, y: 170 },
+    { k: 'armory', x: 244, y: 170 },
   ],
   4: [
     { k: 'siren', x: 96, y: 172 },
@@ -505,6 +532,8 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
     { k: 'firebarrel', x: 140, y: LANE },
     { k: 'firebarrel', x: 640, y: LANE },
     { k: 'flood', x: 460, y: LANE - 4 },
+    { k: 'armory', x: 214, y: LANE + 2 },
+    { k: 'armory', x: 548, y: LANE + 2 },
   ],
   4: [
     { k: 'wreck', x: 360, y: LANE + 6, p: RARE },
@@ -587,7 +616,7 @@ export const zombieLevelLayers = propLayers(kit, ZOMBIE_LEVEL_COUNT);
 const level = (n: number): number => Math.min(ZOMBIE_LEVEL_COUNT, Math.max(1, n));
 
 /** Soldados e zumbis a mais do QG (a multidão do nível 1 é montada pelo cenário). */
-export function zombieExtras(n: number): ExtraCharacter[] {
+function zombieExtrasRaw(n: number): ExtraCharacter[] {
   switch (level(n)) {
     case 2:
       return [stand(soldier(0), 236, 180, 'left'), roamer(soldier(1), 'walk', 170, 300, 14, 216)];
@@ -595,10 +624,8 @@ export function zombieExtras(n: number): ExtraCharacter[] {
       return [
         stand(soldier(2), 150, 198, 'right'),
         stand(soldier(3), 238, 196, 'left'),
-        stand(zombie(1), 6, 160, 'right'),
-        stand(zombie(2), 46, 156, 'right'),
-        stand(zombie(3), 384, 160, 'left'),
-        stand(zombie(0), 344, 156, 'left'),
+        stand(soldier(0), 112, 216, 'right'),
+        stand(soldier(1), 284, 216, 'left'),
       ];
     case 4:
       return [
@@ -618,7 +645,7 @@ export function zombieExtras(n: number): ExtraCharacter[] {
 }
 
 /** Jornada: posições do mundo (ciclo de 820 px; o que acompanha um objeto raro usa o ciclo dele). */
-export function zombieJourneyExtras(n: number): ExtraCharacter[] {
+function zombieJourneyRaw(n: number): ExtraCharacter[] {
   const lane = LANE;
   switch (level(n)) {
     case 2:
@@ -631,19 +658,20 @@ export function zombieJourneyExtras(n: number): ExtraCharacter[] {
       return [
         stander(soldier(0), 318, lane - 14, 'right'),
         stander(soldier(1), 346, lane - 14, 'right'),
-        walker(zombie(0), 'walk', 560, 6, lane - 12),
-        walker(zombie(1), 'walk', 586, 5, lane - 16),
-        walker(zombie(2), 'walk', 612, 6, lane - 10),
-        walker(zombie(3), 'walk', 40, 6, lane + 30),
-        stander(soldier(2), 640, lane - 10, 'down'),
+        stander(soldier(3), 244, lane + 12, 'left'),
+        stander(soldier(2), 600, lane + 10, 'left'),
+        walker(soldier(1), 'walk', 40, 10, lane + 30),
       ];
     case 4:
       return [
-        walker(soldier(0), 'run', 60, 44, lane + 28),
-        walker(zombie(0), 'walk', 300, -8, lane - 10),
-        walker(zombie(2), 'walk', 520, 7, lane + 30),
-        walker(zombie(1), 'walk', 700, -6, lane - 14),
-        stander(soldier(3), 150, lane - 8, 'left'),
+        // soldados fogem à frente do personagem; zumbis correm atrás dele
+        chaser(soldier(0), 58, lane + 6, 5, 1.7, 0),
+        chaser(soldier(2), 94, lane + 22, 4, 1.3, 2),
+        chaser(soldier(3), 134, lane - 4, 5, 1.5, 4),
+        chaser(zombie(0), -46, lane + 10, 6, 1.9, 1),
+        chaser(zombie(2), -78, lane + 24, 7, 1.6, 3),
+        chaser(zombie(1), -110, lane - 2, 6, 2.1, 5),
+        chaser(zombie(3), -148, lane + 16, 7, 1.4, 2),
       ];
     case 5:
       return [
@@ -658,3 +686,29 @@ export function zombieJourneyExtras(n: number): ExtraCharacter[] {
       return [];
   }
 }
+
+/** Quem corre junto do personagem, sempre na tela: soldados à frente e zumbis atrás. */
+const chaser = (
+  look: Look,
+  offset: number,
+  feetY: number,
+  sway: number,
+  rate: number,
+  phase: number,
+): ExtraCharacter => ({
+  x: 0,
+  feetY,
+  anim: 'run',
+  direction: 'right',
+  selection: look,
+  follow: { offset, sway, rate, phase },
+});
+
+/** Todo soldado leva um fuzil. */
+const armed = (list: ExtraCharacter[]): ExtraCharacter[] =>
+  list.map((extra) =>
+    SOLDIER.includes(extra.selection as Look) ? { ...extra, weapon: 'rifle' } : extra,
+  );
+
+export const zombieExtras = (n: number): ExtraCharacter[] => armed(zombieExtrasRaw(n));
+export const zombieJourneyExtras = (n: number): ExtraCharacter[] => armed(zombieJourneyRaw(n));

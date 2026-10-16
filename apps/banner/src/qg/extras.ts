@@ -1,6 +1,7 @@
 import type { Direction } from './compose';
 import { scrolled } from './scenes/draw';
 import type { ExtraCharacter, SceneDef } from './scenes/types';
+import { SCENE_W } from './scenes/types';
 
 const cache = new WeakMap<SceneDef, Map<string, ExtraCharacter[]>>();
 
@@ -57,4 +58,19 @@ export function patrolSpot(
     x: patrol.from + sign * along,
     direction: (going ? sign : -sign) > 0 ? 'right' : 'left',
   };
+}
+
+/**
+ * Onde está quem corre junto do personagem (perseguidores atrás, fugitivos na frente). `chase` vai
+ * de 0 (cenário parado: está fora da tela, do lado de onde veio) a 1 (em posição).
+ */
+export function followSpot(
+  follow: NonNullable<ExtraCharacter['follow']>,
+  heroX: number,
+  clock: number,
+  chase: number,
+): { x: number; direction: Direction } {
+  const near = heroX + follow.offset + Math.sin(clock * follow.rate + follow.phase) * follow.sway;
+  const away = follow.offset < 0 ? -40 : SCENE_W + 40;
+  return { x: Math.round(away + (near - away) * chase), direction: 'right' };
 }

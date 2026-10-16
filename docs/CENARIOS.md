@@ -41,6 +41,12 @@ Vale para criar, mudar ou revisar qualquer cenário em `apps/banner/src/qg/scene
 - Pelo menos 3 ou 4 pessoas por nível na jornada a partir do nível 2, entre paradas e caminhando; no mínimo duas junto de um ponto de reunião (fogueira, mesa), uma delas olhando para o ponto.
 - Quem fica junto de um objeto fica **mais ao fundo** que o caminho do personagem.
 
+Perseguição na jornada: quem corre junto do personagem (`follow` no figurante) fica na tela, pelo
+`heroX`, e não no mundo que rola. Perseguidores levam `offset` negativo (sempre atrás) e quem foge,
+positivo (sempre à frente), com `sway` menor que a folga para ninguém alcançar o personagem. Quando o
+cenário para, eles saem pelo lado de onde vieram. Armas são desenhadas por cima do figurante
+(`weapon`, em `qg/weapons.ts`), porque o catálogo LPC não tem armas.
+
 ## 6. Luz e hora do dia
 
 - Cada nível precisa ficar certo de manhã, à tarde e à noite. Luzes só acendem à noite, exceto o que é fogo ou lâmpada de dentro.

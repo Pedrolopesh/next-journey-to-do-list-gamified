@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extrasOf, journeySpot, patrolSpot } from './extras';
+import { extrasOf, followSpot, journeySpot, patrolSpot } from './extras';
 import type { ExtraCharacter, SceneDef } from './scenes/types';
 
 const person = (x: number): ExtraCharacter => ({
@@ -93,5 +93,25 @@ describe('extras da jornada', () => {
 
   it('dá a volta no ciclo do mundo', () => {
     expect(journeySpot(person(10), 120, 0, 820).x).toBe(710);
+  });
+});
+
+describe('followSpot', () => {
+  const behind = { offset: -60, sway: 0, rate: 1, phase: 0 };
+  const ahead = { offset: 60, sway: 0, rate: 1, phase: 0 };
+
+  it('fica atrás ou à frente do personagem quando o cenário corre', () => {
+    expect(followSpot(behind, 200, 0, 1).x).toBe(140);
+    expect(followSpot(ahead, 200, 0, 1).x).toBe(260);
+  });
+
+  it('sai da tela do lado de onde veio quando o cenário para', () => {
+    expect(followSpot(behind, 200, 0, 0).x).toBeLessThan(0);
+    expect(followSpot(ahead, 200, 0, 0).x).toBeGreaterThan(390);
+  });
+
+  it('nunca passa do personagem, mesmo balançando', () => {
+    const wobble = { offset: -40, sway: 6, rate: 2, phase: 0 };
+    for (let t = 0; t < 10; t += 0.1) expect(followSpot(wobble, 200, t, 1).x).toBeLessThan(200);
   });
 });

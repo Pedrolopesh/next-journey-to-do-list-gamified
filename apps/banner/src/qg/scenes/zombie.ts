@@ -547,12 +547,14 @@ function journey(env: SceneEnv): void {
     sign(env, dx + 30, FENCE_LINE - 30);
     sign(env, dx + 300, FENCE_LINE - 30);
     sign(env, dx + 560, FENCE_LINE - 30);
-    WALKERS.forEach((walker, i) => {
-      miniZombie(env, { ...walker, x: dx + walker.x }, i);
-    });
+    if (env.level !== 3)
+      WALKERS.forEach((walker, i) => {
+        miniZombie(env, { ...walker, x: dx + walker.x }, i);
+      });
   }
   // Zumbis soltos no deserto, longe da base
   for (const { dx } of baseSegments(env)) {
+    if (env.level === 3) break;
     miniZombie(env, { x: dx + 780, feet: 158, variant: 1 }, 40);
     miniZombie(env, { x: dx + 960, feet: 164, variant: 3 }, 41);
   }
@@ -736,7 +738,11 @@ export const zombie: SceneDef = {
     ];
   },
   extras: [...crowd('left'), ...crowd('right')],
-  extrasFor: (level) => [...crowd('left'), ...crowd('right'), ...zombieExtras(level)],
+  // no nível 3 (Cerco) não há zumbis: só o exército
+  extrasFor: (level) => [
+    ...(level === 3 ? [] : [...crowd('left'), ...crowd('right')]),
+    ...zombieExtras(level),
+  ],
   journeyExtrasFor: zombieJourneyExtras,
   tint: {
     morning: { color: '#ffc89a', alpha: 0.2 },

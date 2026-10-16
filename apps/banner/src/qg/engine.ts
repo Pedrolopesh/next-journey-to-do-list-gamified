@@ -10,10 +10,11 @@ import {
   recolorPixels,
   type Selection,
 } from './compose';
-import { extrasOf, journeySpot, patrolSpot } from './extras';
+import { extrasOf, followSpot, journeySpot, patrolSpot } from './extras';
 import { SCENES } from './scenes';
 import { applyTint, drawLights, vignette } from './scenes/lighting';
 import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay } from './scenes/types';
+import { drawWeapon, type Weapon } from './weapons';
 
 const FPS: Record<AnimationName, number> = { idle: 2, walk: 9, run: 12 };
 /** Velocidade do cenário (px lógicos por segundo) quando o personagem anda ou corre na jornada. */
@@ -223,6 +224,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     x: number,
     feetY: number,
     clock: number,
+    weapon?: Weapon,
   ): void => {
     const index = Math.floor(clock * FPS[anim]) % catalog.animations[anim];
     const { sy } = frameRect(direction, 0);
@@ -247,6 +249,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
         FRAME,
       );
     }
+    if (weapon) drawWeapon(ctx, weapon, x, feetY, direction, index);
   };
 
   const draw = (clock: number): void => {
@@ -278,9 +281,18 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
         y: extra.feetY,
         draw: () => {
           let spot = { x: extra.x, direction: extra.direction };
-          if (walking) spot = journeySpot(extra, scroll, clock, def.journeyPeriod ?? 820);
+          if (walking && extra.follow) spot = followSpot(extra.follow, heroX, clock, chase);
+          else if (walking) spot = journeySpot(extra, scroll, clock, def.journeyPeriod ?? 820);
           else if (extra.patrol) spot = patrolSpot(extra.patrol, clock);
-          drawCharacter(layers, extra.anim, spot.direction, spot.x, extra.feetY, clock);
+          drawCharacter(
+            layers,
+            extra.anim,
+            spot.direction,
+            spot.x,
+            extra.feetY,
+            clock,
+            extra.weapon,
+          );
         },
       });
     }
@@ -305,6 +317,8 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
   let clock = 0;
   let lastDraw = 0;
   let scroll = 0;
+  /** 0 a 1: quanto os figurantes que correm junto do personagem já entraram em cena. */
+  let chase = 0;
   let arrivedAt = 0;
   let wasArrived = false;
   const minGap = 1000 / maxFps - 1;
@@ -322,6 +336,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
           Math.sign(target - heroX) * Math.min(Math.abs(target - heroX), JOURNEY_RUN_SPEED * dt);
       else heroX = target;
       scroll += JOURNEY_SPEED[currentAnim()] * dt;
+      chase += ((JOURNEY_SPEED[currentAnim()] > 0 ? 1 : 0) - chase) * Math.min(1, dt * 2.5);
       const isArrived = arrived();
       if (isArrived && !wasArrived) arrivedAt = clock;
       wasArrived = isArrived;
