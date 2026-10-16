@@ -585,7 +585,7 @@ const kit: PropKit<Prop> = {
   },
 };
 
-export const hellLevelLayers = propLayers(kit, HELL_LEVEL_COUNT, HELL_GROUND);
+export const hellLevelLayers = propLayers(kit, HELL_LEVEL_COUNT);
 
 /** Relâmpagos do nível 5: um clarão curto e um raio ramificado, a cada poucos segundos. */
 export function hellSky(env: SceneEnv): void {

@@ -469,29 +469,25 @@ const LANE = 176;
 const QG_PROPS: Record<number, Prop[]> = {
   1: [],
   2: [
-    { k: 'tent', x: 246, y: 170 },
-    { k: 'jeep', x: 126, y: 212, dir: 1 },
-    { k: 'sandwall', x: 150, y: 172, cols: 2 },
+    { k: 'jeep', x: 112, y: 214, dir: 1 },
+    { k: 'tent', x: 252, y: 214 },
   ],
   3: [
-    { k: 'firebarrel', x: 86, y: 176 },
-    { k: 'firebarrel', x: 304, y: 176 },
-    { k: 'flood', x: 100, y: 168 },
-    { k: 'flood', x: 290, y: 168 },
-    { k: 'sandwall', x: 150, y: 172, cols: 2 },
+    { k: 'firebarrel', x: 86, y: 206 },
+    { k: 'firebarrel', x: 304, y: 212 },
+    { k: 'flood', x: 96, y: 172 },
+    { k: 'flood', x: 296, y: 172 },
   ],
   4: [
-    { k: 'siren', x: 128, y: 168 },
-    { k: 'searchlight', x: 276, y: 158 },
-    { k: 'smoke', x: 84, y: 136 },
-    { k: 'smoke', x: 318, y: 136 },
-    { k: 'firebarrel', x: 304, y: 176 },
+    { k: 'siren', x: 96, y: 172 },
+    { k: 'searchlight', x: 300, y: 172 },
+    { k: 'smoke', x: 84, y: 140 },
+    { k: 'smoke', x: 318, y: 140 },
   ],
   5: [
-    { k: 'helipad', x: 268, y: 196 },
-    { k: 'rescue', x: 268, y: 196 },
-    { k: 'smoke', x: 192, y: 146, green: true },
-    { k: 'supplies', x: 104, y: 178 },
+    { k: 'helipad', x: 262, y: 200 },
+    { k: 'rescue', x: 262, y: 200 },
+    { k: 'smoke', x: 232, y: 152, green: true },
   ],
 };
 
@@ -582,7 +578,7 @@ const kit: PropKit<Prop> = {
   },
 };
 
-export const zombieLevelLayers = propLayers(kit, ZOMBIE_LEVEL_COUNT, ZOMBIE_GROUND);
+export const zombieLevelLayers = propLayers(kit, ZOMBIE_LEVEL_COUNT);
 
 // ---------------------------------------------------------------------------------------------
 // Figurantes
@@ -594,39 +590,27 @@ const level = (n: number): number => Math.min(ZOMBIE_LEVEL_COUNT, Math.max(1, n)
 export function zombieExtras(n: number): ExtraCharacter[] {
   switch (level(n)) {
     case 2:
-      return [stand(soldier(0), 224, 178, 'left'), roamer(soldier(1), 'walk', 110, 280, 16, 202)];
+      return [stand(soldier(0), 236, 180, 'left'), roamer(soldier(1), 'walk', 170, 300, 14, 216)];
     case 3:
       return [
-        stand(soldier(2), 160, 180, 'left'),
-        stand(soldier(3), 236, 180, 'right'),
-        ...[
-          [18, 168],
-          [44, 160],
-          [64, 164],
-          [6, 192],
-          [30, 214],
-          [58, 210],
-        ].map(([x, feet], i) => stand(zombie(i + 1), x ?? 0, feet ?? 190, 'right')),
-        ...[
-          [372, 168],
-          [346, 160],
-          [326, 164],
-          [384, 192],
-          [360, 214],
-          [332, 210],
-        ].map(([x, feet], i) => stand(zombie(i + 3), x ?? 0, feet ?? 190, 'left')),
+        stand(soldier(2), 150, 198, 'right'),
+        stand(soldier(3), 238, 196, 'left'),
+        stand(zombie(1), 6, 160, 'right'),
+        stand(zombie(2), 46, 156, 'right'),
+        stand(zombie(3), 384, 160, 'left'),
+        stand(zombie(0), 344, 156, 'left'),
       ];
     case 4:
       return [
-        roamer(soldier(0), 'run', 100, 290, 46, 204),
-        roamer(soldier(3), 'run', 290, 110, 38, 172),
-        stand(soldier(2), 160, 176, 'down'),
+        roamer(soldier(0), 'run', 120, 280, 44, 216),
+        stand(soldier(2), 238, 180, 'down'),
+        stand(soldier(3), 150, 180, 'down'),
       ];
     case 5:
       return [
-        stand(soldier(1), 200, 200, 'right'),
-        stand(soldier(0), 336, 192, 'left'),
-        roamer(soldier(3), 'walk', 90, 180, 12, 212),
+        stand(soldier(1), 226, 214, 'right'),
+        stand(soldier(0), 150, 200, 'right'),
+        roamer(soldier(3), 'walk', 100, 190, 11, 218),
       ];
     default:
       return [];
@@ -639,8 +623,8 @@ export function zombieJourneyExtras(n: number): ExtraCharacter[] {
   switch (level(n)) {
     case 2:
       return [
-        stander(soldier(0), 244, lane - 8, 'right'),
-        stander(soldier(1), 560, lane - 8, 'left'),
+        stander(soldier(0), 160, lane + 6, 'right'),
+        stander(soldier(1), 440, lane + 4, 'left'),
         walker(soldier(3), 'walk', 100, 12, lane + 30),
       ];
     case 3:
@@ -663,8 +647,8 @@ export function zombieJourneyExtras(n: number): ExtraCharacter[] {
       ];
     case 5:
       return [
-        stander(soldier(1), 270, lane + 28, 'right'),
-        stander(soldier(0), 446, lane - 8, 'left'),
+        stander(soldier(1), 130, lane + 10, 'right'),
+        stander(soldier(0), 395, lane + 4, 'left'),
         stander(soldier(2), 520, lane - 8, 'right'),
         { ...stander(soldier(3), 728, lane - 10, 'right', RARE) },
         { ...stander(soldier(0), 874, lane - 12, 'left', RARE) },

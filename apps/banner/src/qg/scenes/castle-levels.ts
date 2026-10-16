@@ -583,7 +583,7 @@ const kit: PropKit<Prop> = {
   },
 };
 
-export const castleLevelLayers = propLayers(kit, CASTLE_LEVEL_COUNT, CASTLE_GROUND);
+export const castleLevelLayers = propLayers(kit, CASTLE_LEVEL_COUNT);
 
 // ---------------------------------------------------------------------------------------------
 // Figurantes

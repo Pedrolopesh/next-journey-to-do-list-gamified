@@ -44,21 +44,17 @@ function propsOf<P extends BaseProp>(env: SceneEnv, kit: PropKit<P>, count: numb
   return table[clampLevel(env.level, count)] ?? [];
 }
 
-/** Ganchos `levelBack`, `levelFront` e `levelLights` de um cenário a partir da lista de objetos. */
+/** Ganchos `levelItems` e `levelLights` de um cenário a partir da lista de objetos. */
 export function propLayers<P extends BaseProp>(
   kit: PropKit<P>,
   count: number,
-  groundY: number,
-): Pick<SceneDef, 'levelBack' | 'levelFront' | 'levelLights'> {
-  const paint = (env: SceneEnv, front: boolean): void => {
-    const list = propsOf(env, kit, count)
-      .filter((prop) => prop.y > groundY === front)
-      .sort((a, b) => a.y - b.y);
-    for (const prop of list) kit.draw(env, prop, propX(env, kit, prop));
-  };
+): Pick<SceneDef, 'levelItems' | 'levelLights'> {
   return {
-    levelBack: (env) => paint(env, false),
-    levelFront: (env) => paint(env, true),
+    levelItems: (env) =>
+      propsOf(env, kit, count).map((prop) => ({
+        y: prop.y,
+        draw: () => kit.draw(env, prop, propX(env, kit, prop)),
+      })),
     levelLights: (env) => {
       if (!kit.light) return [];
       const out: Light[] = [];

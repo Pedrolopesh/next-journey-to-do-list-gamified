@@ -459,7 +459,7 @@ const kit: PropKit<Prop> = {
   },
 };
 
-export const cityLevelLayers = propLayers(kit, CITY_LEVEL_COUNT, CITY_GROUND);
+export const cityLevelLayers = propLayers(kit, CITY_LEVEL_COUNT);
 
 /** Bandeirinhas entre os postes da rua (no mundo, presas às pontas dos postes). */
 export function cityStreetFlags(env: SceneEnv): void {

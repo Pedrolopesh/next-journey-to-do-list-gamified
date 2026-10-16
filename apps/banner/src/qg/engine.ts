@@ -13,13 +13,7 @@ import {
 import { extrasOf, journeySpot, patrolSpot } from './extras';
 import { SCENES } from './scenes';
 import { applyTint, drawLights, vignette } from './scenes/lighting';
-import {
-  type ExtraCharacter,
-  SCENE_H,
-  SCENE_W,
-  type SceneEnv,
-  type TimeOfDay,
-} from './scenes/types';
+import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay } from './scenes/types';
 
 const FPS: Record<AnimationName, number> = { idle: 2, walk: 9, run: 12 };
 /** Velocidade do cenário (px lógicos por segundo) quando o personagem anda ou corre na jornada. */
@@ -273,26 +267,32 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     ctx.imageSmoothingEnabled = false; // sprites e tiles continuam nítidos
     ctx.clearRect(0, 0, SCENE_W, SCENE_H);
     (walking ? def.journey : def.back)?.(env);
-    def.levelBack?.(env);
     const list = extrasOf(def, state.level, walking);
-    // Quem está mais ao fundo (pés mais acima na tela) é desenhado antes do personagem
-    const placed = extras
-      .map(({ layers, index }) => ({ layers, extra: list[index] }))
-      .filter((item): item is { layers: ResolvedLayer[]; extra: ExtraCharacter } => !!item.extra)
-      .sort((a, b) => a.extra.feetY - b.extra.feetY);
-    const drawExtra = ({ layers, extra }: (typeof placed)[number]): void => {
-      let spot = { x: extra.x, direction: extra.direction };
-      if (walking) spot = journeySpot(extra, scroll, clock, def.journeyPeriod ?? 820);
-      else if (extra.patrol) spot = patrolSpot(extra.patrol, clock);
-      drawCharacter(layers, extra.anim, spot.direction, spot.x, extra.feetY, clock);
-    };
-    for (const item of placed) if (item.extra.feetY <= def.groundY) drawExtra(item);
+    // Tudo que tem chão (objetos do nível, figurantes e o personagem) é desenhado na ordem da
+    // altura dos pés: quem está mais acima na tela fica atrás de quem está mais abaixo
+    const drawables: { y: number; draw: () => void }[] = def.levelItems?.(env) ?? [];
+    for (const { layers, index } of extras) {
+      const extra = list[index];
+      if (!extra) continue;
+      drawables.push({
+        y: extra.feetY,
+        draw: () => {
+          let spot = { x: extra.x, direction: extra.direction };
+          if (walking) spot = journeySpot(extra, scroll, clock, def.journeyPeriod ?? 820);
+          else if (extra.patrol) spot = patrolSpot(extra.patrol, clock);
+          drawCharacter(layers, extra.anim, spot.direction, spot.x, extra.feetY, clock);
+        },
+      });
+    }
     const direction = state.journey ? 'right' : state.direction;
     const heroPosition = state.journey ? heroX : SCENE_W / 2;
-    drawCharacter(hero, heroAnim, direction, heroPosition, def.groundY, clock);
-    for (const item of placed) if (item.extra.feetY > def.groundY) drawExtra(item);
+    drawables.push({
+      y: def.groundY,
+      draw: () => drawCharacter(hero, heroAnim, direction, heroPosition, def.groundY, clock),
+    });
+    drawables.sort((p, q) => p.y - q.y);
+    for (const item of drawables) item.draw();
     if (!walking) def.front?.(env);
-    def.levelFront?.(env);
     applyTint(env, def.tint?.[state.time]);
     drawLights(env, [...(def.lights?.(env) ?? []), ...(def.levelLights?.(env) ?? [])]);
     vignette(env);

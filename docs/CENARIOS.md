@@ -12,7 +12,7 @@ Vale para criar, mudar ou revisar qualquer cenário em `apps/banner/src/qg/scene
 
 ## 2. Profundidade (o erro mais repetido)
 
-1. **Ordem de desenho é pela altura dos pés (`y`).** Quem tem os pés acima da linha do personagem fica atrás dele; quem tem os pés abaixo, na frente. O motor já ordena os figurantes; objetos de cenário com `y` abaixo de `groundY` vão em `levelFront`, os demais em `levelBack`.
+1. **Ordem de desenho é pela altura dos pés (`y`).** O motor mistura objetos do nível (`levelItems`), figurantes e o personagem numa lista só e desenha do mais acima para o mais abaixo na tela. Por isso o `y` de cada objeto é a base dele (onde toca o chão), e não o meio nem o topo.
 2. **Quem passa pelo personagem usa uma faixa própria.** Pessoas e coisas que andam não podem dividir a mesma altura dos pés com quem está parado ou com o personagem: separe por pelo menos 12 px. Caminhantes em faixas diferentes (e velocidades diferentes) para não andarem grudados.
 3. **Fundo é mais alto na tela, frente é mais baixa.** Para parecer mais ao fundo: pés mais acima, tamanho menor e movimento mais lento (paralaxe), nunca só mover.
 4. **Nada fica em cima de outra coisa sem ser de propósito.** Conferir sobreposição entre: fogueira e bar, poste e casal, quiosque e palmeira, candelabro e armadura, banco e pessoa.

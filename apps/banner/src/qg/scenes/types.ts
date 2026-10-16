@@ -80,10 +80,8 @@ export type SceneDef = {
   levels?: number;
   /** Nome, descrição e mudanças de cada nível (mesmo tamanho de `levels`). */
   levelInfo?: LevelInfo[];
-  /** Objetos do nível atrás dos figurantes e do personagem (desenhados logo após o cenário). */
-  levelBack?: (env: SceneEnv) => void;
-  /** Objetos do nível na frente do personagem (pés abaixo da linha dele), no QG e na jornada. */
-  levelFront?: (env: SceneEnv) => void;
+  /** Objetos do nível com a altura dos pés (`y`): o motor os mistura com figurantes e personagem. */
+  levelItems?: (env: SceneEnv) => { y: number; draw: () => void }[];
   /** Luzes dos objetos do nível, somadas às do cenário. */
   levelLights?: (env: SceneEnv) => Light[];
   /** Figurantes de cada nível; quando existe, vale no lugar de `extras`. */

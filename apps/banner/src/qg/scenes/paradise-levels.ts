@@ -584,7 +584,7 @@ const kit: PropKit<Prop> = {
   },
 };
 
-export const forestLevelLayers = propLayers(kit, FOREST_LEVEL_COUNT, FOREST_GROUND);
+export const forestLevelLayers = propLayers(kit, FOREST_LEVEL_COUNT);
 
 /** Fogos do festival (céu da noite), chamados pelo cenário logo depois do céu. */
 export function forestSky(env: SceneEnv): void {
