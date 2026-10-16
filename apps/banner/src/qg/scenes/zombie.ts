@@ -3,6 +3,7 @@ import { drawLampCones, drawLampPost, type Lamp, lampLights } from './lampposts'
 import type { ExtraCharacter, Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_H, SCENE_W } from './types';
 import {
+  parkedHeli,
   ZOMBIE_GROUND,
   ZOMBIE_LEVEL_COUNT,
   ZOMBIE_LEVELS,
@@ -304,14 +305,23 @@ const CLOTH = [
 const HAIRS = [null, 'hair-buzzcut', 'hair-natural', null, 'hair-curly-short', 'hair-bob'] as const;
 
 /** 5 zumbis de cada lado, em fila irregular encostados na tela. */
-function crowd(side: 'left' | 'right'): ExtraCharacter[] {
-  const spots: [number, number][] = [
-    [62, 174],
-    [10, 178],
-    [34, 186],
-    [52, 196],
-    [20, 204],
-  ];
+const CROWD_FRONT: [number, number][] = [
+  [62, 174],
+  [10, 178],
+  [34, 186],
+  [52, 196],
+  [20, 204],
+];
+/** Fileiras mais ao fundo da multidão (nível 5): mesmos zumbis, mais longe da tela. */
+const CROWD_BACK: [number, number][] = [
+  [76, 160],
+  [48, 156],
+  [20, 162],
+  [66, 148],
+  [34, 150],
+];
+
+function crowd(side: 'left' | 'right', spots = CROWD_FRONT): ExtraCharacter[] {
   const list: Crowd[] = spots.map(([x, feet], i) => {
     const [torso, torsoColor, legs, legsColor] =
       CLOTH[(i + (side === 'left' ? 0 : 2)) % CLOTH.length] ?? CLOTH[0];
@@ -408,15 +418,8 @@ function journeyDunes(env: SceneEnv): void {
 type Walker = { x: number; feet: number; variant: number };
 
 /** Zumbis parados encostados na cerca, em grupos de tamanhos diferentes. */
-const WALKERS: Walker[] = (() => {
-  const random = rng(5);
-  const centers: [number, number][] = [
-    [40, 3],
-    [150, 2],
-    [285, 4],
-    [415, 3],
-    [535, 2],
-  ];
+const walkersAt = (centers: [number, number][], seed: number): Walker[] => {
+  const random = rng(seed);
   const out: Walker[] = [];
   for (const [cx, count] of centers) {
     for (let i = 0; i < count; i++) {
@@ -428,7 +431,28 @@ const WALKERS: Walker[] = (() => {
     }
   }
   return out;
-})();
+};
+const WALKERS = walkersAt(
+  [
+    [40, 3],
+    [150, 2],
+    [285, 4],
+    [415, 3],
+    [535, 2],
+  ],
+  5,
+);
+/** Mais grupos entre os de sempre, no nível 5 (Evacuação): o mesmo desenho, só mais gente. */
+const MORE_WALKERS = walkersAt(
+  [
+    [95, 3],
+    [215, 4],
+    [350, 3],
+    [475, 4],
+    [575, 3],
+  ],
+  17,
+);
 function journeyFence(env: SceneEnv, dx: number): void {
   fence(
     env,
@@ -526,8 +550,9 @@ function journey(env: SceneEnv): void {
     sign(env, dx + 30, FENCE_LINE - 30);
     sign(env, dx + 300, FENCE_LINE - 30);
     sign(env, dx + 560, FENCE_LINE - 30);
+    if (env.level === 5) parkedHeli(env, dx + BASE_END + 70, FENCE_LINE - 6);
     if (env.level !== 3)
-      WALKERS.forEach((walker, i) => {
+      (env.level === 5 ? [...WALKERS, ...MORE_WALKERS] : WALKERS).forEach((walker, i) => {
         miniZombie(env, { ...walker, x: dx + walker.x }, i);
       });
   }
@@ -720,6 +745,8 @@ export const zombie: SceneDef = {
   // no nível 3 (Cerco) não há zumbis: só o exército
   extrasFor: (level) => [
     ...(level === 3 ? [] : [...crowd('left'), ...crowd('right')]),
+    // o lado direito fica livre para o helicóptero pousado ao lado da base
+    ...(level === 5 ? crowd('left', CROWD_BACK) : []),
     ...zombieExtras(level),
   ],
   journeyExtrasFor: zombieJourneyExtras,

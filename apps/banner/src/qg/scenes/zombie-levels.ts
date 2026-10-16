@@ -11,7 +11,7 @@ import {
   walker,
 } from './level-kit';
 import type { ExtraCharacter, LevelInfo, SceneEnv } from './types';
-import { barrel, crate, heliBody, miniZombie, OUT, sandbags } from './zombie-props';
+import { barrel, crate, heliBody, OUT, sandbags } from './zombie-props';
 
 export const ZOMBIE_LEVEL_COUNT = 5;
 export const ZOMBIE_GROUND = 182;
@@ -187,7 +187,6 @@ type Prop =
   | { k: 'firebarrel'; x: number; y: number; p?: number }
   | { k: 'flood'; x: number; y: number; p?: number }
   | { k: 'armory'; x: number; y: number; p?: number }
-  | { k: 'horde'; x: number; y: number; n: number; p?: number }
   | { k: 'wreck'; x: number; y: number; p?: number }
   | { k: 'smoke'; x: number; y: number; green?: boolean; f?: number; p?: number }
   | { k: 'siren'; x: number; y: number; p?: number }
@@ -332,18 +331,6 @@ function armory(env: SceneEnv, x: number, y: number): void {
   rect(env, left + 2, y - 30, 40, 1, '#c9a227');
 }
 
-/** Grupo de zumbis pequenos ao fundo, de costas, voltados para a base. */
-function horde(env: SceneEnv, x: number, y: number, n: number): void {
-  for (let i = 0; i < n; i++) {
-    const side = i % 2 === 0 ? 1 : -1;
-    miniZombie(
-      env,
-      { x: x + side * Math.ceil(i / 2) * 9 + (i % 3), feet: y + ((i * 5) % 7), variant: i % 4 },
-      i + Math.round(x),
-    );
-  }
-}
-
 /** Carro destruído em chamas, com a carcaça escura e as rodas no chão. */
 function wreck(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 22, y - 1, 46, 3, 'rgba(0,0,0,0.25)');
@@ -482,8 +469,6 @@ function drawProp(env: SceneEnv, prop: Prop, x: number): void {
       return flood(env, x, prop.y);
     case 'armory':
       return armory(env, x, prop.y);
-    case 'horde':
-      return horde(env, x, prop.y, prop.n);
     case 'wreck':
       return grown(env, x, prop.y, 1.5, () => wreck(env, 0, 0));
     case 'smoke':
@@ -501,6 +486,12 @@ function drawProp(env: SceneEnv, prop: Prop, x: number): void {
     case 'wire':
       return wire(env, x, prop.y, prop.w);
   }
+}
+
+/** Heliponto com o helicóptero de resgate pousado (usado também no fundo da jornada). */
+export function parkedHeli(env: SceneEnv, x: number, y: number): void {
+  helipad(env, x, y);
+  grown(env, x, y, 1.25, () => rescue(env, 0, 0));
 }
 
 const RARE = 1640;
@@ -527,13 +518,9 @@ const QG_PROPS: Record<number, Prop[]> = {
     { k: 'smoke', x: 318, y: 140 },
   ],
   5: [
-    { k: 'helipad', x: 244, y: 146 },
-    { k: 'rescue', x: 244, y: 146 },
-    { k: 'smoke', x: 292, y: 144, green: true },
-    { k: 'horde', x: 92, y: 148, n: 6 },
-    { k: 'horde', x: 170, y: 150, n: 7 },
-    { k: 'horde', x: 318, y: 150, n: 5 },
-    { k: 'horde', x: 30, y: 142, n: 4 },
+    { k: 'helipad', x: 350, y: 139 },
+    { k: 'rescue', x: 350, y: 139 },
+    { k: 'smoke', x: 300, y: 146, green: true },
   ],
 };
 
@@ -565,13 +552,6 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
     { k: 'truck', x: 300, y: LANE + 34, dir: -1 },
     { k: 'supplies', x: 460, y: LANE + 4 },
     { k: 'smoke', x: 600, y: LANE + 2, green: true },
-    { k: 'helipad', x: 800, y: 150, p: RARE },
-    { k: 'rescue', x: 800, y: 150, p: RARE },
-    { k: 'horde', x: 70, y: 150, n: 6 },
-    { k: 'horde', x: 230, y: 152, n: 7 },
-    { k: 'horde', x: 400, y: 148, n: 6 },
-    { k: 'horde', x: 560, y: 152, n: 7 },
-    { k: 'horde', x: 720, y: 150, n: 5 },
   ],
 };
 
