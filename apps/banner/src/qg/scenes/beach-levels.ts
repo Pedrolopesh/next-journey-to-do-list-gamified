@@ -263,8 +263,8 @@ function motorBoat(env: SceneEnv): void {
   rect(env, x - 3, y - 10, 9, 1, '#e63946');
 }
 
-function dockedBoat(env: SceneEnv, x: number, y: number, hull: string): void {
-  const bob = Math.round(Math.sin(env.t * 1.5 + x));
+function dockedBoat(env: SceneEnv, x: number, y: number, hull: string, seed: number): void {
+  const bob = Math.round(Math.sin(env.t * 1.5 + seed));
   const by = y + bob;
   rect(env, x - 12, by + 2, 24, 1, 'rgba(0,0,0,0.25)');
   rect(env, x - 12, by - 3, 24, 1, OUTLINE);
@@ -286,26 +286,31 @@ function farIsland(env: SceneEnv, cx: number, scale: number): void {
   ctx.restore();
 }
 
-/** Prédios da orla no horizonte; à noite, janelas acesas. */
+/** Poucos prédios da orla no horizonte, em três grupinhos; à noite, janelas acesas. */
+const TOWERS: { x: number; w: number; h: number }[] = [
+  { x: 14, w: 16, h: 30 },
+  { x: 31, w: 20, h: 44 },
+  { x: 53, w: 13, h: 24 },
+  { x: 210, w: 18, h: 36 },
+  { x: 229, w: 22, h: 52 },
+  { x: 332, w: 15, h: 38 },
+];
+
 function skyline(env: SceneEnv, xOf: (world: number) => number): void {
   const random = rng(5);
   const tone = env.time === 'night' ? '#16203f' : env.time === 'morning' ? '#a58fa8' : '#8aa0b8';
   const edge = env.time === 'night' ? '#0e1630' : env.time === 'morning' ? '#8b7590' : '#728aa3';
-  let world = -10;
-  while (world < SCENE_W + 160) {
-    const w = 14 + Math.floor(random() * 14);
-    const hgt = 22 + Math.floor(random() * 34);
+  for (const { x: world, w, h } of TOWERS) {
     const x = xOf(world);
-    rect(env, x, HORIZON - hgt, w, hgt + 1, tone);
-    rect(env, x + w - 3, HORIZON - hgt, 3, hgt + 1, edge);
-    if (random() > 0.6) rect(env, x + 3, HORIZON - hgt - 4, 2, 4, edge);
-    for (let wy = HORIZON - hgt + 4; wy < HORIZON - 3; wy += 6) {
+    rect(env, x, HORIZON - h, w, h + 1, tone);
+    rect(env, x + w - 3, HORIZON - h, 3, h + 1, edge);
+    if (random() > 0.5) rect(env, x + 3, HORIZON - h - 4, 2, 4, edge);
+    for (let wy = HORIZON - h + 4; wy < HORIZON - 3; wy += 6) {
       for (let wx = x + 3; wx < x + w - 5; wx += 5) {
         const lit = env.time === 'night' && random() > 0.45;
         rect(env, wx, wy, 2, 3, lit ? '#ffe28a' : env.time === 'night' ? '#202c52' : '#b9c8d8');
       }
     }
-    world += w + 2;
   }
 }
 
@@ -340,13 +345,13 @@ function lighthouse(env: SceneEnv, cx: number): void {
 }
 
 /** Píer de madeira que entra no mar em perspectiva, com pilares e um poste de luz na ponta. */
-function pier(env: SceneEnv): void {
+function pier(env: SceneEnv, cx: number): void {
   const bottom = 172;
   const top = HORIZON + 14;
   for (let y = top; y <= bottom; y++) {
     const u = (y - top) / (bottom - top);
     const w = 16 + u * 58;
-    const left = 302 - w / 2;
+    const left = cx - w / 2;
     rect(env, left - 1, y, w + 2, 1, OUTLINE);
     rect(env, left, y, w, 1, (y - top) % 5 === 0 ? '#7a4f26' : '#b8803f');
   }
@@ -354,31 +359,53 @@ function pier(env: SceneEnv): void {
     const u = (y - top) / (bottom - top);
     const w = 16 + u * 58;
     for (const side of [-1, 1]) {
-      rect(env, 302 + side * (w / 2) - 1, y, 3, 8 + u * 6, OUTLINE);
-      rect(env, 302 + side * (w / 2), y, 1, 7 + u * 6, '#6b4119');
+      rect(env, cx + side * (w / 2) - 1, y, 3, 8 + u * 6, OUTLINE);
+      rect(env, cx + side * (w / 2), y, 1, 7 + u * 6, '#6b4119');
     }
   }
-  rect(env, 301, top - 22, 3, 24, OUTLINE);
-  rect(env, 299, top - 26, 7, 5, OUTLINE);
-  rect(env, 300, top - 25, 5, 3, env.time === 'night' ? '#ffe9a8' : '#cfd8e6');
+  rect(env, cx - 1, top - 22, 3, 24, OUTLINE);
+  rect(env, cx - 3, top - 26, 7, 5, OUTLINE);
+  rect(env, cx - 2, top - 25, 5, 3, env.time === 'night' ? '#ffe9a8' : '#cfd8e6');
 }
 
-/** Bandeirolas coloridas presas entre dois pontos, com a barriga do varal. */
-function bunting(env: SceneEnv, x0: number, x1: number, y: number, sag: number): void {
+/** Bandeirinhas penduradas entre dois pontos (as copas de dois coqueiros), com a barriga do varal. */
+function bunting(env: SceneEnv, x0: number, y0: number, x1: number, y1: number, sag: number): void {
   const colors = ['#e63946', '#ffc93c', '#2a9d8f', '#ff7a2e', '#6aa8e0', '#ff6fa8'];
-  const steps = Math.max(2, Math.round((x1 - x0) / 9));
+  const steps = Math.max(2, Math.round(Math.abs(x1 - x0) / 8));
   for (let i = 0; i <= steps; i++) {
     const u = i / steps;
     const x = x0 + (x1 - x0) * u;
-    const cy = y + Math.sin(u * Math.PI) * sag;
+    const cy = y0 + (y1 - y0) * u + Math.sin(u * Math.PI) * sag;
+    if (x < -10 || x > SCENE_W + 10) continue;
     rect(env, x, cy, 2, 1, OUTLINE);
     if (i % 2 === 0) {
+      const color = colors[(i / 2) % colors.length] ?? '#e63946';
       const swing = Math.round(Math.sin(env.t * 2 + i));
-      rect(env, x - 1 + swing, cy + 1, 5, 2, colors[(i / 2) % colors.length] ?? '#e63946');
-      rect(env, x + swing, cy + 3, 3, 2, colors[(i / 2) % colors.length] ?? '#e63946');
-      rect(env, x + 1 + swing, cy + 5, 1, 1, colors[(i / 2) % colors.length] ?? '#e63946');
+      rect(env, x - 1 + swing, cy + 1, 5, 2, color);
+      rect(env, x + swing, cy + 3, 3, 2, color);
+      rect(env, x + 1 + swing, cy + 5, 1, 1, color);
     }
   }
+}
+
+/** Liga a copa de cada coqueiro à do próximo (na jornada, o último liga ao primeiro do ciclo). */
+function palmBunting(env: SceneEnv, list: Prop[]): void {
+  const palms = list.filter((p): p is Extract<Prop, { k: 'palm' }> => p.k === 'palm');
+  palms.sort((a, b) => a.x - b.x);
+  const crown = (p: Extract<Prop, { k: 'palm' }>, x: number): [number, number] => [
+    x + p.lean * 15,
+    p.y - 84 + 12,
+  ];
+  palms.forEach((palm, i) => {
+    const wraps = i === palms.length - 1;
+    const next = wraps ? palms[0] : palms[i + 1];
+    if (!next || (wraps && !env.journey)) return;
+    const gap = wraps ? next.x + JOURNEY_PERIOD - palm.x : next.x - palm.x;
+    const start = env.journey ? scrolled(palm.x, env.scroll, JOURNEY_PERIOD) : palm.x;
+    const [x0, y0] = crown(palm, start);
+    const [x1, y1] = crown(next, start + gap);
+    bunting(env, x0, y0, x1, y1, 14);
+  });
 }
 
 /** Fogos de artifício no céu da noite: cada explosão abre, cai e some. */
@@ -450,11 +477,10 @@ const QG_PROPS: Record<number, Prop[]> = {
   ],
   3: [
     { k: 'palm', x: 22, y: 192, lean: 1.2 },
-    { k: 'lamp', x: 70, y: 188 },
-    { k: 'bench', x: 100, y: 190 },
-    { k: 'lamp', x: 150, y: 188 },
-    { k: 'lamp', x: 232, y: 188 },
-    { k: 'kiosk', x: 322, y: 192, awning: '#2a9d8f' },
+    { k: 'lamp', x: 62, y: 188 },
+    { k: 'bench', x: 92, y: 190 },
+    { k: 'lamp', x: 166, y: 188 },
+    { k: 'kiosk', x: 270, y: 190, awning: '#2a9d8f' },
     { k: 'palm', x: 376, y: 194, lean: -1.2 },
   ],
   4: [
@@ -466,11 +492,11 @@ const QG_PROPS: Record<number, Prop[]> = {
   ],
   5: [
     { k: 'palm', x: 16, y: 198, lean: 1.5 },
-    { k: 'torch', x: 64, y: 190 },
+    { k: 'torch', x: 60, y: 190 },
     { k: 'bonfire', x: 110, y: 208 },
-    { k: 'torch', x: 168, y: 186 },
-    { k: 'tiki', x: 270, y: 188 },
-    { k: 'torch', x: 346, y: 190 },
+    { k: 'torch', x: 164, y: 188 },
+    { k: 'palm', x: 196, y: 202, lean: -1.2 },
+    { k: 'tiki', x: 252, y: 176 },
     { k: 'palm', x: 374, y: 198, lean: -1.4 },
   ],
 };
@@ -523,16 +549,30 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
   ],
   5: [
     { k: 'palm', x: 20, y: SL, lean: 1.5 },
-    { k: 'torch', x: 90, y: SL + 4 },
-    { k: 'bonfire', x: 190, y: SL + 8 },
-    { k: 'torch', x: 280, y: SL + 4 },
-    { k: 'tiki', x: 360, y: SL + 8 },
-    { k: 'palm', x: 500, y: SL + 4, lean: -1.4 },
-    { k: 'torch', x: 580, y: SL + 4 },
-    { k: 'bonfire', x: 680, y: SL + 8 },
-    { k: 'palm', x: 780, y: SL, lean: 1.2 },
+    { k: 'torch', x: 84, y: SL + 4 },
+    { k: 'bonfire', x: 160, y: SL + 8 },
+    { k: 'palm', x: 240, y: SL + 4, lean: -1.2 },
+    { k: 'torch', x: 296, y: SL + 4 },
+    { k: 'tiki', x: 330, y: SL - 6 },
+    { k: 'palm', x: 470, y: SL, lean: 1.3 },
+    { k: 'torch', x: 540, y: SL + 4 },
+    { k: 'bonfire', x: 610, y: SL + 8 },
+    { k: 'palm', x: 700, y: SL + 4, lean: -1.4 },
   ],
 };
+
+const KIOSK_SCALE = 1.5;
+const BENCH_SCALE = 1.5;
+const TIKI_SCALE = 1.4;
+
+/** Desenha um objeto maior, a partir do pé dele: o desenho é feito na origem e ampliado. */
+function grown(env: SceneEnv, x: number, y: number, k: number, draw: () => void): void {
+  env.ctx.save();
+  env.ctx.translate(Math.round(x), Math.round(y));
+  env.ctx.scale(k, k);
+  draw();
+  env.ctx.restore();
+}
 
 function drawProp(env: SceneEnv, prop: Prop, x: number): void {
   switch (prop.k) {
@@ -549,19 +589,19 @@ function drawProp(env: SceneEnv, prop: Prop, x: number): void {
       rect(env, x - 7, prop.y, 14, 3, '#5a3412');
       return flame(env, x, prop.y, 2);
     case 'kiosk':
-      return kiosk(env, x, prop.y, prop.awning);
+      return grown(env, x, prop.y, KIOSK_SCALE, () => kiosk(env, 0, 0, prop.awning));
     case 'umbrella':
       return umbrella(env, x, prop.y, prop.color);
     case 'lamp':
       return lamp(env, x, prop.y);
     case 'bench':
-      return bench(env, x, prop.y);
+      return grown(env, x, prop.y, BENCH_SCALE, () => bench(env, 0, 0));
     case 'torch':
       return torch(env, x, prop.y);
     case 'bonfire':
       return bonfire(env, x, prop.y);
     case 'tiki':
-      return tiki(env, x, prop.y);
+      return grown(env, x, prop.y, TIKI_SCALE, () => tiki(env, 0, 0));
     case 'crates':
       return crates(env, x, prop.y);
   }
@@ -593,9 +633,21 @@ function lightOf(prop: Prop, x: number): Light | null {
     case 'lamp':
       return { x, y: prop.y - 42, radius: 74, color: [255, 225, 150], intensity: 0.55 };
     case 'kiosk':
-      return { x: x + 24, y: prop.y - 22, radius: 64, color: [255, 200, 120], intensity: 0.45 };
+      return {
+        x: x + 24 * KIOSK_SCALE,
+        y: prop.y - 22 * KIOSK_SCALE,
+        radius: 80,
+        color: [255, 200, 120],
+        intensity: 0.45,
+      };
     case 'tiki':
-      return { x: x + 28, y: prop.y - 22, radius: 76, color: [255, 190, 110], intensity: 0.55 };
+      return {
+        x: x + 28 * TIKI_SCALE,
+        y: prop.y - 22 * TIKI_SCALE,
+        radius: 90,
+        color: [255, 190, 110],
+        intensity: 0.55,
+      };
     default:
       return null;
   }
@@ -611,7 +663,14 @@ const SEA = {
   afternoon: ['#1d78c2', '#2a90d6', '#3ba6e0'],
 };
 
-function farSea(env: SceneEnv, level: number, xOf: (world: number) => number): void {
+/** Posição de camadas distantes: quase paradas na jornada. */
+const farXOf =
+  (env: SceneEnv) =>
+  (world: number): number =>
+    env.journey ? scrolled(world, env.scroll, SCENE_W + 160, 0.04) : world;
+
+function farSea(env: SceneEnv, level: number): void {
+  const xOf = farXOf(env);
   switch (level) {
     case 2:
       island(env, xOf(110));
@@ -628,13 +687,24 @@ function farSea(env: SceneEnv, level: number, xOf: (world: number) => number): v
   }
 }
 
+/** Mundo do píer na jornada: o píer e os barcos amarrados passam juntos, e depois vem mar aberto. */
+const PIER_WORLD = 430;
+
+/** Centro do píer na tela. */
+const pierCenter = (env: SceneEnv): number =>
+  env.journey ? scrolled(PIER_WORLD, env.scroll, JOURNEY_PERIOD) : 302;
+
 function nearSea(env: SceneEnv, level: number): void {
   if (level !== 4) boat(env);
   if (level === 2) motorBoat(env);
   if (level === 4) {
-    dockedBoat(env, 252, HORIZON + 30, '#2a6fb0');
-    dockedBoat(env, 350, HORIZON + 36, '#c9742a');
-    dockedBoat(env, 120, HORIZON + 14, '#b8392f');
+    const cx = pierCenter(env);
+    dockedBoat(env, cx - 52, HORIZON + 30, '#2a6fb0', 1);
+    dockedBoat(env, cx + 50, HORIZON + 36, '#c9742a', 2);
+    dockedBoat(env, cx - 182, HORIZON + 14, '#b8392f', 3);
+    // barco de pesca ao longe: anda devagar, como tudo que está longe
+    const far = env.journey ? scrolled(200, env.scroll, JOURNEY_PERIOD, 0.3) : 200;
+    dockedBoat(env, far, HORIZON + 8, '#d8a63a', 4);
   }
   gulls(env, level === 2 ? 2 : level === 4 ? 4 : level === 5 ? 2 : 0);
   if (level === 5) fireworks(env);
@@ -680,11 +750,9 @@ function sand(env: SceneEnv): void {
 /** Desenha a praia no nível pedido, parada (QG) ou rolando (jornada). */
 export function renderBeach(env: SceneEnv): void {
   const level = clampLevel(env.level);
-  const farX = (world: number): number =>
-    env.journey ? scrolled(world, env.scroll, SCENE_W + 160, 0.04) : world;
   sky(env, 0, 0, SCENE_W, HORIZON);
   gradientRect(env, 0, HORIZON, SCENE_W, 44, SEA[env.time]);
-  farSea(env, level, farX);
+  farSea(env, level);
   tileArea(
     env,
     env.tiles.water,
@@ -714,13 +782,13 @@ export function renderBeach(env: SceneEnv): void {
   rect(env, 0, foamY, SCENE_W, 3, 'rgba(255,255,255,0.75)');
   if (level === 3) promenade(env);
   else sand(env);
-  if (level === 4) pier(env);
-  if (level === 5) bunting(env, 16, SCENE_W - 16, 50, 16);
+  if (level === 4) pier(env, pierCenter(env));
   const list = (env.journey ? JOURNEY_PROPS : QG_PROPS)[level] ?? [];
   for (const prop of list) {
     const x = env.journey ? scrolled(prop.x, env.scroll, JOURNEY_PERIOD) : prop.x;
     drawProp(env, prop, x);
   }
+  if (level === 5) palmBunting(env, list);
   if (env.journey && env.arrivedFor !== null) portal(env, env.arrivedFor, SAND_LANE);
 }
 
@@ -734,8 +802,23 @@ export function beachLights(env: SceneEnv): Light[] {
     const light = lightOf(prop, x);
     if (light) lights.push(light);
   }
-  if (level === 4)
-    lights.push({ x: 78, y: HORIZON - 42, radius: 70, color: [255, 235, 160], intensity: 0.6 });
+  if (level === 4) {
+    const lighthouseX = farXOf(env)(78);
+    lights.push({
+      x: lighthouseX,
+      y: HORIZON - 42,
+      radius: 70,
+      color: [255, 235, 160],
+      intensity: 0.6,
+    });
+    lights.push({
+      x: pierCenter(env),
+      y: HORIZON - 10,
+      radius: 60,
+      color: [255, 225, 150],
+      intensity: 0.5,
+    });
+  }
   lights.push({ x: 304, y: 30, radius: 300, color: [150, 175, 255], intensity: 0.38 });
   lights.push({ x: 195, y: 150, radius: 230, color: [140, 165, 240], intensity: 0.3 });
   return lights;
@@ -877,8 +960,8 @@ export function beachExtras(level: number): ExtraCharacter[] {
         roam(3, 'run', -20, 410, 62, 164),
         roam(2, 'walk', 40, 350, 15, 170),
         roam(6, 'walk', 58, 368, 15, 170),
-        still(4, 266, 190, 'up'),
-        still(7, 284, 190, 'up'),
+        still(4, 206, 190, 'up'),
+        still(7, 224, 190, 'up'),
       ];
     case 4:
       return [
@@ -894,6 +977,58 @@ export function beachExtras(level: number): ExtraCharacter[] {
         still(4, 140, 208, 'left'),
         still(3, 112, 192, 'down'),
         still(0, 330, 196, 'up'),
+      ];
+    default:
+      return [];
+  }
+}
+
+const drifter = (
+  look: number,
+  anim: 'walk' | 'run',
+  world: number,
+  drift: number,
+  feetY: number,
+): ExtraCharacter => ({
+  x: world,
+  feetY,
+  anim,
+  direction: drift >= 0 ? 'right' : 'left',
+  selection: LOOKS[look % LOOKS.length] ?? {},
+  drift,
+});
+
+/**
+ * Quem está na praia durante a jornada. As posições são do mundo (que rola): quem está parado
+ * passa pela tela junto com o cenário e quem anda se move um pouco mais devagar ou mais rápido.
+ */
+export function beachJourneyExtras(level: number): ExtraCharacter[] {
+  const lane = SAND_LANE;
+  switch (clampLevel(level)) {
+    case 2:
+      return [still(0, 300, lane + 14, 'up'), drifter(1, 'walk', 560, 14, lane + 4)];
+    case 3:
+      return [
+        drifter(3, 'run', 200, 40, lane + 2),
+        drifter(2, 'walk', 460, 15, lane + 8),
+        still(4, 640, lane + 12, 'up'),
+        still(7, 658, lane + 12, 'up'),
+      ];
+    case 4:
+      return [
+        still(5, PIER_WORLD - 56, lane + 16, 'up'),
+        still(7, PIER_WORLD + 64, lane + 12, 'up'),
+        drifter(0, 'walk', 120, 12, lane + 4),
+        drifter(6, 'walk', 740, -10, lane + 8),
+      ];
+    case 5:
+      return [
+        still(2, 160 - 28, lane + 14, 'right'),
+        still(4, 160 + 28, lane + 14, 'left'),
+        still(3, 610 - 28, lane + 14, 'right'),
+        still(7, 610 + 28, lane + 14, 'left'),
+        drifter(6, 'walk', 400, 13, lane + 6),
+        drifter(1, 'walk', 800, -11, lane + 10),
       ];
     default:
       return [];

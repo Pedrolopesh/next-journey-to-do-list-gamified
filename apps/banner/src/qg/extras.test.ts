@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extrasOf, patrolSpot } from './extras';
+import { extrasOf, journeySpot, patrolSpot } from './extras';
 import type { ExtraCharacter, SceneDef } from './scenes/types';
 
 const person = (x: number): ExtraCharacter => ({
@@ -58,5 +58,40 @@ describe('extrasOf', () => {
     const plain = { extras: [person(9)] } as unknown as SceneDef;
     expect(extrasOf(plain, 4)[0]?.x).toBe(9);
     expect(extrasOf({} as SceneDef, 1)).toEqual([]);
+  });
+});
+
+describe('extras da jornada', () => {
+  const def = {
+    extrasFor: (level: number) => [person(level)],
+    journeyExtrasFor: (level: number) => [person(level * 100)],
+  } as unknown as SceneDef;
+
+  it('usa a lista própria da jornada, separada da do QG', () => {
+    expect(extrasOf(def, 2, true)[0]?.x).toBe(200);
+    expect(extrasOf(def, 2, false)[0]?.x).toBe(2);
+    expect(extrasOf(def, 2, true)).toBe(extrasOf(def, 2, true));
+  });
+
+  it('sem lista da jornada não há figurantes nela', () => {
+    expect(extrasOf({ extrasFor: () => [person(1)] } as unknown as SceneDef, 1, true)).toEqual([]);
+  });
+
+  it('quem está parado passa com o cenário que rola', () => {
+    expect(journeySpot(person(300), 0, 5, 820).x).toBe(300);
+    expect(journeySpot(person(300), 120, 5, 820).x).toBe(180);
+  });
+
+  it('quem anda se move no mundo e olha para onde vai', () => {
+    const walker = { ...person(300), drift: 10 };
+    expect(journeySpot(walker, 0, 5, 820)).toEqual({ x: 350, direction: 'right' });
+    expect(journeySpot({ ...walker, drift: -10 }, 0, 5, 820)).toEqual({
+      x: 250,
+      direction: 'left',
+    });
+  });
+
+  it('dá a volta no ciclo do mundo', () => {
+    expect(journeySpot(person(10), 120, 0, 820).x).toBe(710);
   });
 });

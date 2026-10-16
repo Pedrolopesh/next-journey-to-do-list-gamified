@@ -10,7 +10,7 @@ import {
   recolorPixels,
   type Selection,
 } from './compose';
-import { extrasOf, patrolSpot } from './extras';
+import { extrasOf, journeySpot, patrolSpot } from './extras';
 import { SCENES } from './scenes';
 import { applyTint, drawLights, vignette } from './scenes/lighting';
 import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay } from './scenes/types';
@@ -177,13 +177,14 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
   const sync = (): Promise<void> => {
     const def = SCENES.find((scene) => scene.id === state.sceneId) ?? SCENES[0];
     const anim = currentAnim();
-    const key = `${state.sceneId}|${state.level}|${selectionKey(state.selection, anim)}`;
+    const walks = state.journey && def?.journey !== undefined;
+    const key = `${state.sceneId}|${state.level}|${walks ? 'j' : 'q'}|${selectionKey(state.selection, anim)}`;
     if (key === resolvedKey) return resolving;
     resolvedKey = key;
     const run = async (): Promise<void> => {
       const nextHero = await resolveLayers(state.selection, anim);
       const nextExtras = await Promise.all(
-        (def ? extrasOf(def, state.level) : []).map(async (extra, index) => ({
+        (def ? extrasOf(def, state.level, walks) : []).map(async (extra, index) => ({
           index,
           layers: await resolveLayers({ ...state.selection, ...extra.selection }, extra.anim),
         })),
@@ -266,16 +267,14 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     ctx.imageSmoothingEnabled = false; // sprites e tiles continuam nítidos
     ctx.clearRect(0, 0, SCENE_W, SCENE_H);
     (walking ? def.journey : def.back)?.(env);
-    if (!walking) {
-      const list = extrasOf(def, state.level);
-      for (const { layers, index } of extras) {
-        const extra = list[index];
-        if (!extra) continue;
-        const spot = extra.patrol
-          ? patrolSpot(extra.patrol, clock)
-          : { x: extra.x, direction: extra.direction };
-        drawCharacter(layers, extra.anim, spot.direction, spot.x, extra.feetY, clock);
-      }
+    const list = extrasOf(def, state.level, walking);
+    for (const { layers, index } of extras) {
+      const extra = list[index];
+      if (!extra) continue;
+      let spot = { x: extra.x, direction: extra.direction };
+      if (walking) spot = journeySpot(extra, scroll, clock, def.journeyPeriod ?? 820);
+      else if (extra.patrol) spot = patrolSpot(extra.patrol, clock);
+      drawCharacter(layers, extra.anim, spot.direction, spot.x, extra.feetY, clock);
     }
     const direction = state.journey ? 'right' : state.direction;
     const heroPosition = state.journey ? heroX : SCENE_W / 2;

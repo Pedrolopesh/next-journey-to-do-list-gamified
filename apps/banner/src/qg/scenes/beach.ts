@@ -1,4 +1,11 @@
-import { BEACH_LEVEL_COUNT, beachExtras, beachLights, renderBeach } from './beach-levels';
+import {
+  BEACH_LEVEL_COUNT,
+  beachExtras,
+  beachJourneyExtras,
+  beachLights,
+  renderBeach,
+} from './beach-levels';
+import { JOURNEY_PERIOD } from './beach-props';
 import type { SceneDef } from './types';
 
 export const beach: SceneDef = {
@@ -10,6 +17,8 @@ export const beach: SceneDef = {
   back: renderBeach,
   journey: renderBeach,
   extrasFor: beachExtras,
+  journeyExtrasFor: beachJourneyExtras,
+  journeyPeriod: JOURNEY_PERIOD,
   lights: beachLights,
   tint: {
     morning: { color: '#ffd9b3', alpha: 0.22 },

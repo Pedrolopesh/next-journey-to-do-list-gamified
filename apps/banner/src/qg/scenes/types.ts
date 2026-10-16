@@ -48,6 +48,8 @@ export type ExtraCharacter = {
   selection: Partial<Selection>;
   /** Vai e volta entre dois pontos (px) em vez de ficar parado; `anim` diz se anda ou corre. */
   patrol?: { from: number; to: number; speed: number };
+  /** Na jornada, `x` é do mundo (que rola); `drift` é quanto o figurante anda nele (px/s, negativo = para a esquerda). */
+  drift?: number;
 };
 
 export type Tint = { color: string; alpha: number };
@@ -68,6 +70,10 @@ export type SceneDef = {
   levels?: number;
   /** Figurantes de cada nível; quando existe, vale no lugar de `extras`. */
   extrasFor?: (level: number) => ExtraCharacter[];
+  /** Figurantes da jornada de cada nível, em posições do mundo. Sem isso, a jornada não tem figurantes. */
+  journeyExtrasFor?: (level: number) => ExtraCharacter[];
+  /** Tamanho do ciclo do mundo na jornada (px); precisa ser o mesmo do cenário que rola. */
+  journeyPeriod?: number;
   /** Cor aplicada sobre toda a cena por hora do dia (multiplicação). */
   tint?: Partial<Record<TimeOfDay, Tint>>;
 };
