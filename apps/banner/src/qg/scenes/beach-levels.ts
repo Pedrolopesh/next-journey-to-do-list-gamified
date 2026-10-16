@@ -480,8 +480,8 @@ const QG_PROPS: Record<number, Prop[]> = {
     { k: 'lamp', x: 62, y: 188 },
     { k: 'bench', x: 92, y: 190 },
     { k: 'lamp', x: 166, y: 188 },
-    { k: 'kiosk', x: 270, y: 190, awning: '#2a9d8f' },
-    { k: 'palm', x: 376, y: 194, lean: -1.2 },
+    { k: 'kiosk', x: 292, y: 190, awning: '#2a9d8f' },
+    { k: 'palm', x: 384, y: 194, lean: -1.2 },
   ],
   4: [
     { k: 'palm', x: 22, y: 204, lean: 1.4 },
@@ -552,9 +552,8 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
     { k: 'torch', x: 84, y: SL + 4 },
     { k: 'palm', x: 240, y: SL + 4, lean: -1.2 },
     { k: 'torch', x: 296, y: SL + 4 },
-    { k: 'tiki', x: 330, y: SL - 6 },
     { k: 'palm', x: 470, y: SL, lean: 1.3 },
-    { k: 'torch', x: 540, y: SL + 4 },
+    { k: 'torch', x: 470, y: SL + 4 },
     { k: 'palm', x: 700, y: SL + 4, lean: -1.4 },
   ],
 };
@@ -694,8 +693,13 @@ const PIER_PERIOD = 1900;
 const FIRE_WORLD = 160;
 const FIRE_PERIOD = 1900;
 const FIRE_Y = SAND_LANE - 8;
+/** O bar de palha vem no mesmo ciclo, bem longe da fogueira (nunca perto dela). */
+const TIKI_WORLD = FIRE_WORLD + 400;
+const TIKI_Y = SAND_LANE - 6;
 const fireCenter = (env: SceneEnv): number =>
   env.journey ? scrolled(FIRE_WORLD, env.scroll, FIRE_PERIOD) : 0;
+const tikiCenter = (env: SceneEnv): number =>
+  env.journey ? scrolled(TIKI_WORLD, env.scroll, FIRE_PERIOD) : 0;
 
 /** Centro do píer na tela. */
 const pierCenter = (env: SceneEnv): number =>
@@ -791,7 +795,10 @@ export function renderBeach(env: SceneEnv): void {
   else sand(env);
   if (level === 4) pier(env, pierCenter(env));
   const list = (env.journey ? JOURNEY_PROPS : QG_PROPS)[level] ?? [];
-  if (level === 5 && env.journey) bonfire(env, fireCenter(env), FIRE_Y);
+  if (level === 5 && env.journey) {
+    bonfire(env, fireCenter(env), FIRE_Y);
+    drawProp(env, { k: 'tiki', x: 0, y: TIKI_Y }, tikiCenter(env));
+  }
   for (const prop of list) {
     const x = env.journey ? scrolled(prop.x, env.scroll, JOURNEY_PERIOD) : prop.x;
     drawProp(env, prop, x);
@@ -830,6 +837,8 @@ export function beachLights(env: SceneEnv): Light[] {
   if (level === 5 && env.journey) {
     const light = lightOf({ k: 'bonfire', x: 0, y: FIRE_Y }, fireCenter(env));
     if (light) lights.push(light);
+    const tiki = lightOf({ k: 'tiki', x: 0, y: TIKI_Y }, tikiCenter(env));
+    if (tiki) lights.push(tiki);
   }
   lights.push({ x: 304, y: 30, radius: 300, color: [150, 175, 255], intensity: 0.38 });
   lights.push({ x: 195, y: 150, radius: 230, color: [140, 165, 240], intensity: 0.3 });
@@ -969,11 +978,11 @@ export function beachExtras(level: number): ExtraCharacter[] {
       return [still(0, 236, 186, 'up'), roam(1, 'walk', 70, 330, 14, 168)];
     case 3:
       return [
-        roam(3, 'run', -20, 410, 62, 164),
-        roam(2, 'walk', 40, 350, 15, 170),
-        roam(6, 'walk', 58, 368, 15, 170),
-        still(4, 206, 190, 'up'),
-        still(7, 224, 190, 'up'),
+        roam(3, 'run', -20, 410, 62, 160),
+        roam(2, 'walk', 40, 350, 15, 172),
+        roam(6, 'walk', 58, 368, 11, 202),
+        still(4, 246, 192, 'up'),
+        still(7, 264, 192, 'up'),
       ];
     case 4:
       return [
@@ -1021,10 +1030,10 @@ export function beachJourneyExtras(level: number): ExtraCharacter[] {
       return [still(0, 300, lane + 14, 'up'), drifter(1, 'walk', 560, 14, lane + 4)];
     case 3:
       return [
-        drifter(3, 'run', 200, 40, lane + 2),
+        drifter(3, 'run', 200, 40, lane + 30),
         drifter(2, 'walk', 460, 15, lane + 8),
-        still(4, 640, lane + 12, 'up'),
-        still(7, 658, lane + 12, 'up'),
+        still(4, 640, lane - 6, 'up'),
+        still(7, 664, lane - 6, 'up'),
       ];
     case 4:
       return [
