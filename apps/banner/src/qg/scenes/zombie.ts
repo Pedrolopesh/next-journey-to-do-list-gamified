@@ -10,7 +10,7 @@ import {
   zombieJourneyExtras,
   zombieLevelLayers,
 } from './zombie-levels';
-import { barrel, block, crate, heliBody, OUT, sandbags, sign } from './zombie-props';
+import { barrel, block, crate, heliBody, miniZombie, OUT, sandbags, sign } from './zombie-props';
 
 const HORIZON = 120;
 const FENCE_BASE = 160;
@@ -429,27 +429,6 @@ const WALKERS: Walker[] = (() => {
   }
   return out;
 })();
-const SHIRTS = ['#6b4a3a', '#3f5a7a', '#7a7a3a', '#5a3f6e'];
-const PANTS = ['#2f3440', '#4a3a2a', '#26323a', '#3a3a3a'];
-const SKINS = ['#7fa05a', '#8fb56a', '#6f9467', '#9bb27a'];
-
-/** Zumbi pequeno visto de costas, de braços erguidos para a cerca; balança de leve. */
-function miniZombie(env: SceneEnv, z: Walker, index: number): void {
-  const sway = Math.round(Math.sin(env.t * 1.6 + index * 1.9));
-  const x = Math.round(z.x) + sway;
-  const y = z.feet;
-  const skin = SKINS[z.variant] ?? '#7fa05a';
-  rect(env, x - 3, y - 17, 7, 18, OUT);
-  rect(env, x - 2, y - 5, 2, 5, PANTS[z.variant] ?? '#2f3440');
-  rect(env, x + 1, y - 5, 2, 5, PANTS[z.variant] ?? '#2f3440');
-  rect(env, x - 2, y - 11, 5, 6, SHIRTS[z.variant] ?? '#6b4a3a');
-  const lift = Math.round(Math.sin(env.t * 3 + index) * 1);
-  rect(env, x - 4, y - 16 + lift, 1, 6, skin);
-  rect(env, x + 3, y - 16 - lift, 1, 6, skin);
-  rect(env, x - 1, y - 16, 3, 4, skin);
-  rect(env, x - 1, y - 16, 3, 1, '#4a3a2a');
-}
-
 function journeyFence(env: SceneEnv, dx: number): void {
   fence(
     env,

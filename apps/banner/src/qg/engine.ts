@@ -14,7 +14,6 @@ import { extrasOf, followSpot, journeySpot, patrolSpot } from './extras';
 import { SCENES } from './scenes';
 import { applyTint, drawLights, vignette } from './scenes/lighting';
 import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay } from './scenes/types';
-import { drawWeapon, type Weapon } from './weapons';
 
 const FPS: Record<AnimationName, number> = { idle: 2, walk: 9, run: 12 };
 /** Velocidade do cenário (px lógicos por segundo) quando o personagem anda ou corre na jornada. */
@@ -224,7 +223,6 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     x: number,
     feetY: number,
     clock: number,
-    weapon?: Weapon,
   ): void => {
     const index = Math.floor(clock * FPS[anim]) % catalog.animations[anim];
     const { sy } = frameRect(direction, 0);
@@ -249,7 +247,6 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
         FRAME,
       );
     }
-    if (weapon) drawWeapon(ctx, weapon, x, feetY, direction, index);
   };
 
   const draw = (clock: number): void => {
@@ -284,15 +281,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
           if (walking && extra.follow) spot = followSpot(extra.follow, heroX, clock, chase);
           else if (walking) spot = journeySpot(extra, scroll, clock, def.journeyPeriod ?? 820);
           else if (extra.patrol) spot = patrolSpot(extra.patrol, clock);
-          drawCharacter(
-            layers,
-            extra.anim,
-            spot.direction,
-            spot.x,
-            extra.feetY,
-            clock,
-            extra.weapon,
-          );
+          drawCharacter(layers, extra.anim, spot.direction, spot.x, extra.feetY, clock);
         },
       });
     }

@@ -11,7 +11,7 @@ import {
   walker,
 } from './level-kit';
 import type { ExtraCharacter, LevelInfo, SceneEnv } from './types';
-import { barrel, crate, heliBody, OUT, sandbags } from './zombie-props';
+import { barrel, crate, heliBody, miniZombie, OUT, sandbags } from './zombie-props';
 
 export const ZOMBIE_LEVEL_COUNT = 5;
 export const ZOMBIE_GROUND = 182;
@@ -39,11 +39,11 @@ export const ZOMBIE_LEVELS: LevelInfo[] = [
   {
     name: 'Cerco',
     blurb:
-      'A base se arma: sem zumbis à vista, só o exército de fuzil na mão, armários de armas abertos, barris em chamas e holofotes.',
+      'A base se arma: sem zumbis à vista, só o exército, armários de armas abertos, barris em chamas e holofotes.',
     changes: [
-      'Soldados armados em posição e armários de armas abertos para escolher o fuzil.',
+      'Soldados em posição e armários de armas abertos.',
       'Barris em chamas e tripés de holofote.',
-      'Jornada: barricada de sacos de areia, armários de armas e soldados armados atrás dela.',
+      'Jornada: barricada de sacos de areia, armários de armas e soldados atrás dela.',
     ],
   },
   {
@@ -62,8 +62,8 @@ export const ZOMBIE_LEVELS: LevelInfo[] = [
     blurb:
       'Hora de sair: heliponto com um helicóptero de resgate pousado, fumaça verde de sinalização, suprimentos e comboio.',
     changes: [
-      'Heliponto com helicóptero de resgate e fumaça verde de sinalização.',
-      'Pilhas de suprimentos e soldados carregando.',
+      'Heliponto com helicóptero de resgate ao fundo, ao lado da base, e fumaça verde de sinalização.',
+      'Pilhas de suprimentos, soldados carregando e uma multidão de zumbis ao fundo.',
       'Jornada: comboio de caminhão, fumaça de sinalização e o heliponto passando de vez em quando.',
     ],
   },
@@ -187,6 +187,7 @@ type Prop =
   | { k: 'firebarrel'; x: number; y: number; p?: number }
   | { k: 'flood'; x: number; y: number; p?: number }
   | { k: 'armory'; x: number; y: number; p?: number }
+  | { k: 'horde'; x: number; y: number; n: number; p?: number }
   | { k: 'wreck'; x: number; y: number; p?: number }
   | { k: 'smoke'; x: number; y: number; green?: boolean; f?: number; p?: number }
   | { k: 'siren'; x: number; y: number; p?: number }
@@ -331,6 +332,18 @@ function armory(env: SceneEnv, x: number, y: number): void {
   rect(env, left + 2, y - 30, 40, 1, '#c9a227');
 }
 
+/** Grupo de zumbis pequenos ao fundo, de costas, voltados para a base. */
+function horde(env: SceneEnv, x: number, y: number, n: number): void {
+  for (let i = 0; i < n; i++) {
+    const side = i % 2 === 0 ? 1 : -1;
+    miniZombie(
+      env,
+      { x: x + side * Math.ceil(i / 2) * 9 + (i % 3), feet: y + ((i * 5) % 7), variant: i % 4 },
+      i + Math.round(x),
+    );
+  }
+}
+
 /** Carro destruído em chamas, com a carcaça escura e as rodas no chão. */
 function wreck(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 22, y - 1, 46, 3, 'rgba(0,0,0,0.25)');
@@ -469,6 +482,8 @@ function drawProp(env: SceneEnv, prop: Prop, x: number): void {
       return flood(env, x, prop.y);
     case 'armory':
       return armory(env, x, prop.y);
+    case 'horde':
+      return horde(env, x, prop.y, prop.n);
     case 'wreck':
       return grown(env, x, prop.y, 1.5, () => wreck(env, 0, 0));
     case 'smoke':
@@ -512,9 +527,13 @@ const QG_PROPS: Record<number, Prop[]> = {
     { k: 'smoke', x: 318, y: 140 },
   ],
   5: [
-    { k: 'helipad', x: 262, y: 200 },
-    { k: 'rescue', x: 262, y: 200 },
-    { k: 'smoke', x: 232, y: 152, green: true },
+    { k: 'helipad', x: 244, y: 146 },
+    { k: 'rescue', x: 244, y: 146 },
+    { k: 'smoke', x: 292, y: 144, green: true },
+    { k: 'horde', x: 92, y: 148, n: 6 },
+    { k: 'horde', x: 170, y: 150, n: 7 },
+    { k: 'horde', x: 318, y: 150, n: 5 },
+    { k: 'horde', x: 30, y: 142, n: 4 },
   ],
 };
 
@@ -546,8 +565,13 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
     { k: 'truck', x: 300, y: LANE + 34, dir: -1 },
     { k: 'supplies', x: 460, y: LANE + 4 },
     { k: 'smoke', x: 600, y: LANE + 2, green: true },
-    { k: 'helipad', x: 800, y: LANE + 6, p: RARE },
-    { k: 'rescue', x: 800, y: LANE + 6, p: RARE },
+    { k: 'helipad', x: 800, y: 150, p: RARE },
+    { k: 'rescue', x: 800, y: 150, p: RARE },
+    { k: 'horde', x: 70, y: 150, n: 6 },
+    { k: 'horde', x: 230, y: 152, n: 7 },
+    { k: 'horde', x: 400, y: 148, n: 6 },
+    { k: 'horde', x: 560, y: 152, n: 7 },
+    { k: 'horde', x: 720, y: 150, n: 5 },
   ],
 };
 
@@ -704,11 +728,5 @@ const chaser = (
   follow: { offset, sway, rate, phase },
 });
 
-/** Todo soldado leva um fuzil. */
-const armed = (list: ExtraCharacter[]): ExtraCharacter[] =>
-  list.map((extra) =>
-    SOLDIER.includes(extra.selection as Look) ? { ...extra, weapon: 'rifle' } : extra,
-  );
-
-export const zombieExtras = (n: number): ExtraCharacter[] => armed(zombieExtrasRaw(n));
-export const zombieJourneyExtras = (n: number): ExtraCharacter[] => armed(zombieJourneyRaw(n));
+export const zombieExtras = (n: number): ExtraCharacter[] => zombieExtrasRaw(n);
+export const zombieJourneyExtras = (n: number): ExtraCharacter[] => zombieJourneyRaw(n);

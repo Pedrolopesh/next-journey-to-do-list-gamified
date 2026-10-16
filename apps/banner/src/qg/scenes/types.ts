@@ -1,5 +1,4 @@
 import type { AnimationName, Direction, Selection } from '../compose';
-import type { Weapon } from '../weapons';
 
 export type TimeOfDay = 'morning' | 'afternoon' | 'night';
 export const TIMES: { value: TimeOfDay; label: string }[] = [
@@ -53,8 +52,6 @@ export type ExtraCharacter = {
   drift?: number;
   /** Ciclo próprio do mundo na jornada, para quem passa de tempos em tempos (padrão: o do cenário). */
   period?: number;
-  /** Arma na mão (desenhada por cima do personagem). */
-  weapon?: Weapon;
   /**
    * Na jornada, fica na tela junto do personagem em vez de no mundo: `offset` px à frente dele
    * (negativo = atrás), balançando `sway` px a `rate` rad/s. Some para o lado quando o cenário para.
