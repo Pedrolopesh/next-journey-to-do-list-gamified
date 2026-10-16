@@ -619,9 +619,9 @@ export function castleExtras(n: number): ExtraCharacter[] {
       ].map(knightOf);
     case 3:
       return [
-        stand(noble(0), 16, 184, 'down'),
-        stand(noble(1), 38, 186, 'down'),
-        stand(noble(2), 70, 184, 'down'),
+        stand(noble(0), 14, 184, 'down'),
+        stand(noble(1), 36, 186, 'down'),
+        stand(noble(2), 80, 184, 'down'),
       ];
     case 4:
       return [

@@ -494,7 +494,7 @@ function groundCracks(env: SceneEnv): void {
 
 const HELL_PERIOD = 1300;
 const THRONE_WORLD = 1040;
-const THRONE_BASE = 152;
+const THRONE_BASE = 166;
 
 function passingThrone(env: SceneEnv): { y: number; draw: () => void } {
   const x = Math.round(scrolled(THRONE_WORLD, env.scroll, HELL_PERIOD));

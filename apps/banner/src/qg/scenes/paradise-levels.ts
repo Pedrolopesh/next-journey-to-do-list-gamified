@@ -570,8 +570,8 @@ const FEST_WORLD = 300;
 const QG_PROPS: Record<number, Prop[]> = {
   1: [],
   2: [
-    { k: 'sign', x: 168, y: 162 },
-    { k: 'stump', x: 112, y: 152 },
+    { k: 'sign', x: 30, y: 170 },
+    { k: 'stump', x: 252, y: 160 },
     { k: 'shroom', x: 214, y: 160, color: '#e63946', size: 1 },
     { k: 'deer', x: 296, y: 164, dir: -1 },
     { k: 'rabbit', x: 256, y: 202, ph: 0.1 },
@@ -749,7 +749,7 @@ const lv = (n: number): number => Math.min(FOREST_LEVEL_COUNT, Math.max(1, n));
 export function forestExtras(n: number): ExtraCharacter[] {
   switch (lv(n)) {
     case 2:
-      return [stand(hiker(0), 196, 174, 'left'), roamer(hiker(1), 'walk', 150, 340, 15, 214)];
+      return [stand(hiker(0), 92, 196, 'right'), roamer(hiker(1), 'walk', 150, 340, 15, 214)];
     case 3:
       return [
         stand(hiker(2), 160, 172, 'right'),
@@ -758,7 +758,7 @@ export function forestExtras(n: number): ExtraCharacter[] {
       ];
     case 4:
       return [
-        stand(GUIDE, 176, 190, 'left'),
+        stand(GUIDE, 142, 194, 'right'),
         roamer(hiker(0), 'walk', 150, 340, 11, 214),
         // ao lado da cabana e do lago
         stand(folk(0), 236, 148, 'down'),
