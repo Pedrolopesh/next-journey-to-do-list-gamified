@@ -298,20 +298,40 @@ const TOWERS: { x: number; w: number; h: number }[] = [
 
 function skyline(env: SceneEnv, xOf: (world: number) => number): void {
   const random = rng(5);
-  const tone = env.time === 'night' ? '#16203f' : env.time === 'morning' ? '#a58fa8' : '#8aa0b8';
-  const edge = env.time === 'night' ? '#0e1630' : env.time === 'morning' ? '#8b7590' : '#728aa3';
+  const night = env.time === 'night';
+  const tone = night ? '#16203f' : env.time === 'morning' ? '#a58fa8' : '#8aa0b8';
+  const edge = night ? '#0e1630' : env.time === 'morning' ? '#8b7590' : '#728aa3';
+  // A cidade fica em terra firme: os prédios param numa rua que corre ao longo do horizonte
+  const base = HORIZON - 7;
   for (const { x: world, w, h } of TOWERS) {
     const x = xOf(world);
-    rect(env, x, HORIZON - h, w, h + 1, tone);
-    rect(env, x + w - 3, HORIZON - h, 3, h + 1, edge);
-    if (random() > 0.5) rect(env, x + 3, HORIZON - h - 4, 2, 4, edge);
-    for (let wy = HORIZON - h + 4; wy < HORIZON - 3; wy += 6) {
+    rect(env, x, base - h, w, h + 1, tone);
+    rect(env, x + w - 3, base - h, 3, h + 1, edge);
+    if (random() > 0.5) rect(env, x + 3, base - h - 4, 2, 4, edge);
+    for (let wy = base - h + 4; wy < base - 3; wy += 6) {
       for (let wx = x + 3; wx < x + w - 5; wx += 5) {
-        const lit = env.time === 'night' && random() > 0.45;
-        rect(env, wx, wy, 2, 3, lit ? '#ffe28a' : env.time === 'night' ? '#202c52' : '#b9c8d8');
+        const lit = night && random() > 0.45;
+        rect(env, wx, wy, 2, 3, lit ? '#ffe28a' : night ? '#202c52' : '#b9c8d8');
       }
     }
   }
+  rect(env, 0, base + 1, SCENE_W, 2, night ? '#3a3f5e' : '#c9c3b6');
+  rect(env, 0, base + 3, SCENE_W, 5, night ? '#1b1f33' : '#4a4d57');
+  rect(env, 0, base + 8, SCENE_W, 1, night ? '#2a2e48' : '#a8a296');
+  for (let dash = 0; dash < SCENE_W + 20; dash += 14) {
+    const x = env.journey ? xOf(dash) : dash;
+    rect(env, x, base + 5, 6, 1, night ? '#8a7a40' : '#e8d27a');
+  }
+  // alguns carros passando devagar pela rua
+  const cars = ['#e63946', '#f4f4f4', '#2d6cdf'];
+  cars.forEach((color, i) => {
+    const span = SCENE_W + 40;
+    const along = (env.t * (9 + i * 3) + i * 140) % span;
+    const x = i % 2 ? span - along - 20 : along - 20;
+    rect(env, x, base + 4, 7, 3, color);
+    rect(env, x + 1, base + 3, 4, 1, night ? '#2a3a66' : '#bfe3f8');
+    if (night) rect(env, i % 2 ? x - 1 : x + 7, base + 5, 1, 1, '#ffe28a');
+  });
 }
 
 /** Farol numa ponta de pedra no horizonte; à noite o facho gira. */
@@ -1027,7 +1047,7 @@ export function beachJourneyExtras(level: number): ExtraCharacter[] {
   const lane = SAND_LANE;
   switch (clampLevel(level)) {
     case 2:
-      return [still(0, 300, lane + 14, 'up'), drifter(1, 'walk', 560, 14, lane + 4)];
+      return [still(0, 300, lane + 26, 'up'), drifter(1, 'walk', 560, 14, lane + 4)];
     case 3:
       return [
         drifter(3, 'run', 200, 40, lane + 30),

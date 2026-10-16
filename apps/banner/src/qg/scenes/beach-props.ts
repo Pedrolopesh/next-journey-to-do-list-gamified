@@ -159,8 +159,11 @@ const FRONDS: { side: number; rise: number; drop: number; shade: number }[] = [
  * Coqueiro: tronco alto e curvo, mais grosso na base, com anéis; copa de folhas compridas que
  * pendem, cada uma com folíolos dos dois lados, e um cacho de cocos embaixo.
  */
-export function palm(env: SceneEnv, x: number, baseY: number, lean: number): void {
+export function palm(env: SceneEnv, rawX: number, baseY: number, lean: number): void {
   const { ctx } = env;
+  // Posição inteira (sem tremer ao rolar) e fase própria (não depende de onde o coqueiro está)
+  const x = Math.round(rawX);
+  const phase = lean * 3.1;
   const topX = x + lean * 15;
   const topY = baseY - 84;
   const bendX = x + lean * 2;
@@ -197,7 +200,7 @@ export function palm(env: SceneEnv, x: number, baseY: number, lean: number): voi
   }
   ctx.stroke();
 
-  const sway = Math.sin(env.t * 0.45 + x) * 0.5;
+  const sway = Math.round(Math.sin(env.t * 0.5 + phase) * 1.4) * 0.8;
   ctx.lineCap = 'round';
   FRONDS.forEach((frond, index) => {
     const len = 36 + (index % 2) * 3;
