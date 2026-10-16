@@ -143,7 +143,22 @@ export function beachChair(env: SceneEnv, cx: number, baseY: number): void {
   rect(env, cx - 12, baseY - 13, 24, 1, '#1d3f80');
 }
 
-/** Palmeira em vetor: tronco curvo e fino no topo, folhas arqueadas que balançam. */
+/** Folhas do coqueiro: lado (-1 a 1), quanto sobem e quanto o ponto da ponta cai. */
+const FRONDS: { side: number; rise: number; drop: number; shade: number }[] = [
+  { side: -1, rise: 8, drop: 20, shade: 0 },
+  { side: 1, rise: 8, drop: 20, shade: 1 },
+  { side: -0.8, rise: 20, drop: 4, shade: 1 },
+  { side: 0.8, rise: 20, drop: 4, shade: 0 },
+  { side: -0.38, rise: 26, drop: -6, shade: 0 },
+  { side: 0.38, rise: 26, drop: -6, shade: 1 },
+  { side: -0.95, rise: 4, drop: 30, shade: 1 },
+  { side: 0.95, rise: 4, drop: 30, shade: 0 },
+];
+
+/**
+ * Coqueiro: tronco alto e curvo, mais grosso na base, com anéis; copa de folhas compridas que
+ * pendem, cada uma com folíolos dos dois lados, e um cacho de cocos embaixo.
+ */
 export function palm(env: SceneEnv, x: number, baseY: number, lean: number): void {
   const { ctx } = env;
   const topX = x + lean * 15;
@@ -154,50 +169,96 @@ export function palm(env: SceneEnv, x: number, baseY: number, lean: number): voi
     (1 - u) * (1 - u) * x + 2 * (1 - u) * u * bendX + u * u * topX,
     (1 - u) * (1 - u) * baseY + 2 * (1 - u) * u * bendY + u * u * topY,
   ];
-  // tronco: segmentos que afinam para cima, com anéis
-  for (let i = 0; i < 24; i++) {
-    const [x1, y1] = at(i / 24);
-    const [x2, y2] = at((i + 1) / 24);
-    ctx.strokeStyle = i % 3 === 0 ? '#6b4119' : '#8a5a2a';
-    ctx.lineWidth = 7 - (i / 24) * 3.2;
-    ctx.lineCap = 'butt';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
+  // tronco: contorno escuro por baixo e faixas claras e escuras por cima
+  const SEGMENTS = 28;
+  for (const pass of [0, 1]) {
+    for (let i = 0; i < SEGMENTS; i++) {
+      const [x1, y1] = at(i / SEGMENTS);
+      const [x2, y2] = at((i + 1) / SEGMENTS);
+      const flare = i < 3 ? (3 - i) * 1.4 : 0;
+      const width = 7.5 - (i / SEGMENTS) * 3.5 + flare;
+      ctx.strokeStyle = pass === 0 ? '#2a1a12' : i % 3 === 0 ? '#6b4119' : '#9a6a34';
+      ctx.lineWidth = pass === 0 ? width + 2 : width;
+      ctx.lineCap = 'butt';
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
   }
+  // brilho do lado da luz
+  ctx.strokeStyle = 'rgba(255,220,160,0.35)';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  for (let i = 0; i <= SEGMENTS; i++) {
+    const [px, py] = at(i / SEGMENTS);
+    if (i === 0) ctx.moveTo(px + 1.5, py);
+    else ctx.lineTo(px + 1.5 - (i / SEGMENTS) * 0.8, py);
+  }
+  ctx.stroke();
+
   const sway = Math.sin(env.t * 1.4 + x) * 2.5;
-  const leaves: [number, number][] = [
-    [-34, 6],
-    [-24, -10],
-    [-8, -16],
-    [10, -15],
-    [26, -9],
-    [35, 7],
-    [0, -4],
-  ];
-  leaves.forEach(([dx, dy], i) => {
-    const tipX = topX + dx + sway * (Math.abs(dx) / 30);
-    const tipY = topY + dy + 14 + Math.abs(dx) * 0.28;
-    const midX = topX + dx * 0.55;
-    const midY = topY + dy - 8;
-    ctx.fillStyle = i % 2 ? '#2a9d4a' : '#1f7a3a';
-    ctx.beginPath();
-    ctx.moveTo(topX, topY);
-    ctx.quadraticCurveTo(midX, midY - 3, tipX, tipY);
-    ctx.quadraticCurveTo(midX, midY + 5, topX, topY + 2);
-    ctx.fill();
-    ctx.strokeStyle = '#5fd07a';
-    ctx.lineWidth = 0.6;
+  ctx.lineCap = 'round';
+  FRONDS.forEach((frond, index) => {
+    const len = 36 + (index % 2) * 3;
+    const tipX = topX + frond.side * len + sway * Math.abs(frond.side);
+    const tipY = topY - frond.rise * 0.2 + frond.drop;
+    const midX = topX + frond.side * len * 0.55;
+    const midY = topY - frond.rise;
+    const rib = (u: number): [number, number] => [
+      (1 - u) * (1 - u) * topX + 2 * (1 - u) * u * midX + u * u * tipX,
+      (1 - u) * (1 - u) * topY + 2 * (1 - u) * u * midY + u * u * tipY,
+    ];
+    const dark = frond.shade ? '#237a3c' : '#1c6b34';
+    const light = frond.shade ? '#3fb55c' : '#35a04f';
+    // folíolos: pequenos traços que saem da nervura e pendem
+    for (const [color, width] of [
+      [dark, 2],
+      [light, 1],
+    ] as const) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      for (let k = 1; k <= 10; k++) {
+        const u = k / 10.5;
+        const [px, py] = rib(u);
+        const [qx, qy] = rib(Math.min(1, u + 0.05));
+        const tx = qx - px;
+        const ty = qy - py;
+        const norm = Math.hypot(tx, ty) || 1;
+        const l = 10 * (1 - u * 0.65);
+        for (const sign of [-1, 1]) {
+          const ex = px + (-ty / norm) * sign * l * 0.55;
+          const ey = py + (tx / norm) * sign * l * 0.55 + l * 0.7;
+          ctx.moveTo(px, py);
+          ctx.lineTo(ex, ey);
+        }
+      }
+      ctx.stroke();
+    }
+    // nervura central
+    ctx.strokeStyle = '#7bd88f';
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(topX, topY);
     ctx.quadraticCurveTo(midX, midY, tipX, tipY);
     ctx.stroke();
   });
-  ctx.fillStyle = '#4a2c0e';
-  for (const dx of [-3, 0, 3]) {
+  // cocos
+  for (const [dx, dy] of [
+    [-3.5, 4],
+    [3.5, 4.5],
+    [0, 7],
+  ] as const) {
+    ctx.fillStyle = '#2a1a12';
     ctx.beginPath();
-    ctx.arc(topX + dx, topY + 4, 2.3, 0, Math.PI * 2);
+    ctx.arc(topX + dx, topY + dy, 3.4, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = '#7a4a1e';
+    ctx.beginPath();
+    ctx.arc(topX + dx, topY + dy, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#b07a3c';
+    ctx.fillRect(topX + dx - 1.4, topY + dy - 1.4, 1.2, 1.2);
   }
 }

@@ -13,7 +13,13 @@ import {
 import { extrasOf, journeySpot, patrolSpot } from './extras';
 import { SCENES } from './scenes';
 import { applyTint, drawLights, vignette } from './scenes/lighting';
-import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay } from './scenes/types';
+import {
+  type ExtraCharacter,
+  SCENE_H,
+  SCENE_W,
+  type SceneEnv,
+  type TimeOfDay,
+} from './scenes/types';
 
 const FPS: Record<AnimationName, number> = { idle: 2, walk: 9, run: 12 };
 /** Velocidade do cenário (px lógicos por segundo) quando o personagem anda ou corre na jornada. */
@@ -268,17 +274,22 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     ctx.clearRect(0, 0, SCENE_W, SCENE_H);
     (walking ? def.journey : def.back)?.(env);
     const list = extrasOf(def, state.level, walking);
-    for (const { layers, index } of extras) {
-      const extra = list[index];
-      if (!extra) continue;
+    // Quem está mais ao fundo (pés mais acima na tela) é desenhado antes do personagem
+    const placed = extras
+      .map(({ layers, index }) => ({ layers, extra: list[index] }))
+      .filter((item): item is { layers: ResolvedLayer[]; extra: ExtraCharacter } => !!item.extra)
+      .sort((a, b) => a.extra.feetY - b.extra.feetY);
+    const drawExtra = ({ layers, extra }: (typeof placed)[number]): void => {
       let spot = { x: extra.x, direction: extra.direction };
       if (walking) spot = journeySpot(extra, scroll, clock, def.journeyPeriod ?? 820);
       else if (extra.patrol) spot = patrolSpot(extra.patrol, clock);
       drawCharacter(layers, extra.anim, spot.direction, spot.x, extra.feetY, clock);
-    }
+    };
+    for (const item of placed) if (item.extra.feetY <= def.groundY) drawExtra(item);
     const direction = state.journey ? 'right' : state.direction;
     const heroPosition = state.journey ? heroX : SCENE_W / 2;
     drawCharacter(hero, heroAnim, direction, heroPosition, def.groundY, clock);
+    for (const item of placed) if (item.extra.feetY > def.groundY) drawExtra(item);
     if (!walking) def.front?.(env);
     applyTint(env, def.tint?.[state.time]);
     drawLights(env, def.lights?.(env) ?? []);

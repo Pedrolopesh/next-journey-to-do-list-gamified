@@ -550,13 +550,11 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
   5: [
     { k: 'palm', x: 20, y: SL, lean: 1.5 },
     { k: 'torch', x: 84, y: SL + 4 },
-    { k: 'bonfire', x: 160, y: SL - 8 },
     { k: 'palm', x: 240, y: SL + 4, lean: -1.2 },
     { k: 'torch', x: 296, y: SL + 4 },
     { k: 'tiki', x: 330, y: SL - 6 },
     { k: 'palm', x: 470, y: SL, lean: 1.3 },
     { k: 'torch', x: 540, y: SL + 4 },
-    { k: 'bonfire', x: 610, y: SL - 8 },
     { k: 'palm', x: 700, y: SL + 4, lean: -1.4 },
   ],
 };
@@ -692,6 +690,13 @@ const PIER_WORLD = 430;
 /** O píer aparece uma vez a cada tanto de caminhada: bem mais raro que o resto da praia. */
 const PIER_PERIOD = 1900;
 
+/** A fogueira com a turma também é rara na jornada: aparece uma vez por ciclo longo. */
+const FIRE_WORLD = 160;
+const FIRE_PERIOD = 1900;
+const FIRE_Y = SAND_LANE - 8;
+const fireCenter = (env: SceneEnv): number =>
+  env.journey ? scrolled(FIRE_WORLD, env.scroll, FIRE_PERIOD) : 0;
+
 /** Centro do píer na tela. */
 const pierCenter = (env: SceneEnv): number =>
   env.journey ? scrolled(PIER_WORLD, env.scroll, PIER_PERIOD) : 302;
@@ -786,6 +791,7 @@ export function renderBeach(env: SceneEnv): void {
   else sand(env);
   if (level === 4) pier(env, pierCenter(env));
   const list = (env.journey ? JOURNEY_PROPS : QG_PROPS)[level] ?? [];
+  if (level === 5 && env.journey) bonfire(env, fireCenter(env), FIRE_Y);
   for (const prop of list) {
     const x = env.journey ? scrolled(prop.x, env.scroll, JOURNEY_PERIOD) : prop.x;
     drawProp(env, prop, x);
@@ -820,6 +826,10 @@ export function beachLights(env: SceneEnv): Light[] {
       color: [255, 225, 150],
       intensity: 0.5,
     });
+  }
+  if (level === 5 && env.journey) {
+    const light = lightOf({ k: 'bonfire', x: 0, y: FIRE_Y }, fireCenter(env));
+    if (light) lights.push(light);
   }
   lights.push({ x: 304, y: 30, radius: 300, color: [150, 175, 255], intensity: 0.38 });
   lights.push({ x: 195, y: 150, radius: 230, color: [140, 165, 240], intensity: 0.3 });
@@ -1025,10 +1035,8 @@ export function beachJourneyExtras(level: number): ExtraCharacter[] {
       ];
     case 5:
       return [
-        still(2, 160 - 28, lane - 10, 'right'),
-        still(4, 160 + 28, lane - 10, 'left'),
-        still(3, 610 - 28, lane - 10, 'right'),
-        still(7, 610 + 28, lane - 10, 'left'),
+        { ...still(2, FIRE_WORLD - 28, lane - 10, 'right'), period: FIRE_PERIOD },
+        { ...still(4, FIRE_WORLD + 28, lane - 10, 'left'), period: FIRE_PERIOD },
         drifter(6, 'walk', 400, 13, lane + 20),
         drifter(1, 'walk', 800, -11, lane + 24),
       ];
