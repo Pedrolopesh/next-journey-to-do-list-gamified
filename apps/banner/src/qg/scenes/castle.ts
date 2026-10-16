@@ -1,3 +1,11 @@
+import {
+  CASTLE_GROUND,
+  CASTLE_LEVEL_COUNT,
+  CASTLE_LEVELS,
+  castleExtras,
+  castleJourneyExtras,
+  castleLevelLayers,
+} from './castle-levels';
 import { bands, flame, portal, rect, rng, scrolled, shadedBlock, sky } from './draw';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_W } from './types';
@@ -488,7 +496,13 @@ export const castle: SceneDef = {
   id: 'castle',
   name: 'Castelo',
   blurb: 'Salão do trono com tablado, tapete real, armaduras, candelabros, estandartes e baú.',
-  groundY: 178,
+  groundY: CASTLE_GROUND,
+  levels: CASTLE_LEVEL_COUNT,
+  levelInfo: CASTLE_LEVELS,
+  ...castleLevelLayers,
+  extrasFor: castleExtras,
+  journeyExtrasFor: castleJourneyExtras,
+  journeyPeriod: FLOOR_PERIOD,
   journey,
   back(env) {
     // Parede de blocos de pedra

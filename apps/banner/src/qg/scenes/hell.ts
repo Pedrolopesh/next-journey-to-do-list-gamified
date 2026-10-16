@@ -1,4 +1,13 @@
 import { byTime, flame, glow, gradientRect, portal, rect, rng, scrolled, tileArea } from './draw';
+import {
+  HELL_GROUND,
+  HELL_LEVEL_COUNT,
+  HELL_LEVELS,
+  hellExtras,
+  hellJourneyExtras,
+  hellLevelLayers,
+  hellSky,
+} from './hell-levels';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_H, SCENE_W } from './types';
 
@@ -567,6 +576,7 @@ function journey(env: SceneEnv): void {
   env.ctx.arc(300, sunY, 14, 0, Math.PI * 2);
   env.ctx.fill();
   smokeBanks(env);
+  hellSky(env);
   journeyMountains(
     env,
     41,
@@ -627,7 +637,13 @@ export const hell: SceneDef = {
   name: 'Inferno',
   blurb:
     'Trono infernal no centro, rio de lava correndo ao fundo, vulcão, braseiros e brasas subindo.',
-  groundY: 182,
+  groundY: HELL_GROUND,
+  levels: HELL_LEVEL_COUNT,
+  levelInfo: HELL_LEVELS,
+  ...hellLevelLayers,
+  extrasFor: hellExtras,
+  journeyExtrasFor: hellJourneyExtras,
+  journeyPeriod: HELL_PERIOD,
   journey,
   back(env) {
     gradientRect(env, 0, 0, SCENE_W, HORIZON, [...SKY_BY_TIME[env.time]]);
@@ -641,6 +657,7 @@ export const hell: SceneDef = {
     env.ctx.arc(300, sunY, 14, 0, Math.PI * 2);
     env.ctx.fill();
     smokeBanks(env);
+    hellSky(env);
     mountainLayer(
       env,
       41,

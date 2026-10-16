@@ -9,6 +9,15 @@ import {
   sprite,
   tileArea,
 } from './draw';
+import {
+  FOREST_GROUND,
+  FOREST_LEVEL_COUNT,
+  FOREST_LEVELS,
+  forestExtras,
+  forestJourneyExtras,
+  forestLevelLayers,
+  forestSky,
+} from './paradise-levels';
 import type { Light, SceneDef, SceneEnv } from './types';
 import { SCENE_H, SCENE_W } from './types';
 
@@ -430,6 +439,7 @@ function journeyFlowers(env: SceneEnv): void {
 /** Floresta na jornada: a casa com o lago passa devagar ao fundo, as árvores em três profundidades. */
 function journey(env: SceneEnv): void {
   sky(env, 0, 0, SCENE_W, HORIZON + 8);
+  forestSky(env);
   env.ctx.save();
   env.ctx.translate(-((env.scroll * 0.02) % SCENE_W), 0);
   rainbow(env);
@@ -501,10 +511,17 @@ export const paradise: SceneDef = {
   name: 'Floresta',
   blurb:
     'Campo florido com lago e lótus, cabana com fumaça na chaminé, pinheiros e arbustos, arco-íris e borboletas.',
-  groundY: 180,
+  groundY: FOREST_GROUND,
+  levels: FOREST_LEVEL_COUNT,
+  levelInfo: FOREST_LEVELS,
+  ...forestLevelLayers,
+  extrasFor: forestExtras,
+  journeyExtrasFor: forestJourneyExtras,
+  journeyPeriod: 1400,
   journey,
   back(env) {
     sky(env, 0, 0, SCENE_W, HORIZON + 8);
+    forestSky(env);
     rainbow(env);
     birds(env);
     mountains(env);
