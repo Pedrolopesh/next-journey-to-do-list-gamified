@@ -2,7 +2,7 @@
 
 Regras do monorepo em `../../AGENTS.md` (leia primeiro). Aqui ficam as regras específicas do app.
 
-- Pacote: `@nextjourney/mobile`. Rotas em `src/app/` (padrão do Expo SDK 57). Código que não é rota fica fora dela (`src/components`, `src/api`, `src/theme`...).
+- Pacote: `@nextjourney/mobile`. Rotas em `src/app/` (padrão do Expo SDK 58). Código que não é rota fica fora dela (`src/components`, `src/api`, `src/theme`...).
 - Comandos: `pnpm --filter @nextjourney/mobile start | lint | typecheck`. Dependências nativas só com `npx expo install`.
 - Tokens só no SecureStore; nada sensível em `EXPO_PUBLIC_*`; textos só via i18n; cores e tamanhos só pelos tokens do design system.
 - O app não calcula EXP: marca o item na hora (otimista) e mostra o `CheckResult` da API. O banner só recebe mensagens validadas pelo contrato.
