@@ -114,7 +114,7 @@ export const achievementsV2Page: LabPage = {
             'li',
             '',
             h('strong', '', 'Degraus curtos no começo. '),
-            'Nove conquistas de estreia (criar e marcar cada tipo de item) dão vitórias na primeira semana e ensinam os três tipos de item.',
+            'As conquistas de estreia (criar e marcar cada tipo de item) dão vitórias na primeira semana e ensinam os três tipos de item.',
           ),
           h(
             'li',
@@ -138,7 +138,7 @@ export const achievementsV2Page: LabPage = {
             'li',
             '',
             h('strong', '', 'Algumas surpresas. '),
-            'Madrugador, Coruja e Resgate escondem a descrição até desbloquear, para dar gosto de descobrir.',
+            'Madrugador, Coruja, Resgate e Cofre aberto escondem a descrição até desbloquear, para dar gosto de descobrir.',
           ),
           h(
             'li',
