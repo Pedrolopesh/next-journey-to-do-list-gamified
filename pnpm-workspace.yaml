@@ -7,6 +7,7 @@ allowBuilds:
   unrs-resolver: false
   argon2: false
   '@swc/core': false
+  '@parcel/watcher': false
   # Telemetria de terceiros: nunca
   '@scarf/scarf': false
   # Precisam rodar: baixam o motor de migrations do Prisma
@@ -21,6 +22,23 @@ auditConfig:
   ignoreGhsas:
     - GHSA-86w9-cpqp-85rv # node-forge (via @expo/code-signing-certificates)
     - GHSA-vfj7-8cjw-p6xm # braces (via metro / micromatch)
+
+minimumReleaseAgeExclude:
+  - '@expo/cli@58.1.11'
+  - '@expo/schema-utils@58.0.2'
+  - babel-preset-expo@58.0.17
+  - expo-modules-core@58.0.22
+  - expo-modules-jsi@58.0.15
+  - expo@58.0.14
+  - '@expo/ui@58.0.20'
+  - expo-application@58.1.2
+  - expo-crypto@58.0.7
+  - expo-dev-client@58.0.14
+  - expo-dev-launcher@58.0.14
+  - expo-haptics@58.0.7
+  - expo-notifications@58.1.5
+  - expo-router@58.0.23
+  - expo-splash-screen@58.0.10
 
 # Correções de vulnerabilidades em dependências transitivas do CLI do Prisma (só ferramenta de desenvolvimento).
 overrides:

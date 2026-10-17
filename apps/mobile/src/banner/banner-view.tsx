@@ -63,7 +63,7 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
   ref,
 ) {
   const { t } = useTranslation();
-  const webViewRef = useRef<WebView>(null);
+  const webViewRef = useRef<WebView<object>>(null);
   const [html, setHtml] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const [revealed, setRevealed] = useState(false);
@@ -101,7 +101,11 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
   focusedRef.current = focused;
   const syncPlayback = useCallback(() => {
     if (!readyRef.current) return;
-    const play = shouldPlay(AppState.currentState, reduceMotionRef.current, focusedRef.current);
+    const play = shouldPlay(
+      AppState.currentState ?? 'active',
+      reduceMotionRef.current,
+      focusedRef.current,
+    );
     send({ v: 1, type: play ? 'RESUME' : 'PAUSE' });
   }, [send]);
 
@@ -168,7 +172,8 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
       importantForAccessibility="no"
     >
       {html !== null && (
-        <WebView
+        // <object>: na 14.0.1 o genérico padrão (undefined) zera as props nos tipos
+        <WebView<object>
           ref={webViewRef}
           style={styles.webview}
           source={{ html }}

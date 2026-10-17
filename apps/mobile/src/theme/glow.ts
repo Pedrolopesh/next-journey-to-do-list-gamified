@@ -109,7 +109,9 @@ export function softGlowOutline(
 }
 
 /** Cartão contornado na cor do tom (indicadores e card de história): borda forte e fundo leve. */
-export function tonedCard(color: string): ViewStyle {
+export function tonedCard(
+  color: string,
+): Pick<ViewStyle, 'borderWidth' | 'borderColor' | 'backgroundColor'> {
   return {
     borderWidth: 1.5,
     borderColor: rgba(color, 0.7),
