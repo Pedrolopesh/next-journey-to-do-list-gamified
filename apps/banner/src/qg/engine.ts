@@ -10,6 +10,8 @@ import {
   recolorPixels,
   type Selection,
 } from './compose';
+import { extrasOf, followSpot, journeySpot, patrolSpot } from './extras';
+import { drawOutfit, type Outfit } from './outfits';
 import { SCENES } from './scenes';
 import { applyTint, drawLights, vignette } from './scenes/lighting';
 import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay } from './scenes/types';
@@ -42,6 +44,8 @@ export type QgState = {
   journey: boolean;
   /** Parada da jornada (0 a `JOURNEY_STOPS`); mudar o valor faz o personagem correr até lá. */
   stop: number;
+  /** Nível do cenário (1 a `SceneDef.levels`). */
+  level: number;
 };
 
 export type QgEngineOptions = {
@@ -174,13 +178,14 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
   const sync = (): Promise<void> => {
     const def = SCENES.find((scene) => scene.id === state.sceneId) ?? SCENES[0];
     const anim = currentAnim();
-    const key = `${state.sceneId}|${selectionKey(state.selection, anim)}`;
+    const walks = state.journey && def?.journey !== undefined;
+    const key = `${state.sceneId}|${state.level}|${walks ? 'j' : 'q'}|${selectionKey(state.selection, anim)}`;
     if (key === resolvedKey) return resolving;
     resolvedKey = key;
     const run = async (): Promise<void> => {
       const nextHero = await resolveLayers(state.selection, anim);
       const nextExtras = await Promise.all(
-        (def?.extras ?? []).map(async (extra, index) => ({
+        (def ? extrasOf(def, state.level, walks) : []).map(async (extra, index) => ({
           index,
           layers: await resolveLayers({ ...state.selection, ...extra.selection }, extra.anim),
         })),
@@ -219,6 +224,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     x: number,
     feetY: number,
     clock: number,
+    outfit?: Outfit,
   ): void => {
     const index = Math.floor(clock * FPS[anim]) % catalog.animations[anim];
     const { sy } = frameRect(direction, 0);
@@ -243,6 +249,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
         FRAME,
       );
     }
+    if (outfit) drawOutfit(ctx, outfit, x, feetY, direction, index);
   };
 
   const draw = (clock: number): void => {
@@ -257,23 +264,49 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
       tiles,
       journey: walking,
       arrivedFor: arrived() ? clock - arrivedAt : null,
+      level: state.level,
     };
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     ctx.imageSmoothingEnabled = false; // sprites e tiles continuam nítidos
     ctx.clearRect(0, 0, SCENE_W, SCENE_H);
     (walking ? def.journey : def.back)?.(env);
-    if (!walking) {
-      for (const { layers, index } of extras) {
-        const extra = def.extras?.[index];
-        if (extra) drawCharacter(layers, extra.anim, extra.direction, extra.x, extra.feetY, clock);
-      }
+    const list = extrasOf(def, state.level, walking);
+    // Tudo que tem chão (objetos do nível, figurantes e o personagem) é desenhado na ordem da
+    // altura dos pés: quem está mais acima na tela fica atrás de quem está mais abaixo
+    const drawables: { y: number; draw: () => void }[] = def.levelItems?.(env) ?? [];
+    for (const { layers, index } of extras) {
+      const extra = list[index];
+      if (!extra) continue;
+      drawables.push({
+        y: extra.feetY,
+        draw: () => {
+          let spot = { x: extra.x, direction: extra.direction };
+          if (walking && extra.follow) spot = followSpot(extra.follow, heroX, clock, chase);
+          else if (walking) spot = journeySpot(extra, scroll, clock, def.journeyPeriod ?? 820);
+          else if (extra.patrol) spot = patrolSpot(extra.patrol, clock);
+          drawCharacter(
+            layers,
+            extra.anim,
+            spot.direction,
+            spot.x,
+            extra.feetY,
+            clock,
+            extra.outfit,
+          );
+        },
+      });
     }
     const direction = state.journey ? 'right' : state.direction;
     const heroPosition = state.journey ? heroX : SCENE_W / 2;
-    drawCharacter(hero, heroAnim, direction, heroPosition, def.groundY, clock);
+    drawables.push({
+      y: def.groundY,
+      draw: () => drawCharacter(hero, heroAnim, direction, heroPosition, def.groundY, clock),
+    });
+    drawables.sort((p, q) => p.y - q.y);
+    for (const item of drawables) item.draw();
     if (!walking) def.front?.(env);
     applyTint(env, def.tint?.[state.time]);
-    drawLights(env, def.lights?.(env) ?? []);
+    drawLights(env, [...(def.lights?.(env) ?? []), ...(def.levelLights?.(env) ?? [])]);
     vignette(env);
   };
 
@@ -284,6 +317,8 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
   let clock = 0;
   let lastDraw = 0;
   let scroll = 0;
+  /** 0 a 1: quanto os figurantes que correm junto do personagem já entraram em cena. */
+  let chase = 0;
   let arrivedAt = 0;
   let wasArrived = false;
   const minGap = 1000 / maxFps - 1;
@@ -301,6 +336,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
           Math.sign(target - heroX) * Math.min(Math.abs(target - heroX), JOURNEY_RUN_SPEED * dt);
       else heroX = target;
       scroll += JOURNEY_SPEED[currentAnim()] * dt;
+      chase += ((JOURNEY_SPEED[currentAnim()] > 0 ? 1 : 0) - chase) * Math.min(1, dt * 2.5);
       const isArrived = arrived();
       if (isArrived && !wasArrived) arrivedAt = clock;
       wasArrived = isArrived;

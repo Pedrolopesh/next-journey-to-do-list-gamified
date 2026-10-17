@@ -104,6 +104,7 @@ export function createQgScene(root: HTMLElement): QgScene {
             time: 'afternoon',
             journey: false,
             stop: 0,
+            level: 1,
           },
           maxFps: 30,
           maxScale: 3,

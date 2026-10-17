@@ -1,3 +1,12 @@
+import {
+  CASTLE_GROUND,
+  CASTLE_LEVEL_COUNT,
+  CASTLE_LEVELS,
+  castleExtras,
+  castleJourneyExtras,
+  castleLevelLayers,
+} from './castle-levels';
+import { drawThrone } from './castle-throne';
 import { bands, flame, portal, rect, rng, scrolled, shadedBlock, sky } from './draw';
 import type { Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_W } from './types';
@@ -11,8 +20,6 @@ const OUT = '#14161c';
 const GOLD = '#e2b02e';
 const GOLD_DARK = '#a8791a';
 const GOLD_LIGHT = '#ffe07a';
-const VELVET = '#a31f2a';
-const VELVET_DARK = '#741420';
 const STEEL = '#aab3c2';
 const STEEL_DARK = '#6e7889';
 const STEEL_LIGHT = '#dbe2ee';
@@ -98,79 +105,28 @@ function dais(env: SceneEnv): void {
 }
 
 function throne(env: SceneEnv): void {
-  const top = 58;
-  const base = DAIS_TOP;
-  // costas pontudas com moldura dourada
-  for (let y = top + 8; y < base - 16; y++) {
-    const half = y < top + 26 ? 2 + Math.round(((y - (top + 8)) * 17) / 18) : 19;
-    rect(env, CX - half - 1, y, half * 2 + 2, 1, OUT);
-  }
-  for (let y = top + 8; y < base - 16; y++) {
-    const half = y < top + 26 ? 2 + Math.round(((y - (top + 8)) * 17) / 18) : 19;
-    rect(env, CX - half, y, half * 2, 1, GOLD);
-    rect(env, CX - half, y, 2, 1, GOLD_LIGHT);
-    rect(env, CX + half - 2, y, 2, 1, GOLD_DARK);
-  }
-  // almofada de veludo nas costas
-  for (let y = top + 16; y < base - 20; y++) {
-    const half = y < top + 30 ? 1 + Math.round(((y - (top + 16)) * 13) / 14) : 14;
-    rect(env, CX - half, y, half * 2, 1, VELVET);
-    rect(env, CX + half - 3, y, 3, 1, VELVET_DARK);
-  }
-  // botões (tufos) no veludo
-  for (const [dx, dy] of [
-    [-7, 0],
-    [0, 0],
-    [7, 0],
-    [-4, 8],
-    [4, 8],
-    [-7, 16],
-    [0, 16],
-    [7, 16],
-  ] as const) {
-    rect(env, CX + dx - 1, top + 40 + dy, 2, 2, GOLD_LIGHT);
-  }
-  // coroa no topo e joias
-  rect(env, CX - 6, top - 1, 12, 9, OUT);
-  rect(env, CX - 5, top, 10, 7, GOLD);
-  rect(env, CX - 5, top, 10, 1, GOLD_LIGHT);
-  for (const dx of [-5, -1, 3]) {
-    rect(env, CX + dx - 1, top - 5, 4, 6, OUT);
-    rect(env, CX + dx, top - 4, 2, 5, GOLD);
-  }
-  rect(env, CX - 1, top + 2, 2, 3, '#d03a3a');
-  // colunas laterais com bolas
-  for (const side of [-1, 1]) {
-    const x = side < 0 ? CX - 25 : CX + 20;
-    rect(env, x - 1, top + 22, 7, base - top - 28, OUT);
-    rect(env, x, top + 23, 5, base - top - 30, GOLD);
-    rect(env, x, top + 23, 1, base - top - 30, GOLD_LIGHT);
-    rect(env, x + 4, top + 23, 1, base - top - 30, GOLD_DARK);
-    rect(env, x - 1, top + 19, 7, 5, OUT);
-    rect(env, x, top + 20, 5, 3, GOLD_LIGHT);
-  }
-  // braços e assento
-  for (const side of [-1, 1]) {
-    const x = side < 0 ? CX - 25 : CX + 20;
-    block(env, x - 2, base - 28, 9, 6, GOLD, GOLD_DARK, GOLD_LIGHT);
-  }
-  block(env, CX - 20, base - 22, 40, 7, VELVET, VELVET_DARK, '#d24a52');
-  block(env, CX - 24, base - 15, 48, 15, GOLD, GOLD_DARK, GOLD_LIGHT);
-  rect(env, CX - 20, base - 11, 40, 1, GOLD_DARK);
-  rect(env, CX - 3, base - 10, 6, 5, '#d03a3a');
+  drawThrone(env, CX, DAIS_TOP);
 }
 
 type ArmorKind = 'spear' | 'shield' | 'sword';
 
-function armor(env: SceneEnv, cx: number, base: number, kind: ArmorKind = 'spear'): void {
+function armor(
+  env: SceneEnv,
+  cx: number,
+  base: number,
+  kind: ArmorKind = 'spear',
+  armed = true,
+): void {
   // pedestal
   block(env, cx - 10, base - 4, 20, 4, '#6b7280', '#3f4552', '#8d95a4');
   // lança de enfeite
-  rect(env, cx + 13, base - 54, 2, 50, OUT);
-  rect(env, cx + 13, base - 53, 1, 48, '#8a6a3a');
-  rect(env, cx + 11, base - 62, 6, 9, OUT);
-  rect(env, cx + 12, base - 60, 4, 7, STEEL_LIGHT);
-  rect(env, cx + 13, base - 62, 2, 2, STEEL_LIGHT);
+  if (armed) {
+    rect(env, cx + 13, base - 54, 2, 50, OUT);
+    rect(env, cx + 13, base - 53, 1, 48, '#8a6a3a');
+    rect(env, cx + 11, base - 62, 6, 9, OUT);
+    rect(env, cx + 12, base - 60, 4, 7, STEEL_LIGHT);
+    rect(env, cx + 13, base - 62, 2, 2, STEEL_LIGHT);
+  }
   // pernas
   block(env, cx - 6, base - 18, 5, 14, STEEL, STEEL_DARK, STEEL_LIGHT);
   block(env, cx + 1, base - 18, 5, 14, STEEL, STEEL_DARK, STEEL_LIGHT);
@@ -188,13 +144,13 @@ function armor(env: SceneEnv, cx: number, base: number, kind: ArmorKind = 'spear
   rect(env, cx - 1, base - 41, 2, 4, STEEL_DARK);
   rect(env, cx - 1, base - 54, 3, 7, OUT);
   rect(env, cx, base - 53, 2, 6, '#c0302f');
-  if (kind === 'shield') {
+  if (armed && kind === 'shield') {
     block(env, cx - 21, base - 38, 12, 16, '#2f5fb0', '#1f3f7a', '#5a8ae0');
     rect(env, cx - 16, base - 36, 2, 12, GOLD);
     rect(env, cx - 19, base - 31, 8, 2, GOLD);
     rect(env, cx - 17, base - 23, 4, 2, OUT);
   }
-  if (kind === 'sword') {
+  if (armed && kind === 'sword') {
     rect(env, cx - 18, base - 54, 4, 26, OUT);
     rect(env, cx - 17, base - 53, 2, 22, STEEL_LIGHT);
     rect(env, cx - 16, base - 53, 1, 22, STEEL_DARK);
@@ -396,6 +352,8 @@ const floorX = (env: SceneEnv, world: number): number =>
 
 /** Castelo na jornada: o personagem anda sobre o tapete real e o salão passa com peças espalhadas. */
 function journey(env: SceneEnv): void {
+  // banquete e coroação: sem armas penduradas ou apoiadas
+  const bare = env.level === 3 || env.level === 5;
   const shift = env.scroll * WALL_FACTOR;
   bands(env, 0, 0, SCENE_W, FLOOR, ['#6b7280', '#656b78', '#5f6572']);
   const startCol = Math.floor(shift / 32) - 1;
@@ -422,15 +380,16 @@ function journey(env: SceneEnv): void {
     else if (item.kind === 'torch') torch(env, x);
     else if (item.kind === 'bigWindow') windowAt(env, x, 28, 32, 58);
     else if (item.kind === 'window') windowAt(env, x, 18, 36, 58);
-    else if (item.kind === 'sword') wallSword(env, x, 56);
-    else pillar(env, x);
+    else if (item.kind === 'sword') {
+      if (!bare) wallSword(env, x, 56);
+    } else pillar(env, x);
   }
   for (const item of ARMORS) {
     const x = wallX(env, item.x);
-    if (x > -40 && x < SCENE_W + 40) armor(env, x, 150, item.kind);
+    if (x > -40 && x < SCENE_W + 40) armor(env, x, 150, item.kind, !bare);
   }
   const rack = wallX(env, RACK_X);
-  if (rack > -60 && rack < SCENE_W + 20) weaponRack(env, rack - 20, 152);
+  if (env.level < 3 && rack > -60 && rack < SCENE_W + 20) weaponRack(env, rack - 20, 152);
 
   // Tapete real por todo o caminho
   rect(env, 0, CARPET_TOP, SCENE_W, CARPET_BOTTOM - CARPET_TOP, '#8f1d1d');
@@ -488,7 +447,13 @@ export const castle: SceneDef = {
   id: 'castle',
   name: 'Castelo',
   blurb: 'Salão do trono com tablado, tapete real, armaduras, candelabros, estandartes e baú.',
-  groundY: 178,
+  groundY: CASTLE_GROUND,
+  levels: CASTLE_LEVEL_COUNT,
+  levelInfo: CASTLE_LEVELS,
+  ...castleLevelLayers,
+  extrasFor: castleExtras,
+  journeyExtrasFor: castleJourneyExtras,
+  journeyPeriod: FLOOR_PERIOD,
   journey,
   back(env) {
     // Parede de blocos de pedra
@@ -514,9 +479,13 @@ export const castle: SceneDef = {
     torch(env, 260);
     pillar(env, 22);
     pillar(env, SCENE_W - 22);
-    weaponRack(env, 40, 152);
-    armor(env, 100, 150);
-    armor(env, 290, 150);
+    const bare = env.level === 3 || env.level === 5;
+    if (env.level < 3) weaponRack(env, 40, 152);
+    // na torre do mago as estantes ocupam o lugar das armaduras
+    if (env.level !== 4) {
+      armor(env, 100, 150, 'spear', !bare);
+      armor(env, 290, 150, 'spear', !bare);
+    }
     dais(env);
     throne(env);
     for (const x of CANDELABRA) candelabra(env, x);

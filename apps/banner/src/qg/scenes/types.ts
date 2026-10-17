@@ -1,4 +1,5 @@
 import type { AnimationName, Direction, Selection } from '../compose';
+import type { Outfit } from '../outfits';
 
 export type TimeOfDay = 'morning' | 'afternoon' | 'night';
 export const TIMES: { value: TimeOfDay; label: string }[] = [
@@ -23,6 +24,8 @@ export type SceneEnv = {
   journey: boolean;
   /** Segundos desde que o personagem chegou ao fim da jornada; `null` enquanto ainda anda. */
   arrivedFor: number | null;
+  /** Nível do cenário (1 a `SceneDef.levels`): o mesmo lugar com mais vida a cada nível. */
+  level: number;
 };
 
 export type Light = {
@@ -44,9 +47,30 @@ export type ExtraCharacter = {
   anim: AnimationName;
   direction: Direction;
   selection: Partial<Selection>;
+  /** Vai e volta entre dois pontos (px) em vez de ficar parado; `anim` diz se anda ou corre. */
+  patrol?: { from: number; to: number; speed: number };
+  /** Na jornada, `x` é do mundo (que rola); `drift` é quanto o figurante anda nele (px/s, negativo = para a esquerda). */
+  drift?: number;
+  /** Ciclo próprio do mundo na jornada, para quem passa de tempos em tempos (padrão: o do cenário). */
+  period?: number;
+  /**
+   * Na jornada, fica na tela junto do personagem em vez de no mundo: `offset` px à frente dele
+   * (negativo = atrás), balançando `sway` px a `rate` rad/s. Some para o lado quando o cenário para.
+   */
+  /** Roupa desenhada por cima (cavaleiro, mago). */
+  outfit?: Outfit;
+  follow?: { offset: number; sway: number; rate: number; phase: number };
 };
 
 export type Tint = { color: string; alpha: number };
+
+/** Texto de um nível do cenário, para o laboratório e para validar o desenho. */
+export type LevelInfo = {
+  name: string;
+  blurb: string;
+  /** O que muda neste nível, em frases curtas. */
+  changes: string[];
+};
 
 export type SceneDef = {
   id: string;
@@ -60,6 +84,20 @@ export type SceneDef = {
   front?: (env: SceneEnv) => void;
   lights?: (env: SceneEnv) => Light[];
   extras?: ExtraCharacter[];
+  /** Quantos níveis o cenário tem (padrão 1). */
+  levels?: number;
+  /** Nome, descrição e mudanças de cada nível (mesmo tamanho de `levels`). */
+  levelInfo?: LevelInfo[];
+  /** Objetos do nível com a altura dos pés (`y`): o motor os mistura com figurantes e personagem. */
+  levelItems?: (env: SceneEnv) => { y: number; draw: () => void }[];
+  /** Luzes dos objetos do nível, somadas às do cenário. */
+  levelLights?: (env: SceneEnv) => Light[];
+  /** Figurantes de cada nível; quando existe, vale no lugar de `extras`. */
+  extrasFor?: (level: number) => ExtraCharacter[];
+  /** Figurantes da jornada de cada nível, em posições do mundo. Sem isso, a jornada não tem figurantes. */
+  journeyExtrasFor?: (level: number) => ExtraCharacter[];
+  /** Tamanho do ciclo do mundo na jornada (px); precisa ser o mesmo do cenário que rola. */
+  journeyPeriod?: number;
   /** Cor aplicada sobre toda a cena por hora do dia (multiplicação). */
   tint?: Partial<Record<TimeOfDay, Tint>>;
 };

@@ -1,23 +1,21 @@
-import {
-  celestial,
-  gradientRect,
-  portal,
-  rect,
-  rng,
-  scrolled,
-  shadedBlock,
-  stars,
-  tileArea,
-} from './draw';
+import { celestial, gradientRect, portal, rect, rng, scrolled, stars, tileArea } from './draw';
 import { drawLampCones, drawLampPost, type Lamp, lampLights } from './lampposts';
 import type { ExtraCharacter, Light, SceneDef, SceneEnv, TimeOfDay } from './types';
 import { SCENE_H, SCENE_W } from './types';
+import {
+  parkedHeli,
+  ZOMBIE_GROUND,
+  ZOMBIE_LEVEL_COUNT,
+  ZOMBIE_LEVELS,
+  zombieExtras,
+  zombieJourneyExtras,
+  zombieLevelLayers,
+} from './zombie-levels';
+import { barrel, block, crate, heliBody, miniZombie, OUT, sandbags, sign } from './zombie-props';
 
 const HORIZON = 120;
 const FENCE_BASE = 160;
 const FENCE_H = 28;
-
-const OUT = '#1b1f17';
 
 const SKY_BY_TIME: Record<TimeOfDay, string[]> = {
   morning: ['#5a6fb0', '#b98ab0', '#f0a888', '#ffd49c'],
@@ -67,19 +65,6 @@ function heliPos(t: number): { x: number; y: number } {
   return { x: ((t * 34) % (SCENE_W + 120)) - 60, y: 46 + Math.sin(t * 1.4) * 3 };
 }
 
-const block = (
-  env: SceneEnv,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  fill: string,
-  dark: string,
-  light: string,
-): void => {
-  shadedBlock(env, x, y, w, h, fill, dark, light, OUT);
-};
-
 function dunes(env: SceneEnv): void {
   const { ctx } = env;
   // Montanhas distantes
@@ -105,7 +90,7 @@ function dunes(env: SceneEnv): void {
   }
 }
 
-function cactus(env: SceneEnv, x: number, base: number): void {
+export function cactus(env: SceneEnv, x: number, base: number): void {
   const body = '#4f7a3a';
   rect(env, x - 1, base - 20, 6, 21, OUT);
   rect(env, x, base - 19, 4, 19, body);
@@ -202,7 +187,7 @@ function tower(env: SceneEnv, x: number, base: number): void {
   }
 }
 
-function flag(env: SceneEnv, x: number, base: number): void {
+export function flag(env: SceneEnv, x: number, base: number): void {
   rect(env, x - 1, base - 42, 3, 42, OUT);
   rect(env, x, base - 41, 1, 41, '#a8aeb4');
   for (let i = 0; i < 16; i++) {
@@ -210,42 +195,6 @@ function flag(env: SceneEnv, x: number, base: number): void {
     rect(env, x + 2 + i, base - 40 + wave, 1, 9, OUT);
     rect(env, x + 2 + i, base - 39 + wave, 1, 7, i % 5 === 4 ? '#8a2420' : '#b5322e');
   }
-}
-
-function crate(env: SceneEnv, x: number, base: number, size: number): void {
-  block(env, x, base - size, size, size, '#8a6a3a', '#5e4524', '#b08a52');
-  rect(env, x + 1, base - size + 1, size - 2, 1, '#b08a52');
-  // tampa em X
-  for (let i = 2; i < size - 2; i++) {
-    rect(env, x + i, base - size + i, 1, 1, '#5e4524');
-    rect(env, x + size - 1 - i, base - size + i, 1, 1, '#5e4524');
-  }
-}
-
-function barrel(env: SceneEnv, x: number, base: number, color: string): void {
-  block(env, x, base - 14, 10, 14, color, '#1d2b17', '#6c8a52');
-  rect(env, x, base - 10, 10, 1, OUT);
-  rect(env, x, base - 5, 10, 1, OUT);
-}
-
-function sandbags(env: SceneEnv, x: number, base: number, cols: number, rows: number): void {
-  for (let r = 0; r < rows; r++)
-    for (let c = 0; c < cols - (r % 2); c++) {
-      const bx = x + c * 13 + (r % 2) * 6;
-      const by = base - (r + 1) * 7;
-      block(env, bx, by, 13, 8, '#bda775', '#8d7a4e', '#d6c394');
-    }
-}
-
-function sign(env: SceneEnv, x: number, y: number): void {
-  rect(env, x, y + 6, 1, 8, OUT);
-  rect(env, x - 4, y - 1, 9, 8, OUT);
-  rect(env, x - 3, y, 7, 6, '#f2c230');
-  // raio
-  rect(env, x, y + 1, 2, 1, OUT);
-  rect(env, x - 1, y + 2, 2, 1, OUT);
-  rect(env, x, y + 3, 2, 1, OUT);
-  rect(env, x - 1, y + 4, 1, 1, OUT);
 }
 
 /** Painel de tela de arame com postes, fios elétricos e isoladores. */
@@ -312,71 +261,6 @@ function fence(env: SceneEnv, p: Panel, postEvery: number): void {
   }
 }
 
-function heliBody(env: SceneEnv, x: number, y: number): void {
-  const { ctx } = env;
-  const rotor = 27 * Math.abs(Math.cos(env.t * 26));
-
-  // cauda
-  ctx.fillStyle = OUT;
-  ctx.beginPath();
-  ctx.moveTo(x - 8, y - 5);
-  ctx.lineTo(x - 36, y - 4);
-  ctx.lineTo(x - 36, y - 0.5);
-  ctx.lineTo(x - 8, y + 3);
-  ctx.fill();
-  ctx.fillStyle = '#5b6a40';
-  ctx.beginPath();
-  ctx.moveTo(x - 8, y - 4);
-  ctx.lineTo(x - 35, y - 3.2);
-  ctx.lineTo(x - 35, y - 1);
-  ctx.lineTo(x - 8, y + 2);
-  ctx.fill();
-  // estabilizador e rotor de cauda
-  rect(env, x - 38, y - 9, 3, 8, OUT);
-  rect(env, x - 37, y - 8, 1, 6, '#5b6a40');
-  const tail = 6 * Math.abs(Math.cos(env.t * 34));
-  rect(env, x - 41, y - 5 - tail, 1, tail * 2, 'rgba(220,225,230,0.8)');
-
-  // patins
-  rect(env, x - 11, y + 9, 24, 2, OUT);
-  rect(env, x - 10, y + 9, 22, 1, '#7a8290');
-  rect(env, x - 6, y + 5, 2, 5, OUT);
-  rect(env, x + 5, y + 5, 2, 5, OUT);
-
-  // fuselagem
-  ctx.fillStyle = OUT;
-  ctx.beginPath();
-  ctx.ellipse(x, y, 15, 8.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#66774a';
-  ctx.beginPath();
-  ctx.ellipse(x, y, 14, 7.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#4b5a35';
-  ctx.beginPath();
-  ctx.ellipse(x - 1, y + 3, 12, 4, 0, 0, Math.PI);
-  ctx.fill();
-  // cabine
-  ctx.fillStyle = '#9fd3e6';
-  ctx.beginPath();
-  ctx.ellipse(x + 6, y - 1, 6.5, 4.6, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.7)';
-  ctx.fillRect(Math.round(x + 3), Math.round(y - 4), 3, 1);
-  rect(env, x - 3, y - 5, 1, 9, 'rgba(0,0,0,0.35)');
-  // marca na lateral
-  rect(env, x - 9, y - 1, 4, 2, '#e6e2c8');
-
-  // mastro e rotor principal
-  rect(env, x - 1, y - 11, 3, 4, OUT);
-  rect(env, x - 28, y - 12, 56, 2, 'rgba(210,215,220,0.22)');
-  rect(env, x - rotor, y - 12, rotor * 2, 1, '#1b1f17');
-  rect(env, x - 1, y - 12, 3, 1, '#8d949b');
-
-  // luz de navegação
-  if (env.time === 'night' && Math.sin(env.t * 6) > 0) rect(env, x - 37, y - 8, 2, 2, '#ff3a3a');
-}
-
 function helicopter(env: SceneEnv): void {
   const { ctx } = env;
   const { x, y } = heliPos(env.t);
@@ -421,14 +305,23 @@ const CLOTH = [
 const HAIRS = [null, 'hair-buzzcut', 'hair-natural', null, 'hair-curly-short', 'hair-bob'] as const;
 
 /** 5 zumbis de cada lado, em fila irregular encostados na tela. */
-function crowd(side: 'left' | 'right'): ExtraCharacter[] {
-  const spots: [number, number][] = [
-    [62, 174],
-    [10, 178],
-    [34, 186],
-    [52, 196],
-    [20, 204],
-  ];
+const CROWD_FRONT: [number, number][] = [
+  [62, 174],
+  [10, 178],
+  [34, 186],
+  [52, 196],
+  [20, 204],
+];
+/** Fileiras mais ao fundo da multidão (nível 5): mesmos zumbis, mais longe da tela. */
+const CROWD_BACK: [number, number][] = [
+  [76, 160],
+  [48, 156],
+  [20, 162],
+  [66, 148],
+  [34, 150],
+];
+
+function crowd(side: 'left' | 'right', spots = CROWD_FRONT): ExtraCharacter[] {
   const list: Crowd[] = spots.map(([x, feet], i) => {
     const [torso, torsoColor, legs, legsColor] =
       CLOTH[(i + (side === 'left' ? 0 : 2)) % CLOTH.length] ?? CLOTH[0];
@@ -525,15 +418,8 @@ function journeyDunes(env: SceneEnv): void {
 type Walker = { x: number; feet: number; variant: number };
 
 /** Zumbis parados encostados na cerca, em grupos de tamanhos diferentes. */
-const WALKERS: Walker[] = (() => {
-  const random = rng(5);
-  const centers: [number, number][] = [
-    [40, 3],
-    [150, 2],
-    [285, 4],
-    [415, 3],
-    [535, 2],
-  ];
+const walkersAt = (centers: [number, number][], seed: number): Walker[] => {
+  const random = rng(seed);
   const out: Walker[] = [];
   for (const [cx, count] of centers) {
     for (let i = 0; i < count; i++) {
@@ -545,28 +431,28 @@ const WALKERS: Walker[] = (() => {
     }
   }
   return out;
-})();
-const SHIRTS = ['#6b4a3a', '#3f5a7a', '#7a7a3a', '#5a3f6e'];
-const PANTS = ['#2f3440', '#4a3a2a', '#26323a', '#3a3a3a'];
-const SKINS = ['#7fa05a', '#8fb56a', '#6f9467', '#9bb27a'];
-
-/** Zumbi pequeno visto de costas, de braços erguidos para a cerca; balança de leve. */
-function miniZombie(env: SceneEnv, z: Walker, index: number): void {
-  const sway = Math.round(Math.sin(env.t * 1.6 + index * 1.9));
-  const x = Math.round(z.x) + sway;
-  const y = z.feet;
-  const skin = SKINS[z.variant] ?? '#7fa05a';
-  rect(env, x - 3, y - 17, 7, 18, OUT);
-  rect(env, x - 2, y - 5, 2, 5, PANTS[z.variant] ?? '#2f3440');
-  rect(env, x + 1, y - 5, 2, 5, PANTS[z.variant] ?? '#2f3440');
-  rect(env, x - 2, y - 11, 5, 6, SHIRTS[z.variant] ?? '#6b4a3a');
-  const lift = Math.round(Math.sin(env.t * 3 + index) * 1);
-  rect(env, x - 4, y - 16 + lift, 1, 6, skin);
-  rect(env, x + 3, y - 16 - lift, 1, 6, skin);
-  rect(env, x - 1, y - 16, 3, 4, skin);
-  rect(env, x - 1, y - 16, 3, 1, '#4a3a2a');
-}
-
+};
+const WALKERS = walkersAt(
+  [
+    [40, 3],
+    [150, 2],
+    [285, 4],
+    [415, 3],
+    [535, 2],
+  ],
+  5,
+);
+/** Mais grupos entre os de sempre, no nível 5 (Evacuação): o mesmo desenho, só mais gente. */
+const MORE_WALKERS = walkersAt(
+  [
+    [95, 3],
+    [215, 4],
+    [350, 3],
+    [475, 4],
+    [575, 3],
+  ],
+  17,
+);
 function journeyFence(env: SceneEnv, dx: number): void {
   fence(
     env,
@@ -664,12 +550,15 @@ function journey(env: SceneEnv): void {
     sign(env, dx + 30, FENCE_LINE - 30);
     sign(env, dx + 300, FENCE_LINE - 30);
     sign(env, dx + 560, FENCE_LINE - 30);
-    WALKERS.forEach((walker, i) => {
-      miniZombie(env, { ...walker, x: dx + walker.x }, i);
-    });
+    if (env.level === 5) parkedHeli(env, dx + BASE_END + 70, FENCE_LINE - 6);
+    if (env.level !== 3)
+      (env.level === 5 ? [...WALKERS, ...MORE_WALKERS] : WALKERS).forEach((walker, i) => {
+        miniZombie(env, { ...walker, x: dx + walker.x }, i);
+      });
   }
   // Zumbis soltos no deserto, longe da base
   for (const { dx } of baseSegments(env)) {
+    if (env.level === 3) break;
     miniZombie(env, { x: dx + 780, feet: 158, variant: 1 }, 40);
     miniZombie(env, { x: dx + 960, feet: 164, variant: 3 }, 41);
   }
@@ -702,7 +591,11 @@ export const zombie: SceneDef = {
   id: 'zombie',
   name: 'Apocalipse zumbi',
   blurb: 'Base militar no deserto, cerca elétrica, zumbis nas bordas e um helicóptero em ronda.',
-  groundY: 182,
+  groundY: ZOMBIE_GROUND,
+  levels: ZOMBIE_LEVEL_COUNT,
+  levelInfo: ZOMBIE_LEVELS,
+  ...zombieLevelLayers,
+  journeyPeriod: 820,
   journey,
   back(env) {
     const { ctx } = env;
@@ -849,6 +742,14 @@ export const zombie: SceneDef = {
     ];
   },
   extras: [...crowd('left'), ...crowd('right')],
+  // no nível 3 (Cerco) não há zumbis: só o exército
+  extrasFor: (level) => [
+    ...(level === 3 ? [] : [...crowd('left'), ...crowd('right')]),
+    // o lado direito fica livre para o helicóptero pousado ao lado da base
+    ...(level === 5 ? crowd('left', CROWD_BACK) : []),
+    ...zombieExtras(level),
+  ],
+  journeyExtrasFor: zombieJourneyExtras,
   tint: {
     morning: { color: '#ffc89a', alpha: 0.2 },
     afternoon: { color: '#fff0c0', alpha: 0.1 },
