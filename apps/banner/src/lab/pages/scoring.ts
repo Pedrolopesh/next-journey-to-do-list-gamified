@@ -328,11 +328,6 @@ export const scoringPage: LabPage = {
           h(
             'li',
             '',
-            'Capítulos 4 e 5: valores 15 e 20 são definidos por você (3, 5, 10, 15 e 20).',
-          ),
-          h(
-            'li',
-            '',
             'Hoje desfazer só vale no mesmo dia e não vale depois que o capítulo fecha. Manter?',
           ),
           h(
