@@ -62,12 +62,14 @@ Combinado com o Pedro: adiado até terminar as próximas etapas (jornada em todo
 
 ## O que falta (em ordem sugerida)
 
-1. **Refinar as jornadas com o Pedro** (praia, cidade, zumbi, castelo, floresta e inferno já rolam; cada uma tem `journey(env)` na sua cena). Falta conferir manhã, tarde e noite de cada uma dentro do app e o portal em cada cenário.
-2. Remover a cena Mapa em CSS (`apps/banner/src/scene`) quando a jornada cobrir todos os cenários; as abas já usam a jornada.
-3. **Acessórios LPC** (chapéu, cachecol, bandana, espada, escudo): hoje existem no formulário, mas não têm arte importada e o banner os ignora. Também falta usar o título (Herói/Heroína) para o corpo no cadastro antigo e tratar personagem sem `look` (o formulário mostra o visual padrão até salvar de novo).
-4. **Auditoria RN-FB do app inteiro** (`docs/QA.md` seção 7), requisito para a loja.
-5. **Fase 7** (itens que dependem de conta ou infraestrutura): Sentry, OTA, página pública de exclusão de conta, política de privacidade, auditoria de acessibilidade e agendamento de backup. **Fase 8**: publicação nas lojas.
-6. Verificação manual de todas as horas (manhã, tarde, noite) em todos os cenários; algumas só foram conferidas em parte.
+1. **Estudo de roupas, chapéus, trajes e acessórios do personagem (primeiro do backlog, depois das conquistas v2).** Hoje o catálogo LPC do app só tem camisas, calças e sapatos; as roupas de recompensa foram retiradas com a mudança `conquistas-v2` (eram de teste). Estudar para a sequência: (a) o que o pacote LPC traz (chapéus, capacetes, capas, trajes completos, armas, escudos, cachecol e bandana) e a licença/crédito de cada arte; (b) importar a arte e ligar ao `compose` do banner, onde acessórios hoje são ignorados (`selectionFromLayers`); (c) como o jogador ganha cada peça (conquista de classe alta, nível, capítulo ou moedas) e se uma peça "completa" bloqueia as camadas de baixo; (d) tela de personagem com peças bloqueadas e desbloqueadas; (e) cuidado com desempenho (mais camadas por quadro) e com o custo de arte no pacote do app. Conhecido: a tabela `user_cosmetics` e a trava `COSMETIC_LOCKED` da API ficam prontas para receber as peças novas.
+
+2. **Refinar as jornadas com o Pedro** (praia, cidade, zumbi, castelo, floresta e inferno já rolam; cada uma tem `journey(env)` na sua cena). Falta conferir manhã, tarde e noite de cada uma dentro do app e o portal em cada cenário.
+3. Remover a cena Mapa em CSS (`apps/banner/src/scene`) quando a jornada cobrir todos os cenários; as abas já usam a jornada.
+4. **Acessórios LPC** (parte do estudo do item 1: chapéu, cachecol, bandana, espada, escudo): hoje existem no formulário, mas não têm arte importada e o banner os ignora. Também falta usar o título (Herói/Heroína) para o corpo no cadastro antigo e tratar personagem sem `look` (o formulário mostra o visual padrão até salvar de novo).
+5. **Auditoria RN-FB do app inteiro** (`docs/QA.md` seção 7), requisito para a loja.
+6. **Fase 7** (itens que dependem de conta ou infraestrutura): Sentry, OTA, página pública de exclusão de conta, política de privacidade, auditoria de acessibilidade e agendamento de backup. **Fase 8**: publicação nas lojas.
+7. Verificação manual de todas as horas (manhã, tarde, noite) em todos os cenários; algumas só foram conferidas em parte.
 
 ## Decisões que ainda dependem do Pedro
 

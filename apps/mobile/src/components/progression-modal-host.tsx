@@ -1,12 +1,46 @@
 import { IconTrophy } from '@tabler/icons-react-native';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, StyleSheet, Text, View } from 'react-native';
 
+import { useAchievements } from '@/api/queries';
+import { AchievementUnlockedModal } from '@/components/achievement-unlocked-modal';
 import { Button } from '@/components/button';
+import { achievementArt } from '@/components/pixel-art-data';
+import { tierColor, tierOf } from '@/features/achievements/tier';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { colors, radius, space } from '@/theme';
+
+/** Alerta de conquista nova (modal único do app). Descrição e arte vêm do catálogo, se já carregado. */
+function AchievementAlert({
+  slug,
+  name,
+  onDismiss,
+}: {
+  slug: string;
+  name: string;
+  onDismiss: () => void;
+}) {
+  const router = useRouter();
+  const { data } = useAchievements();
+  const found = data?.find((item) => item.slug === slug);
+  return (
+    <AchievementUnlockedModal
+      visible
+      name={name}
+      description={found?.description}
+      art={achievementArt(found?.iconKey ?? '')}
+      tierColor={tierColor(tierOf(slug))}
+      onContinue={onDismiss}
+      onSeeAll={() => {
+        onDismiss();
+        router.push('/achievements');
+      }}
+    />
+  );
+}
 
 /** Mostra um modal de cada vez: subida de nível, conquista e capítulo concluído. */
 export function ProgressionModalHost() {
@@ -20,6 +54,9 @@ export function ProgressionModalHost() {
   }, [entry]);
 
   if (!entry) return null;
+  if (entry.kind === 'achievement') {
+    return <AchievementAlert slug={entry.slug} name={entry.name} onDismiss={dismiss} />;
+  }
 
   let header: string;
   let title: string;
@@ -29,13 +66,6 @@ export function ProgressionModalHost() {
       header = colors.brand.primary;
       title = t('feedback.levelUpTitle', { level: entry.level });
       text = t('feedback.levelUpText');
-      break;
-    case 'achievement':
-      header = colors.brand.gold;
-      title = entry.name;
-      text = entry.rewardKey
-        ? t('feedback.achievementReward', { reward: entry.rewardKey })
-        : t('feedback.achievementTitle');
       break;
     case 'chapter':
       header = colors.brand.primaryLight;

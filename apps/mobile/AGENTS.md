@@ -6,6 +6,8 @@ Regras do monorepo em `../../AGENTS.md` (leia primeiro). Aqui ficam as regras es
 - Comandos: `pnpm --filter @nextjourney/mobile start | lint | typecheck`. Dependências nativas só com `npx expo install`.
 - Tokens só no SecureStore; nada sensível em `EXPO_PUBLIC_*`; textos só via i18n; cores e tamanhos só pelos tokens do design system.
 - O app não calcula EXP: marca o item na hora (otimista) e mostra o `CheckResult` da API. O banner só recebe mensagens validadas pelo contrato.
+- **Alerta de conquista nova: um só modal.** Toda conquista desbloqueada abre `AchievementUnlockedModal` (`src/components/achievement-unlocked-modal.tsx`), nunca um modal próprio. Estilo: topo na cor da **classe** da conquista (bronze, prata, ouro ou diamante; tokens em `colors.tier`) com raios e brilhos, a insígnia num círculo branco no centro, "Conquista desbloqueada!", nome e critério da conquista, um incentivo para desbloquear mais e dois botões: **Continuar** (fecha) e **Ver todas as conquistas** (abre `/achievements`). Quem enfileira é o `ProgressionModalHost` (fila em `features/feedback`); arte e descrição vêm do catálogo (`useAchievements`) e a classe, de `features/achievements/tier.ts`. Textos em `feedback.*` no `pt-BR.json`. Para ver o modal no emulador, enfileire uma entrada `{ kind: 'achievement', ... }` no `useFeedbackStore` (sem commitar).
+- Metro em `CI=1` não relê arquivos: para o Fast Refresh funcionar, suba o Metro sem essa variável.
 - Lint: `eslint-config-expo` + regras comuns do monorepo (`@nextjourney/eslint-config/common`).
 
 ---

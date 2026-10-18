@@ -22,6 +22,13 @@ export const colors = {
     subtle: '#1e293b',
     strong: '#334155',
   },
+  // Classes das conquistas (moldura da insígnia): bronze, prata, ouro e diamante
+  tier: {
+    bronze: '#cd7f32',
+    silver: '#cbd5e1',
+    gold: '#facc15',
+    diamond: '#67e8f9',
+  },
   status: {
     success: '#10b981',
     warning: '#f59e0b',
