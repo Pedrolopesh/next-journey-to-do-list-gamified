@@ -5,7 +5,7 @@ import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { restoreSession } from '@/api/client';
 import { useMe } from '@/api/queries';
@@ -20,11 +20,14 @@ import { syncDailyReminder } from '@/features/settings/reminder';
 import { log } from '@/logging';
 import { colors, space } from '@/theme';
 
+const logo = require('../../assets/images/logo-livro.png') as number;
+
 /** Splash enquanto a sessão é verificada (RF-09). */
 function Splash({ children }: { children?: React.ReactNode }) {
   const { t } = useTranslation();
   return (
     <View style={styles.splash}>
+      <Image source={logo} style={styles.splashLogo} accessibilityIgnoresInvertColors />
       <Text style={styles.splashTitle}>{t('auth.welcomeTitle')}</Text>
       {children}
     </View>
@@ -175,6 +178,7 @@ const styles = StyleSheet.create({
     gap: space[16],
     backgroundColor: colors.bg.base,
   },
+  splashLogo: { width: 128, height: 112 },
   splashTitle: { color: colors.brand.primaryLight, fontSize: 22, fontWeight: '700' },
   error: { color: colors.status.danger, fontSize: 13 },
 });

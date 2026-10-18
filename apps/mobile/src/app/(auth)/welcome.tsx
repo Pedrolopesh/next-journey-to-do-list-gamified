@@ -1,9 +1,11 @@
 import { Link, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { colors, space } from '@/theme';
+
+const logo = require('../../../assets/images/logo-livro.png') as number;
 
 export default function WelcomeScreen() {
   const { t } = useTranslation();
@@ -11,6 +13,7 @@ export default function WelcomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.hero}>
+        <Image source={logo} style={styles.logo} accessibilityIgnoresInvertColors />
         <Text style={styles.title}>{t('auth.welcomeTitle')}</Text>
         <Text style={styles.subtitle}>{t('auth.welcomeSubtitle')}</Text>
       </View>
@@ -45,6 +48,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.base,
   },
   hero: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space[8] },
+  logo: { width: 160, height: 140, marginBottom: space[16] },
   title: { color: colors.brand.primaryLight, fontSize: 28, fontWeight: '700' },
   subtitle: { color: colors.text.secondary, fontSize: 14, textAlign: 'center' },
   actions: { gap: space[12] },
