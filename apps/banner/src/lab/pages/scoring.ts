@@ -10,7 +10,8 @@ const LABEL: Record<Difficulty, string> = { easy: 'Fácil', medium: 'Média', ha
 
 /** Regra de hoje, lida da configuração real do jogo. */
 const NOW = DEFAULT_GAME_CONFIG;
-const NOW_CHAPTER_EXP = [50, 125, 200, 275, 350];
+const expHoje = (nivel: number): number => NOW.levelExpSlope * nivel - NOW.levelExpOffset;
+const NOW_CHAPTER_EXP = [1, 2, 3, 4, 5].map(expHoje);
 
 /** PROPOSTA (ainda não vale no app): EXP de cada capítulo e moedas perdidas ao desmarcar. */
 const CHAPTER_EXP = [100, 350, 500, 800, 1000];
@@ -39,26 +40,47 @@ export const scoringPage: LabPage = {
     const checksFor = (chapterExp: number, difficulty: Difficulty): string =>
       `${Math.ceil(chapterExp / EXP[difficulty])}`;
 
-    const chapters = table(
-      [
-        'Capítulo',
-        'EXP hoje',
-        'EXP proposto',
-        'Checks fáceis',
-        'Médios',
-        'Difíceis',
-        'Perde ao desmarcar',
-      ],
-      CHAPTER_EXP.map((exp, i) => [
-        `${i + 1}`,
-        was(`${NOW_CHAPTER_EXP[i]}`),
-        `${exp}`,
-        checksFor(exp, 'easy'),
-        checksFor(exp, 'medium'),
-        checksFor(exp, 'hard'),
-        `${UNDO_PENALTY[i]} moedas`,
-      ]),
-    );
+    const chaptersBox = h('div');
+    const renderChapters = (): void => {
+      chaptersBox.replaceChildren(
+        table(
+          [
+            'Capítulo',
+            'EXP hoje',
+            'EXP proposto',
+            'Checks fáceis',
+            'Médios',
+            'Difíceis',
+            'Perde ao desmarcar',
+          ],
+          CHAPTER_EXP.map((exp, i) => [
+            `${i + 1}`,
+            was(`${NOW_CHAPTER_EXP[i]}`),
+            `${exp}`,
+            checksFor(exp, 'easy'),
+            checksFor(exp, 'medium'),
+            checksFor(exp, 'hard'),
+            `${UNDO_PENALTY[i]} moedas`,
+          ]),
+        ),
+      );
+    };
+    renderChapters();
+
+    // Editor: mexa nos números e a tabela e o simulador acompanham
+    const numberInput = (list: number[], index: number, after: () => void): HTMLInputElement => {
+      const input = h('input');
+      input.type = 'number';
+      input.min = '1';
+      input.value = String(list[index]);
+      input.style.width = '72px';
+      input.oninput = () => {
+        list[index] = Math.max(1, Math.floor(Number(input.value) || 1));
+        after();
+      };
+      return input;
+    };
+    const editor = h('div', 'sc-editor');
 
     const perCheck = table(
       ['Dificuldade', 'EXP por check', 'Moedas por check'],
@@ -174,15 +196,98 @@ export const scoringPage: LabPage = {
       toasts,
     );
     render();
+    editor.append(
+      h(
+        'p',
+        'note',
+        'Ajuste os valores para testar: a tabela acima e o simulador recalculam na hora.',
+      ),
+      table(
+        ['Capítulo', 'EXP do capítulo', 'Moedas perdidas ao desmarcar'],
+        CHAPTER_EXP.map((_, i) => [
+          `${i + 1}`,
+          numberInput(CHAPTER_EXP, i, () => {
+            renderChapters();
+            render();
+          }),
+          numberInput(UNDO_PENALTY, i, renderChapters),
+        ]),
+      ),
+    );
 
     host.append(
       h('h1', '', 'Moedas e EXP'),
       h(
         'p',
         'lead',
-        'Regra proposta para o EXP dos capítulos e para as moedas ao desmarcar. Nada disso está no app ainda: serve para você aprovar ou ajustar antes de implementar.',
+        'Primeiro, como EXP e moedas estão definidos hoje no app. Depois, a proposta de EXP por capítulo e de moedas ao desmarcar, que você pode ajustar aqui. A proposta ainda não está no app.',
       ),
-      h('section', 'style', h('h2', '', 'EXP por capítulo'), chapters),
+      h(
+        'section',
+        'style',
+        h('h2', '', 'Como está definido hoje'),
+        h(
+          'ul',
+          'sc-open',
+          h(
+            'li',
+            '',
+            `EXP por check: fácil ${EXP.easy}, média ${EXP.medium}, difícil ${EXP.hard}. Moedas por check: ${COINS.easy}, ${COINS.medium} e ${COINS.hard}.`,
+          ),
+          h(
+            'li',
+            '',
+            `EXP para ir do nível n ao n+1: ${NOW.levelExpSlope} × n − ${NOW.levelExpOffset} (50, 125, 200, 275, 350...). O EXP que sobra ao subir é carregado.`,
+          ),
+          h(
+            'li',
+            '',
+            `Cada nível ganho conclui um capítulo da história (${NOW.chaptersPerStory} capítulos por história) e rende ${BONUS} moedas de bônus. Um check grande pode subir mais de um nível.`,
+          ),
+          h(
+            'li',
+            '',
+            'O personagem anda pela EXP dentro do nível e chega ao portal quando sobe de nível; a troca de cena acontece no check seguinte.',
+          ),
+          h(
+            'li',
+            '',
+            'Diário: um check por dia (só nos dias agendados). Tarefa: um check só. Hábito: sem limite por dia. Repetir o mesmo checkId não duplica EXP.',
+          ),
+          h(
+            'li',
+            '',
+            'Desmarcar hoje: só no mesmo dia do check. Devolve o EXP e as moedas daquele check (o EXP nunca passa do início do nível, e o nível não cai). O bônus de nível não volta, e o check que fechou um capítulo não pode ser desfeito.',
+          ),
+          h(
+            'li',
+            '',
+            'Avisos de hoje: marcar mostra "+EXP e +moedas"; desmarcar mostra só "check desfeito", sem os valores.',
+          ),
+          h(
+            'li',
+            '',
+            'Onde mora: valores na tabela game_config do servidor (ajustável sem publicar o app); regras em progression/domain da API. O app não calcula nada.',
+          ),
+        ),
+        h('h3', '', 'Níveis de hoje, com checks necessários'),
+        table(
+          ['Nível', 'EXP do nível', 'EXP acumulado', 'Fácil', 'Média', 'Difícil'],
+          [1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
+            const exp = expHoje(n);
+            const total = [...Array(n).keys()].reduce((sum, i) => sum + expHoje(i + 1), 0);
+            return [
+              `${n}`,
+              `${exp}`,
+              `${total}`,
+              checksFor(exp, 'easy'),
+              checksFor(exp, 'medium'),
+              checksFor(exp, 'hard'),
+            ];
+          }),
+        ),
+      ),
+      h('section', 'style', h('h2', '', 'EXP por capítulo'), chaptersBox, editor),
       h(
         'section',
         'style',
