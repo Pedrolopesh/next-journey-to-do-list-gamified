@@ -1,0 +1,30 @@
+# Marcar e desmarcar um hábito: o EXP fica e as moedas diminuem.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow: ../subflows/inicio.yaml
+- tapOn: 'Hábitos'
+- tapOn: 'Novo item'
+- tapOn: 'Título'
+- inputText: 'Beber água'
+- hideKeyboard
+- tapOn: 'Criar item'
+- extendedWaitUntil:
+    visible: 'Conquista desbloqueada!|Beber água'
+    timeout: 15000
+- runFlow: ../subflows/fechar-conquista.yaml
+- tapOn: 'Marcar Beber água'
+- extendedWaitUntil:
+    visible: 'Conquista desbloqueada!|Desmarcar Beber água'
+    timeout: 15000
+- runFlow: ../subflows/fechar-conquista.yaml
+# Desmarcar: o EXP fica e só as moedas diminuem (1 + 2 ganhas, perde até 3 no capítulo 1).
+# O aviso amarelo some em 3 s, antes de o Maestro conferir; a regra é conferida na API.
+- tapOn: 'Desmarcar Beber água'
+- extendedWaitUntil:
+    visible: 'Marcar Beber água'
+    timeout: 15000
+- runScript:
+    file: ../scripts/conferir-jogador.js
+    env:
+      EXP_TOTAL: '15'
+      COINS: '0'

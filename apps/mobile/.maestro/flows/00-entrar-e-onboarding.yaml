@@ -1,0 +1,40 @@
+# Entra com a conta de teste e passa pelo onboarding (tutorial, personagem e história).
+# Variáveis: MAESTRO_EMAIL e MAESTRO_PASSWORD (criadas por scripts/ui-tests.mjs).
+# Tolerante ao estado do aparelho: sessão ativa, onboarding pela metade ou tela de boas-vindas.
+appId: br.com.wetechhub.app.dev
+---
+- launchApp
+# O bundle leva um tempo para carregar
+- extendedWaitUntil:
+    visible: 'Entrar|Perfil|Pular|Comece rápido|Escolha sua história|Conquista desbloqueada!'
+    timeout: 120000
+- runFlow: ../subflows/onboarding.yaml
+- runFlow:
+    when:
+      visible: 'Perfil'
+    commands:
+      - tapOn: 'Perfil'
+      - scrollUntilVisible:
+          element: 'Sair'
+      - tapOn: 'Sair'
+- extendedWaitUntil:
+    visible: 'Entrar'
+    timeout: 30000
+- tapOn: 'Entrar'
+- tapOn: 'E-mail'
+- inputText: ${MAESTRO_EMAIL}
+- tapOn: 'Senha'
+- inputText: ${MAESTRO_PASSWORD}
+- hideKeyboard
+- tapOn:
+    text: 'Entrar'
+    below: 'Senha'
+# Conta com um item criado: aparece UMA conquista pendente por cima do tutorial (e só ela)
+- extendedWaitUntil:
+    visible: 'Pular|Conquista desbloqueada!|Comece rápido'
+    timeout: 30000
+- runFlow: ../subflows/onboarding.yaml
+- extendedWaitUntil:
+    visible: 'Olá.*'
+    timeout: 30000
+- assertNotVisible: 'Conquista desbloqueada!'

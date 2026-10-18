@@ -1,0 +1,8 @@
+# Se o formulário de criar item ficou aberto (execução anterior que falhou), fecha pelo X.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow:
+    when:
+      visible: 'Dificuldade'
+    commands:
+      - tapOn: 'Fechar'

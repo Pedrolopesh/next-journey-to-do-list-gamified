@@ -1,0 +1,16 @@
+# Tarefa concluída vai para o histórico (Perfil) e o aviso aparece no rodapé de Tarefas;
+# desfazer pelo histórico devolve a tarefa à lista e o histórico fica vazio.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow: ../subflows/inicio.yaml
+- tapOn: 'Tarefas'
+- scrollUntilVisible:
+    element: 'Tarefas concluídas saem desta lista e ficam no histórico, em Perfil.'
+- assertVisible: 'Tarefas concluídas saem desta lista e ficam no histórico, em Perfil.'
+- tapOn: 'Perfil'
+- tapOn: 'Histórico de tarefas'
+- assertVisible: 'Pagar a conta de luz'
+- tapOn: 'Desfazer'
+- assertVisible: 'Check desmarcado.*'
+- assertVisible: 'Nada concluído ainda'
+- assertVisible: 'Quando você concluir uma tarefa.*'

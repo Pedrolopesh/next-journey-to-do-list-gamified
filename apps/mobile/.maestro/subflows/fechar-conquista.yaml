@@ -1,0 +1,10 @@
+# Fecha o modal de conquista, se houver um aberto, e confere que NÃO abriu outro em seguida
+# (regra: um modal de conquista por ação).
+appId: br.com.wetechhub.app.dev
+---
+- runFlow:
+    when:
+      visible: 'Conquista desbloqueada!'
+    commands:
+      - tapOn: 'Continuar'
+      - assertNotVisible: 'Conquista desbloqueada!'

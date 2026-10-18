@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="Pixel_8" tests="3" failures="0" time="294.85" timestamp="2026-10-18T17:10:41">
+    <testcase id="00-entrar-e-onboarding" name="00-entrar-e-onboarding" classname="00-entrar-e-onboarding" file=".maestro/flows/00-entrar-e-onboarding.yaml" time="195.708" timestamp="2026-10-18T17:10:41" status="SUCCESS"/>
+    <testcase id="01-criar-e-marcar-tarefa" name="01-criar-e-marcar-tarefa" classname="01-criar-e-marcar-tarefa" file=".maestro/flows/01-criar-e-marcar-tarefa.yaml" time="73.108" timestamp="2026-10-18T17:13:57" status="SUCCESS"/>
+    <testcase id="04-historico-e-estado-vazio" name="04-historico-e-estado-vazio" classname="04-historico-e-estado-vazio" file=".maestro/flows/04-historico-e-estado-vazio.yaml" time="25.991" timestamp="2026-10-18T17:15:10" status="SUCCESS"/>
+  </testsuite>
+</testsuites>
