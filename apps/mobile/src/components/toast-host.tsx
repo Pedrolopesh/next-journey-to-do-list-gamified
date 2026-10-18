@@ -5,11 +5,24 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { type ToastKind, useToastStore } from '@/features/feedback/toast-store';
 import { colors, radius, space } from '@/theme';
 
-const DURATION_MS: Record<ToastKind, number> = { success: 2500, info: 3000, error: 5000 };
+const DURATION_MS: Record<ToastKind, number> = {
+  success: 2500,
+  info: 3000,
+  warning: 3000,
+  error: 5000,
+};
 const BACKGROUND: Record<ToastKind, string> = {
   success: colors.status.success,
   info: colors.brand.primary,
   error: colors.status.danger,
+  warning: colors.status.warning,
+};
+// Amarelo pede texto escuro para ter contraste
+const TEXT: Record<ToastKind, string> = {
+  success: colors.text.onPrimary,
+  info: colors.text.onPrimary,
+  error: colors.text.onPrimary,
+  warning: colors.bg.base,
 };
 
 /** Mostra o toast atual no topo de qualquer tela, por cima de tudo. Erros ficam mais tempo. */
@@ -44,7 +57,7 @@ export function ToastHost() {
         { top: insets.top + space[8], opacity, backgroundColor: BACKGROUND[current.kind] },
       ]}
     >
-      <Text style={styles.text}>{current.message}</Text>
+      <Text style={[styles.text, { color: TEXT[current.kind] }]}>{current.message}</Text>
     </Animated.View>
   );
 }

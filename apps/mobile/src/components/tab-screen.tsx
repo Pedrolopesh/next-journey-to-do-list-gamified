@@ -22,7 +22,7 @@ import {
   QG_ASPECT_RATIO,
 } from '@/banner/banner-view';
 import { characterLayers } from '@/features/qg/character-layers';
-import { journeyView } from '@/features/qg/journey-progress';
+import { journeyView, sceneLevel } from '@/features/qg/journey-progress';
 import { useJourneyStore } from '@/features/qg/journey-store';
 import { DEFAULT_STORY_SCENARIO, isStoryScenario } from '@/features/qg/options';
 import { useQgPrefs } from '@/features/qg/qg-store';
@@ -77,7 +77,8 @@ export function TabScreen({
   const shownLevel = useJourneyStore((state) => (userId ? state.shownLevel[userId] : undefined));
   // Primeiro uso, ou nível que caiu: a cena exibida acompanha o nível atual
   useEffect(() => {
-    if (userId && level !== undefined) useJourneyStore.getState().reconcile(userId, level);
+    if (userId && level !== undefined)
+      useJourneyStore.getState().reconcile(userId, sceneLevel(level));
   }, [userId, level]);
   // Aba fora de foco continua montada (troca instantânea), mas o banner fica parado
   const [focused, setFocused] = useState(true);

@@ -73,7 +73,7 @@ describe('conquistas e home', () => {
     const auth = await registerUser(ctx);
     await ctx.prisma.userStats.update({
       where: { userId: auth.user.id },
-      data: { level: 4, expInLevel: 274, expTotal: 600 }, // 4 -> 5 exige 275
+      data: { level: 4, expInLevel: 799, expTotal: 1800 }, // 4 -> 5 exige 800
     });
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const res = await check(ctx, auth, item.id).expect(200);
@@ -344,7 +344,7 @@ describe('conquistas e home', () => {
       slug: 'beach',
       chapter: 1,
       expInLevel: 10,
-      expForNextLevel: 50,
+      expForNextLevel: 200,
     });
     const titles = res.body.today.map((i: { title: string }) => i.title).sort();
     expect(titles).toEqual(['Atrasada', 'Hoje', 'Treinar']); // Futura e o diário já feito ficam de fora

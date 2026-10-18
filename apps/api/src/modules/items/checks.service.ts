@@ -3,7 +3,7 @@ import { type CheckResult, checkResultSchema, ERROR_CODES } from '@nextjourney/c
 
 import { AppError } from '../../common/app-error.js';
 import { Clock } from '../../common/clock.js';
-import type { Item, ItemCheck, Prisma } from '../../generated/prisma/client.js';
+import type { Item, Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AchievementsService } from '../achievements/achievements.service.js';
 import {
@@ -73,9 +73,15 @@ export class ChecksService {
         ? { chapter: active.progress.chapter, completed: active.progress.completed }
         : NO_STORY;
 
+      // Item desmarcado e marcado de novo no mesmo dia: rende as moedas, mas o EXP vale uma vez só
+      const expJaGanho =
+        (await tx.itemCheck.count({
+          where: { itemId, checkedOn: hoje, revertedAt: { not: null }, exp: { gt: 0 } },
+        })) > 0;
+
       const applied = aplicarCheck(
         toPlayerState(stats, storyProgress),
-        { checkId, type: item.type, difficulty: item.difficulty, localDate: hoje },
+        { checkId, type: item.type, difficulty: item.difficulty, localDate: hoje, expJaGanho },
         config,
       );
       const { summary, record } = applied;
@@ -176,7 +182,10 @@ export class ChecksService {
     });
   }
 
-  /** Desmarca um check. Só no mesmo dia; capítulo fechado é definitivo; o nível nunca cai. */
+  /**
+   * Desmarca um check, em qualquer dia e capítulo. O EXP, o nível e o capítulo ficam como estão:
+   * só as moedas diminuem (perda do capítulo atual, nunca abaixo de zero).
+   */
   async undo(userId: string, itemId: string, checkId: string): Promise<CheckResult> {
     const now = this.clock.now();
     return this.prisma.$transaction(async (tx) => {
@@ -203,55 +212,45 @@ export class ChecksService {
         );
       }
 
-      // O passo do capítulo volta na história em que o check contou, mesmo que não seja a ativa
-      const progress = check.storyId
-        ? await tx.storyProgress.findUnique({
-            where: { userId_storyId: { userId, storyId: check.storyId } },
-          })
-        : null;
-      const storyProgress = progress
-        ? { chapter: progress.chapter, completed: progress.completed }
+      // A perda de moedas é a do capítulo em que o jogador está agora
+      const active = await this.stories.active(tx, userId);
+      const storyProgress = active
+        ? { chapter: active.progress.chapter, completed: active.progress.completed }
         : NO_STORY;
 
       const stats = await tx.userStats.findUniqueOrThrow({ where: { userId } });
       const config = await this.gameConfig.load(tx);
       const hoje = diaLocal(now, user.timezone);
-      const undone = desfazerCheck(toPlayerState(stats, storyProgress), this.toRecord(check), hoje);
-      if (!undone.ok) {
-        if (undone.motivo === 'CAPITULO_FECHADO') {
-          throw new AppError(
-            409,
-            ERROR_CODES.CHECK_LOCKED,
-            'O capítulo já foi fechado: o check é definitivo',
-          );
-        }
-        throw new AppError(
-          409,
-          ERROR_CODES.UNDO_NOT_ALLOWED,
-          'Só é possível desmarcar no mesmo dia',
-        );
-      }
+      const undone = desfazerCheck(toPlayerState(stats, storyProgress), config);
 
       await tx.userStats.update({ where: { userId }, data: statsColumns(undone.state) });
       await tx.itemCheck.update({ where: { id: checkId }, data: { revertedAt: now } });
 
       if (item.type === 'daily') {
+        // Qualquer dia vale: recalcula pelo que restou de checks ativos
+        const rest = await tx.itemCheck.findMany({
+          where: { itemId, revertedAt: null },
+          select: { checkedOn: true },
+          orderBy: { checkedOn: 'desc' },
+        });
         await tx.item.update({
           where: { id: itemId },
-          data: { lastCheckedOn: check.lastCheckedBefore, streakCurrent: check.streakBefore },
+          data: {
+            lastCheckedOn: rest[0]?.checkedOn ?? null,
+            streakCurrent: await this.streakFor(tx, item, hoje),
+          },
         });
       } else if (item.type === 'todo') {
         await tx.item.update({ where: { id: itemId }, data: { completedAt: null } });
       }
 
-      const { story } = undone.state;
       return {
-        expGained: -undone.summary.expDevolvido,
-        coinsGained: -undone.summary.moedasDevolvidas,
+        expGained: 0,
+        coinsGained: -undone.summary.moedasPerdidas,
         level: undone.state.level,
         leveledUp: false,
         chapterProgress: {
-          chapter: story.chapter,
+          chapter: undone.state.story.chapter,
           expInLevel: undone.state.expInLevel,
           expForNextLevel: expParaNivel(undone.state.level, config),
         },
@@ -260,18 +259,6 @@ export class ChecksService {
         achievementsUnlocked: [],
       };
     });
-  }
-
-  private toRecord(check: ItemCheck) {
-    return {
-      checkId: check.id,
-      localDate: check.checkedOn,
-      exp: check.exp,
-      coins: check.coins,
-      countsForChapter: check.countsForChapter,
-      chapterAtCheck: check.chapterAtCheck,
-      closedChapter: check.closedChapter,
-    };
   }
 
   private async streakFor(tx: Prisma.TransactionClient, item: Item, hoje: string): Promise<number> {

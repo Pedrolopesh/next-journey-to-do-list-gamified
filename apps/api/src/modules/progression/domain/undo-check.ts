@@ -1,53 +1,36 @@
-import type { LocalDate, PlayerState } from '@nextjourney/contracts';
+import type { GameConfig, PlayerState } from '@nextjourney/contracts';
 
-import type { CheckRecord } from './apply-check.js';
-
-export type UndoFailureReason = 'OUTRO_DIA' | 'CAPITULO_FECHADO';
+import { moedasPerdidasAoDesmarcar } from './levels.js';
 
 export type UndoSummary = {
-  expDevolvido: number;
-  moedasDevolvidas: number;
+  /** Moedas tiradas do saldo (nunca deixa o saldo negativo). */
+  moedasPerdidas: number;
 };
 
-export type UndoResult =
-  { ok: true; state: PlayerState; summary: UndoSummary } | { ok: false; motivo: UndoFailureReason };
+export type UndoResult = { state: PlayerState; summary: UndoSummary };
 
 /**
- * Desfaz um check. Função pura.
+ * Desmarca um check. Função pura.
  *
- * - Só no mesmo dia local do check ('OUTRO_DIA' caso contrário).
- * - Capítulo fechado é definitivo: o check que subiu de nível (e fechou capítulo), e os de capítulos
- *   já fechados, não voltam ('CAPITULO_FECHADO').
- * - O nível nunca cai: se a reversão passar do início do nível, o EXP para em 0 do nível atual.
+ * - Vale em qualquer dia e em qualquer capítulo.
+ * - O EXP, o nível e o capítulo nunca voltam: só as moedas diminuem.
+ * - A perda é a do capítulo atual (3, 5, 10, 15, 20), limitada ao saldo.
  * - O bônus de moedas por nível não é revertido.
  */
 export function desfazerCheck(
   state: PlayerState,
-  record: CheckRecord,
-  hoje: LocalDate,
+  config: Pick<GameConfig, 'undoCoinPenalty'>,
 ): UndoResult {
-  if (record.localDate !== hoje) return { ok: false, motivo: 'OUTRO_DIA' };
-
-  if (record.countsForChapter) {
-    const chapterClosedSince =
-      state.story.completed || state.story.chapter !== record.chapterAtCheck;
-    if (record.closedChapter || chapterClosedSince) {
-      return { ok: false, motivo: 'CAPITULO_FECHADO' };
-    }
-  }
-
-  const expRemoved = Math.min(record.exp, state.expInLevel);
-  const coinsRemoved = Math.min(record.coins, state.coins);
-
+  const moedasPerdidas = Math.min(
+    moedasPerdidasAoDesmarcar(state.story.chapter, config),
+    state.coins,
+  );
   return {
-    ok: true,
     state: {
       ...state,
-      expInLevel: state.expInLevel - expRemoved,
-      expTotal: state.expTotal - expRemoved,
-      coins: state.coins - coinsRemoved,
+      coins: state.coins - moedasPerdidas,
       totalChecks: Math.max(0, state.totalChecks - 1),
     },
-    summary: { expDevolvido: expRemoved, moedasDevolvidas: coinsRemoved },
+    summary: { moedasPerdidas },
   };
 }

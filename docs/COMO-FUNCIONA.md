@@ -77,7 +77,7 @@ Fluxo de um check:
 
 O `checkId` torna o check **idempotente**: repetir a chamada (ou reenviar pela fila offline) não duplica EXP.
 
-Valores iniciais (ficam na tabela `game_config`, ajustáveis sem novo build): EXP 5/10/20 e moedas 1/2/4 por dificuldade (fácil/médio/difícil); EXP de nível n para n+1 = 75n − 25; cada nível ganho conclui um capítulo da história ativa; bônus de 10 moedas ao subir de nível; 5 capítulos por história; hábitos sem limite diário de checks; virada do dia às 00:00 no fuso do perfil. O restante das regras (desfazer, conquistas, casos de borda) está em REQUISITOS.MD, seção "Regras complementares".
+Valores iniciais (ficam na tabela `game_config`, ajustáveis sem novo build): EXP 5/10/20 e moedas 1/2/4 por dificuldade (fácil/médio/difícil); EXP por capítulo 200, 400, 600, 800 e 1000 (depois do capítulo 5 o nível sobe de 1000 em 1000 e a história fica no cenário do 5); desmarcar nunca tira EXP, só moedas (3, 5, 10, 15 e 20 por capítulo); cada nível ganho conclui um capítulo da história ativa; bônus de 10 moedas ao subir de nível; 5 capítulos por história; hábitos sem limite diário de checks; virada do dia às 00:00 no fuso do perfil. O restante das regras (desfazer, conquistas, casos de borda) está em REQUISITOS.MD, seção "Regras complementares".
 
 ## 6. Stack por projeto
 
