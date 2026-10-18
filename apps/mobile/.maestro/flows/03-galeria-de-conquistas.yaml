@@ -20,3 +20,5 @@ appId: br.com.wetechhub.app.dev
 - scrollUntilVisible:
     element: 'Hábito de 100 dias'
 - assertVisible: 'Hábito de 100 dias'
+# volta ao Perfil
+- back

@@ -8,4 +8,5 @@ appId: br.com.wetechhub.app.dev
     when:
       visible: 'Voltar'
     commands:
-      - tapOn: 'Voltar'
+      # botão Voltar do Android: o de Voltar da tela fica coberto pelo botão de desenvolvimento
+      - back

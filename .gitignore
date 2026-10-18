@@ -18,4 +18,4 @@ apps/api/src/generated/
 # Backups locais do banco
 backups/
 *.dump
-.maestro/relatorio.xml
+apps/mobile/.maestro/relatorio.xml
