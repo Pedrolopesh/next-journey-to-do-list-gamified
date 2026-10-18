@@ -26,4 +26,4 @@
 ## 5. Verificação
 
 - [x] 5.1 lint, typecheck, test, build, e2e e `security:full`
-- [ ] 5.2 Conferir no emulador: marcar, desmarcar (aviso amarelo), recheck com +0 EXP
+- [x] 5.2 Conferir no emulador: marcar, desmarcar (aviso amarelo), recheck com +0 EXP
