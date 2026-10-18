@@ -1,9 +1,10 @@
+import { INSIGNIA_PALETTE, type InsigniaName, INSIGNIAS } from '@nextjourney/insignias';
+
 import {
   PIXEL_ART,
   PIXEL_PALETTE,
   type PixelArtName,
 } from '../../../mobile/src/components/pixel-art-data';
-import { INSIGNIA_PALETTE, type InsigniaName, INSIGNIAS } from './pages/insignias-data';
 
 /** SVG da pixel art do app (os mesmos dados do componente `PixelArt` do app). */
 export function pixelSvg(name: PixelArtName): string {

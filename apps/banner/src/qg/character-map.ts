@@ -50,36 +50,7 @@ const OUTFITS: Record<string, Outfit> = {
     legsColor: 'gray',
     feetColor: 'charcoal',
   },
-  'outfit-special': {
-    torso: 'torso-cardigan',
-    torsoColor: 'yellow',
-    legs: 'legs-pants',
-    legsColor: 'maroon',
-    feetColor: 'brown',
-  },
-  'outfit-cape': {
-    torso: 'torso-cardigan',
-    torsoColor: 'red',
-    legs: 'legs-pants',
-    legsColor: 'black',
-    feetColor: 'black',
-  },
 };
-
-/** Roupas que só existem como recompensa de conquista. */
-const REWARD_OUTFITS: ReadonlySet<string> = new Set(['outfit-special', 'outfit-cape']);
-
-function fromOutfit(
-  outfit: Outfit,
-): Pick<Selection, 'torso' | 'torsoColor' | 'legs' | 'legsColor' | 'feetColor'> {
-  return {
-    torso: outfit.torso,
-    torsoColor: outfit.torsoColor,
-    legs: outfit.legs,
-    legsColor: outfit.legsColor,
-    feetColor: outfit.feetColor,
-  };
-}
 
 const FALLBACK_HAIR: Hair = { hair: 'hair-buzzcut', color: 'dark_brown' };
 const FALLBACK_OUTFIT = OUTFITS['tunic-purple'] as Outfit;
@@ -91,12 +62,8 @@ const FALLBACK_OUTFIT = OUTFITS['tunic-purple'] as Outfit;
  * não têm arte LPC importada e são ignorados.
  */
 export function selectionFromLayers(layers: CharacterLayers): Selection {
-  // A aparência detalhada (formulário do app) vale mais que o mapa das chaves simples; só a roupa de
-  // conquista (recompensa) sobrepõe a roupa escolhida
-  if (layers.look) {
-    const reward = REWARD_OUTFITS.has(layers.outfit) ? OUTFITS[layers.outfit] : undefined;
-    return reward ? { ...layers.look, ...fromOutfit(reward) } : { ...layers.look };
-  }
+  // A aparência detalhada (formulário do app) vale mais que o mapa das chaves simples
+  if (layers.look) return { ...layers.look };
   const hair = HAIRS[layers.hair] ?? FALLBACK_HAIR;
   const outfit = OUTFITS[layers.outfit] ?? FALLBACK_OUTFIT;
   return {

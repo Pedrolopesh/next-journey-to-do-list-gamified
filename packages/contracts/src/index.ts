@@ -1,3 +1,4 @@
+export * from './achievement-catalog';
 export * from './achievements';
 export * from './auth';
 export * from './banner-protocol';
