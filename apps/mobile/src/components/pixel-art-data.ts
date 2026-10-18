@@ -346,21 +346,3 @@ export const PIXEL_ART = {
 } as const;
 
 export type PixelArtName = keyof typeof PIXEL_ART;
-
-/** Pixel art de cada conquista pelo `iconKey` do catálogo; conquista nova sem arte usa o livro. */
-const ACHIEVEMENT_ART: Record<string, PixelArtName> = {
-  'first-step': 'first-step',
-  flame: 'streak',
-  organized: 'tasks',
-  marathon: 'marathon',
-  apprentice: 'apprentice',
-  veteran: 'veteran',
-  'new-chapter': 'story',
-  legend: 'legend',
-  'early-bird': 'early-bird',
-  balance: 'balance',
-};
-
-export function achievementArt(iconKey: string): PixelArtName {
-  return ACHIEVEMENT_ART[iconKey] ?? 'story';
-}

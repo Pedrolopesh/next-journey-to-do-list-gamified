@@ -25,6 +25,7 @@
     "vitest": "^5.0.3"
   },
   "dependencies": {
-    "@nextjourney/contracts": "workspace:*"
+    "@nextjourney/contracts": "workspace:*",
+    "@nextjourney/insignias": "workspace:*"
   }
 }

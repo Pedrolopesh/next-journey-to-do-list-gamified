@@ -9,6 +9,7 @@ import {
 
 import { AppError } from '../../common/app-error.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { AchievementsService } from '../achievements/achievements.service.js';
 
 const toDto = (c: { id: string; name: string; color: string; position: number }): Category => ({
   id: c.id,
@@ -19,7 +20,10 @@ const toDto = (c: { id: string; name: string; color: string; position: number })
 
 @Injectable()
 export class CategoriesService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(AchievementsService) private readonly achievements: AchievementsService,
+  ) {}
 
   async list(userId: string): Promise<Category[]> {
     const rows = await this.prisma.category.findMany({
@@ -37,6 +41,11 @@ export class CategoriesService {
     const created = await this.prisma.category.create({
       data: { userId, name: input.name, color: input.color, position: count },
     });
+    await this.prisma.userStats.update({
+      where: { userId },
+      data: { categoriesCreated: { increment: 1 } },
+    });
+    await this.achievements.evaluateFor(userId);
     return toDto(created);
   }
 

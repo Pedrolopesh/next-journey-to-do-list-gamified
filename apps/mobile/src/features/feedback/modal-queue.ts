@@ -1,8 +1,8 @@
-import type { CheckResult } from '@nextjourney/contracts';
+import type { AchievementTier, CheckResult } from '@nextjourney/contracts';
 
 export type ModalEntry =
   | { kind: 'level'; level: number }
-  | { kind: 'achievement'; slug: string; name: string; rewardKey: string | null }
+  | { kind: 'achievement'; slug: string; name: string; tier: AchievementTier; glyph: string }
   | { kind: 'chapter'; number: number; title: string; text: string; storyCompleted: boolean };
 
 /**
@@ -20,7 +20,8 @@ export function buildModalQueue(result: CheckResult): {
       kind: 'achievement',
       slug: achievement.slug,
       name: achievement.name,
-      rewardKey: achievement.rewardKey,
+      tier: achievement.tier,
+      glyph: achievement.glyph,
     });
   }
   const afterBanner: ModalEntry[] = [];

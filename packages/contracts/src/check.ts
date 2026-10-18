@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { achievementTierSchema } from './achievement-catalog';
 import { idSchema } from './common';
 
 /** Corpo de POST /v1/items/:id/checks. O checkId (UUID v4 do app) torna o check idempotente. */
@@ -9,8 +10,8 @@ export type CheckRequest = z.infer<typeof checkRequestSchema>;
 export const achievementUnlockedSchema = z.object({
   slug: z.string().min(1),
   name: z.string().min(1),
-  /** Cosmético liberado (se houver). */
-  rewardKey: z.string().nullable(),
+  tier: achievementTierSchema,
+  glyph: z.string().min(1),
 });
 export type AchievementUnlocked = z.infer<typeof achievementUnlockedSchema>;
 

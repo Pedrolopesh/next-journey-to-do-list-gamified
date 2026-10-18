@@ -104,9 +104,9 @@ São **40 requisitos em 10 módulos**. *Obrigatório* bloqueia o lançamento; *D
 
 | ID | Módulo | Requisito | Prioridade |
 |---|---|---|---|
-| RF-32 | Conquistas | Catálogo de conquistas com critério, progresso e estado (bloqueada ou conquistada). | Obrigatório |
-| RF-33 | Conquistas | Modal de conquista (topo dourado, ícone LPC, Continuar) exibido no momento em que ela é desbloqueada. | Obrigatório |
-| RF-34 | Conquistas | Conquistas liberam itens cosméticos de customização (ex.: 7 dias seguidos libera uma roupa especial). | Obrigatório |
+| RF-32 | Conquistas | Catálogo de 69 conquistas em 7 trilhas e 4 classes (bronze, prata, ouro, diamante), com insígnia 24x24, critério, progresso e estado (bloqueada ou conquistada); conquista surpresa esconde o critério até ser desbloqueada. | Obrigatório |
+| RF-33 | Conquistas | Modal único de conquista (topo na cor da classe, insígnia, Continuar e Ver todas as conquistas) exibido quando ela é desbloqueada, uma vez por conquista. | Obrigatório |
+| RF-34 | Conquistas | Conquistas são só de mérito: não liberam itens. Roupas, chapéus e acessórios como recompensa ficam para um estudo posterior (backlog). | Adiado |
 | RF-35 | Home | Banner QG com cena conforme o horário, saudação, 4 indicadores (diários, tarefas, sequência e moedas), card da história e, no fim, os botões de mudar personagem, história e cenário. A lista "Para hoje" saiu da Home (os itens ficam nas abas). | Obrigatório |
 | RF-36 | Banner | Banner das abas: caminhada em loop, corrida de 5s a cada check, fade de troca de capítulo e posição do personagem salva entre sessões. | Obrigatório |
 | RF-37 | Perfil | Avatar, nome, título, nível, EXP, moedas, atalhos para conquistas, história e personalização. | Obrigatório |

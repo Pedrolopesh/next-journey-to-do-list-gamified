@@ -97,7 +97,7 @@ export const achievementsV2Page: LabPage = {
       h(
         'p',
         'lead',
-        `Proposta para validar: conquistas só de mérito (sem item nem acessório), ${PROPOSAL.length} no total, organizadas em ${TRAILS.length} trilhas e 4 classes. Nada disto está no app nem na API ainda.`,
+        `Catálogo oficial: conquistas só de mérito (sem item nem acessório), ${PROPOSAL.length} no total, organizadas em ${TRAILS.length} trilhas e 4 classes. É a mesma lista que a API e o app usam.`,
       ),
       panel(
         'Conceito',

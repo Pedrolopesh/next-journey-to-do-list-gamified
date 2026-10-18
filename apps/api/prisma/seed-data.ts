@@ -1,4 +1,4 @@
-import { ACHIEVEMENT_CATALOG } from '../src/modules/progression/domain/achievements.js';
+import { ACHIEVEMENT_CATALOG } from '@nextjourney/contracts';
 
 /**
  * Conteúdo versionado das histórias: uma por cenário do banner (slug = id do cenário), 5 capítulos
@@ -137,6 +137,12 @@ export const STORIES = [
 ] as const;
 
 export const ACHIEVEMENTS = ACHIEVEMENT_CATALOG.map((achievement, position) => ({
-  ...achievement,
+  slug: achievement.slug,
+  name: achievement.name,
+  description: achievement.description,
+  trail: achievement.trail,
+  tier: achievement.tier,
+  glyph: achievement.glyph,
+  secret: 'secret' in achievement,
   position,
 }));

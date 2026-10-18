@@ -1,5 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, Inject, Patch, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Patch, Post, Put } from '@nestjs/common';
 import {
+  type AppEvent,
+  appEventSchema,
   type Character,
   characterSchema,
   ERROR_CODES,
@@ -16,7 +18,8 @@ import { ZodValidationPipe } from '../../common/zod-validation.pipe.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AccountService } from '../account/account.service.js';
-import { ACHIEVEMENT_CATALOG, expParaNivel } from '../progression/domain/index.js';
+import { AchievementsService } from '../achievements/achievements.service.js';
+import { expParaNivel } from '../progression/domain/index.js';
 import { GameConfigService } from '../progression/game-config.service.js';
 import { NO_STORY, toPlayerState } from '../progression/player-state.js';
 import { StoriesService } from '../stories/stories.service.js';
@@ -27,12 +30,19 @@ function lookOf(value: unknown): { look?: LpcLook } {
   return parsed.success ? { look: parsed.data } : {};
 }
 
-/** Chaves de cosmético que só existem como recompensa de conquista. */
-const REWARD_KEYS: ReadonlySet<string> = new Set(
-  ACHIEVEMENT_CATALOG.flatMap((achievement) =>
-    achievement.rewardKey ? [achievement.rewardKey] : [],
-  ),
-);
+/** O visual mudou quando pele, cabelo, roupa, acessório ou a aparência detalhada são diferentes. */
+function visualChanged(
+  before: { skin: string; hair: string; outfit: string; accessory: string | null; look: unknown },
+  after: Character,
+): boolean {
+  return (
+    before.skin !== after.skin ||
+    before.hair !== after.hair ||
+    before.outfit !== after.outfit ||
+    (before.accessory ?? undefined) !== after.accessory ||
+    JSON.stringify(before.look ?? null) !== JSON.stringify(after.look ?? null)
+  );
+}
 
 @Controller('me')
 export class MeController {
@@ -41,6 +51,7 @@ export class MeController {
     @Inject(GameConfigService) private readonly gameConfig: GameConfigService,
     @Inject(StoriesService) private readonly stories: StoriesService,
     @Inject(AccountService) private readonly account: AccountService,
+    @Inject(AchievementsService) private readonly achievements: AchievementsService,
   ) {}
 
   /** Perfil e estado de jogo do usuário autenticado (sem hash de senha nem dados de terceiros). */
@@ -140,37 +151,42 @@ export class MeController {
     await this.account.requestDeletion(userId);
   }
 
-  /** Cria ou edita o personagem. Cosméticos de conquista só podem ser usados se liberados. */
+  /** Cria ou edita o personagem. Mudar o visual de um personagem existente conta para conquistas. */
   @Put('character')
   async putCharacter(
     @CurrentUserId() userId: string,
     @Body(new ZodValidationPipe(characterSchema)) body: Character,
   ): Promise<Character> {
-    const used = [body.skin, body.hair, body.outfit, body.accessory].filter(
-      (key): key is string => key !== undefined && REWARD_KEYS.has(key),
-    );
-    if (used.length > 0) {
-      const owned = await this.prisma.userCosmetic.findMany({
-        where: { userId, cosmeticKey: { in: used } },
-        select: { cosmeticKey: true },
-      });
-      const ownedKeys = new Set(owned.map((cosmetic) => cosmetic.cosmeticKey));
-      if (used.some((key) => !ownedKeys.has(key))) {
-        throw new AppError(403, 'COSMETIC_LOCKED', 'Este item ainda não foi desbloqueado');
-      }
-    }
     const { look, ...rest } = body;
     const data = {
       ...rest,
       accessory: body.accessory ?? null,
       look: look ?? Prisma.JsonNull,
     };
+    const before = await this.prisma.character.findUnique({ where: { userId } });
     await this.prisma.character.upsert({
       where: { userId },
       create: { userId, ...data },
       update: data,
     });
+    if (before && visualChanged(before, body)) {
+      await this.prisma.userStats.update({
+        where: { userId },
+        data: { lookChanges: { increment: 1 } },
+      });
+      await this.achievements.evaluateFor(userId);
+    }
     return body;
+  }
+
+  /** Fato do aparelho que o servidor não observa (ex.: lembrete diário ativado). */
+  @Post('events')
+  @HttpCode(204)
+  async event(
+    @CurrentUserId() userId: string,
+    @Body(new ZodValidationPipe(appEventSchema)) body: AppEvent,
+  ): Promise<void> {
+    await this.achievements.registerEvent(userId, body);
   }
 
   /** Cosméticos liberados por conquistas. */

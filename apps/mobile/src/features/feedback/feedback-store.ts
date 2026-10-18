@@ -6,7 +6,11 @@ type FeedbackState = {
   /** Fila de modais (nível, conquista, capítulo): exibidos um de cada vez. */
   modals: ModalEntry[];
   enqueue: (entries: ModalEntry[]) => void;
+  /** Conquistas que já abriram modal nesta sessão (evita reabrir enquanto o aviso é confirmado). */
+  shownAchievements: string[];
   dismiss: () => void;
+  /** Fecha os avisos de conquista da fila de uma vez ("Ver todas") e devolve os slugs. */
+  dismissAchievements: () => string[];
   /** Checks de hoje (por item) que ainda podem ser desfeitos neste aparelho. */
   checks: Record<string, { day: string; checkIds: string[] }>;
   rememberCheck: (itemId: string, checkId: string) => void;
@@ -16,13 +20,45 @@ type FeedbackState = {
 
 const today = (): string => new Date().toISOString().slice(0, 10);
 
-export const useFeedbackStore = create<FeedbackState>((set) => ({
+export const useFeedbackStore = create<FeedbackState>((set, get) => ({
   modals: [],
+  shownAchievements: [],
   enqueue: (entries) => {
-    if (entries.length > 0) set((state) => ({ modals: [...state.modals, ...entries] }));
+    set((state) => {
+      const known = new Set([
+        ...state.shownAchievements,
+        ...state.modals.flatMap((m) => (m.kind === 'achievement' ? [m.slug] : [])),
+      ]);
+      const fresh = entries.filter((entry) => {
+        if (entry.kind !== 'achievement') return true;
+        if (known.has(entry.slug)) return false;
+        known.add(entry.slug);
+        return true;
+      });
+      return fresh.length > 0 ? { modals: [...state.modals, ...fresh] } : state;
+    });
   },
   dismiss: () => {
-    set((state) => ({ modals: state.modals.slice(1) }));
+    set((state) => {
+      const [first, ...rest] = state.modals;
+      return {
+        modals: rest,
+        shownAchievements:
+          first?.kind === 'achievement'
+            ? [...state.shownAchievements, first.slug]
+            : state.shownAchievements,
+      };
+    });
+  },
+  dismissAchievements: () => {
+    const slugs = get()
+      .modals.filter((m) => m.kind === 'achievement')
+      .map((m) => m.slug);
+    set((state) => ({
+      modals: state.modals.filter((m) => m.kind !== 'achievement'),
+      shownAchievements: [...state.shownAchievements, ...slugs],
+    }));
+    return slugs;
   },
   checks: {},
   rememberCheck: (itemId, checkId) => {
@@ -46,7 +82,7 @@ export const useFeedbackStore = create<FeedbackState>((set) => ({
     });
   },
   clear: () => {
-    set({ modals: [], checks: {} });
+    set({ modals: [], shownAchievements: [], checks: {} });
   },
 }));
 

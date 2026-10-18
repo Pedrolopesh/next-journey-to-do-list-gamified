@@ -109,7 +109,9 @@ describe('check, jogo e erros', () => {
       chapterProgress: { chapter: 1, expInLevel: 20, expForNextLevel: 50 },
       chapterCompleted: false,
       completedChapter: null,
-      achievementsUnlocked: [{ slug: 'primeiro-passo', name: 'Primeiro passo', rewardKey: null }],
+      achievementsUnlocked: [
+        { slug: 'primeiro-passo', name: 'Primeiro passo', tier: 1, glyph: 'pegada' },
+      ],
     };
     expect(checkResultSchema.safeParse(result).success).toBe(true);
   });

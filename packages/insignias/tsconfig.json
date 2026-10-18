@@ -1,0 +1,5 @@
+{
+  "extends": "@nextjourney/tsconfig/base.json",
+  "compilerOptions": { "noEmit": true },
+  "include": ["src", "tsup.config.ts", "eslint.config.js"]
+}

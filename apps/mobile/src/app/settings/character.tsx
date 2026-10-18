@@ -56,15 +56,12 @@ export default function EditCharacterScreen() {
             putCharacter(character)
               .then(async () => {
                 await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+                void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
                 toast.success(t('character.saved'));
                 router.back();
               })
               .catch((cause: unknown) => {
-                const apiError = toApiError(cause);
-                const message =
-                  apiError?.code === 'COSMETIC_LOCKED'
-                    ? t('character.locked')
-                    : (apiError?.message ?? t('character.saveFailed'));
+                const message = toApiError(cause)?.message ?? t('character.saveFailed');
                 setError(message);
                 toast.error(message);
               })

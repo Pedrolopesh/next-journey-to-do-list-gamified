@@ -8,7 +8,6 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { useCosmetics } from '@/api/queries';
 import { Button } from '@/components/button';
 import { Pills } from '@/components/pills';
 import { QgControls } from '@/components/qg-controls';
@@ -33,22 +32,7 @@ import {
 import palettes from '@/features/qg/palettes.json';
 import { colors, radius, space } from '@/theme';
 
-/** Itens que só existem como recompensa de conquista (bloqueados até conquistar). */
-const REWARD_OUTFITS = ['outfit-special', 'outfit-cape'] as const;
-const ACCESSORIES = [
-  'none',
-  'hat-straw',
-  'scarf-red',
-  'accessory-bandana',
-  'weapon-silver-sword',
-  'accessory-shield',
-] as const;
-const REWARDS: ReadonlySet<string> = new Set([
-  ...REWARD_OUTFITS,
-  'accessory-bandana',
-  'weapon-silver-sword',
-  'accessory-shield',
-]);
+const ACCESSORIES = ['none', 'hat-straw', 'scarf-red'] as const;
 const DEFAULT_OUTFIT = 'tunic-purple';
 
 type Props = {
@@ -74,8 +58,6 @@ export function CharacterForm({
   onPreview,
 }: Props) {
   const { t } = useTranslation();
-  const cosmetics = useCosmetics();
-  const owned = new Set(cosmetics.data ?? []);
   const [look, setLook] = useState<LpcLook>(initial?.look ?? DEFAULT_LOOK);
   const [outfit, setOutfit] = useState(initial?.outfit ?? DEFAULT_OUTFIT);
   const [accessory, setAccessory] = useState(initial?.accessory ?? 'none');
@@ -275,24 +257,7 @@ export function CharacterForm({
         />
       </Group>
 
-      <Text style={styles.heading}>{t('character.rewards')}</Text>
-      <Group label={t('character.outfit')}>
-        <Pills
-          scroll
-          label={t('character.outfit')}
-          value={outfit}
-          onChange={(value) => {
-            changeExtras(value, accessory);
-          }}
-          options={[
-            { value: DEFAULT_OUTFIT, label: t('character.options.default') },
-            ...REWARD_OUTFITS.map((value) => ({
-              ...option(value),
-              disabled: !owned.has(value),
-            })),
-          ]}
-        />
-      </Group>
+      <Text style={styles.heading}>{t('character.extras')}</Text>
       <Group label={t('character.accessory')}>
         <Pills
           scroll
@@ -301,13 +266,9 @@ export function CharacterForm({
           onChange={(value) => {
             changeExtras(outfit, value);
           }}
-          options={ACCESSORIES.map((value) => ({
-            ...option(value),
-            disabled: REWARDS.has(value) && !owned.has(value),
-          }))}
+          options={ACCESSORIES.map((value) => option(value))}
         />
       </Group>
-      <Text style={styles.hint}>{t('character.lockedHint')}</Text>
 
       <Text style={styles.heading}>{t('character.identity')}</Text>
       <Group label={t('character.title')}>

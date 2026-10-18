@@ -1,45 +1,82 @@
 import { IconTrophy } from '@tabler/icons-react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, StyleSheet, Text, View } from 'react-native';
 
-import { useAchievements } from '@/api/queries';
+import { ackAchievements } from '@/api/endpoints';
+import { toApiError } from '@/api/errors';
+import { queryKeys, useAchievements } from '@/api/queries';
 import { AchievementUnlockedModal } from '@/components/achievement-unlocked-modal';
 import { Button } from '@/components/button';
-import { achievementArt } from '@/components/pixel-art-data';
-import { tierColor, tierOf } from '@/features/achievements/tier';
+import { tierColor } from '@/features/achievements/tier';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
+import type { ModalEntry } from '@/features/feedback/modal-queue';
+import { log } from '@/logging';
 import { colors, radius, space } from '@/theme';
 
-/** Alerta de conquista nova (modal único do app). Descrição e arte vêm do catálogo, se já carregado. */
+/** Alerta de conquista nova (modal único do app). A descrição vem do catálogo, se já carregado. */
 function AchievementAlert({
-  slug,
-  name,
+  entry,
   onDismiss,
 }: {
-  slug: string;
-  name: string;
+  entry: Extract<ModalEntry, { kind: 'achievement' }>;
   onDismiss: () => void;
 }) {
   const router = useRouter();
   const { data } = useAchievements();
-  const found = data?.find((item) => item.slug === slug);
+  const queryClient = useQueryClient();
+  const found = data?.find((item) => item.slug === entry.slug);
+  const confirm = (slugs: string[]): void => {
+    // Confirma o aviso para não abrir de novo; se falhar, abre na próxima vez
+    void ackAchievements(slugs)
+      .catch((cause: unknown) => {
+        log.warn('achievement.ack_failed', { slug: entry.slug, code: toApiError(cause)?.code });
+      })
+      .finally(() => {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+      });
+  };
+  const close = (): void => {
+    onDismiss();
+    confirm([entry.slug]);
+  };
   return (
     <AchievementUnlockedModal
       visible
-      name={name}
-      description={found?.description}
-      art={achievementArt(found?.iconKey ?? '')}
-      tierColor={tierColor(tierOf(slug))}
-      onContinue={onDismiss}
+      name={entry.name}
+      description={found?.description ?? undefined}
+      glyph={entry.glyph}
+      tierColor={tierColor(entry.tier)}
+      onContinue={close}
       onSeeAll={() => {
-        onDismiss();
+        const slugs = useFeedbackStore.getState().dismissAchievements();
+        confirm(slugs.length > 0 ? slugs : [entry.slug]);
         router.push('/achievements');
       }}
     />
   );
+}
+
+/** Põe na fila o aviso das conquistas desbloqueadas que o jogador ainda não viu (qualquer ação). */
+function usePendingAchievements(): void {
+  const { data } = useAchievements();
+  useEffect(() => {
+    if (!data) return;
+    const pending = data.filter((item) => item.pending);
+    if (pending.length === 0) return;
+    useFeedbackStore.getState().enqueue(
+      pending.map((item) => ({
+        kind: 'achievement' as const,
+        slug: item.slug,
+        name: item.name,
+        tier: item.tier,
+        glyph: item.glyph,
+      })),
+    );
+  }, [data]);
 }
 
 /** Mostra um modal de cada vez: subida de nível, conquista e capítulo concluído. */
@@ -47,6 +84,7 @@ export function ProgressionModalHost() {
   const { t } = useTranslation();
   const entry = useFeedbackStore((state) => state.modals[0]);
   const dismiss = useFeedbackStore((state) => state.dismiss);
+  usePendingAchievements();
 
   useEffect(() => {
     if (entry?.kind === 'level')
@@ -55,7 +93,7 @@ export function ProgressionModalHost() {
 
   if (!entry) return null;
   if (entry.kind === 'achievement') {
-    return <AchievementAlert slug={entry.slug} name={entry.name} onDismiss={dismiss} />;
+    return <AchievementAlert entry={entry} onDismiss={dismiss} />;
   }
 
   let header: string;

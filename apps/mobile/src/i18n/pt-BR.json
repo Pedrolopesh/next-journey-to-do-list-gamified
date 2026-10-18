@@ -212,7 +212,13 @@
   "achievements": {
     "unlocked": "desbloqueada",
     "locked": "bloqueada",
-    "reward": "Recompensa: {{reward}}",
+    "secretHint": "Conquista surpresa: descubra jogando.",
+    "tier": {
+      "1": "Bronze",
+      "2": "Prata",
+      "3": "Ouro",
+      "4": "Diamante"
+    },
     "unlockedAt": "Desbloqueada em {{date}}",
     "progress": "{{current}} de {{target}}"
   },
@@ -244,7 +250,6 @@
     "accessory": "Acessório",
     "create": "Criar personagem",
     "save": "Salvar personagem",
-    "lockedHint": "Itens bloqueados são liberados por conquistas.",
     "invalid": "Dê um nome ao seu personagem.",
     "saveFailed": "Não foi possível salvar o personagem.",
     "options": {
@@ -311,7 +316,6 @@
       "default": "Padrão",
       "color-brown": "Marrom"
     },
-    "locked": "Este item ainda não foi desbloqueado.",
     "appearance": "Aparência",
     "environment": "Ambiente",
     "body": "Corpo",
@@ -324,7 +328,7 @@
     "legsColor": "Cor da calça",
     "feet": "Calçado",
     "feetColor": "Cor do calçado",
-    "rewards": "Itens de conquista",
+    "extras": "Extras",
     "identity": "Nome e título",
     "presets": "Looks prontos",
     "randomize": "Sortear aparência",
