@@ -1,3 +1,4 @@
+export * from './achievement-stats.js';
 export * from './achievements.js';
 export * from './apply-check.js';
 export * from './daily.js';

@@ -162,11 +162,12 @@ export class ChecksService {
         await tx.item.update({ where: { id: itemId }, data: { completedAt: now } });
       }
 
-      const achievementsUnlocked = await this.achievements.evaluateAfterCheck(tx, {
+      const achievementsUnlocked = await this.achievements.evaluate(tx, {
         userId,
         timezone: user.timezone,
         now,
         hoje,
+        fromCheck: true,
       });
       const result: CheckResult = { ...resultBase, achievementsUnlocked };
       // Repetir o checkId devolve exatamente este resultado (com as conquistas desta vez)

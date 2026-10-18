@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto';
 
+import { ACHIEVEMENT_CATALOG } from '@nextjourney/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { AchievementsService } from '../src/modules/achievements/achievements.service.js';
 import {
   bearer,
   check,
@@ -31,12 +33,18 @@ describe('conquistas e home', () => {
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const checkId = randomUUID();
     const first = await check(ctx, auth, item.id, checkId).expect(200);
-    expect(unlocked(first.body)).toEqual(['primeiro-passo']);
+    expect(unlocked(first.body)).toEqual(
+      expect.arrayContaining(['primeiro-passo', 'habito-em-acao']),
+    );
     const replay = await check(ctx, auth, item.id, checkId).expect(200);
     expect(replay.body).toEqual(first.body);
     const second = await check(ctx, auth, item.id).expect(200);
     expect(unlocked(second.body)).toEqual([]); // já ganha: não repete
-    expect(await ctx.prisma.userAchievement.count({ where: { userId: auth.user.id } })).toBe(1);
+    expect(
+      await ctx.prisma.userAchievement.count({
+        where: { userId: auth.user.id, achievementSlug: 'primeiro-passo' },
+      }),
+    ).toBe(1);
   });
 
   it('desmarcar não remove a conquista já ganha', async () => {
@@ -60,7 +68,7 @@ describe('conquistas e home', () => {
     );
   });
 
-  it('Aprendiz (nível 5) libera o cosmético, que passa a poder ser usado no personagem', async () => {
+  it('Aprendiz (nível 5) volta com a classe e a insígnia do catálogo', async () => {
     reset();
     const auth = await registerUser(ctx);
     await ctx.prisma.userStats.update({
@@ -71,29 +79,11 @@ describe('conquistas e home', () => {
     const res = await check(ctx, auth, item.id).expect(200);
     expect(res.body).toMatchObject({ leveledUp: true, level: 5 });
     expect(unlocked(res.body)).toContain('aprendiz');
+    const entry = ACHIEVEMENT_CATALOG.find((a) => a.slug === 'aprendiz');
     expect(
-      res.body.achievementsUnlocked.find((a: { slug: string }) => a.slug === 'aprendiz').rewardKey,
-    ).toBe('weapon-silver-sword');
-
-    const cosmetics = await ctx
-      .http()
-      .get('/v1/me/cosmetics')
-      .set('authorization', bearer(auth))
-      .expect(200);
-    expect(cosmetics.body.cosmetics).toContain('weapon-silver-sword');
-    await ctx
-      .http()
-      .put('/v1/me/character')
-      .set('authorization', bearer(auth))
-      .send({
-        name: 'Aria',
-        title: 'Herói',
-        skin: 'light',
-        hair: 'short-brown',
-        outfit: 'tunic-purple',
-        accessory: 'weapon-silver-sword',
-      })
-      .expect(200);
+      res.body.achievementsUnlocked.find((a: { slug: string }) => a.slug === 'aprendiz'),
+    ).toEqual({ slug: 'aprendiz', name: 'Aprendiz', tier: entry?.tier, glyph: entry?.glyph });
+    expect(JSON.stringify(res.body)).not.toContain('rewardKey');
   });
 
   it('Maratonista no 100º check e Organizado com 10 itens criados', async () => {
@@ -106,13 +96,16 @@ describe('conquistas e home', () => {
       data: { totalChecks: 99 },
     });
     const res = await check(ctx, auth, item.id).expect(200);
-    expect(unlocked(res.body)).toEqual(
-      expect.arrayContaining(['maratonista', 'organizado', 'primeiro-passo']),
-    );
+    expect(unlocked(res.body)).toEqual(expect.arrayContaining(['maratonista', 'primeiro-passo']));
+    // Organizado saiu ao criar o 10º item, antes do check
     expect(
-      res.body.achievementsUnlocked.find((a: { slug: string }) => a.slug === 'maratonista')
-        .rewardKey,
-    ).toBe('accessory-bandana');
+      await ctx.prisma.userAchievement.count({
+        where: { userId: auth.user.id, achievementSlug: 'organizado' },
+      }),
+    ).toBe(1);
+    expect(
+      res.body.achievementsUnlocked.find((a: { slug: string }) => a.slug === 'maratonista').tier,
+    ).toBe(3);
   });
 
   it('Madrugador: check antes das 07h no fuso do perfil (06:59 sim, 07:00 não)', async () => {
@@ -150,7 +143,7 @@ describe('conquistas e home', () => {
     expect(unlocked(r3.body)).toContain('equilibrio');
   });
 
-  it('Chama de 7 dias: todos os diários agendados por 7 dias seguidos libera a roupa especial', async () => {
+  it('Chama de 7 dias: todos os diários agendados por 7 dias seguidos ', async () => {
     const auth = await registerUser(ctx);
     const daily = await createItem(ctx, auth, {
       type: 'daily',
@@ -170,15 +163,9 @@ describe('conquistas e home', () => {
       if (day < 9) expect(unlocked(last)).not.toContain('chama-7-dias');
     }
     expect(unlocked(last)).toContain('chama-7-dias');
-    const cosmetics = await ctx
-      .http()
-      .get('/v1/me/cosmetics')
-      .set('authorization', bearer(auth))
-      .expect(200);
-    expect(cosmetics.body.cosmetics).toContain('outfit-special');
   });
 
-  it('GET /achievements: catálogo de 10 com progresso e estado', async () => {
+  it('GET /achievements: catálogo de 69 com progresso, estado e aviso pendente', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
@@ -188,13 +175,149 @@ describe('conquistas e home', () => {
       .get('/v1/achievements')
       .set('authorization', bearer(auth))
       .expect(200);
-    expect(res.body).toHaveLength(10);
+    expect(res.body).toHaveLength(69);
     const marathon = res.body.find((a: { slug: string }) => a.slug === 'maratonista');
     expect(marathon).toMatchObject({ unlocked: false, progress: { current: 1, target: 100 } });
     expect(res.body.find((a: { slug: string }) => a.slug === 'primeiro-passo')).toMatchObject({
       unlocked: true,
+      pending: true,
       progress: null,
     });
+    expect(JSON.stringify(res.body)).not.toContain('rewardKey');
+  });
+
+  it('surpresa bloqueada não mostra a descrição; ao desbloquear, mostra', async () => {
+    reset();
+    const auth = await registerUser(ctx);
+    const find = async () =>
+      (
+        await ctx.http().get('/v1/achievements').set('authorization', bearer(auth)).expect(200)
+      ).body.find((a: { slug: string }) => a.slug === 'resgate');
+    expect(await find()).toMatchObject({ secret: true, unlocked: false, description: null });
+    await ctx.prisma.userAchievement.create({
+      data: { userId: auth.user.id, achievementSlug: 'resgate' },
+    });
+    expect(await find()).toMatchObject({ unlocked: true });
+    expect((await find()).description).toEqual(expect.any(String));
+  });
+
+  it('ack confirma o aviso só das conquistas do próprio usuário', async () => {
+    reset();
+    const a = await registerUser(ctx);
+    const b = await registerUser(ctx);
+    for (const auth of [a, b]) {
+      const item = await createItem(ctx, auth, { type: 'habit' });
+      await check(ctx, auth, item.id).expect(200);
+    }
+    await ctx
+      .http()
+      .post('/v1/achievements/ack')
+      .set('authorization', bearer(a))
+      .send({ slugs: ['primeiro-passo'] })
+      .expect(204);
+    const rowOf = (userId: string) =>
+      ctx.prisma.userAchievement.findUniqueOrThrow({
+        where: { userId_achievementSlug: { userId, achievementSlug: 'primeiro-passo' } },
+      });
+    expect((await rowOf(a.user.id)).notifiedAt).not.toBeNull();
+    expect((await rowOf(b.user.id)).notifiedAt).toBeNull(); // o ack de A não toca em B
+    await ctx
+      .http()
+      .post('/v1/achievements/ack')
+      .set('authorization', bearer(a))
+      .send({ slugs: [] })
+      .expect(400);
+  });
+
+  it('criar itens, categoria e mudar o visual avaliam conquistas fora do check', async () => {
+    reset();
+    const auth = await registerUser(ctx);
+    await createItem(ctx, auth, { type: 'daily', scheduleDays: [1] });
+    await createItem(ctx, auth, { type: 'todo' });
+    const has = async (slug: string) =>
+      (await ctx.prisma.userAchievement.count({
+        where: { userId: auth.user.id, achievementSlug: slug },
+      })) === 1;
+    expect(await has('diario-inaugural')).toBe(true);
+    expect(await has('primeira-tarefa')).toBe(true);
+    expect(await has('primeiro-passo')).toBe(false); // sem check ainda
+
+    await ctx
+      .http()
+      .post('/v1/categories')
+      .set('authorization', bearer(auth))
+      .send({ name: 'Estudos', color: '#7c3aed' })
+      .expect(201);
+    expect(await has('do-meu-jeito')).toBe(true);
+
+    const character = {
+      name: 'Aria',
+      title: 'Herói',
+      skin: 'light',
+      hair: 'short-brown',
+      outfit: 'tunic-purple',
+    };
+    const put = (body: object) =>
+      ctx.http().put('/v1/me/character').set('authorization', bearer(auth)).send(body).expect(200);
+    await put(character); // primeiro cadastro não é mudança de visual
+    expect(await has('cara-nova')).toBe(false);
+    await put(character); // igual: nada muda
+    expect(await has('cara-nova')).toBe(false);
+    await put({ ...character, hair: 'long-black' });
+    expect(await has('cara-nova')).toBe(true);
+  });
+
+  it('POST /me/events: lembrete ativado libera Hora marcada uma vez; tipo inválido é recusado', async () => {
+    reset();
+    const auth = await registerUser(ctx);
+    await ctx
+      .http()
+      .post('/v1/me/events')
+      .set('authorization', bearer(auth))
+      .send({ type: 'unlock_everything' })
+      .expect(400);
+    for (let i = 0; i < 2; i += 1) {
+      await ctx
+        .http()
+        .post('/v1/me/events')
+        .set('authorization', bearer(auth))
+        .send({ type: 'reminder_enabled' })
+        .expect(204);
+    }
+    expect(
+      await ctx.prisma.userAchievement.count({
+        where: { userId: auth.user.id, achievementSlug: 'hora-marcada' },
+      }),
+    ).toBe(1);
+  });
+
+  it('coleção: a 5ª conquista libera Colecionador de medalhas na mesma passada', async () => {
+    reset();
+    const auth = await registerUser(ctx);
+    for (const type of ['daily', 'todo', 'habit'] as const) {
+      await createItem(ctx, auth, { type, scheduleDays: [1] });
+    }
+    const item = await createItem(ctx, auth, { type: 'habit' });
+    const res = await check(ctx, auth, item.id).expect(200);
+    expect(unlocked(res.body)).toContain('colecionador-de-medalhas');
+  });
+
+  it('retroativo: libera o que já cumpria, já avisado, e não repete', async () => {
+    reset();
+    const auth = await registerUser(ctx);
+    await ctx.prisma.userStats.update({
+      where: { userId: auth.user.id },
+      data: { totalChecks: 100, level: 5 },
+    });
+    const service = ctx.app.get(AchievementsService);
+    expect(await service.backfillAll()).toBeGreaterThan(0);
+    const rows = await ctx.prisma.userAchievement.findMany({ where: { userId: auth.user.id } });
+    expect(rows.map((r) => r.achievementSlug)).toEqual(
+      expect.arrayContaining(['primeiro-passo', 'maratonista', 'aprendiz']),
+    );
+    expect(rows.every((r) => r.notifiedAt !== null)).toBe(true);
+    const again = await service.evaluateFor(auth.user.id, true);
+    expect(again).toEqual([]);
   });
 
   it('GET /home: contadores, história ativa e itens "Para hoje"', async () => {

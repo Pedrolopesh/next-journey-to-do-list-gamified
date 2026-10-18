@@ -18,6 +18,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "db:backfill-achievements": "tsx prisma/backfill-achievements.ts",
     "test:e2e": "vitest run --config vitest.config.e2e.ts",
     "generate": "prisma generate"
   },

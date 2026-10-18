@@ -81,6 +81,12 @@ model UserStats {
   coins        Int    @default(0)
   totalChecks  Int    @default(0) @map("total_checks")
   itemsCreated Int    @default(0) @map("items_created")
+  /// Quantas vezes a pessoa mudou o visual do personagem (conquistas)
+  lookChanges       Int       @default(0) @map("look_changes")
+  /// Categorias criadas pela pessoa (as do cadastro não contam)
+  categoriesCreated Int       @default(0) @map("categories_created")
+  /// Quando o app avisou que o lembrete diário foi ativado (conquista)
+  reminderEnabledAt DateTime? @map("reminder_enabled_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -286,9 +292,13 @@ model Achievement {
   slug        String  @id
   name        String
   description String
-  iconKey     String  @map("icon_key")
-  /// Cosmético liberado ao conquistar (ex.: roupa especial)
-  rewardKey   String? @map("reward_key")
+  /// Trilha e classe (1 bronze a 4 diamante); o catálogo vem de `@nextjourney/contracts`
+  trail       String
+  tier        Int
+  /// Nome da insígnia 24x24 em `@nextjourney/insignias`
+  glyph       String
+  /// Surpresa: a descrição só é enviada depois de desbloquear
+  secret      Boolean @default(false)
   position    Int     @default(0)
 
   unlocked UserAchievement[]
@@ -300,6 +310,8 @@ model UserAchievement {
   userId          String   @map("user_id") @db.Uuid
   achievementSlug String   @map("achievement_slug")
   unlockedAt      DateTime @default(now()) @map("unlocked_at") @db.Timestamptz
+  /// Quando o app confirmou o aviso (modal); nulo = aviso pendente
+  notifiedAt      DateTime? @map("notified_at") @db.Timestamptz
 
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   achievement Achievement @relation(fields: [achievementSlug], references: [slug], onDelete: Cascade)

@@ -59,8 +59,10 @@ for (const achievement of ACHIEVEMENTS) {
     update: {
       name: achievement.name,
       description: achievement.description,
-      iconKey: achievement.iconKey,
-      rewardKey: achievement.rewardKey,
+      trail: achievement.trail,
+      tier: achievement.tier,
+      glyph: achievement.glyph,
+      secret: achievement.secret,
       position: achievement.position,
     },
   });

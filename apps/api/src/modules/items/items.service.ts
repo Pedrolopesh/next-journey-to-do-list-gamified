@@ -11,6 +11,7 @@ import { AppError } from '../../common/app-error.js';
 import { Clock } from '../../common/clock.js';
 import type { Item } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { AchievementsService } from '../achievements/achievements.service.js';
 import {
   addDays,
   calcularStreak,
@@ -30,6 +31,7 @@ export class ItemsService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(Clock) private readonly clock: Clock,
+    @Inject(AchievementsService) private readonly achievements: AchievementsService,
   ) {}
 
   /** Lista os itens do usuário já com o estado do dia (feito, atrasado, sequência, contadores). */
@@ -88,7 +90,8 @@ export class ItemsService {
     });
     if (!category) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Categoria não encontrada');
 
-    const hoje = diaLocal(this.clock.now(), user.timezone);
+    const now = this.clock.now();
+    const hoje = diaLocal(now, user.timezone);
     const item = await this.prisma.$transaction(async (tx) => {
       const created = await tx.item.create({
         data: {
@@ -104,6 +107,7 @@ export class ItemsService {
         },
       });
       await tx.userStats.update({ where: { userId }, data: { itemsCreated: { increment: 1 } } });
+      await this.achievements.evaluate(tx, { userId, timezone: user.timezone, now, hoje });
       return created;
     });
     return this.toDto(item, [], hoje, inicioDaSemana(hoje), this.clock.now());

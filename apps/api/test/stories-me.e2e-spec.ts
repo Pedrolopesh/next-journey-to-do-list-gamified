@@ -142,23 +142,6 @@ describe('histórias, personagem e perfil', () => {
       .expect(400);
   });
 
-  it('cosmético de conquista só pode ser usado depois de liberado', async () => {
-    const auth = await registerUser(ctx);
-    const res = await ctx
-      .http()
-      .put('/v1/me/character')
-      .set('authorization', bearer(auth))
-      .send({
-        name: 'Aria',
-        title: 'Herói',
-        skin: 'light',
-        hair: 'short-brown',
-        outfit: 'outfit-cape',
-      })
-      .expect(403);
-    expect(res.body.code).toBe('COSMETIC_LOCKED');
-  });
-
   const levelUpNext = (auth: Awaited<ReturnType<typeof registerUser>>) =>
     ctx.prisma.userStats.update({
       where: { userId: auth.user.id },
