@@ -16,4 +16,4 @@
 ## 3. Verificação
 
 - [x] 3.1 lint, typecheck, test, build, e2e e `security:full`
-- [ ] 3.2 Conferir no emulador: concluir tarefa, ver no histórico, desfazer e reabrir o app com o item marcado
+- [x] 3.2 Conferir no emulador: concluir tarefa, ver no histórico, desfazer e reabrir o app com o item marcado
