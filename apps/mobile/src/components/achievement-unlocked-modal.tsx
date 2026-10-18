@@ -6,14 +6,15 @@ import Svg, { Circle, Path, Polygon } from 'react-native-svg';
 import { colors, mix, radius, rgba, space } from '@/theme';
 
 import { Button } from './button';
-import { PixelArt, type PixelArtName } from './pixel-art';
+import { Insignia } from './pixel-art';
 
 type Props = {
   visible: boolean;
   name: string;
   /** Critério da conquista (opcional: some quando o catálogo ainda não foi carregado). */
   description?: string | undefined;
-  art: PixelArtName;
+  /** Insígnia (nome em `@nextjourney/insignias`). */
+  glyph: string;
   /** Cor da moldura (classe) conquistada: pinta o topo do modal. */
   tierColor: string;
   onContinue: () => void;
@@ -53,7 +54,7 @@ export function AchievementUnlockedModal({
   visible,
   name,
   description,
-  art,
+  glyph,
   tierColor,
   onContinue,
   onSeeAll,
@@ -89,7 +90,7 @@ export function AchievementUnlockedModal({
               />
             </Svg>
             <View style={styles.badge}>
-              <PixelArt name={art} size={76} />
+              <Insignia glyph={glyph} size={92} />
             </View>
             <Text style={[styles.headline, { color: ink }]} accessibilityRole="header">
               {t('feedback.achievementUnlocked')}

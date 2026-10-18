@@ -1,6 +1,7 @@
 import {
   type Achievement,
   achievementSchema,
+  type AppEvent,
   type AuthResponse,
   authResponseSchema,
   type Category,
@@ -85,6 +86,16 @@ export async function patchMe(body: PatchMeRequest): Promise<MeResponse> {
 
 export async function putCharacter(body: Character): Promise<void> {
   await http.put('/me/character', body);
+}
+
+/** Confirma que o aviso (modal) destas conquistas foi mostrado. */
+export async function ackAchievements(slugs: string[]): Promise<void> {
+  await http.post('/achievements/ack', { slugs });
+}
+
+/** Informa um fato do aparelho que o servidor não observa (ex.: lembrete diário ativado). */
+export async function sendAppEvent(type: AppEvent['type']): Promise<void> {
+  await http.post('/me/events', { type });
 }
 
 export async function fetchCosmetics(): Promise<string[]> {

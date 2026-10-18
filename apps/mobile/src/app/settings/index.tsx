@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 
-import { deleteAccount, patchMe } from '@/api/endpoints';
+import { deleteAccount, patchMe, sendAppEvent } from '@/api/endpoints';
 import { queryKeys, useMe } from '@/api/queries';
 import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
@@ -119,6 +119,13 @@ export default function SettingsScreen() {
               if (!allowed) {
                 setMessage(t('settings.notifyDenied'));
                 toast.error(t('settings.notifyDenied'));
+                return;
+              }
+              if (parsed.value) {
+                // Conquista "Hora marcada": o servidor não sabe do lembrete, que é do aparelho
+                void sendAppEvent('reminder_enabled')
+                  .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.achievements }))
+                  .catch(() => undefined);
               }
             })();
           }}

@@ -1,16 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { tierColor, tierOf } from './tier';
+import { tierColor } from './tier';
 
-describe('tierOf', () => {
-  it('usa a classe do catálogo e bronze quando a conquista é nova', () => {
-    expect(tierOf('lenda-viva')).toBe('gold');
-    expect(tierOf('chama-7-dias')).toBe('silver');
-    expect(tierOf('conquista-que-ainda-nao-existe')).toBe('bronze');
+describe('tierColor', () => {
+  it('cada classe do servidor tem uma cor do design system', () => {
+    expect(tierColor(1)).toBe('#cd7f32');
+    expect(tierColor(3)).toBe('#facc15');
+    expect(tierColor(4)).toMatch(/^#[0-9a-f]{6}$/);
   });
 
-  it('cada classe tem uma cor do design system', () => {
-    expect(tierColor('gold')).toBe('#facc15');
-    expect(tierColor('diamond')).toMatch(/^#[0-9a-f]{6}$/);
+  it('as quatro classes têm cores diferentes', () => {
+    expect(new Set([1, 2, 3, 4].map((tier) => tierColor(tier as 1 | 2 | 3 | 4))).size).toBe(4);
   });
 });

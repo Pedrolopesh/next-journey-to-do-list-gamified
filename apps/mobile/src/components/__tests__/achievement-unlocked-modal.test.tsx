@@ -6,7 +6,7 @@ const base = {
   visible: true,
   name: 'Primeiro passo',
   description: 'Faça o seu primeiro check',
-  art: 'first-step' as const,
+  glyph: 'pegada',
   tierColor: '#cd7f32',
 };
 

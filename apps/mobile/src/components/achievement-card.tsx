@@ -2,32 +2,34 @@ import type { Achievement } from '@nextjourney/contracts';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { tierColor } from '@/features/achievements/tier';
 import { colors, radius, softGlowOutline, space } from '@/theme';
 
-import { PixelArt } from './pixel-art';
-import { achievementArt } from './pixel-art-data';
+import { Insignia } from './pixel-art';
 
 type Props = { achievement: Achievement; onPress: (achievement: Achievement) => void };
 
-/** Peça da galeria de conquistas: pixel art no topo; dourada quando desbloqueada, apagada quando não. */
+/** Peça da galeria: insígnia no topo e moldura na cor da classe; apagada enquanto bloqueada. */
 export function AchievementCard({ achievement, onPress }: Props) {
   const { t } = useTranslation();
   const { unlocked, progress } = achievement;
+  const frame = tierColor(achievement.tier);
+  const description = achievement.description ?? t('achievements.secretHint');
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${achievement.name}. ${achievement.description}. ${unlocked ? t('achievements.unlocked') : t('achievements.locked')}`}
+      accessibilityLabel={`${achievement.name}. ${description}. ${unlocked ? t('achievements.unlocked') : t('achievements.locked')}`}
       onPress={() => {
         onPress(achievement);
       }}
       style={({ pressed }) => [
         styles.card,
-        unlocked ? softGlowOutline(colors.brand.gold) : styles.locked,
+        unlocked ? softGlowOutline(frame) : styles.locked,
         pressed && styles.pressed,
       ]}
     >
       <View style={!unlocked && styles.dimmed}>
-        <PixelArt name={achievementArt(achievement.iconKey)} size={60} />
+        <Insignia glyph={achievement.glyph} size={64} />
       </View>
       <Text style={styles.name} numberOfLines={2}>
         {achievement.name}
@@ -45,8 +47,7 @@ export function AchievementCard({ achievement, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    flexBasis: '48%',
-    flexGrow: 1,
+    width: '48.5%',
     alignItems: 'center',
     gap: space[4],
     backgroundColor: colors.bg.surface,
@@ -58,6 +59,6 @@ const styles = StyleSheet.create({
   dimmed: { opacity: 0.45 },
   pressed: { transform: [{ scale: 0.98 }] },
   name: { color: colors.text.primary, fontSize: 14, fontWeight: '600', textAlign: 'center' },
-  done: { color: colors.brand.gold, fontSize: 12, fontWeight: '600' },
+  done: { color: colors.text.primary, fontSize: 12, fontWeight: '600' },
   status: { color: colors.text.secondary, fontSize: 12 },
 });

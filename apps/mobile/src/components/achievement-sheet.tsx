@@ -2,16 +2,16 @@ import type { Achievement } from '@nextjourney/contracts';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { tierColor } from '@/features/achievements/tier';
 import { colors, radius, space } from '@/theme';
 
 import { BottomSheet } from './bottom-sheet';
 import { Button } from './button';
-import { PixelArt } from './pixel-art';
-import { achievementArt } from './pixel-art-data';
+import { Insignia } from './pixel-art';
 
 type Props = { achievement: Achievement | null; onClose: () => void };
 
-/** Detalhes da conquista num modal que sobe do rodapé: critério, progresso, data e recompensa. */
+/** Detalhes da conquista num modal que sobe do rodapé: classe, critério, progresso e data. */
 export function AchievementSheet({ achievement, onClose }: Props) {
   const { t } = useTranslation();
   const progress = achievement?.progress ?? null;
@@ -24,7 +24,7 @@ export function AchievementSheet({ achievement, onClose }: Props) {
       {achievement ? (
         <>
           <View style={[styles.art, !achievement.unlocked && styles.dimmed]}>
-            <PixelArt name={achievementArt(achievement.iconKey)} size={96} />
+            <Insignia glyph={achievement.glyph} size={112} />
           </View>
           <Text style={styles.title} accessibilityRole="header">
             {achievement.unlocked ? '★ ' : ''}
@@ -39,7 +39,12 @@ export function AchievementSheet({ achievement, onClose }: Props) {
                 : t('achievements.unlocked')
               : t('achievements.locked')}
           </Text>
-          <Text style={styles.description}>{achievement.description}</Text>
+          <Text style={[styles.tier, { color: tierColor(achievement.tier) }]}>
+            {t(`achievements.tier.${achievement.tier}`)}
+          </Text>
+          <Text style={styles.description}>
+            {achievement.description ?? t('achievements.secretHint')}
+          </Text>
           {progress && !achievement.unlocked ? (
             <View
               style={styles.progress}
@@ -58,11 +63,6 @@ export function AchievementSheet({ achievement, onClose }: Props) {
                 {t('achievements.progress', { current: progress.current, target: progress.target })}
               </Text>
             </View>
-          ) : null}
-          {achievement.rewardKey ? (
-            <Text style={styles.reward}>
-              {t('achievements.reward', { reward: achievement.rewardKey })}
-            </Text>
           ) : null}
           <Button label={t('common.close')} variant="secondary" onPress={onClose} />
         </>
@@ -86,5 +86,5 @@ const styles = StyleSheet.create({
   },
   fill: { height: '100%', backgroundColor: colors.brand.primary },
   progressText: { color: colors.brand.primaryLight, fontSize: 12 },
-  reward: { color: colors.brand.gold, fontSize: 13 },
+  tier: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
 });

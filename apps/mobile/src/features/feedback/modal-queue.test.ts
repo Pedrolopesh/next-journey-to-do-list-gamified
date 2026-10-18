@@ -27,8 +27,8 @@ describe('buildModalQueue', () => {
       chapterCompleted: true,
       completedChapter: { number: 1, title: 'T', text: 'x', storyCompleted: false },
       achievementsUnlocked: [
-        { slug: 'a', name: 'A', rewardKey: null },
-        { slug: 'b', name: 'B', rewardKey: 'outfit-cape' },
+        { slug: 'a', name: 'A', tier: 1, glyph: 'pegada' },
+        { slug: 'b', name: 'B', tier: 3, glyph: 'coroa' },
       ],
     };
     const queue = buildModalQueue(result);
