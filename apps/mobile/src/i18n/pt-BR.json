@@ -81,7 +81,8 @@
     "achievements": "Conquistas",
     "myStory": "Minha história",
     "customize": "Personalizar personagem",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "history": "Histórico de tarefas"
   },
   "feedback": {
     "invalidForm": "Revise os campos destacados.",
@@ -131,7 +132,8 @@
     "emptyHint": "Toque no + para criar uma tarefa.",
     "all": "Todas",
     "noCategory": "Sem categoria",
-    "filter": "Categoria"
+    "filter": "Categoria",
+    "historyNotice": "Tarefas concluídas saem desta lista e ficam no histórico, em Perfil."
   },
   "habits": {
     "title": "Hábitos",
@@ -476,5 +478,16 @@
     "level": "Nível {{level}}",
     "coins": "{{count}} moedas",
     "exp": "{{exp}}/{{next}} EXP"
+  },
+  "history": {
+    "title": "Histórico de tarefas",
+    "empty": "Nenhuma tarefa concluída ainda",
+    "emptyHint": "As tarefas que você concluir aparecem aqui.",
+    "completedOn": "Concluída em {{date}}",
+    "undo": "Desfazer",
+    "undoHint": "Desfazer devolve a tarefa à lista e tira moedas; o EXP continua.",
+    "more": "Carregar mais",
+    "load": "Não foi possível carregar o histórico.",
+    "noCategory": "Sem categoria"
   }
 }

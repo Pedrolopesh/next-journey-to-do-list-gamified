@@ -16,6 +16,7 @@ const base: Item = {
   overdue: false,
   streak: 0,
   checksToday: 0,
+  lastCheckId: null,
   checksThisWeek: 0,
 };
 

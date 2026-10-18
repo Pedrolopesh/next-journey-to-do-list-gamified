@@ -11,6 +11,7 @@ export default function TodosScreen() {
       title={t('todos.title')}
       emptyTitle={t('todos.empty')}
       emptyHint={t('todos.emptyHint')}
+      historyNotice={t('todos.historyNotice')}
     />
   );
 }

@@ -56,6 +56,20 @@ Monorepo pnpm + Turborepo: `apps/api` (NestJS + Prisma + PostgreSQL), `apps/mobi
 - O Vite recarrega a página inteira a cada arquivo salvo; o laboratório volta para a cabana. Espere alguns segundos antes de clicar.
 - Não editar migrations já aplicadas; migration nova sempre.
 
+## NÃO ESQUECER ao subir as branches da pontuação (2026-10-19)
+
+Branches locais, ainda **não enviadas** ao GitHub (cada PR só depois da aprovação do Pedro e do `security:full`). Ao começar a subir, **reler esta lista, aplicar cada ponto e revisá-lo com o Pedro**:
+
+1. **Migration `20261019120000_pontuacao_v2`** (troca `levelExpSlope/levelExpOffset` por `levelExpTable` e `undoCoinPenalty` no `game_config`): em qualquer outro ambiente rodar `db:deploy`. O seed **não** sobrescreve o `game_config` (`update: {}`), então sem a migration a API falha ao carregar a config.
+2. **EXP maior, nível mantido:** quem já está num nível mantém o `expInLevel`; só o teto cresceu (200, 400, 600, 800, 1000 e depois 1000). Ninguém perde nível. Avisar o Pedro antes de publicar.
+3. **Brecha das moedas** (anotada na página "Moedas e EXP" do laboratório): no capítulo 1, marcar, desmarcar e marcar de novo um item difícil rende +1 moeda por volta. Medir e decidir se endurece (moedas uma vez por item e dia).
+4. **Desmarcar vale a qualquer momento** (sem `CHECK_LOCKED` nem recusa de outro dia). Confirmar com o Pedro que `UNDO_NOT_ALLOWED` só sobra para item excluído.
+5. **O desfazer agora vem do servidor** (`lastCheckId` em `GET /items` e `checkId` no histórico). Conferir no aparelho real, com o app reaberto, que desmarcar funciona.
+6. **Histórico de tarefas** (`GET /items/history`, tela no Perfil): conferir paginação com muitas tarefas e o aviso no rodapé de Tarefas.
+7. **Personagem no capítulo 5 concluído:** fica no fim do cenário, sem portal. Não verificado no aparelho (só o capítulo 2).
+8. **Branches empilhadas:** `fix/token-renovado-401` → `feat/lab-moedas-e-exp`; `feat/pontuacao-v2` → `feat/historico-e-desfazer`. A `wip/teste-integrado` é só para teste local e **nunca** sobe.
+9. **Ainda não verificado:** pontuação e histórico no iPhone físico (e a permissão de "Rede local" do iOS); modal com o botão X no iPhone físico.
+
 ## NÃO ESQUECER: medir o banner em aparelho real
 
 Combinado com o Pedro: adiado até terminar as próximas etapas (jornada em todos os cenários), mas **é obrigatório antes da loja**. Fase 2, passos 16 e 17 e o ADR-0003 com os números. O QG e a jornada rodam a 30 quadros por segundo com escala até 3; falta medir em aparelho de entrada (quadros por segundo, memória, bateria), com o app em segundo plano e com "reduzir movimento". A jornada anima o tempo todo e tem mais desenho por quadro que o QG parado, então pesa mais.
