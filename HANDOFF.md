@@ -68,7 +68,8 @@ Branches locais, ainda **não enviadas** ao GitHub (cada PR só depois da aprova
 6. **Histórico de tarefas** (`GET /items/history`, tela no Perfil): conferir paginação com muitas tarefas e o aviso no rodapé de Tarefas.
 7. **Personagem no capítulo 5 concluído:** fica no fim do cenário, sem portal. Não verificado no aparelho (só o capítulo 2).
 8. **Branches empilhadas:** `fix/token-renovado-401` → `feat/lab-moedas-e-exp`; `feat/pontuacao-v2` → `feat/historico-e-desfazer`. A `wip/teste-integrado` é só para teste local e **nunca** sobe.
-9. **Ainda não verificado:** pontuação e histórico no iPhone físico (e a permissão de "Rede local" do iOS); modal com o botão X no iPhone físico.
+9. **70ª conquista (`habito-de-100`, Diamante):** ao publicar, rodar `db:seed` (cria a linha no catálogo) e `db:backfill-achievements` (libera para quem já tem 100 dias seguidos de um hábito, sem reabrir modal). Branch `feat/conquista-70`, a partir da `main`.
+10. **Ainda não verificado:** pontuação e histórico no iPhone físico (e a permissão de "Rede local" do iOS); modal com o botão X no iPhone físico.
 
 ## NÃO ESQUECER: medir o banner em aparelho real
 
