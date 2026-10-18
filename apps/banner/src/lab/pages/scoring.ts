@@ -14,7 +14,7 @@ const expHoje = (nivel: number): number => NOW.levelExpSlope * nivel - NOW.level
 const NOW_CHAPTER_EXP = [1, 2, 3, 4, 5].map(expHoje);
 
 /** PROPOSTA (ainda não vale no app): EXP de cada capítulo e moedas perdidas ao desmarcar. */
-const CHAPTER_EXP = [100, 350, 500, 800, 1000];
+const CHAPTER_EXP = [200, 400, 600, 800, 1000];
 const UNDO_PENALTY = [3, 5, 10, 15, 20];
 const { expByDifficulty: EXP, coinsByDifficulty: COINS, levelUpBonusCoins: BONUS } = NOW;
 
@@ -328,7 +328,7 @@ export const scoringPage: LabPage = {
           h(
             'li',
             '',
-            'Capítulos 4 e 5: valores 15 e 20 são sugestão minha (você definiu 3, 5 e 10).',
+            'Capítulos 4 e 5: valores 15 e 20 são definidos por você (3, 5, 10, 15 e 20).',
           ),
           h(
             'li',
