@@ -1,4 +1,5 @@
 import type { HistoryItem } from '@nextjourney/contracts';
+import { IconHistory } from '@tabler/icons-react-native';
 import { useTranslation } from 'react-i18next';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
@@ -60,9 +61,15 @@ export default function HistoryScreen() {
         <FlatList
           data={rows}
           keyExtractor={(row) => row.id}
-          ListHeaderComponent={<Text style={styles.hint}>{t('history.undoHint')}</Text>}
+          ListHeaderComponent={
+            rows.length > 0 ? <Text style={styles.hint}>{t('history.undoHint')}</Text> : undefined
+          }
           ListEmptyComponent={
-            <EmptyState title={t('history.empty')} hint={t('history.emptyHint')} />
+            <EmptyState
+              icon={IconHistory}
+              title={t('history.empty')}
+              hint={t('history.emptyHint')}
+            />
           }
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           renderItem={({ item: row }) => (

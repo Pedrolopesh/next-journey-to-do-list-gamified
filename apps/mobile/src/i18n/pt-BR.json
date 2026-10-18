@@ -123,13 +123,13 @@
   },
   "dailies": {
     "title": "Diários",
-    "empty": "Nenhum diário ainda",
-    "emptyHint": "Crie diários para marcar todo dia."
+    "empty": "Seus diários aparecem aqui",
+    "emptyHint": "Diários são tarefas de rotina: você marca uma vez por dia, nos dias que escolher. Toque no + para criar o primeiro."
   },
   "todos": {
     "title": "Tarefas",
-    "empty": "Nenhuma tarefa pendente",
-    "emptyHint": "Toque no + para criar uma tarefa.",
+    "empty": "Nenhuma tarefa por aqui",
+    "emptyHint": "Tarefas valem uma vez só. Toque no + para criar a primeira; as concluídas ficam no histórico.",
     "all": "Todas",
     "noCategory": "Sem categoria",
     "filter": "Categoria",
@@ -137,8 +137,8 @@
   },
   "habits": {
     "title": "Hábitos",
-    "empty": "Nenhum hábito ainda",
-    "emptyHint": "Hábitos podem ser marcados quantas vezes quiser no dia."
+    "empty": "Seus hábitos aparecem aqui",
+    "emptyHint": "Hábitos podem ser marcados quantas vezes você quiser no dia. Toque no + para criar o primeiro."
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -481,8 +481,8 @@
   },
   "history": {
     "title": "Histórico de tarefas",
-    "empty": "Nenhuma tarefa concluída ainda",
-    "emptyHint": "As tarefas que você concluir aparecem aqui.",
+    "empty": "Nada concluído ainda",
+    "emptyHint": "Quando você concluir uma tarefa, ela fica guardada aqui para você rever depois.",
     "completedOn": "Concluída em {{date}}",
     "undo": "Desfazer",
     "undoHint": "Desfazer devolve a tarefa à lista e tira moedas; o EXP continua.",

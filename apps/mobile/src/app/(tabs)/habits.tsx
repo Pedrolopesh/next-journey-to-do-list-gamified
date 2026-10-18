@@ -1,3 +1,4 @@
+import { IconFlame } from '@tabler/icons-react-native';
 import { useTranslation } from 'react-i18next';
 
 import { ItemListScreen } from '@/components/item-list-screen';
@@ -10,6 +11,7 @@ export default function HabitsScreen() {
       counters
       title={t('habits.title')}
       emptyTitle={t('habits.empty')}
+      emptyIcon={IconFlame}
       emptyHint={t('habits.emptyHint')}
     />
   );
