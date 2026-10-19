@@ -114,6 +114,7 @@ export function AchievementUnlockedModal({
               <Button
                 label={t('feedback.seeAchievements')}
                 variant="secondary"
+                backdrop={bodyColor}
                 onPress={onSeeAll}
               />
             </View>
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  body: { paddingHorizontal: space[20], paddingBottom: space[20], gap: space[8] },
+  body: { paddingHorizontal: space[20], paddingBottom: space[24], gap: space[8] },
   name: { color: colors.text.primary, fontSize: 20, fontWeight: '700', textAlign: 'center' },
   description: { color: colors.text.secondary, fontSize: 14, textAlign: 'center' },
   hint: {
@@ -179,5 +180,5 @@ const styles = StyleSheet.create({
     marginTop: space[4],
     marginBottom: space[8],
   },
-  actions: { gap: space[12] },
+  actions: { gap: space[16] },
 });

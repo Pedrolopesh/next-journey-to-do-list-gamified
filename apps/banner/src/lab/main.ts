@@ -8,6 +8,7 @@ import { characterPage } from './pages/character';
 import { glowPage } from './pages/glow';
 import { indicatorsPage } from './pages/indicators';
 import { scenesPage } from './pages/scenes';
+import { scoringPage } from './pages/scoring';
 
 /** Páginas do laboratório, na ordem do menu lateral. */
 const PAGES: LabPage[] = [
@@ -17,6 +18,7 @@ const PAGES: LabPage[] = [
   achievementsV2Page,
   scenesPage,
   characterPage,
+  scoringPage,
 ];
 
 const side = document.getElementById('menu');

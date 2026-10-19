@@ -54,12 +54,12 @@ export function softGlow(
           { offsetX: 0, offsetY: 2, blurRadius: 6, color: 'rgba(0, 0, 0, 0.3)', inset: true },
           {
             offsetX: 0,
-            offsetY: 4,
-            blurRadius: 12,
-            spreadDistance: -6,
-            color: rgba(halo, 0.6 * k),
+            offsetY: 2,
+            blurRadius: 8,
+            spreadDistance: -5,
+            color: rgba(halo, 0.35 * k),
           },
-          { offsetX: 0, offsetY: 0, blurRadius: 10, color: rgba(halo, 0.25 * k) },
+          { offsetX: 0, offsetY: 0, blurRadius: 8, color: rgba(halo, 0.12 * k) },
         ]
       : [
           {
@@ -71,12 +71,12 @@ export function softGlow(
           },
           {
             offsetX: 0,
-            offsetY: 8,
-            blurRadius: 22,
-            spreadDistance: -8,
-            color: rgba(halo, 0.7 * k),
+            offsetY: 4,
+            blurRadius: 14,
+            spreadDistance: -6,
+            color: rgba(halo, 0.45 * k),
           },
-          { offsetX: 0, offsetY: 0, blurRadius: 18, color: rgba(halo, 0.28 * k) },
+          { offsetX: 0, offsetY: 0, blurRadius: 10, color: rgba(halo, 0.16 * k) },
         ],
   };
 }
@@ -98,12 +98,12 @@ export function softGlowOutline(
     boxShadow: pressed
       ? [
           { offsetX: 0, offsetY: 2, blurRadius: 6, color: 'rgba(0, 0, 0, 0.25)', inset: true },
-          { offsetX: 0, offsetY: 4, blurRadius: 12, spreadDistance: -6, color: rgba(color, 0.5) },
+          { offsetX: 0, offsetY: 2, blurRadius: 8, spreadDistance: -5, color: rgba(color, 0.26) },
         ]
       : [
           { offsetX: 0, offsetY: 1, blurRadius: 0, color: 'rgba(255, 255, 255, 0.1)', inset: true },
-          { offsetX: 0, offsetY: 8, blurRadius: 22, spreadDistance: -10, color: rgba(color, 0.6) },
-          { offsetX: 0, offsetY: 0, blurRadius: 18, color: rgba(color, 0.2) },
+          { offsetX: 0, offsetY: 4, blurRadius: 12, spreadDistance: -6, color: rgba(color, 0.32) },
+          { offsetX: 0, offsetY: 0, blurRadius: 10, color: rgba(color, 0.1) },
         ],
   };
 }

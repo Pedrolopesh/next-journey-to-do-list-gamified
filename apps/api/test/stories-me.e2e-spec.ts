@@ -145,7 +145,7 @@ describe('histórias, personagem e perfil', () => {
   const levelUpNext = (auth: Awaited<ReturnType<typeof registerUser>>) =>
     ctx.prisma.userStats.update({
       where: { userId: auth.user.id },
-      data: { expInLevel: 45, expTotal: 45 },
+      data: { expInLevel: 195, expTotal: 195 },
     });
   const activate = (auth: Awaited<ReturnType<typeof registerUser>>, slug: string) =>
     ctx.http().put('/v1/me/story').set('authorization', bearer(auth)).send({ slug }).expect(200);
@@ -167,7 +167,7 @@ describe('histórias, personagem e perfil', () => {
     expect(back.body.player).toMatchObject({ level: 2, totalChecks: 1 });
   });
 
-  it('desfazer funciona depois de trocar de história (check que não subiu de nível)', async () => {
+  it('desfazer funciona depois de trocar de história e mantém o EXP', async () => {
     const auth = await registerUser(ctx, undefined, { story: 'beach' });
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const checkId = randomUUID();
@@ -181,7 +181,7 @@ describe('histórias, personagem e perfil', () => {
 
     await activate(auth, 'beach');
     const me = await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
-    expect(me.body.player).toMatchObject({ expInLevel: 0, totalChecks: 0 });
+    expect(me.body.player).toMatchObject({ expInLevel: 5, totalChecks: 0 });
     expect(me.body.player.story).toEqual({ chapter: 1, completed: false });
   });
 
@@ -197,7 +197,7 @@ describe('histórias, personagem e perfil', () => {
       storyCompleted: false,
     });
     expect(res.body.completedChapter.text.length).toBeGreaterThan(10);
-    expect(res.body.chapterProgress).toEqual({ chapter: 2, expInLevel: 0, expForNextLevel: 125 });
+    expect(res.body.chapterProgress).toEqual({ chapter: 2, expInLevel: 0, expForNextLevel: 400 });
 
     const timeline = await ctx
       .http()
@@ -209,7 +209,7 @@ describe('histórias, personagem e perfil', () => {
     // texto só nos capítulos concluídos; o atual mostra o progresso (EXP do nível)
     expect(timeline.body.chapters[0].text).toBeTruthy();
     expect(timeline.body.chapters[1].text).toBeNull();
-    expect(timeline.body.chapters[1]).toMatchObject({ expInLevel: 0, expForNextLevel: 125 });
+    expect(timeline.body.chapters[1]).toMatchObject({ expInLevel: 0, expForNextLevel: 400 });
   });
 
   it('mostra os capítulos de outra história sem trocar a ativa; slug inexistente é 404', async () => {
@@ -259,7 +259,7 @@ describe('histórias, personagem e perfil', () => {
     });
     await ctx.prisma.userStats.update({
       where: { userId: auth.user.id },
-      data: { level: 5, expInLevel: 345, expTotal: 345 },
+      data: { level: 5, expInLevel: 995, expTotal: 995 },
     });
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const fim = await check(ctx, auth, item.id).expect(200);

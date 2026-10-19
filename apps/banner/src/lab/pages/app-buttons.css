@@ -11,12 +11,17 @@
 }
 .rn.primary {
   background: #7c3aed;
-  box-shadow: 0 6px 18px rgb(124 58 237 / 0.4);
+  box-shadow:
+    0 4px 14px -6px rgb(124 58 237 / 0.45),
+    0 0 10px rgb(124 58 237 / 0.16);
 }
 .rn.secondary {
-  background: transparent;
+  background: #16213e;
   color: #a78bfa;
   border: 1.5px solid #7c3aed;
+  box-shadow:
+    0 4px 12px -6px rgb(124 58 237 / 0.32),
+    0 0 10px rgb(124 58 237 / 0.1);
 }
 .rn.ghost {
   background: transparent;
@@ -24,7 +29,9 @@
 }
 .rn.danger {
   background: #ef4444;
-  box-shadow: 0 6px 18px rgb(239 68 68 / 0.4);
+  box-shadow:
+    0 4px 14px -6px rgb(239 68 68 / 0.45),
+    0 0 10px rgb(239 68 68 / 0.16);
 }
 .rn.off {
   opacity: 0.45;

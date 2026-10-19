@@ -7,180 +7,83 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
 import { aplicarCheck, type CheckInput } from './apply-check.js';
-import { expParaNivel } from './levels.js';
 import { desfazerCheck } from './undo-check.js';
-
-const HOJE = '2026-10-09';
 
 const inicial: PlayerState = {
   level: 1,
-  expInLevel: 0,
-  expTotal: 0,
-  coins: 0,
-  totalChecks: 0,
+  expInLevel: 100,
+  expTotal: 100,
+  coins: 20,
+  totalChecks: 10,
   story: { chapter: 1, completed: false },
 };
 
-const input = (difficulty: Difficulty, localDate = HOJE): CheckInput => ({
-  checkId: '3f1f4c2e-5a7b-4f3e-9c1d-2b8a6d4e7f10',
-  type: 'habit',
-  difficulty,
-  localDate,
+const noCapitulo = (chapter: number, coins: number): PlayerState => ({
+  ...inicial,
+  coins,
+  story: { chapter, completed: false },
 });
 
 describe('desfazerCheck', () => {
-  it('no mesmo dia devolve EXP e moedas', () => {
-    const feito = aplicarCheck(inicial, input('medium'), config);
-    const undo = desfazerCheck(feito.state, feito.record, HOJE);
-    expect(undo.ok).toBe(true);
-    if (!undo.ok) return;
-    expect(undo.state).toEqual(inicial);
-    expect(undo.summary).toEqual({ expDevolvido: 10, moedasDevolvidas: 2 });
+  it('no capítulo 1 perde 3 moedas e mantém todo o EXP', () => {
+    const undo = desfazerCheck(inicial, config);
+    expect(undo.summary).toEqual({ moedasPerdidas: 3 });
+    expect(undo.state).toEqual({ ...inicial, coins: 17, totalChecks: 9 });
   });
 
-  it('só funciona no mesmo dia local', () => {
-    const feito = aplicarCheck(inicial, input('easy', '2026-10-08'), config);
-    expect(desfazerCheck(feito.state, feito.record, HOJE)).toEqual({
-      ok: false,
-      motivo: 'OUTRO_DIA',
-    });
+  it('a perda cresce com o capítulo: 3, 5, 10, 15 e 20', () => {
+    const perdas = [1, 2, 3, 4, 5].map(
+      (capitulo) => desfazerCheck(noCapitulo(capitulo, 100), config).summary.moedasPerdidas,
+    );
+    expect(perdas).toEqual([3, 5, 10, 15, 20]);
   });
 
-  it('com a história concluída, o nível nunca cai e o bônus de moedas não é revertido', () => {
-    const quase: PlayerState = {
-      ...inicial,
-      expInLevel: 45,
-      expTotal: 45,
-      story: { chapter: 5, completed: true },
-    };
-    const feito = aplicarCheck(quase, input('easy'), config); // sobe para o nível 2
-    expect(feito.state.level).toBe(2);
-    const undo = desfazerCheck(feito.state, feito.record, HOJE);
-    expect(undo.ok).toBe(true);
-    if (!undo.ok) return;
-    expect(undo.state.level).toBe(2);
-    expect(undo.state.expInLevel).toBe(0); // para no mínimo do nível atual
-    expect(undo.state.coins).toBe(10); // 1 moeda do check devolvida, 10 do bônus ficam
-    expect(undo.summary.expDevolvido).toBe(0);
+  it('nunca deixa o saldo negativo', () => {
+    const undo = desfazerCheck(noCapitulo(3, 4), config);
+    expect(undo.summary.moedasPerdidas).toBe(4);
+    expect(undo.state.coins).toBe(0);
   });
 
-  it('o check que subiu de nível (fechou o capítulo) não pode ser desmarcado', () => {
-    const quase: PlayerState = { ...inicial, expInLevel: 45, expTotal: 45 };
-    const feito = aplicarCheck(quase, input('easy'), config);
-    expect(feito.record.closedChapter).toBe(true);
-    expect(desfazerCheck(feito.state, feito.record, HOJE)).toEqual({
-      ok: false,
-      motivo: 'CAPITULO_FECHADO',
-    });
-  });
-
-  it('check de um capítulo que já fechou também fica travado', () => {
-    const quase: PlayerState = { ...inicial, expInLevel: 40, expTotal: 40 };
-    const primeiro = aplicarCheck(quase, input('easy'), config); // 45 de 50
-    const fechou = aplicarCheck(primeiro.state, input('easy'), config); // sobe de nível
-    expect(fechou.summary.capituloConcluido).toBe(true);
-    expect(desfazerCheck(fechou.state, primeiro.record, HOJE)).toEqual({
-      ok: false,
-      motivo: 'CAPITULO_FECHADO',
-    });
-  });
-
-  it('check depois da história concluída (não conta para capítulo) pode ser desfeito', () => {
+  it('com a história concluída a perda é a do capítulo 5', () => {
     const concluida: PlayerState = {
       ...inicial,
+      level: 7,
+      coins: 50,
       story: { chapter: 5, completed: true },
     };
-    const feito = aplicarCheck(concluida, input('hard'), config);
-    const undo = desfazerCheck(feito.state, feito.record, HOJE);
-    expect(undo.ok).toBe(true);
-    if (!undo.ok) return;
-    expect(undo.state).toEqual(concluida);
+    expect(desfazerCheck(concluida, config).summary.moedasPerdidas).toBe(20);
   });
 
-  it('não deixa moedas nem contadores negativos', () => {
-    const feito = aplicarCheck(inicial, input('hard'), config);
-    const zerado: PlayerState = { ...feito.state, coins: 0, totalChecks: 0 };
-    const undo = desfazerCheck(zerado, feito.record, HOJE);
-    expect(undo.ok).toBe(true);
-    if (!undo.ok) return;
-    expect(undo.state.coins).toBe(0);
-    expect(undo.state.totalChecks).toBe(0);
-  });
-});
-
-const difficultyArb = fc.constantFrom<Difficulty>('easy', 'medium', 'hard');
-
-const stateArb = fc
-  .record({
-    level: fc.integer({ min: 1, max: 30 }),
-    coins: fc.integer({ min: 0, max: 5000 }),
-    totalChecks: fc.integer({ min: 0, max: 5000 }),
-    chapter: fc.integer({ min: 1, max: 5 }),
-    seed: fc.double({ min: 0, max: 0.999, noNaN: true }),
-  })
-  .map(({ level, coins, totalChecks, chapter, seed }): PlayerState => {
-    const expInLevel = Math.floor(seed * expParaNivel(level));
-    return {
-      level,
-      expInLevel,
-      expTotal: expInLevel + 1000,
-      coins,
-      totalChecks: Math.max(totalChecks, 1),
-      story: { chapter, completed: false },
-    };
-  });
-
-describe('propriedades (fast-check)', () => {
-  it('aplicar e desfazer no mesmo dia volta ao estado original (exceto nível, que nunca cai)', () => {
-    fc.assert(
-      fc.property(stateArb, difficultyArb, (estado, difficulty) => {
-        const feito = aplicarCheck(estado, input(difficulty), config);
-        const undo = desfazerCheck(feito.state, feito.record, HOJE);
-        if (!feito.summary.subiuDeNivel && !feito.summary.capituloConcluido) {
-          // sem subir de nível nem fechar capítulo, volta exatamente ao original
-          expect(undo.ok).toBe(true);
-          if (undo.ok) expect(undo.state).toEqual(estado);
-        } else if (undo.ok) {
-          // se voltou, o nível nunca é menor do que o do estado original
-          expect(undo.state.level).toBeGreaterThanOrEqual(estado.level);
-        }
-      }),
-      { numRuns: 500 },
-    );
-  });
-
-  it('invariantes: EXP no nível dentro do limite, nível e contadores nunca decrescem ao aplicar', () => {
+  it('o EXP, o nível e o capítulo nunca mudam (qualquer estado)', () => {
+    const dificuldade = fc.constantFrom<Difficulty>('easy', 'medium', 'hard');
     fc.assert(
       fc.property(
-        stateArb,
-        fc.array(difficultyArb, { minLength: 1, maxLength: 40 }),
-        (estado, seq) => {
-          let atual = estado;
-          for (const difficulty of seq) {
-            const { state } = aplicarCheck(atual, input(difficulty), config);
-            expect(state.level).toBeGreaterThanOrEqual(atual.level);
-            expect(state.expTotal).toBeGreaterThan(atual.expTotal);
-            expect(state.totalChecks).toBe(atual.totalChecks + 1);
-            expect(state.coins).toBeGreaterThanOrEqual(atual.coins);
-            expect(state.expInLevel).toBeLessThan(expParaNivel(state.level));
-            atual = state;
+        fc.array(dificuldade, { minLength: 1, maxLength: 80 }),
+        fc.integer({ min: 0, max: 5 }),
+        (checks, extra) => {
+          let state: PlayerState = { ...inicial, expInLevel: 0, expTotal: 0, coins: 0 };
+          checks.forEach((difficulty, index) => {
+            const input: CheckInput = {
+              checkId: `c${index}`,
+              type: 'habit',
+              difficulty,
+              localDate: '2026-10-09',
+            };
+            state = aplicarCheck(state, input, config).state;
+          });
+          for (let i = 0; i < extra; i += 1) {
+            const antes = state;
+            const { state: depois, summary } = desfazerCheck(antes, config);
+            expect(depois.level).toBe(antes.level);
+            expect(depois.expInLevel).toBe(antes.expInLevel);
+            expect(depois.expTotal).toBe(antes.expTotal);
+            expect(depois.story).toEqual(antes.story);
+            expect(depois.coins).toBe(antes.coins - summary.moedasPerdidas);
+            expect(depois.coins).toBeGreaterThanOrEqual(0);
+            state = depois;
           }
         },
       ),
-    );
-  });
-
-  it('desfazer nunca reduz o nível nem gera valores negativos', () => {
-    fc.assert(
-      fc.property(stateArb, difficultyArb, (estado, difficulty) => {
-        const feito = aplicarCheck(estado, input(difficulty), config);
-        const undo = desfazerCheck(feito.state, feito.record, HOJE);
-        if (!undo.ok) return;
-        expect(undo.state.level).toBe(feito.state.level);
-        expect(undo.state.expInLevel).toBeGreaterThanOrEqual(0);
-        expect(undo.state.coins).toBeGreaterThanOrEqual(0);
-        expect(undo.state.totalChecks).toBeGreaterThanOrEqual(0);
-      }),
     );
   });
 });

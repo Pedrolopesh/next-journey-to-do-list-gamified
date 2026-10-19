@@ -46,8 +46,8 @@ describe('aplicarCheck: EXP, moedas e nível', () => {
     expect(inicial).toEqual(copia);
   });
 
-  it('sobe de nível ao chegar em 50 EXP (nível 1 -> 2) e dá o bônus de 10 moedas', () => {
-    const quase: PlayerState = { ...inicial, expInLevel: 45, expTotal: 45 };
+  it('sobe de nível ao chegar em 200 EXP (nível 1 -> 2) e dá o bônus de 10 moedas', () => {
+    const quase: PlayerState = { ...inicial, expInLevel: 195, expTotal: 195 };
     const { state, summary } = aplicarCheck(quase, input('easy'), config);
     expect(summary.subiuDeNivel).toBe(true);
     expect(summary.niveisGanhos).toBe(1);
@@ -58,8 +58,8 @@ describe('aplicarCheck: EXP, moedas e nível', () => {
   });
 
   it('carrega o EXP que sobra para o próximo nível', () => {
-    const quase: PlayerState = { ...inicial, expInLevel: 45, expTotal: 45 };
-    const { state } = aplicarCheck(quase, input('hard'), config); // 45 + 20 = 65
+    const quase: PlayerState = { ...inicial, expInLevel: 195, expTotal: 195 };
+    const { state } = aplicarCheck(quase, input('hard'), config); // 195 + 20 = 215
     expect(state.level).toBe(2);
     expect(state.expInLevel).toBe(15);
   });
@@ -67,13 +67,13 @@ describe('aplicarCheck: EXP, moedas e nível', () => {
   it('pode subir mais de um nível num check e soma um bônus por nível', () => {
     const generosa = {
       ...config,
-      expByDifficulty: { easy: 5, medium: 10, hard: 400 },
+      expByDifficulty: { easy: 5, medium: 10, hard: 1200 },
     };
     const { state, summary } = aplicarCheck(inicial, input('hard'), generosa);
-    // 50 (1->2) + 125 (2->3) + 200 (3->4) = 375; sobram 25
+    // 200 (1->2) + 400 (2->3) + 600 (3->4) = 1200; sobra 0
     expect(summary.niveisGanhos).toBe(3);
     expect(state.level).toBe(4);
-    expect(state.expInLevel).toBe(25);
+    expect(state.expInLevel).toBe(0);
     expect(summary.bonusMoedas).toBe(30);
   });
 
@@ -101,24 +101,24 @@ describe('aplicarCheck: capítulos e história (cada nível ganho conclui um cap
   it('check sem subir de nível não conclui capítulo e mostra a EXP como progresso', () => {
     const { state, summary } = aplicarCheck(inicial, input('easy'), config);
     expect(state.story).toEqual({ chapter: 1, completed: false });
-    expect(summary.progressoCapitulo).toEqual({ capitulo: 1, expNoNivel: 5, expParaProximo: 50 });
+    expect(summary.progressoCapitulo).toEqual({ capitulo: 1, expNoNivel: 5, expParaProximo: 200 });
     expect(summary.capituloConcluido).toBe(false);
     expect(summary.capitulosConcluidos).toEqual([]);
   });
 
   it('subir de nível conclui o capítulo atual e abre o seguinte', () => {
-    const quase: PlayerState = { ...inicial, expInLevel: 45, expTotal: 45 };
+    const quase: PlayerState = { ...inicial, expInLevel: 195, expTotal: 195 };
     const { state, summary, record } = aplicarCheck(quase, input('easy'), config);
     expect(summary.capituloConcluido).toBe(true);
     expect(summary.capitulosConcluidos).toEqual([1]);
     expect(record.closedChapter).toBe(true);
     expect(state.level).toBe(2);
     expect(state.story).toEqual({ chapter: 2, completed: false });
-    expect(summary.progressoCapitulo).toEqual({ capitulo: 2, expNoNivel: 0, expParaProximo: 125 });
+    expect(summary.progressoCapitulo).toEqual({ capitulo: 2, expNoNivel: 0, expParaProximo: 400 });
   });
 
   it('vários níveis num check concluem vários capítulos, um por nível', () => {
-    const generosa = { ...config, expByDifficulty: { easy: 5, medium: 10, hard: 400 } };
+    const generosa = { ...config, expByDifficulty: { easy: 5, medium: 10, hard: 1200 } };
     const { state, summary } = aplicarCheck(inicial, input('hard'), generosa);
     expect(summary.niveisGanhos).toBe(3);
     expect(summary.capitulosConcluidos).toEqual([1, 2, 3]);
@@ -129,13 +129,13 @@ describe('aplicarCheck: capítulos e história (cada nível ganho conclui um cap
     const ultimo: PlayerState = {
       ...inicial,
       level: 5,
-      expInLevel: 270,
-      expTotal: 900,
+      expInLevel: 970,
+      expTotal: 2900,
       story: { chapter: 5, completed: false },
     };
-    const fim = aplicarCheck(ultimo, input('hard'), config); // 270 + 20 >= 275? nível 5 -> 6 = 350
+    const fim = aplicarCheck(ultimo, input('hard'), config); // 970 + 20 < 1000: ainda no capítulo 5
     expect(fim.summary.capituloConcluido).toBe(false);
-    const quase: PlayerState = { ...ultimo, expInLevel: 345 };
+    const quase: PlayerState = { ...ultimo, expInLevel: 995 };
     const concluiu = aplicarCheck(quase, input('easy'), config);
     expect(concluiu.summary.capitulosConcluidos).toEqual([5]);
     expect(concluiu.summary.historiaConcluida).toBe(true);
@@ -150,6 +150,35 @@ describe('aplicarCheck: capítulos e história (cada nível ganho conclui um cap
     expect(depois.record.countsForChapter).toBe(false);
     expect(depois.record.chapterAtCheck).toBeNull();
     expect(depois.summary.capitulosConcluidos).toEqual([]);
+  });
+
+  it('item que já rendeu EXP hoje rende só as moedas', () => {
+    const { state, summary, record } = aplicarCheck(
+      inicial,
+      { ...input('medium'), expJaGanho: true },
+      config,
+    );
+    expect(summary.expGanho).toBe(0);
+    expect(summary.moedasGanhas).toBe(2);
+    expect(state.expInLevel).toBe(0);
+    expect(state.expTotal).toBe(0);
+    expect(state.coins).toBe(2);
+    expect(record.exp).toBe(0);
+  });
+
+  it('depois da história concluída o nível sobe de 1000 em 1000 e o capítulo não avança', () => {
+    const fim: PlayerState = {
+      ...inicial,
+      level: 6,
+      expInLevel: 990,
+      expTotal: 4000,
+      story: { chapter: 5, completed: true },
+    };
+    const { state, summary } = aplicarCheck(fim, input('hard'), config);
+    expect(state.level).toBe(7);
+    expect(state.expInLevel).toBe(10);
+    expect(summary.capitulosConcluidos).toEqual([]);
+    expect(state.story).toEqual({ chapter: 5, completed: true });
   });
 
   it('o registro guarda o necessário para desfazer', () => {

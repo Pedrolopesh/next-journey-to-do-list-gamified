@@ -8,6 +8,8 @@ type Props = {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   loading?: boolean;
   disabled?: boolean;
+  /** Cor sólida de trás do botão contornado: impede o brilho de outro botão de atravessar o fundo translúcido. */
+  backdrop?: string;
 };
 
 export function Button({
@@ -16,6 +18,7 @@ export function Button({
   variant = 'primary',
   loading = false,
   disabled = false,
+  backdrop = colors.bg.base,
 }: Props) {
   const inactive = disabled || loading;
   return (
@@ -37,6 +40,7 @@ export function Button({
             : softGlowOutline(colors.brand.primary, { pressed })),
         // Sair e ações destrutivas: preenchido em vermelho, como o principal
         !inactive && variant === 'danger' && softGlow(colors.status.danger, { pressed }),
+        variant === 'secondary' && { backgroundColor: backdrop },
         pressed && styles.pressed,
         inactive && styles.disabled,
       ]}
@@ -69,7 +73,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   primary: { backgroundColor: colors.brand.primary },
-  secondary: { backgroundColor: 'transparent' },
+  secondary: { backgroundColor: colors.bg.base },
   secondaryInactive: {
     borderWidth: 1.5,
     borderColor: 'rgba(124, 58, 237, 0.4)',

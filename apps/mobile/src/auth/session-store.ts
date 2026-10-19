@@ -31,13 +31,20 @@ export const useSessionStore = create<SessionState>((set) => ({
 
   async setSession(response) {
     log.info('session.signedIn', { userId: response.user.id });
-    await SecureStore.setItemAsync(REFRESH_KEY, response.tokens.refreshToken);
+    // Memória primeiro: as próximas chamadas já usam o token novo (o refresh token é rotativo)
     set({
       status: 'signedIn',
       user: response.user,
       accessToken: response.tokens.accessToken,
       refreshToken: response.tokens.refreshToken,
     });
+    try {
+      await SecureStore.setItemAsync(REFRESH_KEY, response.tokens.refreshToken);
+    } catch (error) {
+      // Sem gravar o refresh token a sessão não sobrevive ao fechar o app: não finge que entrou
+      set({ status: 'signedOut', user: null, accessToken: null, refreshToken: null });
+      throw error;
+    }
   },
 
   async clear() {

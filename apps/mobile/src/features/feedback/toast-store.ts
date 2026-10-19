@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type ToastKind = 'success' | 'error' | 'info';
+export type ToastKind = 'success' | 'error' | 'info' | 'warning';
 export type ToastMessage = { id: number; kind: ToastKind; message: string };
 
 type ToastState = {
@@ -31,5 +31,8 @@ export const toast = {
   },
   info: (message: string) => {
     useToastStore.getState().show('info', message);
+  },
+  warning: (message: string) => {
+    useToastStore.getState().show('warning', message);
   },
 };
