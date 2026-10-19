@@ -447,6 +447,108 @@
         }
       ],
       "credits": [27]
+    },
+    {
+      "id": "hat-celestial-moon-purple",
+      "slot": "hat",
+      "name": "Celestial Wizard Moon Hat",
+      "material": null,
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 130,
+          "paths": {
+            "male": "hat/magic/celestial_moon/adult/purple/",
+            "female": "hat/magic/celestial_moon/adult/purple/"
+          }
+        }
+      ],
+      "credits": [29]
+    },
+    {
+      "id": "hat-celestial-moon-blue",
+      "slot": "hat",
+      "name": "Celestial Wizard Moon Hat",
+      "material": null,
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 130,
+          "paths": {
+            "male": "hat/magic/celestial_moon/adult/blue/",
+            "female": "hat/magic/celestial_moon/adult/blue/"
+          }
+        }
+      ],
+      "credits": [29]
+    },
+    {
+      "id": "hat-celestial-moon-teal",
+      "slot": "hat",
+      "name": "Celestial Wizard Moon Hat",
+      "material": null,
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 130,
+          "paths": {
+            "male": "hat/magic/celestial_moon/adult/teal/",
+            "female": "hat/magic/celestial_moon/adult/teal/"
+          }
+        }
+      ],
+      "credits": [29]
+    },
+    {
+      "id": "hat-celestial-moon-maroon",
+      "slot": "hat",
+      "name": "Celestial Wizard Moon Hat",
+      "material": null,
+      "bodyTypes": ["male", "female"],
+      "layers": [
+        {
+          "z": 130,
+          "paths": {
+            "male": "hat/magic/celestial_moon/adult/maroon/",
+            "female": "hat/magic/celestial_moon/adult/maroon/"
+          }
+        }
+      ],
+      "credits": [29]
+    },
+    {
+      "id": "hat-visor-pigface",
+      "slot": "hat",
+      "name": "Pigface visor",
+      "material": null,
+      "bodyTypes": ["female", "male"],
+      "layers": [
+        {
+          "z": 132,
+          "paths": {
+            "male": "hat/visor/pigface/adult/",
+            "female": "hat/visor/pigface/adult/"
+          }
+        }
+      ],
+      "credits": [30]
+    },
+    {
+      "id": "arms-armour",
+      "slot": "arms",
+      "name": "Armour",
+      "material": null,
+      "bodyTypes": ["female", "male"],
+      "layers": [
+        {
+          "z": 60,
+          "paths": {
+            "male": "arms/armour/plate/male/",
+            "female": "arms/armour/plate/thin/"
+          }
+        }
+      ],
+      "credits": [31]
     }
   ],
   "scenery": [
@@ -946,6 +1048,47 @@
         "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles"
       ],
       "notes": "Cenários (cabana, praia, terraço, zumbi, paraíso, inferno). Sharm e Redshrike liberam a própria arte também em CC-BY, sem ShareAlike e sem a cláusula anti-DRM (página do pacote). Exige crédito."
+    },
+    {
+      "file": "hat/magic/celestial_moon",
+      "authors": ["Napsio (Vitruvian Studio)", "Michael Whitlock (bigbeargames)", "Tracy"],
+      "licenseUsed": "CC-BY 3.0",
+      "licensesOffered": ["CC-BY 3.0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-celestial-wizard-hats",
+        "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
+      ],
+      "notes": "sheet_definitions/hat_magic_celestial.json"
+    },
+    {
+      "file": "hat/visor/pigface",
+      "authors": ["bluecarrot16", "ElizaWy", "Sander Frenken (castelonia)"],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "CC-BY-SA 4.0", "CC-BY-SA 3.0", "GPL 3.0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-realistic-helmet-pack",
+        "https://opengameart.org/content/lpc-helmets-mega-pack",
+        "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
+      ],
+      "notes": ""
+    },
+    {
+      "file": "arms/armour/plate",
+      "authors": [
+        "Michael Whitlock (bigbeargames)",
+        "Matthew Krohn (makrohn)",
+        "Johannes Sjölund (wulax)",
+        "bluecarrot16",
+        "JaidynReiman"
+      ],
+      "licenseUsed": "OGA-BY 3.0",
+      "licensesOffered": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+      "urls": [
+        "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
+        "https://opengameart.org/content/lpc-combat-armor-for-women",
+        "https://opengameart.org/content/lpc-clothing-updates"
+      ],
+      "notes": "original by wulax, recolors by bigbeargames; adapted to female by makrohn"
     }
   ]
 }

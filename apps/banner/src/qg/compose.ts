@@ -45,6 +45,9 @@ export type Selection = {
   legsColor: string;
   feet: string | null;
   feetColor: string;
+  /** Peças prontas sem recolorir (id do catálogo): chapéu/viseira e proteção dos braços. */
+  hat?: string | null;
+  arms?: string | null;
 };
 
 export const FRAME = 64;
@@ -110,6 +113,8 @@ export function layersFor(catalog: Catalog, selection: Selection): LayerSpec[] {
     ...(selection.torso ? [{ id: selection.torso, color: selection.torsoColor }] : []),
     ...(selection.legs ? [{ id: selection.legs, color: selection.legsColor }] : []),
     ...(selection.feet ? [{ id: selection.feet, color: selection.feetColor }] : []),
+    ...(selection.arms ? [{ id: selection.arms, color: null }] : []),
+    ...(selection.hat ? [{ id: selection.hat, color: null }] : []),
   ];
   const specs: LayerSpec[] = [];
   for (const { id, color } of chosen) {
