@@ -7,8 +7,10 @@ import { appButtonsPage } from './pages/app-buttons';
 import { characterPage } from './pages/character';
 import { glowPage } from './pages/glow';
 import { indicatorsPage } from './pages/indicators';
+import { clothesPage } from './pages/roupas-acessorios';
 import { scenesPage } from './pages/scenes';
 import { scoringPage } from './pages/scoring';
+import { utilitiesPage } from './pages/utilitarios';
 
 /** Páginas do laboratório, na ordem do menu lateral. */
 const PAGES: LabPage[] = [
@@ -18,6 +20,8 @@ const PAGES: LabPage[] = [
   achievementsV2Page,
   scenesPage,
   characterPage,
+  clothesPage,
+  utilitiesPage,
   scoringPage,
 ];
 
