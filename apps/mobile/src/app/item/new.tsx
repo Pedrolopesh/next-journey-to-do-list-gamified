@@ -28,6 +28,9 @@ export default function NewItemScreen() {
       <ItemForm
         item={null}
         initialType={initialType}
+        onClose={() => {
+          router.back();
+        }}
         submitting={create.isPending}
         error={error}
         onSubmitUpdate={() => undefined}

@@ -40,6 +40,9 @@ export default function EditItemScreen() {
       <ItemForm
         item={item}
         initialType={item.type}
+        onClose={() => {
+          router.back();
+        }}
         submitting={update.isPending || remove.isPending}
         error={error}
         onSubmitCreate={() => undefined}

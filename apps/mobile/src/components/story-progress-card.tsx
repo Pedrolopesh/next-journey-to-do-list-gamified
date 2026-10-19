@@ -3,7 +3,7 @@ import { IconCoin } from '@tabler/icons-react-native';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { chapterProgress, useMe } from '@/api/queries';
+import { storyRatio, useMe } from '@/api/queries';
 import { colors, radius, rgba, space, tonedCard } from '@/theme';
 
 import { PixelArt } from './pixel-art';
@@ -25,7 +25,7 @@ export function StoryProgressCard({ showCoins = false }: Props) {
   const { player, story } = me;
   const total = DEFAULT_GAME_CONFIG.chaptersPerStory;
   const { completed, chapter } = player.story;
-  const ratio = completed ? 1 : chapterProgress(me);
+  const ratio = storyRatio(me);
   const subtitle = completed
     ? t('progress.storyDone')
     : t('progress.chapter', { number: chapter, title: story?.chapterTitle ?? '' });
