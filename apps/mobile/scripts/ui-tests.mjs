@@ -15,6 +15,10 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 const api = (process.env.E2E_API_URL ?? 'http://localhost:3010').replace(/\/$/, '');
+if (!/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(api)) {
+  console.error('E2E_API_URL precisa ser local (localhost): o script cria uma conta de teste.');
+  process.exit(1);
+}
 const email = `ui-${Date.now()}@exemplo.com`;
 const password = `Aa1#${randomBytes(9).toString('base64url')}`;
 

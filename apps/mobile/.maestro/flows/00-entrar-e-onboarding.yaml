@@ -37,4 +37,6 @@ appId: br.com.wetechhub.app.dev
 - extendedWaitUntil:
     visible: 'Olá.*'
     timeout: 30000
-- assertNotVisible: 'Conquista desbloqueada!'
+- extendedWaitUntil:
+    notVisible: 'Conquista desbloqueada!'
+    timeout: 3000

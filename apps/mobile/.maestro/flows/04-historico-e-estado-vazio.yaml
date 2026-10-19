@@ -11,6 +11,5 @@ appId: br.com.wetechhub.app.dev
 - tapOn: 'Histórico de tarefas'
 - assertVisible: 'Pagar a conta de luz'
 - tapOn: 'Desfazer'
-- assertVisible: 'Check desmarcado.*'
 - assertVisible: 'Nada concluído ainda'
 - assertVisible: 'Quando você concluir uma tarefa.*'

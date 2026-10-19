@@ -9,7 +9,7 @@ appId: br.com.wetechhub.app.dev
 - hideKeyboard
 - tapOn: 'Criar item'
 - extendedWaitUntil:
-    visible: 'Conquista desbloqueada!|Beber água'
+    visible: 'Conquista desbloqueada!|Marcar Beber água'
     timeout: 15000
 - runFlow: ../subflows/fechar-conquista.yaml
 - tapOn: 'Marcar Beber água'
