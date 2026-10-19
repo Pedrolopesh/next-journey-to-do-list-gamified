@@ -2,7 +2,7 @@
 
 Resumo para qualquer agente (ou pessoa) continuar de onde parou. Leia antes o `AGENTS.md` (regras, stack e checklist de segurança). Este arquivo não substitui o `AGENTS.md`; ele conta o **estado atual** e o que falta. Atualize-o ao fim de cada etapa.
 
-Última atualização: 2026-10-13, depois do PR da revisão geral (#24) e durante a jornada das abas (branch `feat/banner-mapa-e-exemplos`, ainda sem PR).
+Última atualização: 2026-10-19, depois dos PRs #29 a #34 (pontuação v2, histórico, estrelas de dificuldade, conquistas com ritmo e testes de interface), todos na `main`.
 
 ## Combinados com o Pedro (dono do projeto)
 
@@ -56,9 +56,9 @@ Monorepo pnpm + Turborepo: `apps/api` (NestJS + Prisma + PostgreSQL), `apps/mobi
 - O Vite recarrega a página inteira a cada arquivo salvo; o laboratório volta para a cabana. Espere alguns segundos antes de clicar.
 - Não editar migrations já aplicadas; migration nova sempre.
 
-## NÃO ESQUECER ao subir as branches da pontuação (2026-10-19)
+## NÃO ESQUECER ao publicar em outro ambiente (pontuação v2 e conquistas)
 
-Branches locais, ainda **não enviadas** ao GitHub (cada PR só depois da aprovação do Pedro e do `security:full`). Ao começar a subir, **reler esta lista, aplicar cada ponto e revisá-lo com o Pedro**:
+Tudo isto já está na `main` (#29 a #34). Ao publicar em outro ambiente, **reler esta lista e aplicar cada ponto**:
 
 1. **Migration `20261019120000_pontuacao_v2`** (troca `levelExpSlope/levelExpOffset` por `levelExpTable` e `undoCoinPenalty` no `game_config`): em qualquer outro ambiente rodar `db:deploy`. O seed **não** sobrescreve o `game_config` (`update: {}`), então sem a migration a API falha ao carregar a config.
 2. **EXP maior, nível mantido:** quem já está num nível mantém o `expInLevel`; só o teto cresceu (200, 400, 600, 800, 1000 e depois 1000). Ninguém perde nível. Avisar o Pedro antes de publicar.
@@ -67,13 +67,13 @@ Branches locais, ainda **não enviadas** ao GitHub (cada PR só depois da aprova
 5. **O desfazer agora vem do servidor** (`lastCheckId` em `GET /items` e `checkId` no histórico). Conferir no aparelho real, com o app reaberto, que desmarcar funciona.
 6. **Histórico de tarefas** (`GET /items/history`, tela no Perfil): conferir paginação com muitas tarefas e o aviso no rodapé de Tarefas.
 7. **Personagem no capítulo 5 concluído:** fica no fim do cenário, sem portal. Não verificado no aparelho (só o capítulo 2).
-8. **Branches empilhadas:** `fix/token-renovado-401` → `feat/lab-moedas-e-exp`; `feat/pontuacao-v2` → `feat/historico-e-desfazer`. A `wip/teste-integrado` é só para teste local e **nunca** sobe.
-9. **70ª conquista (`habito-de-100`, Diamante):** ao publicar, rodar `db:seed` (cria a linha no catálogo) e `db:backfill-achievements` (libera para quem já tem 100 dias seguidos de um hábito, sem reabrir modal). Branch `feat/conquista-70`, a partir da `main`.
+8. **Migrations desta leva:** `20261019120000_pontuacao_v2`, `20261019170000_indice_historico` e `20261019180000_item_de_exemplo` (`db:deploy`). A `wip/teste-integrado` era só para teste local e nunca sobe.
+9. **70ª conquista (`habito-de-100`, Diamante):** ao publicar, rodar `db:seed` (cria a linha no catálogo) e `db:backfill-achievements` (libera para quem já tem 100 dias seguidos de um hábito, sem reabrir modal).
 10. **Ainda não verificado:** pontuação e histórico no iPhone físico (e a permissão de "Rede local" do iOS); modal com o botão X no iPhone físico.
 
-## Em análise: ritmo das conquistas (2026-10-19)
+## Ritmo das conquistas (aprovado e na `main`, 2026-10-19)
 
-A página "Conquistas v2" do laboratório (seção "Ritmo") compara as regras de hoje com uma proposta mais espaçada (simulação de 30 dias). **Ainda não está no app e depende da aprovação do Pedro.** Se aprovada: (1) um modal por ação, com o resto pendente nas ações seguintes (servidor devolve só uma na resposta do check; o app mostra uma pendente por vez); (2) novos limites e nomes (por exemplo "Chama de 5 dias"), em `achievement-catalog.ts` e `progression/domain/achievements.ts`, com migration que renomeia os slugs que mudam de nome só no texto (os slugs ficam); (3) OpenSpec `conquistas-ritmo`; (4) retroativo sem reabrir modais (quem já tem a conquista continua com ela).
+A página "Conquistas v2" do laboratório (seção "Ritmo") compara as regras de hoje com uma proposta mais espaçada (simulação de 30 dias). **Já está no app (#33).** O que foi feito: (1) um modal por ação, com o resto pendente nas ações seguintes (servidor devolve só uma na resposta do check; o app mostra uma pendente por vez); (2) novos limites e nomes (por exemplo "Chama de 5 dias"), em `achievement-catalog.ts` e `progression/domain/achievements.ts`, com migration que renomeia os slugs que mudam de nome só no texto (os slugs ficam); (3) OpenSpec `conquistas-ritmo`; (4) retroativo sem reabrir modais (quem já tem a conquista continua com ela).
 
 ## Itens de exemplo e conquistas (2026-10-19)
 
@@ -111,3 +111,12 @@ Combinado com o Pedro: adiado até terminar as próximas etapas (jornada em todo
 
 - `pnpm audit` aponta vulnerabilidades moderadas e baixas em dependências, e 2 altas que o `pnpm audit` do projeto já ignora (ver a configuração do `pnpm audit` e o `docs/SEGURANCA.md`); reavaliar antes da loja.
 - A migration `20261011190000_character_look` só adiciona uma coluna opcional (nullable); precisa ser aplicada em todo ambiente antes de usar o app novo.
+
+## Dívidas conhecidas (registradas no review dos PRs #33 e #34)
+
+- Marcar itens de exemplo ainda rende EXP e conquistas de hábito e rotina (só a criação é ignorada). Decidir com o Pedro.
+- `example: true` vem do cliente; o pior efeito é a própria pessoa perder conquistas de criação.
+- Slugs de conquistas mantêm o número antigo no nome (`chama-7-dias` exige 10); só o texto mudou.
+- Mudanças OpenSpec antigas inválidas (`banner-cena-qg`, `banner-jornada`, `historias-por-cenario`); a CI valida só as alteradas.
+- Duplicação: formulários de login e cadastro; `appId` repetido nos fluxos do Maestro.
+- Fluxos do Maestro só no Android, fora da CI; app não verificado no iPhone físico.
