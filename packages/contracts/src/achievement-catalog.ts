@@ -95,7 +95,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'inicio',
     tier: 1,
     name: 'Rotina marcada',
-    description: 'Marque o seu primeiro diário',
+    description: 'Marque diários em 4 dias diferentes',
     glyph: 'check',
   },
   {
@@ -103,7 +103,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'inicio',
     tier: 1,
     name: 'Tarefa cumprida',
-    description: 'Conclua a sua primeira tarefa',
+    description: 'Conclua 6 tarefas',
     glyph: 'bandeira',
   },
   {
@@ -111,7 +111,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'inicio',
     tier: 1,
     name: 'Hábito em ação',
-    description: 'Marque o seu primeiro hábito',
+    description: 'Marque hábitos 8 vezes',
     glyph: 'raio',
   },
   {
@@ -127,7 +127,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'inicio',
     tier: 1,
     name: 'Voltou!',
-    description: 'Marque itens em 2 dias diferentes',
+    description: 'Marque itens em 3 dias diferentes',
     glyph: 'casa',
   },
   {
@@ -135,7 +135,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'diarios',
     tier: 1,
     name: 'Rotina em marcha',
-    description: 'Marque 5 diários',
+    description: 'Marque 30 diários',
     glyph: 'relogio',
   },
   {
@@ -143,7 +143,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'diarios',
     tier: 2,
     name: 'Rotina firme',
-    description: 'Marque 25 diários',
+    description: 'Marque 60 diários',
     glyph: 'relogio',
   },
   {
@@ -151,7 +151,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'diarios',
     tier: 3,
     name: 'Rotina de ferro',
-    description: 'Marque 100 diários',
+    description: 'Marque 250 diários',
     glyph: 'relogio',
   },
   {
@@ -159,7 +159,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'diarios',
     tier: 4,
     name: 'Mestre da rotina',
-    description: 'Marque 300 diários',
+    description: 'Marque 600 diários',
     glyph: 'relogio',
   },
   {
@@ -167,39 +167,39 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'diarios',
     tier: 1,
     name: 'Dia perfeito',
-    description: 'Conclua todos os diários de um dia (com 3 ou mais agendados)',
+    description: 'Conclua todos os diários (3 ou mais agendados) em 8 dias diferentes',
     glyph: 'alvo',
   },
   {
     slug: 'chama-3-dias',
     trail: 'diarios',
     tier: 1,
-    name: 'Chama de 3 dias',
-    description: 'Conclua todos os diários agendados por 3 dias seguidos',
+    name: 'Chama de 5 dias',
+    description: 'Conclua todos os diários agendados por 5 dias seguidos',
     glyph: 'chama',
   },
   {
     slug: 'chama-7-dias',
     trail: 'diarios',
     tier: 2,
-    name: 'Chama de 7 dias',
-    description: 'Conclua todos os diários agendados por 7 dias seguidos',
+    name: 'Chama de 10 dias',
+    description: 'Conclua todos os diários agendados por 10 dias seguidos',
     glyph: 'chama',
   },
   {
     slug: 'chama-14-dias',
     trail: 'diarios',
     tier: 3,
-    name: 'Chama de 14 dias',
-    description: 'Conclua todos os diários agendados por 14 dias seguidos',
+    name: 'Chama de 21 dias',
+    description: 'Conclua todos os diários agendados por 21 dias seguidos',
     glyph: 'chama',
   },
   {
     slug: 'chama-30-dias',
     trail: 'diarios',
     tier: 4,
-    name: 'Chama de 30 dias',
-    description: 'Conclua todos os diários agendados por 30 dias seguidos',
+    name: 'Chama de 45 dias',
+    description: 'Conclua todos os diários agendados por 45 dias seguidos',
     glyph: 'chama',
   },
   {
@@ -207,7 +207,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'tarefas',
     tier: 1,
     name: 'Pé na lista',
-    description: 'Conclua 5 tarefas',
+    description: 'Conclua 12 tarefas',
     glyph: 'espada',
   },
   {
@@ -215,7 +215,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'tarefas',
     tier: 2,
     name: 'Executor',
-    description: 'Conclua 25 tarefas',
+    description: 'Conclua 50 tarefas',
     glyph: 'espada',
   },
   {
@@ -223,7 +223,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'tarefas',
     tier: 3,
     name: 'Imparável',
-    description: 'Conclua 100 tarefas',
+    description: 'Conclua 200 tarefas',
     glyph: 'espada',
   },
   {
@@ -231,7 +231,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'tarefas',
     tier: 4,
     name: 'Máquina de entregas',
-    description: 'Conclua 300 tarefas',
+    description: 'Conclua 500 tarefas',
     glyph: 'espada',
   },
   {
@@ -239,7 +239,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'tarefas',
     tier: 2,
     name: 'Lista zerada',
-    description: 'Conclua todas as tarefas abertas (tendo ao menos 3)',
+    description: 'Conclua todas as tarefas abertas (tendo ao menos 5)',
     glyph: 'estrela',
   },
   {
@@ -247,7 +247,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'tarefas',
     tier: 1,
     name: 'No prazo',
-    description: 'Conclua 5 tarefas antes do vencimento',
+    description: 'Conclua 15 tarefas antes do vencimento',
     glyph: 'ampulheta',
   },
   {
@@ -264,7 +264,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'tarefas',
     tier: 2,
     name: 'Peso pesado',
-    description: 'Conclua 5 tarefas difíceis',
+    description: 'Conclua 15 tarefas difíceis',
     glyph: 'escudo',
   },
   {
@@ -272,7 +272,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'habitos',
     tier: 1,
     name: 'Semente',
-    description: 'Marque hábitos em 10 dias diferentes',
+    description: 'Marque hábitos em 14 dias diferentes',
     glyph: 'arvore',
   },
   {
@@ -280,7 +280,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'habitos',
     tier: 2,
     name: 'Raiz',
-    description: 'Marque hábitos em 40 dias diferentes',
+    description: 'Marque hábitos em 60 dias diferentes',
     glyph: 'arvore',
   },
   {
@@ -288,7 +288,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'habitos',
     tier: 3,
     name: 'Árvore',
-    description: 'Marque hábitos em 120 dias diferentes',
+    description: 'Marque hábitos em 180 dias diferentes',
     glyph: 'arvore',
   },
   {
@@ -304,23 +304,31 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'habitos',
     tier: 1,
     name: 'Hábito em chama',
-    description: 'Mantenha um mesmo hábito por 3 dias seguidos',
+    description: 'Mantenha um mesmo hábito por 6 dias seguidos',
     glyph: 'tocha',
   },
   {
     slug: 'habito-de-7',
     trail: 'habitos',
     tier: 2,
-    name: 'Hábito de 7 dias',
-    description: 'Mantenha um mesmo hábito por 7 dias seguidos',
+    name: 'Hábito de 21 dias',
+    description: 'Mantenha um mesmo hábito por 21 dias seguidos',
     glyph: 'tocha',
   },
   {
     slug: 'habito-de-30',
     trail: 'habitos',
     tier: 3,
-    name: 'Hábito de 30 dias',
-    description: 'Mantenha um mesmo hábito por 30 dias seguidos',
+    name: 'Hábito de 45 dias',
+    description: 'Mantenha um mesmo hábito por 45 dias seguidos',
+    glyph: 'tocha',
+  },
+  {
+    slug: 'habito-de-100',
+    trail: 'habitos',
+    tier: 4,
+    name: 'Hábito de 100 dias',
+    description: 'Mantenha um mesmo hábito por 100 dias seguidos',
     glyph: 'tocha',
   },
   {
@@ -328,7 +336,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'habitos',
     tier: 2,
     name: 'Dia de foco',
-    description: 'Marque 5 hábitos diferentes no mesmo dia',
+    description: 'Marque 6 hábitos diferentes no mesmo dia',
     glyph: 'bussola',
   },
   {
@@ -336,7 +344,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'constancia',
     tier: 1,
     name: 'Organizado',
-    description: 'Crie 10 itens',
+    description: 'Crie 15 itens',
     glyph: 'mochila',
   },
   {
@@ -344,7 +352,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'constancia',
     tier: 2,
     name: 'Planejador',
-    description: 'Crie 25 itens',
+    description: 'Crie 40 itens',
     glyph: 'mochila',
   },
   {
@@ -352,7 +360,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'constancia',
     tier: 3,
     name: 'Arquiteto da rotina',
-    description: 'Crie 50 itens',
+    description: 'Crie 100 itens',
     glyph: 'mochila',
   },
   {
@@ -360,7 +368,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'constancia',
     tier: 3,
     name: 'Maratonista',
-    description: 'Faça 100 checks no total',
+    description: 'Faça 250 checks no total',
     glyph: 'bandeira',
   },
   {
@@ -402,7 +410,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'constancia',
     tier: 2,
     name: 'Equilíbrio',
-    description: 'Faça checks em 3 categorias no mesmo dia',
+    description: 'Faça checks em 3 categorias no mesmo dia, em 10 dias diferentes',
     glyph: 'balanca',
   },
   {
@@ -410,7 +418,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'constancia',
     tier: 3,
     name: 'Vida em equilíbrio',
-    description: 'Faça checks em 5 categorias no mesmo dia',
+    description: 'Faça checks em 5 categorias no mesmo dia, em 18 dias diferentes',
     glyph: 'balanca',
   },
   {
@@ -434,7 +442,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'jornada',
     tier: 2,
     name: 'Veterano',
-    description: 'Chegue ao nível 10',
+    description: 'Chegue ao nível 8',
     glyph: 'foguete',
   },
   {
@@ -442,7 +450,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'jornada',
     tier: 3,
     name: 'Mestre',
-    description: 'Chegue ao nível 20',
+    description: 'Chegue ao nível 12',
     glyph: 'foguete',
   },
   {
@@ -450,7 +458,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'jornada',
     tier: 4,
     name: 'Lenda',
-    description: 'Chegue ao nível 30',
+    description: 'Chegue ao nível 20',
     glyph: 'foguete',
   },
   {
@@ -466,7 +474,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'jornada',
     tier: 2,
     name: 'Livro aberto',
-    description: 'Complete 5 capítulos',
+    description: 'Complete 3 capítulos',
     glyph: 'mapa',
   },
   {
@@ -490,7 +498,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'jornada',
     tier: 1,
     name: 'Cofrinho',
-    description: 'Junte 100 moedas',
+    description: 'Junte 200 moedas',
     glyph: 'moeda',
   },
   {
@@ -498,7 +506,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'jornada',
     tier: 2,
     name: 'Tesouro',
-    description: 'Junte 500 moedas',
+    description: 'Junte 800 moedas',
     glyph: 'moeda',
   },
   {
@@ -506,7 +514,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'jornada',
     tier: 3,
     name: 'Fortuna',
-    description: 'Junte 2.000 moedas',
+    description: 'Junte 3.000 moedas',
     glyph: 'moeda',
   },
   {
@@ -522,7 +530,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'inicio',
     tier: 1,
     name: 'Pena leve',
-    description: 'Escreva anotações em 5 itens',
+    description: 'Escreva anotações em 10 itens',
     glyph: 'pena',
   },
   {
@@ -530,7 +538,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'inicio',
     tier: 2,
     name: 'Guarda-roupa',
-    description: 'Mude o visual do personagem 5 vezes',
+    description: 'Mude o visual do personagem 10 vezes',
     glyph: 'presente',
   },
   {
@@ -538,7 +546,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'constancia',
     tier: 2,
     name: 'No pódio',
-    description: 'Marque um diário, uma tarefa e um hábito no mesmo dia',
+    description: 'Marque um diário, uma tarefa e um hábito no mesmo dia, em 16 dias diferentes',
     glyph: 'podio',
   },
   {
@@ -554,7 +562,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'constancia',
     tier: 1,
     name: 'Bolsa cheia',
-    description: 'Tenha 10 itens ativos ao mesmo tempo',
+    description: 'Tenha 20 itens ativos ao mesmo tempo',
     glyph: 'bolsa',
   },
   {
@@ -562,7 +570,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'constancia',
     tier: 3,
     name: 'Dia brilhante',
-    description: 'Marque 10 itens no mesmo dia',
+    description: 'Marque 15 itens no mesmo dia',
     glyph: 'cristal',
   },
   {
@@ -578,7 +586,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'marcos',
     tier: 1,
     name: 'Medalhista',
-    description: 'Desbloqueie 5 conquistas',
+    description: 'Desbloqueie 14 conquistas',
     glyph: 'medalha',
   },
   {
@@ -586,7 +594,7 @@ export const ACHIEVEMENT_CATALOG = [
     trail: 'marcos',
     tier: 3,
     name: 'Caçador de troféus',
-    description: 'Desbloqueie 25 conquistas',
+    description: 'Desbloqueie 35 conquistas',
     glyph: 'trofeu',
   },
   {

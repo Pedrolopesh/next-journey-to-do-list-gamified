@@ -95,11 +95,23 @@ export class AchievementsService {
           },
         },
       }),
-      tx.item.groupBy({ by: ['type'], where: { userId }, _count: { _all: true } }),
-      tx.item.count({ where: { userId, type: 'todo', deletedAt: null, completedAt: null } }),
-      tx.item.count({ where: { userId, deletedAt: null, completedAt: null } }),
+      tx.item.groupBy({
+        by: ['type'],
+        where: { userId, isExample: false },
+        _count: { _all: true },
+      }),
       tx.item.count({
-        where: { userId, deletedAt: null, notes: { not: null }, NOT: { notes: '' } },
+        where: { userId, type: 'todo', deletedAt: null, completedAt: null, isExample: false },
+      }),
+      tx.item.count({ where: { userId, deletedAt: null, completedAt: null, isExample: false } }),
+      tx.item.count({
+        where: {
+          userId,
+          deletedAt: null,
+          isExample: false,
+          notes: { not: null },
+          NOT: { notes: '' },
+        },
       }),
     ]);
 
@@ -146,9 +158,12 @@ export class AchievementsService {
       bestDayRun: stat.bestDayRun,
       hadComeback: stat.hadComeback,
       maxChecksInDay: stat.maxChecksInDay,
+      dailyDays: stat.dailyDays,
       habitDays: stat.habitDays,
       bestHabitRun: stat.bestHabitRun,
       maxHabitsInDay: stat.maxHabitsInDay,
+      balancedDays: stat.balancedDays,
+      podiumDays: stat.podiumDays,
       lookChanges: stats.lookChanges,
       categoriesCreated: stats.categoriesCreated,
       reminderEnabled: stats.reminderEnabledAt !== null,
@@ -160,6 +175,9 @@ export class AchievementsService {
    * Avalia as conquistas na transação da ação (check, item, categoria, personagem ou evento). Cada
    * uma é liberada uma só vez (a chave primária impede duplicar). As de coleção entram na volta
    * seguinte, quando as outras já estão gravadas.
+   *
+   * Um modal por ação: tudo que foi liberado fica pendente (`notifiedAt` nulo), mas a resposta traz
+   * só a pendente mais antiga. As outras aparecem, uma por vez, nas ações seguintes.
    */
   async evaluate(
     tx: Prisma.TransactionClient,
@@ -170,15 +188,13 @@ export class AchievementsService {
       select: { achievementSlug: true },
     });
     const have = new Set(rows.map((row) => row.achievementSlug));
-    const unlocked: AchievementUnlocked[] = [];
+    const created: AchievementUnlocked[] = [];
 
     for (let pass = 0; pass < MAX_PASSES; pass += 1) {
       const ctx = await this.context(tx, input, have);
       const fresh = conquistasAtendidas(ctx).filter((slug) => !have.has(slug));
       if (fresh.length === 0) break;
       for (const slug of fresh) {
-        const entry = ACHIEVEMENT_CATALOG.find((achievement) => achievement.slug === slug);
-        if (!entry) continue;
         await tx.userAchievement.create({
           data: {
             userId: input.userId,
@@ -188,10 +204,36 @@ export class AchievementsService {
           },
         });
         have.add(slug);
-        unlocked.push({ slug, name: entry.name, tier: entry.tier, glyph: entry.glyph });
+        const entry = ACHIEVEMENT_CATALOG.find((achievement) => achievement.slug === slug);
+        if (entry) created.push({ slug, name: entry.name, tier: entry.tier, glyph: entry.glyph });
       }
     }
-    return unlocked;
+    // Silencioso (retroativo): devolve o que liberou, já avisado. Normal: só a pendente mais antiga.
+    return input.silent ? created : this.nextToShow(tx, input.userId);
+  }
+
+  /** A conquista pendente mais antiga (empate: ordem do catálogo), em lista de zero ou um item. */
+  private async nextToShow(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<AchievementUnlocked[]> {
+    const pending = await tx.userAchievement.findMany({
+      where: { userId, notifiedAt: null },
+      select: { achievementSlug: true, unlockedAt: true },
+    });
+    const order = new Map(ACHIEVEMENT_CATALOG.map((a, index) => [a.slug as string, index]));
+    // Pendente cujo slug saiu do catálogo não pode travar a fila das válidas
+    pending.splice(0, pending.length, ...pending.filter((row) => order.has(row.achievementSlug)));
+    pending.sort(
+      (a, b) =>
+        a.unlockedAt.getTime() - b.unlockedAt.getTime() ||
+        (order.get(a.achievementSlug) ?? 0) - (order.get(b.achievementSlug) ?? 0),
+    );
+    const first = pending[0];
+    const entry = first && ACHIEVEMENT_CATALOG.find((a) => a.slug === first.achievementSlug);
+    return entry
+      ? [{ slug: entry.slug, name: entry.name, tier: entry.tier, glyph: entry.glyph }]
+      : [];
   }
 
   /** Avaliação fora de um check (criar item, categoria, trocar visual, evento do app). */

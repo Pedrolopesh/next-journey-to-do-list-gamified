@@ -88,17 +88,36 @@ describe('estatisticasDeChecks', () => {
 });
 
 describe('resumoDeHoje', () => {
-  it('conta categorias, tipos e tarefas só do dia de hoje', () => {
+  it('conta as tarefas concluídas só do dia de hoje', () => {
     const hoje = '2026-10-09';
     const s = resumoDeHoje(
       [
-        row({ checkedOn: hoje, categoryId: 'c1', type: 'daily' }),
-        row({ checkedOn: hoje, categoryId: 'c2', type: 'todo', itemId: 't' }),
-        row({ checkedOn: hoje, categoryId: 'c2', type: 'habit', itemId: 'h' }),
-        row({ checkedOn: '2026-10-08', categoryId: 'c3', type: 'habit', itemId: 'h2' }),
+        row({ checkedOn: hoje, type: 'daily' }),
+        row({ checkedOn: hoje, type: 'todo', itemId: 't' }),
+        row({ checkedOn: '2026-10-08', type: 'todo', itemId: 't2' }),
       ],
       hoje,
     );
-    expect(s).toEqual({ categoriesToday: 2, typesToday: 3, todosToday: 1 });
+    expect(s).toEqual({ todosToday: 1 });
+  });
+});
+
+describe('dias com várias categorias, pódio e dias de diário', () => {
+  it('conta os dias com 3 e com 5 categorias, os dias de pódio e os dias de diário', () => {
+    const cat = (day: string, n: number, type: CheckRow['type'] = 'daily') =>
+      Array.from({ length: n }, (_, i) =>
+        row({ checkedOn: day, categoryId: `c${i}`, itemId: `${day}-${i}`, type }),
+      );
+    const s = estatisticasDeChecks([
+      ...cat('2026-10-01', 5), // 5 categorias
+      ...cat('2026-10-02', 3), // 3 categorias
+      ...cat('2026-10-03', 2), // só 2
+      row({ checkedOn: '2026-10-04', type: 'todo', itemId: 't' }),
+      row({ checkedOn: '2026-10-04', type: 'habit', itemId: 'h' }),
+      row({ checkedOn: '2026-10-04', type: 'daily', itemId: 'd' }), // pódio
+    ]);
+    expect(s.balancedDays).toEqual({ three: 2, five: 1 });
+    expect(s.podiumDays).toBe(1);
+    expect(s.dailyDays).toBe(4);
   });
 });

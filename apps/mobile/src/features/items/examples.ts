@@ -56,6 +56,8 @@ export function buildExampleRequests(
   if (!fallback) return [];
   return EXAMPLES.map((example) => {
     const base = {
+      // exemplo do app: não conta como criação do usuário nas conquistas
+      example: true as const,
       title: title(example.type, example.key),
       difficulty: example.difficulty,
       categoryId: categories.find((c) => c.name === example.category)?.id ?? fallback.id,

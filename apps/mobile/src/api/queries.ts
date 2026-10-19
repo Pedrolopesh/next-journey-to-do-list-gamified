@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-query';
 
 import { useSessionStore } from '@/auth/session-store';
+import { useFeedbackStore } from '@/features/feedback/feedback-store';
 
 import {
   checkItem,
@@ -174,9 +175,47 @@ export function useUndoCheck() {
   });
 }
 
+/**
+ * Depois de uma ação que não devolve conquistas (criar item ou categoria, salvar personagem, evento):
+ * busca as pendentes e mostra só a mais antiga, e só se nenhum modal estiver aberto. Assim cada
+ * ação abre no máximo um modal de conquista.
+ */
+export async function showNextPending(queryClient: QueryClient): Promise<void> {
+  try {
+    const list = await queryClient.fetchQuery({
+      queryKey: queryKeys.achievements,
+      queryFn: fetchAchievements,
+      staleTime: 0,
+    });
+    if (useFeedbackStore.getState().modals.length > 0) return;
+    const [oldest] = list
+      .filter((item) => item.pending)
+      .sort((a, b) => (a.unlockedAt ?? '').localeCompare(b.unlockedAt ?? ''));
+    if (!oldest) return;
+    useFeedbackStore.getState().enqueue([
+      {
+        kind: 'achievement',
+        slug: oldest.slug,
+        name: oldest.name,
+        tier: oldest.tier,
+        glyph: oldest.glyph,
+      },
+    ]);
+  } catch {
+    // Sem rede: a conquista continua pendente e aparece na próxima ação
+  }
+}
+
 export function useCreateItem() {
+  const queryClient = useQueryClient();
   const refresh = useRefreshGameData();
-  return useMutation({ mutationFn: createItem, onSuccess: refresh });
+  return useMutation({
+    mutationFn: createItem,
+    onSuccess: () => {
+      refresh();
+      void showNextPending(queryClient);
+    },
+  });
 }
 
 export function useUpdateItem() {
@@ -201,7 +240,13 @@ export function useCategoryMutations() {
     refresh();
   };
   return {
-    create: useMutation({ mutationFn: createCategory, onSuccess: done }),
+    create: useMutation({
+      mutationFn: createCategory,
+      onSuccess: () => {
+        done();
+        void showNextPending(queryClient);
+      },
+    }),
     update: useMutation({
       mutationFn: ({ id, body }: { id: string; body: Parameters<typeof updateCategory>[1] }) =>
         updateCategory(id, body),

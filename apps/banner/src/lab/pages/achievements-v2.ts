@@ -4,6 +4,8 @@ import { choiceGroup, h, panel } from '../dom';
 import type { LabPage } from '../page';
 import { insigniaSvg } from '../pixel';
 import { PROPOSAL, type Proposal, type Source, TIERS, TRAILS } from './achievements-v2-data';
+import { ritmoPanel } from './achievements-v2-ritmo';
+import { ANTES } from './achievements-v2-rules';
 
 const SOURCE_LABEL: Record<Source, string> = {
   pronto: 'Já medido hoje',
@@ -21,49 +23,74 @@ function badge(item: Pick<Proposal, 'glyph' | 'tier'>, locked: boolean, size = '
   return box;
 }
 
-function card(item: Proposal, locked: boolean): HTMLElement {
+type View = 'regras' | 'bloqueadas' | 'desbloqueadas';
+
+/** O que mudou em relação às regras anteriores: nome e/ou critério de antes, se mudaram. */
+function change(item: Proposal): { name?: string; desc?: string } | null {
+  const before = ANTES[item.id];
+  if (!before) return null;
+  const name = before.name && before.name !== item.name ? before.name : undefined;
+  const desc = before.desc !== item.desc ? before.desc : undefined;
+  return name || desc ? { ...(name ? { name } : {}), ...(desc ? { desc } : {}) } : null;
+}
+
+function card(item: Proposal, view: View): HTMLElement {
   const tier = TIERS.find((t) => t.tier === item.tier);
+  const rules = view === 'regras';
+  const locked = view === 'bloqueadas';
   const hidden = item.secret && locked;
+  const before = rules ? change(item) : null;
+
+  const title = hidden
+    ? h('strong', '', '???')
+    : before?.name
+      ? h('strong', '', h('span', 'was', before.name), ' ', h('span', 'new', item.name))
+      : h('strong', '', item.name);
+  const desc = hidden
+    ? h('span', 'desc', 'Conquista surpresa: descubra fazendo.')
+    : before?.desc
+      ? h('span', 'desc', h('span', 'was', before.desc), h('span', 'new', item.desc))
+      : h('span', 'desc', item.desc);
+
   return h(
     'article',
-    `ach2${locked ? ' locked' : ''}`,
+    `ach2${locked ? ' locked' : ''}${before ? ' changed' : ''}`,
     badge(item, locked),
-    h(
-      'div',
-      'body',
-      h('strong', '', hidden ? '???' : item.name),
-      h('span', 'desc', hidden ? 'Conquista surpresa: descubra fazendo.' : item.desc),
-    ),
+    h('div', 'body', title, desc),
     h(
       'div',
       'meta',
       h('span', `tag tier t${item.tier}`, tier?.name ?? ''),
       h('span', `tag src ${item.source}`, SOURCE_LABEL[item.source]),
       ...(item.secret ? [h('span', 'tag secret', 'Surpresa')] : []),
+      ...(before ? [h('span', 'tag changed', 'Mudou')] : []),
     ),
   );
 }
 
 export const achievementsV2Page: LabPage = {
   id: 'conquistas-v2',
-  label: 'Conquistas v2 (proposta)',
+  label: 'Conquistas v2',
   mount(host) {
     let trail = 'todas';
-    let state: 'locked' | 'unlocked' = 'locked';
+    let view: View = 'regras';
+    let onlyChanged = false;
     const results = h('div', 'v2-results');
 
     const render = (): void => {
-      const locked = state === 'locked';
       const trails = TRAILS.filter((t) => trail === 'todas' || t.id === trail);
       results.replaceChildren(
         ...trails.map((t) => {
-          const items = PROPOSAL.filter((p) => p.trail === t.id);
+          const items = PROPOSAL.filter(
+            (p) => p.trail === t.id && (!onlyChanged || change(p) !== null),
+          );
+          if (items.length === 0) return h('span');
           return h(
             'section',
             'v2-trail',
             h('h3', '', `${t.name} `, h('small', '', `${items.length} conquistas`)),
             h('p', 'goal', t.goal),
-            h('div', 'v2-grid', ...items.map((p) => card(p, locked))),
+            h('div', 'v2-grid', ...items.map((p) => card(p, view))),
           );
         }),
       );
@@ -89,15 +116,16 @@ export const achievementsV2Page: LabPage = {
         h('td', '', String(mine.length)),
       );
     });
+    const changedCount = PROPOSAL.filter((p) => change(p) !== null).length;
     const count = (source: Source): number => PROPOSAL.filter((p) => p.source === source).length;
     const glyphs = [...new Set(PROPOSAL.map((p) => p.glyph))];
 
     host.append(
-      h('h1', '', 'Conquistas v2 (proposta)'),
+      h('h1', '', 'Conquistas v2'),
       h(
         'p',
         'lead',
-        `Catálogo oficial: conquistas só de mérito (sem item nem acessório), ${PROPOSAL.length} no total, organizadas em ${TRAILS.length} trilhas e 4 classes. É a mesma lista que a API e o app usam.`,
+        `Catálogo oficial: conquistas só de mérito (sem item nem acessório), ${PROPOSAL.length} no total, organizadas em ${TRAILS.length} trilhas e 4 classes. É a mesma lista que a API e o app usam. Esta página reúne tudo: o conceito, a arte, o catálogo com as regras de hoje e o ritmo das conquistas, antes e agora (${changedCount} critérios mudaram).`,
       ),
       panel(
         'Conceito',
@@ -185,8 +213,9 @@ export const achievementsV2Page: LabPage = {
           `Medição: ${count('pronto')} já são medidas pelo servidor hoje, ${count('consulta')} saem de tabelas que já existem (por tipo de item, dias distintos, sequência por item, prazo e dificuldade) e ${count('novo')} precisam de dado ou evento novo (mudar personagem, criar categoria, trocar de história).`,
         ),
       ),
+      ritmoPanel(changedCount),
       panel(
-        'Catálogo',
+        'Catálogo e regras',
         h(
           'div',
           'row',
@@ -209,15 +238,37 @@ export const achievementsV2Page: LabPage = {
           h('label', '', 'Ver como'),
           choiceGroup(
             [
-              { value: 'locked' as const, label: 'Bloqueadas' },
-              { value: 'unlocked' as const, label: 'Desbloqueadas' },
+              { value: 'regras', label: 'Regras (hoje e proposta)' },
+              { value: 'bloqueadas', label: 'Bloqueadas' },
+              { value: 'desbloqueadas', label: 'Desbloqueadas' },
             ],
-            () => state,
+            () => view,
             (value) => {
-              state = value;
+              view = value;
               render();
             },
           ),
+        ),
+        h(
+          'div',
+          'row',
+          h('label', '', 'Mostrar'),
+          choiceGroup(
+            [
+              { value: 'todas' as const, label: 'Todas' },
+              { value: 'mudam' as const, label: `Só as ${changedCount} que mudaram` },
+            ],
+            () => (onlyChanged ? 'mudam' : 'todas'),
+            (value) => {
+              onlyChanged = value === 'mudam';
+              render();
+            },
+          ),
+        ),
+        h(
+          'p',
+          'hint',
+          'Em "Regras", o critério de antes aparece riscado e o de agora em verde; as surpresas mostram o critério para você revisar. As outras duas visões mostram como a galeria aparece no app.',
         ),
         results,
       ),

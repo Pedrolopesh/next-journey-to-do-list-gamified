@@ -10,6 +10,15 @@ cd "$(git rev-parse --show-toplevel)"
 step() { printf '\n\033[1m== %s\033[0m\n' "$1"; }
 
 step "1/8 Mensagens dos commits"
+base="${BASE_REF:-origin/main}"
+if ! git rev-parse --verify --quiet "$base" >/dev/null; then
+  echo "Referência $base não existe aqui: rode 'git fetch origin main' ou defina BASE_REF."
+  exit 1
+fi
+if [ -z "$(git rev-list "$base"..HEAD)" ]; then
+  echo "Nenhum commit novo em relação a $base: nada para verificar (commit antes de rodar o verify)."
+  exit 1
+fi
 bash scripts/check-commits.sh
 
 step "2/8 Lint, tipos, testes e build (Turborepo)"

@@ -44,4 +44,9 @@ describe('itens de exemplo', () => {
   it('sem categorias não cria nada', () => {
     expect(buildExampleRequests([], titleOf)).toEqual([]);
   });
+
+  it('todo exemplo é marcado como exemplo, para não contar como criação do usuário', () => {
+    const requests = buildExampleRequests(categories, titleOf);
+    expect(requests.every((request) => request.example === true)).toBe(true);
+  });
 });
