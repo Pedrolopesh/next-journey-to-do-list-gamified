@@ -190,11 +190,10 @@ export function useCheckFlow({ type, bannerRef }: Options) {
           },
           onError: (cause) => {
             useFeedbackStore.getState().forgetCheck(item.id, checkId);
-            setError(
-              toApiError(cause)?.code === 'CHECK_ALREADY_REVERTED'
-                ? t('feedback.undone')
-                : t('feedback.undoFailed'),
-            );
+            // Já estava desmarcado (toque repetido): o resultado é o esperado, não é erro
+            if (toApiError(cause)?.code === 'CHECK_ALREADY_REVERTED')
+              showToast.info(t('feedback.undone'));
+            else setError(t('feedback.undoFailed'));
           },
         },
       );

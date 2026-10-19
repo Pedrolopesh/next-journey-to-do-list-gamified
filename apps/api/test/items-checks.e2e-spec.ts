@@ -158,6 +158,24 @@ describe('itens e check', () => {
     expect((await me(ctx, auth)).player).toMatchObject({ expTotal: 10, coins: 2, totalChecks: 1 });
   });
 
+  it('tarefa desmarcada em outro dia e marcada de novo não rende EXP de novo', async () => {
+    reset();
+    const auth = await registerUser(ctx);
+    const item = await createItem(ctx, auth, { type: 'todo', difficulty: 'medium' });
+    const checkId = randomUUID();
+    const first = await check(ctx, auth, item.id, checkId).expect(200);
+    expect(first.body.expGained).toBe(10);
+    ctx.clock.set('2026-10-10T15:00:00Z'); // dia seguinte
+    await ctx
+      .http()
+      .delete(`/v1/items/${item.id}/checks/${checkId}`)
+      .set('authorization', bearer(auth))
+      .expect(200);
+    const again = await check(ctx, auth, item.id).expect(200);
+    expect(again.body).toMatchObject({ expGained: 0, coinsGained: 2 });
+    expect((await me(ctx, auth)).player.expTotal).toBe(10);
+  });
+
   it('a perda de moedas segue o capítulo atual (capítulo 2 perde 5)', async () => {
     reset();
     const auth = await registerUser(ctx);

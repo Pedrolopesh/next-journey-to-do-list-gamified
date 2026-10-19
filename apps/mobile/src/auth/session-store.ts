@@ -38,7 +38,13 @@ export const useSessionStore = create<SessionState>((set) => ({
       accessToken: response.tokens.accessToken,
       refreshToken: response.tokens.refreshToken,
     });
-    await SecureStore.setItemAsync(REFRESH_KEY, response.tokens.refreshToken);
+    try {
+      await SecureStore.setItemAsync(REFRESH_KEY, response.tokens.refreshToken);
+    } catch (error) {
+      // Sem gravar o refresh token a sessão não sobrevive ao fechar o app: não finge que entrou
+      set({ status: 'signedOut', user: null, accessToken: null, refreshToken: null });
+      throw error;
+    }
   },
 
   async clear() {

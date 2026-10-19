@@ -67,10 +67,17 @@ export class ChecksService {
         ? { chapter: active.progress.chapter, completed: active.progress.completed }
         : NO_STORY;
 
-      // Item desmarcado e marcado de novo no mesmo dia: rende as moedas, mas o EXP vale uma vez só
+      // Item desmarcado e marcado de novo: rende as moedas, mas o EXP vale uma vez só. Tarefa vale
+      // uma vez na vida (desmarcar em outro dia não libera o EXP de novo); diário e hábito, uma
+      // vez por dia (o dia seguinte é outro check de verdade).
       const expJaGanho =
         (await tx.itemCheck.count({
-          where: { itemId, checkedOn: hoje, revertedAt: { not: null }, exp: { gt: 0 } },
+          where: {
+            itemId,
+            revertedAt: { not: null },
+            exp: { gt: 0 },
+            ...(item.type === 'todo' ? {} : { checkedOn: hoje }),
+          },
         })) > 0;
 
       const applied = aplicarCheck(
