@@ -10,12 +10,12 @@ const LABEL: Record<Difficulty, string> = { easy: 'Fácil', medium: 'Média', ha
 
 /** Regra de hoje, lida da configuração real do jogo. */
 const NOW = DEFAULT_GAME_CONFIG;
-const expHoje = (nivel: number): number => NOW.levelExpSlope * nivel - NOW.levelExpOffset;
-const NOW_CHAPTER_EXP = [1, 2, 3, 4, 5].map(expHoje);
+const expAntes = (nivel: number): number => 75 * nivel - 25; // fórmula antiga
+const OLD_CHAPTER_EXP = [1, 2, 3, 4, 5].map(expAntes);
 
 /** PROPOSTA (ainda não vale no app): EXP de cada capítulo e moedas perdidas ao desmarcar. */
-const CHAPTER_EXP = [200, 400, 600, 800, 1000];
-const UNDO_PENALTY = [3, 5, 10, 15, 20];
+const CHAPTER_EXP = [...NOW.levelExpTable];
+const UNDO_PENALTY = [...NOW.undoCoinPenalty];
 const { expByDifficulty: EXP, coinsByDifficulty: COINS, levelUpBonusCoins: BONUS } = NOW;
 
 type Item = { id: number; difficulty: Difficulty; checked: boolean; xpClaimed: boolean };
@@ -46,8 +46,8 @@ export const scoringPage: LabPage = {
         table(
           [
             'Capítulo',
-            'EXP hoje',
-            'EXP proposto',
+            'EXP antes',
+            'EXP agora',
             'Checks fáceis',
             'Médios',
             'Difíceis',
@@ -55,7 +55,7 @@ export const scoringPage: LabPage = {
           ],
           CHAPTER_EXP.map((exp, i) => [
             `${i + 1}`,
-            was(`${NOW_CHAPTER_EXP[i]}`),
+            was(`${OLD_CHAPTER_EXP[i]}`),
             `${exp}`,
             checksFor(exp, 'easy'),
             checksFor(exp, 'medium'),
@@ -183,7 +183,7 @@ export const scoringPage: LabPage = {
     const sim = h(
       'section',
       'style sc-sim',
-      h('h2', '', 'Simulador da proposta'),
+      h('h2', '', 'Simulador'),
       h(
         'p',
         'note',
@@ -220,12 +220,12 @@ export const scoringPage: LabPage = {
       h(
         'p',
         'lead',
-        'Primeiro, como EXP e moedas estão definidos hoje no app. Depois, a proposta de EXP por capítulo e de moedas ao desmarcar, que você pode ajustar aqui. A proposta ainda não está no app.',
+        'Como EXP e moedas funcionam hoje no app. Os campos de EXP e de moedas perdidas servem para simular outros valores: não gravam nada.',
       ),
       h(
         'section',
         'style',
-        h('h2', '', 'Como está definido hoje'),
+        h('h2', '', 'Como está definido'),
         h(
           'ul',
           'sc-open',
@@ -237,106 +237,54 @@ export const scoringPage: LabPage = {
           h(
             'li',
             '',
-            `EXP para ir do nível n ao n+1: ${NOW.levelExpSlope} × n − ${NOW.levelExpOffset} (50, 125, 200, 275, 350...). O EXP que sobra ao subir é carregado.`,
+            `EXP de cada capítulo (= nível): ${CHAPTER_EXP.join(', ')}. Do nível 5 em diante o nível continua subindo, com ${CHAPTER_EXP[CHAPTER_EXP.length - 1]} de EXP cada, e a história fica no cenário do capítulo 5.`,
           ),
           h(
             'li',
             '',
-            `Cada nível ganho conclui um capítulo da história (${NOW.chaptersPerStory} capítulos por história) e rende ${BONUS} moedas de bônus. Um check grande pode subir mais de um nível.`,
+            `Cada capítulo concluído (${NOW.chaptersPerStory} por história) rende ${BONUS} moedas de bônus. Depois do capítulo 5 o bônus continua a cada nível.`,
           ),
           h(
             'li',
             '',
-            'O personagem anda pela EXP dentro do nível e chega ao portal quando sobe de nível; a troca de cena acontece no check seguinte.',
+            'O personagem anda pela EXP dentro do capítulo e só chega ao portal ao concluí-lo. Com a história concluída ele fica no fim do cenário do capítulo 5, sem portal.',
           ),
           h(
             'li',
             '',
-            'Diário: um check por dia (só nos dias agendados). Tarefa: um check só. Hábito: sem limite por dia. Repetir o mesmo checkId não duplica EXP.',
+            'Diário: um check por dia (nos dias agendados). Tarefa: um check só. Hábito: sem limite por dia. Repetir o mesmo checkId não duplica nada.',
           ),
           h(
             'li',
             '',
-            'Desmarcar hoje: só no mesmo dia do check. Devolve o EXP e as moedas daquele check (o EXP nunca passa do início do nível, e o nível não cai). O bônus de nível não volta, e o check que fechou um capítulo não pode ser desfeito.',
+            'Desmarcar: vale a qualquer momento, em qualquer capítulo. O EXP, o nível e o capítulo nunca voltam. Só as moedas diminuem, pela tabela abaixo, sem deixar o saldo negativo. O bônus de nível não volta.',
           ),
           h(
             'li',
             '',
-            'Avisos de hoje: marcar mostra "+EXP e +moedas"; desmarcar mostra só "check desfeito", sem os valores.',
+            'EXP uma vez só: marcar de novo, no mesmo dia, um item que foi desmarcado rende as moedas, mas 0 de EXP.',
           ),
           h(
             'li',
             '',
-            'Onde mora: valores na tabela game_config do servidor (ajustável sem publicar o app); regras em progression/domain da API. O app não calcula nada.',
+            'Avisos: marcar mostra "+EXP · +moedas" (inclusive +0 EXP); desmarcar mostra um aviso amarelo com as moedas a menos. O personagem não se move.',
           ),
-        ),
-        h('h3', '', 'Níveis de hoje, com checks necessários'),
-        table(
-          ['Nível', 'EXP do nível', 'EXP acumulado', 'Fácil', 'Média', 'Difícil'],
-          [1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
-            const exp = expHoje(n);
-            const total = [...Array(n).keys()].reduce((sum, i) => sum + expHoje(i + 1), 0);
-            return [
-              `${n}`,
-              `${exp}`,
-              `${total}`,
-              checksFor(exp, 'easy'),
-              checksFor(exp, 'medium'),
-              checksFor(exp, 'hard'),
-            ];
-          }),
+          h(
+            'li',
+            '',
+            'Onde mora: os valores ficam na tabela game_config do servidor (ajustável sem publicar o app); as regras, em progression/domain da API. O app não calcula nada.',
+          ),
         ),
       ),
       h('section', 'style', h('h2', '', 'EXP por capítulo'), chaptersBox, editor),
       h(
         'section',
         'style',
-        h('h2', '', 'O que cada check rende (não muda)'),
+        h('h2', '', 'O que cada check rende'),
         perCheck,
         h('p', 'note', `Cada capítulo concluído dá ${BONUS} moedas de bônus.`),
       ),
-      h(
-        'section',
-        'style',
-        h('h2', '', 'Regra de desmarcar (proposta)'),
-        h(
-          'ul',
-          'sc-open',
-          h('li', '', 'O EXP nunca se perde, nem o nível, nem o capítulo.'),
-          h(
-            'li',
-            '',
-            'Perde moedas, até o valor da tabela do capítulo atual (nunca deixa o saldo negativo).',
-          ),
-          h('li', '', 'O personagem não anda para trás: a posição acompanha o EXP.'),
-          h('li', '', 'Aviso amarelo mostra as moedas a menos; marcar mostra EXP e moedas ganhos.'),
-        ),
-      ),
       sim,
-      h(
-        'section',
-        'style',
-        h('h2', '', 'Pontos para decidir'),
-        h(
-          'ul',
-          'sc-open',
-          h(
-            'li',
-            '',
-            'Marcar, desmarcar e marcar de novo: como o EXP não cai, o mesmo item daria EXP várias vezes. Proposta: o item só rende EXP uma vez (no simulador, marque de novo e veja "+0 EXP"). As moedas voltam a ser dadas, mas o desmarcar tira mais do que o item rende nos capítulos 2 em diante.',
-          ),
-          h(
-            'li',
-            '',
-            'Hoje desfazer só vale no mesmo dia e não vale depois que o capítulo fecha. Manter?',
-          ),
-          h(
-            'li',
-            '',
-            'Com 5 capítulos de EXP, o que acontece depois do capítulo 5? Hoje o nível continua subindo.',
-          ),
-        ),
-      ),
     );
   },
 };

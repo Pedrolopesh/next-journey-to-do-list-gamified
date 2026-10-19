@@ -75,7 +75,7 @@ São **40 requisitos em 10 módulos**. *Obrigatório* bloqueia o lançamento; *D
 | RF-15 | Campos por tipo: Diário tem frequência (todo dia ou dias da semana); Tarefa tem prazo opcional (data e hora); Hábito não tem prazo. | Obrigatório |
 | RF-16 | Editar e excluir item. A exclusão é lógica e mantém o histórico de EXP. | Obrigatório |
 | RF-17 | Marcar item com um check único, igual para os 3 tipos. | Obrigatório |
-| RF-18 | Desmarcar no mesmo dia, revertendo EXP e moedas daquele check. | Obrigatório |
+| RF-18 | Desmarcar a qualquer momento: o EXP nunca se perde, só moedas (3, 5, 10, 15 e 20 por capítulo). | Obrigatório |
 | RF-19 | Aba Diários: itens do dia, com os atrasados no topo, contagem de sequência e badge de pendentes no menu. | Obrigatório |
 | RF-20 | Aba Tarefas: agrupadas por categoria, com filtro por pills e destaque de atraso. A tarefa sai da lista depois de marcada. | Obrigatório |
 | RF-21 | Aba Hábitos: lista com contador de checks de hoje e da semana. | Obrigatório |
@@ -131,7 +131,7 @@ Todo check vale EXP e moedas pela dificuldade do item. Cada nível ganho conclui
 | Virada do dia | 00:00 no fuso salvo no perfil do usuário |
 | Faixas da cena do QG | manhã 05h–12h, tarde 12h–18h, noite 18h–05h |
 
-**EXP necessária para ir do nível `n` ao `n + 1`:** `75n − 25` (nível 1 → 2 = 50; nível 7 → 8 = 500).
+**EXP para concluir cada capítulo (= nível):** 200, 400, 600, 800 e 1000 (`levelExpTable` no `game_config`). Do nível 5 em diante o nível continua subindo, com 1000 de EXP cada, e a história fica no cenário do capítulo 5.
 
 ### Por tipo de item
 
@@ -141,8 +141,9 @@ Todo check vale EXP e moedas pela dificuldade do item. Cada nível ganho conclui
 
 ### Desmarcar e progressão
 
-- Só é possível desmarcar **no mesmo dia** do check. A ação reverte o EXP e as moedas daquele check. No app, o próprio check desmarca ao tocar (só para checks feitos neste aparelho no mesmo dia).
-- O **nível nunca cai**: se a reversão passar do início do nível, o EXP para no mínimo do nível atual. Conquistas já ganhas não são removidas, e o banner não anima recuo na v1.
+- Desmarcar vale **a qualquer momento**, em qualquer capítulo. O **EXP, o nível e o capítulo nunca voltam**: só as moedas diminuem, pela tabela `undoCoinPenalty` do capítulo atual (3, 5, 10, 15 e 20), sem deixar o saldo negativo. O personagem não se move. Conquistas já ganhas não são removidas.
+- **EXP uma vez por item e dia:** marcar de novo, no mesmo dia, um item desmarcado rende as moedas mas 0 de EXP.
+- Avisos: marcar mostra o EXP e as moedas ganhos; desmarcar mostra um aviso amarelo com as moedas a menos. No app, o próprio check desmarca ao tocar (só para checks feitos neste aparelho nesta sessão).
 - EXP, nível e moedas são **globais**. O capítulo atual (e os concluídos) é **separado por história**.
 - **História = cenário** (2026-10-13): são 6 histórias, uma por cenário do banner, com 5 capítulos cada. Trocar de história é livre e preserva o progresso de cada uma; os capítulos concluídos ficam desbloqueados. O cenário das abas é o da história ativa; o cenário do QG (Home) é escolha à parte, só no aparelho.
 - **Capítulo = nível** (2026-10-13): cada nível ganho conclui o capítulo atual da história ativa e abre o seguinte (vários níveis num check concluem vários capítulos). A posição do personagem no banner é a EXP dentro do nível; ao subir de nível ele chega ao portal e espera, e a cena só troca (fade) no check seguinte. Não existe mais contagem de checks por capítulo.
@@ -168,8 +169,7 @@ Todo check vale EXP e moedas pela dificuldade do item. Cada nível ganho conclui
 Pontos que a especificação deixava abertos. Cada um vira teste no módulo `progression` e entra no ADR-004.
 
 **Desmarcar e progressão**
-- **Capítulo fechado é definitivo:** o check que subiu de nível (e fechou o capítulo), e os feitos antes dele no mesmo capítulo, não podem ser desmarcados; a API responde `409` com `code: CHECK_LOCKED`.
-- O bônus de 10 moedas por subir de nível **não é revertido** ao desmarcar, já que o nível nunca cai.
+- O bônus de 10 moedas por subir de nível **não é revertido** ao desmarcar. Sem trava por dia ou capítulo (`CHECK_LOCKED` e a recusa de outro dia saíram em 2026-10-19).
 - O EXP que sobra ao subir de nível é carregado para o próximo (`exp_in_level`); um check pode subir mais de um nível, e o modal mostra o nível final.
 - Ao concluir o capítulo 5 (5º nível ganho na história), a história fica concluída: os checks seguem rendendo EXP e moedas, o capítulo não avança e o app oferece escolher outra história.
 - Hábito sem limite diário (decidido em 2026-10-02): cada check rende EXP e moedas; desmarcar reverte o check específico (`checkId`).

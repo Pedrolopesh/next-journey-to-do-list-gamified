@@ -119,7 +119,7 @@ describe('itens e check', () => {
     const auth = await registerUser(ctx);
     await ctx.prisma.userStats.update({
       where: { userId: auth.user.id },
-      data: { expInLevel: 45, expTotal: 45 },
+      data: { expInLevel: 195, expTotal: 195 },
     });
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'hard' }); // +20 EXP
     const res = await check(ctx, auth, item.id).expect(200);
@@ -127,28 +127,61 @@ describe('itens e check', () => {
     expect((await me(ctx, auth)).player).toMatchObject({ level: 2, expInLevel: 15, coins: 14 });
   });
 
-  it('desfazer no mesmo dia devolve EXP, moedas e o passo do capítulo', async () => {
+  it('desfazer tira moedas, nunca o EXP, e marcar de novo no dia rende só as moedas', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'medium' });
     const checkId = randomUUID();
-    await check(ctx, auth, item.id, checkId).expect(200);
+    await check(ctx, auth, item.id, checkId).expect(200); // +10 EXP, +2 moedas
     const undone = await ctx
       .http()
       .delete(`/v1/items/${item.id}/checks/${checkId}`)
       .set('authorization', bearer(auth))
       .expect(200);
-    expect(undone.body).toMatchObject({ expGained: -10, coinsGained: -2 });
-    expect((await me(ctx, auth)).player).toMatchObject({ expTotal: 0, coins: 0, totalChecks: 0 });
+    // capítulo 1 perde até 3 moedas, limitado ao saldo (2)
+    expect(undone.body).toMatchObject({ expGained: 0, coinsGained: -2 });
+    expect((await me(ctx, auth)).player).toMatchObject({
+      expTotal: 10,
+      expInLevel: 10,
+      coins: 0,
+      totalChecks: 0,
+    });
     // desmarcar duas vezes
     await ctx
       .http()
       .delete(`/v1/items/${item.id}/checks/${checkId}`)
       .set('authorization', bearer(auth))
       .expect(409);
+    // marcar de novo no mesmo dia: moedas sim, EXP não
+    const again = await check(ctx, auth, item.id).expect(200);
+    expect(again.body).toMatchObject({ expGained: 0, coinsGained: 2 });
+    expect((await me(ctx, auth)).player).toMatchObject({ expTotal: 10, coins: 2, totalChecks: 1 });
   });
 
-  it('desfazer de outro dia é recusado (UNDO_NOT_ALLOWED)', async () => {
+  it('a perda de moedas segue o capítulo atual (capítulo 2 perde 5)', async () => {
+    reset();
+    const auth = await registerUser(ctx);
+    await ctx.prisma.storyProgress.updateMany({
+      where: { userId: auth.user.id },
+      data: { chapter: 2 },
+    });
+    await ctx.prisma.userStats.update({
+      where: { userId: auth.user.id },
+      data: { level: 2, coins: 40 },
+    });
+    const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
+    const checkId = randomUUID();
+    await check(ctx, auth, item.id, checkId).expect(200); // +1 moeda: 41
+    const undone = await ctx
+      .http()
+      .delete(`/v1/items/${item.id}/checks/${checkId}`)
+      .set('authorization', bearer(auth))
+      .expect(200);
+    expect(undone.body).toMatchObject({ expGained: 0, coinsGained: -5 });
+    expect((await me(ctx, auth)).player.coins).toBe(36);
+  });
+
+  it('desfazer vale em outro dia', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
@@ -159,8 +192,8 @@ describe('itens e check', () => {
       .http()
       .delete(`/v1/items/${item.id}/checks/${checkId}`)
       .set('authorization', bearer(auth))
-      .expect(409);
-    expect(res.body.code).toBe('UNDO_NOT_ALLOWED');
+      .expect(200);
+    expect(res.body.expGained).toBe(0);
   });
 
   it('a virada do dia segue o fuso do perfil (23:59 ainda é o mesmo dia local)', async () => {
@@ -178,12 +211,12 @@ describe('itens e check', () => {
       .expect(200); // ainda é o mesmo dia local
   });
 
-  it('o check que sobe de nível e fecha o capítulo é definitivo (CHECK_LOCKED)', async () => {
+  it('o check que fecha o capítulo também pode ser desmarcado: nível e capítulo ficam', async () => {
     reset();
     const auth = await registerUser(ctx);
     await ctx.prisma.userStats.update({
       where: { userId: auth.user.id },
-      data: { expInLevel: 45, expTotal: 45 },
+      data: { expInLevel: 195, expTotal: 195 },
     });
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const checkId = randomUUID();
@@ -191,12 +224,14 @@ describe('itens e check', () => {
     expect(res.body.chapterCompleted).toBe(true);
     expect(res.body).toMatchObject({ leveledUp: true, level: 2 });
     expect((await me(ctx, auth)).player.story).toEqual({ chapter: 2, completed: false });
-    const locked = await ctx
+    const undone = await ctx
       .http()
       .delete(`/v1/items/${item.id}/checks/${checkId}`)
       .set('authorization', bearer(auth))
-      .expect(409);
-    expect(locked.body.code).toBe('CHECK_LOCKED');
+      .expect(200);
+    expect(undone.body).toMatchObject({ expGained: 0, level: 2 });
+    expect((await me(ctx, auth)).player).toMatchObject({ level: 2, expInLevel: 0 });
+    expect((await me(ctx, auth)).player.story).toEqual({ chapter: 2, completed: false });
   });
 
   it('diário: sequência, atraso e restauração ao desmarcar', async () => {

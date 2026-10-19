@@ -14,6 +14,8 @@ export type CheckInput = {
   difficulty: Difficulty;
   /** Dia local do usuário no momento do check (já calculado com diaLocal). */
   localDate: LocalDate;
+  /** Este item já rendeu EXP hoje (check desmarcado e marcado de novo): rende só as moedas. */
+  expJaGanho?: boolean;
 };
 
 /**
@@ -67,7 +69,7 @@ export function aplicarCheck(
   input: CheckInput,
   config: GameConfig,
 ): ApplyCheckResult {
-  const exp = config.expByDifficulty[input.difficulty];
+  const exp = input.expJaGanho ? 0 : config.expByDifficulty[input.difficulty];
   const coins = config.coinsByDifficulty[input.difficulty];
 
   // Nível e EXP

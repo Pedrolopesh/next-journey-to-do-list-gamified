@@ -18,7 +18,7 @@ import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { buildModalQueue } from '@/features/feedback/modal-queue';
 import { toast as showToast } from '@/features/feedback/toast-store';
 import { useOfflineStore } from '@/features/offline/offline-store';
-import { journeyView, levelProgress } from '@/features/qg/journey-progress';
+import { journeyView, levelProgress, sceneLevel } from '@/features/qg/journey-progress';
 import { useJourneyStore } from '@/features/qg/journey-store';
 import { log } from '@/logging';
 
@@ -79,19 +79,19 @@ export function useCheckFlow({ type, bannerRef }: Options) {
       };
       if (portalWasPending && userId) {
         afterTransition.current = () => {
-          useJourneyStore.getState().settle(userId, fresh.player.level);
+          useJourneyStore.getState().settle(userId, sceneLevel(fresh.player.level));
           send(levelProgress(fresh.player));
         };
         bannerRef.current?.send({
           v: 1,
           type: 'CHAPTER_COMPLETED',
-          payload: { nextSceneKey: `story-level-${result.level}` },
+          payload: { nextSceneKey: `story-level-${sceneLevel(result.level)}` },
         });
         clearTimeout(fallbackTimer.current);
         fallbackTimer.current = setTimeout(runAfterTransition, TRANSITION_FALLBACK_MS);
         return;
       }
-      send(result.leveledUp ? 1 : levelProgress(fresh.player));
+      send(result.leveledUp ? 1 : levelProgress(fresh.player)); // história concluída: sempre 1
     },
     [bannerRef, queryClient, runAfterTransition],
   );
@@ -176,32 +176,30 @@ export function useCheckFlow({ type, bannerRef }: Options) {
         useFeedbackStore.getState().forgetCheck(item.id, checkId);
         void queryClient.invalidateQueries({ queryKey: ['items'] });
         showToast.success(t('feedback.undone'));
-        resetBanner();
         return;
       }
       undo.mutate(
         { itemId: item.id, checkId },
         {
-          onSuccess: () => {
+          // O EXP nunca volta: o personagem fica onde está e só as moedas diminuem (aviso amarelo)
+          onSuccess: (result) => {
             useFeedbackStore.getState().forgetCheck(item.id, checkId);
-            showToast.success(t('feedback.undone'));
-            resetBanner();
+            const lost = Math.max(0, -result.coinsGained);
+            if (lost > 0) showToast.warning(t('feedback.undoneCoins', { coins: lost }));
+            else showToast.info(t('feedback.undoneNoCoins'));
           },
           onError: (cause) => {
-            const code = toApiError(cause)?.code;
             useFeedbackStore.getState().forgetCheck(item.id, checkId);
             setError(
-              code === 'CHECK_LOCKED'
-                ? t('feedback.undoLocked')
-                : code === 'UNDO_NOT_ALLOWED'
-                  ? t('feedback.undoOtherDay')
-                  : t('feedback.undoFailed'),
+              toApiError(cause)?.code === 'CHECK_ALREADY_REVERTED'
+                ? t('feedback.undone')
+                : t('feedback.undoFailed'),
             );
           },
         },
       );
     },
-    [queryClient, resetBanner, t, undo],
+    [queryClient, t, undo],
   );
 
   return { handleCheck, handleUndo, onBannerMessage, toast, setToast, error, setError };

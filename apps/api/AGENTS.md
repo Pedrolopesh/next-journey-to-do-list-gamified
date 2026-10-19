@@ -14,7 +14,7 @@ NestJS 12 em **ESM** (`"type": "module"`, imports relativos com `.js`), TypeScri
 
 Toda regra de progressão mora aqui, como **função pura com teste**:
 
-- `aplicarCheck` (EXP, moedas, nível, capítulo), `desfazerCheck`, `estaAtrasado`, `calcularStreak`, `diaLocal`, `expParaNivel`, `checksParaCapitulo`.
+- `aplicarCheck` (EXP, moedas, nível, capítulo), `desfazerCheck`, `estaAtrasado`, `calcularStreak`, `diaLocal`, `expParaNivel`, `moedasPerdidasAoDesmarcar`.
 - **Sem I/O.** Nada de banco, rede, `Date.now()`, `new Date()` sem argumento, `Math.random()`. A data e o instante entram como argumento.
 - **Sem Nest no domain.** Nenhum decorator nem `@nestjs/*` em `domain/`. O service chama o domínio; o domínio não conhece o framework.
 - Os tipos (`PlayerState`, `GameConfig`, `Difficulty`...) vêm de `@nextjourney/contracts`. Nunca duplicar.
