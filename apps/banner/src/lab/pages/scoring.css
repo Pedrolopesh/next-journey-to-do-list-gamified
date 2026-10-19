@@ -1,0 +1,100 @@
+.sc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.sc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.sc-table th,
+.sc-table td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+}
+.sc-table .was {
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+.sc-bar {
+  height: 14px;
+  border-radius: 7px;
+  background: rgb(255 255 255 / 0.08);
+  overflow: hidden;
+  margin: 8px 0;
+}
+.sc-bar > i {
+  display: block;
+  height: 100%;
+  background: #7c3aed;
+  transition: width 0.25s;
+}
+.sc-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.sc-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+.sc-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.05);
+  font-size: 13px;
+}
+.sc-item button,
+.sc-sim button {
+  border: 0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #7c3aed;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+.sc-item button.undo {
+  background: #475569;
+}
+.sc-toasts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 90px;
+}
+.sc-toast {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.sc-toast.gain {
+  background: rgb(34 197 94 / 0.18);
+  color: #86efac;
+}
+.sc-toast.loss {
+  background: rgb(234 179 8 / 0.2);
+  color: #fde047;
+}
+.sc-toast.info {
+  background: rgb(124 58 237 / 0.2);
+  color: #c4b5fd;
+}
+.sc-open li {
+  margin-bottom: 6px;
+}
+.sc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
