@@ -6,8 +6,8 @@ cd "$(git rev-parse --show-toplevel)"
 
 base="${BASE_REF:-origin/main}"
 if ! git rev-parse --verify --quiet "$base" >/dev/null; then
-  echo "Base $base não encontrada (git fetch origin main). Pulando a checagem de commits."
-  exit 0
+  echo "Base $base não encontrada: rode git fetch origin main (na CI o checkout precisa de fetch-depth: 0)." >&2
+  exit 1
 fi
 
 echo "==> Mensagens dos commits ($base..HEAD)"

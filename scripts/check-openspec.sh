@@ -6,14 +6,12 @@ cd "$(git rev-parse --show-toplevel)"
 
 base="${BASE_REF:-origin/main}"
 if ! git rev-parse --verify --quiet "$base" >/dev/null; then
-  echo "Base $base não encontrada. Pulando a validação do OpenSpec."
-  exit 0
+  echo "Base $base não encontrada: rode git fetch origin main (na CI o checkout precisa de fetch-depth: 0)." >&2
+  exit 1
 fi
 
-# CLI oficial, com a versão fixada (a CI não tem instalação global)
-run_openspec() {
-  if command -v openspec >/dev/null 2>&1; then openspec "$@"; else pnpm dlx @fission-ai/openspec@1.4.1 "$@"; fi
-}
+# CLI oficial do OpenSpec, versão fixada no lockfile (devDependency da raiz)
+run_openspec() { pnpm exec openspec "$@"; }
 
 echo "==> Propostas do OpenSpec alteradas ($base...HEAD)"
 changes=$(git diff --name-only "$base"...HEAD -- openspec/changes | grep -v '^openspec/changes/archive/' | cut -d/ -f3 | sort -u || true)

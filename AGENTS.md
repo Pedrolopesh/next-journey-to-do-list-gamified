@@ -102,9 +102,9 @@ Vale para pessoas e para agentes de IA. **Nenhuma branch é enviada ao GitHub e 
 
 ### 1. Revisão e aprovação do Pedro
 
-- Deixe o trabalho **só local** (branch + commits) e pare. Não rode `git push` nem `gh pr create` ainda. Exceção: quando o Pedro autorizar de forma explícita no chat (ex.: "abra os PRs e faça o merge"), o agente abre e mescla, cumprindo todas as etapas de "Processo de PR".
+- Deixe o trabalho **só local** (branch + commits) e pare. Não rode `git push` nem `gh pr create` ainda. Exceção: quando o Pedro autorizar de forma explícita no chat um lote (ex.: "abra os PRs e faça o merge"), o agente abre e mescla só os PRs daquele lote, cumprindo todas as etapas de "Processo de PR".
 - Apresente ao Pedro: o que mudou e por quê, em linguagem simples; a lista de arquivos; o resultado de `lint`, `typecheck`, `test` e `build`; e o resultado da varredura de segredos (item 2).
-- Só suba depois de uma aprovação **explícita** ("pode subir", "aprovado"). Aprovação de um PR não vale para o próximo.
+- Só suba depois de uma aprovação **explícita** ("pode subir", "aprovado"). Aprovação de um PR não vale para o próximo, salvo lote autorizado de forma explícita no chat (vale só para os PRs ali listados).
 - Mudou algo depois da aprovação? Apresente de novo.
 
 ### 2. Verificação completa de chaves, tokens e segredos

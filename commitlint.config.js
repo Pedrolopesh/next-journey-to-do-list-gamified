@@ -1,6 +1,8 @@
 // Regras de commit do projeto (AGENTS.md, "Não fazer"): Conventional Commits em minúscula, SEM corpo
 // e SEM atribuição a ferramenta de IA ou co-autor.
-const atribuicaoDeIa = /co-authored-by|generated with|claude|anthropic|chatgpt|copilot/i;
+// Só atribuição de verdade (trailer de co-autor, rodapé "Generated with", id de sessão), não a palavra solta:
+// citar CLAUDE.md ou "copilot" como assunto de um commit é legítimo
+const atribuicaoDeIa = /co-authored-by:|generated with|claude-session:|claude\.ai\/code\/session/i;
 
 export default {
   extends: ['@commitlint/config-conventional'],

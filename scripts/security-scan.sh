@@ -24,14 +24,17 @@ range=${base:+$base..HEAD}
 if [ "${FULL:-0}" = "1" ]; then range=""; echo "(modo completo: histórico inteiro, todas as branches)"; fi
 if git log ${range:---all} -p -- . ':(exclude)scripts/security-scan.sh' ':(exclude)pnpm-lock.yaml' 2>/dev/null | grep -E '^\+' | grep -E -i "$secret_re" | grep -v "scan-allow"; then fail=1; fi
 
-echo "==> Autor e mensagens dos commits novos (sem atribuição a ferramentas de IA)"
-if git log ${range:---all} --format='%an <%ae>%n%B' | grep -i -E 'claude|co-authored-by|generated with|anthropic'; then fail=1; fi
+echo "==> Atribuição a IA nos commits (trailer de co-autor, \"Generated with\", id de sessão)"
+ia_re='co-authored-by:|generated with|claude-session:|claude\.ai/code/session'
+for commit in $(git log ${range:---all} --format='%h'); do
+  if git show -s --format='%an <%ae>%n%B' "$commit" | grep -q -i -E "$ia_re"; then
+    echo "commit $commit cita atribuição a IA: $(git show -s --format='%s' "$commit")"; fail=1
+  fi
+done
 
 if [ "${FULL:-0}" = "1" ]; then
   echo "==> Arquivos ignorados pelo Git que parecem sensíveis (não sobem, mas confira)"
   git ls-files -o -i --exclude-standard | grep -E '(^|/)\.env($|\.)|\.pem$|\.p12$|\.keystore$|id_rsa|credentials' | grep -v -E 'node_modules|\.env\.example$' || echo "nenhum"
-  echo "==> Autor e mensagens dos commits (sem atribuição a ferramentas de IA)"
-  if git log --all --format='%an <%ae>%n%B' | grep -i -E 'claude|co-authored-by|generated with'; then fail=1; fi
 fi
 
 echo "==> Vulnerabilidades em dependências (pnpm audit)"

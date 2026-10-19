@@ -24,6 +24,7 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
+    "@fission-ai/openspec": "1.4.1",
     "eslint": "^9.39.5",
     "husky": "^9.1.7",
     "jscpd": "5.4.1",

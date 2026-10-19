@@ -2,6 +2,8 @@ name: CI
 
 on:
   pull_request:
+    # edited: corrigir título ou descrição no GitHub refaz a checagem da descrição
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
 
@@ -11,6 +13,8 @@ concurrency:
 
 jobs:
   check:
+    # editar título/descrição não precisa refazer build e testes
+    if: github.event.action != 'edited'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -94,7 +98,7 @@ jobs:
           for secao in "## O que muda" "## Por quê" "## Como foi verificado" "## Riscos e pendências" "## Segurança"; do
             printf '%s' "$PR_BODY" | grep -q "^$secao" || { echo "Falta a seção: $secao"; fail=1; }
           done
-          if printf '%s' "$PR_BODY" | grep -i -E -q 'co-authored-by|generated with|claude|anthropic'; then
+          if printf '%s' "$PR_BODY" | grep -i -E -q 'co-authored-by:|generated with|claude-session:|claude\.ai/code/session'; then
             echo "A descrição não pode citar ferramenta de IA nem co-autor"; fail=1
           fi
           [ "$fail" -eq 0 ]

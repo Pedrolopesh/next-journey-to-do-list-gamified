@@ -32,7 +32,7 @@ step "6/8 Segredos, IPs, histórico, autoria e dependências (security:full)"
 pnpm run security:full
 
 step "7/8 Árvore limpa (nada esquecido fora do commit)"
-if [ -n "$(git status --porcelain -- . ':!RESUMO-DA-SESSAO.md')" ]; then
+if [ -n "$(git status --porcelain)" ]; then
   git status --short
   echo "Há mudanças sem commit."; exit 1
 fi
