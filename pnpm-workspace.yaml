@@ -8,6 +8,8 @@ allowBuilds:
   argon2: false
   '@swc/core': false
   '@parcel/watcher': false
+  # CLI do OpenSpec (validação das propostas): funciona sem o script de instalação
+  '@fission-ai/openspec': false
   # Telemetria de terceiros: nunca
   '@scarf/scarf': false
   # Precisam rodar: baixam o motor de migrations do Prisma
