@@ -284,6 +284,30 @@ export const scoringPage: LabPage = {
         perCheck,
         h('p', 'note', `Cada capítulo concluído dá ${BONUS} moedas de bônus.`),
       ),
+      h(
+        'section',
+        'style',
+        h('h2', '', 'Brecha conhecida (anotada, não corrigida)'),
+        h(
+          'ul',
+          'sc-open',
+          h(
+            'li',
+            '',
+            `Moedas por volta: no capítulo 1, marcar, desmarcar e marcar de novo um item difícil rende +1 moeda por volta (ganha ${COINS.hard}, perde ${UNDO_PENALTY[0]}). O EXP não rende de novo, mas as moedas sim.`,
+          ),
+          h(
+            'li',
+            '',
+            'Por que ficou: foi a regra aprovada, o ganho é pequeno e o capítulo 1 é só o começo. Do capítulo 2 em diante a perda (5 ou mais) supera qualquer ganho de um check.',
+          ),
+          h(
+            'li',
+            '',
+            'Se virar problema: dar as moedas só uma vez por item e dia (como o EXP), ou fazer a perda ao desmarcar nunca ser menor que as moedas do check.',
+          ),
+        ),
+      ),
       sim,
     );
   },

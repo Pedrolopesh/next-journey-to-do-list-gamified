@@ -287,6 +287,116 @@ describe('itens e check', () => {
     expect(await list()).toMatchObject({ overdue: false, streak: 1 });
   });
 
+  it('a lista traz o check de hoje que vale (lastCheckId) e some quando é desmarcado', async () => {
+    reset();
+    const auth = await registerUser(ctx);
+    const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
+    const list = async () =>
+      (await ctx.http().get('/v1/items?type=habit').set('authorization', bearer(auth)).expect(200))
+        .body[0];
+    expect((await list()).lastCheckId).toBeNull();
+
+    const first = randomUUID();
+    const second = randomUUID();
+    await check(ctx, auth, item.id, first).expect(200);
+    await check(ctx, auth, item.id, second).expect(200);
+    expect((await list()).lastCheckId).toBe(second); // o mais recente vale
+
+    await ctx
+      .http()
+      .delete(`/v1/items/${item.id}/checks/${second}`)
+      .set('authorization', bearer(auth))
+      .expect(200);
+    expect((await list()).lastCheckId).toBe(first);
+
+    ctx.clock.set('2026-10-10T15:00:00Z'); // dia seguinte: o check de ontem não aparece
+    expect((await list()).lastCheckId).toBeNull();
+  });
+
+  it('histórico: tarefas concluídas, da mais recente à mais antiga, paginado', async () => {
+    reset();
+    const auth = await registerUser(ctx);
+    const a = await createItem(ctx, auth, { type: 'todo', title: 'Primeira' });
+    const b = await createItem(ctx, auth, { type: 'todo', title: 'Segunda' });
+    const c = await createItem(ctx, auth, { type: 'todo', title: 'Terceira' });
+    await createItem(ctx, auth, { type: 'todo', title: 'Aberta' });
+    await createItem(ctx, auth, { type: 'habit', title: 'Hábito' });
+    const checkA = randomUUID();
+    await check(ctx, auth, a.id, checkA).expect(200);
+    ctx.clock.set('2026-10-09T16:00:00Z');
+    await check(ctx, auth, b.id).expect(200);
+    ctx.clock.set('2026-10-10T16:00:00Z');
+    await check(ctx, auth, c.id).expect(200);
+
+    const history = (query = '') =>
+      ctx.http().get(`/v1/items/history${query}`).set('authorization', bearer(auth)).expect(200);
+
+    const all = await history();
+    expect(all.body.items.map((i: { title: string }) => i.title)).toEqual([
+      'Terceira',
+      'Segunda',
+      'Primeira',
+    ]);
+    expect(all.body.nextCursor).toBeNull();
+    expect(all.body.items[2]).toMatchObject({ id: a.id, checkId: checkA, difficulty: 'medium' });
+
+    const page1 = await history('?limit=2');
+    expect(page1.body.items).toHaveLength(2);
+    expect(page1.body.nextCursor).toBe(page1.body.items[1].completedAt);
+    const page2 = await history(`?limit=2&before=${page1.body.nextCursor}`);
+    expect(page2.body.items.map((i: { title: string }) => i.title)).toEqual(['Primeira']);
+    expect(page2.body.nextCursor).toBeNull();
+
+    // desmarcar a tarefa devolve ela à lista e a tira do histórico
+    await ctx
+      .http()
+      .delete(`/v1/items/${a.id}/checks/${checkA}`)
+      .set('authorization', bearer(auth))
+      .expect(200);
+    expect((await history()).body.items.map((i: { title: string }) => i.title)).toEqual([
+      'Terceira',
+      'Segunda',
+    ]);
+    const open = await ctx
+      .http()
+      .get('/v1/items?type=todo')
+      .set('authorization', bearer(auth))
+      .expect(200);
+    expect(open.body.map((i: { title: string }) => i.title)).toContain('Primeira');
+  });
+
+  it('histórico exige login, valida a consulta e não mistura usuários (IDOR)', async () => {
+    reset();
+    const owner = await registerUser(ctx);
+    const other = await registerUser(ctx);
+    const item = await createItem(ctx, owner, { type: 'todo', title: 'Minha' });
+    await check(ctx, owner, item.id).expect(200);
+
+    await ctx.http().get('/v1/items/history').expect(401);
+    await ctx
+      .http()
+      .get('/v1/items/history?limit=0')
+      .set('authorization', bearer(owner))
+      .expect(400);
+    await ctx
+      .http()
+      .get('/v1/items/history?before=ontem')
+      .set('authorization', bearer(owner))
+      .expect(400);
+    const mine = await ctx
+      .http()
+      .get('/v1/items/history')
+      .set('authorization', bearer(owner))
+      .expect(200);
+    expect(mine.body.items).toHaveLength(1);
+    const theirs = await ctx
+      .http()
+      .get('/v1/items/history')
+      .set('authorization', bearer(other))
+      .expect(200);
+    expect(theirs.body.items).toEqual([]);
+  });
+
   it('ISOLAMENTO (IDOR): usuário não vê, marca nem desfaz itens de outro usuário', async () => {
     reset();
     const owner = await registerUser(ctx);

@@ -81,7 +81,8 @@
     "achievements": "Conquistas",
     "myStory": "Minha história",
     "customize": "Personalizar personagem",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "history": "Histórico de tarefas"
   },
   "feedback": {
     "invalidForm": "Revise os campos destacados.",
@@ -122,21 +123,22 @@
   },
   "dailies": {
     "title": "Diários",
-    "empty": "Nenhum diário ainda",
-    "emptyHint": "Crie diários para marcar todo dia."
+    "empty": "Seus diários aparecem aqui",
+    "emptyHint": "Diários são tarefas de rotina: você marca uma vez por dia, nos dias que escolher. Toque no + para criar o primeiro."
   },
   "todos": {
     "title": "Tarefas",
-    "empty": "Nenhuma tarefa pendente",
-    "emptyHint": "Toque no + para criar uma tarefa.",
+    "empty": "Nenhuma tarefa por aqui",
+    "emptyHint": "Tarefas valem uma vez só. Toque no + para criar a primeira; as concluídas ficam no histórico.",
     "all": "Todas",
     "noCategory": "Sem categoria",
-    "filter": "Categoria"
+    "filter": "Categoria",
+    "historyNotice": "Tarefas concluídas saem desta lista e ficam no histórico, em Perfil."
   },
   "habits": {
     "title": "Hábitos",
-    "empty": "Nenhum hábito ainda",
-    "emptyHint": "Hábitos podem ser marcados quantas vezes quiser no dia."
+    "empty": "Seus hábitos aparecem aqui",
+    "emptyHint": "Hábitos podem ser marcados quantas vezes você quiser no dia. Toque no + para criar o primeiro."
   },
   "home": {
     "greeting": "Olá, {{name}}",
@@ -476,5 +478,16 @@
     "level": "Nível {{level}}",
     "coins": "{{count}} moedas",
     "exp": "{{exp}}/{{next}} EXP"
+  },
+  "history": {
+    "title": "Histórico de tarefas",
+    "empty": "Nada concluído ainda",
+    "emptyHint": "Quando você concluir uma tarefa, ela fica guardada aqui para você rever depois.",
+    "completedOn": "Concluída em {{date}}",
+    "undo": "Desfazer",
+    "undoHint": "Desfazer devolve a tarefa à lista e tira moedas; o EXP continua.",
+    "more": "Carregar mais",
+    "load": "Não foi possível carregar o histórico.",
+    "noCategory": "Sem categoria"
   }
 }

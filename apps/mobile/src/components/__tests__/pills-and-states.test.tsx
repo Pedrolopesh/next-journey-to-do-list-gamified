@@ -1,3 +1,4 @@
+import { IconCalendarCheck } from '@tabler/icons-react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { Pills } from '../pills';
@@ -30,7 +31,7 @@ describe('estados de lista', () => {
     const onRetry = jest.fn();
     await render(
       <>
-        <EmptyState title="Nenhum diário ainda" hint="Crie diários" />
+        <EmptyState title="Nenhum diário ainda" hint="Crie diários" icon={IconCalendarCheck} />
         <ErrorState
           message="Não foi possível carregar."
           retryLabel="Tentar de novo"
@@ -39,6 +40,7 @@ describe('estados de lista', () => {
       </>,
     );
     expect(screen.getByText('Nenhum diário ainda')).toBeTruthy();
+    expect(screen.getByText('Crie diários')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Tentar de novo' }));
     expect(onRetry).toHaveBeenCalled();
   });

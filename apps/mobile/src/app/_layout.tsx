@@ -84,6 +84,7 @@ function Gate() {
           <Stack.Screen name="item/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen name="story/timeline" />
           <Stack.Screen name="achievements" />
+          <Stack.Screen name="history" />
           <Stack.Screen name="settings" />
         </Stack.Protected>
       </Stack>

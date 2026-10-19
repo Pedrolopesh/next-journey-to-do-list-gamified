@@ -51,5 +51,33 @@ export const itemSchema = z.object({
   streak: z.number().int().nonnegative(),
   checksToday: z.number().int().nonnegative(),
   checksThisWeek: z.number().int().nonnegative(),
+  /** Check de hoje que ainda vale (o mais recente): é o que o app desmarca. Nulo sem check hoje. */
+  lastCheckId: idSchema.nullable().default(null),
 });
 export type Item = z.infer<typeof itemSchema>;
+
+/** Tarefa concluída que saiu da lista de tarefas e mora no histórico do perfil. */
+export const historyItemSchema = z.object({
+  id: idSchema,
+  title: z.string(),
+  categoryId: idSchema,
+  difficulty: difficultySchema,
+  completedAt: isoDateTimeSchema,
+  /** Check que concluiu a tarefa: desmarcar devolve a tarefa à lista (as moedas diminuem). */
+  checkId: idSchema.nullable(),
+});
+export type HistoryItem = z.infer<typeof historyItemSchema>;
+
+export const historyQuerySchema = z.object({
+  /** Cursor: só tarefas concluídas antes deste instante (ISO). */
+  before: isoDateTimeSchema.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+export type HistoryQuery = z.infer<typeof historyQuerySchema>;
+
+export const historyResponseSchema = z.object({
+  items: z.array(historyItemSchema),
+  /** Passe em `before` para a próxima página; nulo no fim. */
+  nextCursor: isoDateTimeSchema.nullable(),
+});
+export type HistoryResponse = z.infer<typeof historyResponseSchema>;

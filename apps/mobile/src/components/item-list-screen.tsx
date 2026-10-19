@@ -1,4 +1,5 @@
 import type { Category, Item, ItemType } from '@nextjourney/contracts';
+import type { Icon } from '@tabler/icons-react-native';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +7,7 @@ import {
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  Pressable,
   RefreshControl,
   SectionList,
   StyleSheet,
@@ -32,10 +34,14 @@ type Props = {
   title: string;
   emptyTitle: string;
   emptyHint: string;
+  /** Ícone do estado vazio (página sem itens). */
+  emptyIcon?: Icon;
   /** Agrupa por categoria e mostra filtro por pills (tarefas). */
   groupByCategory?: boolean;
   /** Mostra contadores de hoje e da semana (hábitos). */
   counters?: boolean;
+  /** Aviso no rodapé (tarefas): onde foram parar as concluídas. Toque abre o histórico. */
+  historyNotice?: string;
 };
 
 /** Atrasados no topo, depois os pendentes e, por último, os feitos hoje (RF-19, RF-20). */
@@ -51,8 +57,10 @@ export function ItemListScreen({
   title,
   emptyTitle,
   emptyHint,
+  emptyIcon,
   groupByCategory = false,
   counters = false,
+  historyNotice,
 }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -170,7 +178,8 @@ export function ItemListScreen({
             section.title ? <Text style={styles.section}>{section.title}</Text> : null
           }
           renderItem={({ item }) => {
-            const undoId = lastUndoableCheck(checks, item.id);
+            // O check desta sessão é o mais recente (e cobre a fila offline); o do servidor vale ao reabrir o app
+            const undoId = lastUndoableCheck(checks, item.id) ?? item.lastCheckId;
             return (
               <ItemRow
                 item={item}
@@ -188,7 +197,27 @@ export function ItemListScreen({
             );
           }}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
-          ListEmptyComponent={<EmptyState title={emptyTitle} hint={emptyHint} />}
+          ListEmptyComponent={
+            <EmptyState
+              title={emptyTitle}
+              hint={emptyHint}
+              {...(emptyIcon ? { icon: emptyIcon } : {})}
+            />
+          }
+          ListFooterComponent={
+            historyNotice ? (
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel={historyNotice}
+                onPress={() => {
+                  router.push('/history');
+                }}
+                style={styles.notice}
+              >
+                <Text style={styles.noticeText}>{historyNotice}</Text>
+              </Pressable>
+            ) : undefined
+          }
           refreshControl={
             <RefreshControl
               refreshing={items.isRefetching}
@@ -240,4 +269,6 @@ const styles = StyleSheet.create({
   },
   list: { paddingVertical: space[12], paddingBottom: 96, flexGrow: 1 },
   separator: { height: space[8] },
+  notice: { paddingVertical: space[16], paddingHorizontal: space[8] },
+  noticeText: { color: colors.text.muted, fontSize: 12, textAlign: 'center' },
 });
