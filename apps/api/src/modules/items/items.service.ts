@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   type CreateItemRequest,
   ERROR_CODES,
+  type HistoryResponse,
   type Item as ItemDto,
   type ItemType,
   type UpdateItemRequest,
@@ -63,17 +64,69 @@ export class ItemsService {
 
     const checks = await this.prisma.itemCheck.findMany({
       where: { userId, itemId: { in: items.map((item) => item.id) }, revertedAt: null },
-      select: { itemId: true, checkedOn: true },
+      select: { id: true, itemId: true, checkedOn: true, checkedAt: true },
+      orderBy: { checkedAt: 'asc' },
     });
     const daysByItem = new Map<string, string[]>();
+    const lastToday = new Map<string, string>();
     for (const check of checks) {
       const list = daysByItem.get(check.itemId) ?? [];
       list.push(check.checkedOn);
       daysByItem.set(check.itemId, list);
+      if (check.checkedOn === hoje) lastToday.set(check.itemId, check.id); // o mais recente vence
     }
 
     const now = this.clock.now();
-    return items.map((item) => this.toDto(item, daysByItem.get(item.id) ?? [], hoje, semana, now));
+    return items.map((item) =>
+      this.toDto(item, daysByItem.get(item.id) ?? [], hoje, semana, now, lastToday.get(item.id)),
+    );
+  }
+
+  /**
+   * Histórico: tarefas concluídas (que saíram da lista), da mais recente para a mais antiga.
+   * Só do próprio usuário; paginado por `before` (instante de conclusão).
+   */
+  async history(
+    userId: string,
+    before: string | undefined,
+    limit: number,
+  ): Promise<HistoryResponse> {
+    const rows = await this.prisma.item.findMany({
+      where: {
+        userId,
+        deletedAt: null,
+        type: 'todo',
+        completedAt: { not: null, ...(before ? { lt: new Date(before) } : {}) },
+      },
+      select: {
+        id: true,
+        title: true,
+        categoryId: true,
+        difficulty: true,
+        completedAt: true,
+      },
+      orderBy: { completedAt: 'desc' },
+      take: limit + 1,
+    });
+    const page = rows.slice(0, limit);
+    const checks = await this.prisma.itemCheck.findMany({
+      where: { userId, itemId: { in: page.map((row) => row.id) }, revertedAt: null },
+      select: { id: true, itemId: true },
+      orderBy: { checkedAt: 'asc' },
+    });
+    const checkByItem = new Map(checks.map((check) => [check.itemId, check.id]));
+    const items = page.map((row) => ({
+      id: row.id,
+      title: row.title,
+      categoryId: row.categoryId,
+      difficulty: row.difficulty,
+      completedAt: (row.completedAt as Date).toISOString(),
+      checkId: checkByItem.get(row.id) ?? null,
+    }));
+    return {
+      items,
+      nextCursor: rows.length > limit ? (items.at(-1)?.completedAt ?? null) : null,
+    };
   }
 
   async create(userId: string, input: CreateItemRequest): Promise<ItemDto> {
@@ -151,14 +204,17 @@ export class ItemsService {
     const hoje = diaLocal(now, user.timezone);
     const checks = await this.prisma.itemCheck.findMany({
       where: { itemId, revertedAt: null },
-      select: { checkedOn: true },
+      select: { id: true, checkedOn: true },
+      orderBy: { checkedAt: 'asc' },
     });
+    const lastToday = checks.filter((check) => check.checkedOn === hoje).at(-1)?.id;
     return this.toDto(
       updated,
       checks.map((check) => check.checkedOn),
       hoje,
       inicioDaSemana(hoje),
       now,
+      lastToday,
     );
   }
 
@@ -177,6 +233,7 @@ export class ItemsService {
     hoje: string,
     semana: string,
     now: Date,
+    lastCheckId: string | undefined = undefined,
   ): ItemDto {
     const checksToday = checkedDays.filter((day) => day === hoje).length;
     const checksThisWeek = checkedDays.filter((day) => day >= semana && day <= hoje).length;
@@ -217,6 +274,7 @@ export class ItemsService {
         : 0,
       checksToday,
       checksThisWeek,
+      lastCheckId: lastCheckId ?? null,
     };
   }
 }

@@ -6,6 +6,7 @@ import {
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  Pressable,
   RefreshControl,
   SectionList,
   StyleSheet,
@@ -36,6 +37,8 @@ type Props = {
   groupByCategory?: boolean;
   /** Mostra contadores de hoje e da semana (hábitos). */
   counters?: boolean;
+  /** Aviso no rodapé (tarefas): onde foram parar as concluídas. Toque abre o histórico. */
+  historyNotice?: string;
 };
 
 /** Atrasados no topo, depois os pendentes e, por último, os feitos hoje (RF-19, RF-20). */
@@ -53,6 +56,7 @@ export function ItemListScreen({
   emptyHint,
   groupByCategory = false,
   counters = false,
+  historyNotice,
 }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -170,7 +174,8 @@ export function ItemListScreen({
             section.title ? <Text style={styles.section}>{section.title}</Text> : null
           }
           renderItem={({ item }) => {
-            const undoId = lastUndoableCheck(checks, item.id);
+            // O servidor diz qual check de hoje vale; a sessão cobre o que ainda está na fila offline
+            const undoId = item.lastCheckId ?? lastUndoableCheck(checks, item.id);
             return (
               <ItemRow
                 item={item}
@@ -189,6 +194,20 @@ export function ItemListScreen({
           }}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           ListEmptyComponent={<EmptyState title={emptyTitle} hint={emptyHint} />}
+          ListFooterComponent={
+            historyNotice ? (
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel={historyNotice}
+                onPress={() => {
+                  router.push('/history');
+                }}
+                style={styles.notice}
+              >
+                <Text style={styles.noticeText}>{historyNotice}</Text>
+              </Pressable>
+            ) : undefined
+          }
           refreshControl={
             <RefreshControl
               refreshing={items.isRefetching}
@@ -240,4 +259,6 @@ const styles = StyleSheet.create({
   },
   list: { paddingVertical: space[12], paddingBottom: 96, flexGrow: 1 },
   separator: { height: space[8] },
+  notice: { paddingVertical: space[16], paddingHorizontal: space[8] },
+  noticeText: { color: colors.text.muted, fontSize: 12, textAlign: 'center' },
 });

@@ -12,6 +12,8 @@ import {
   type CreateCategoryRequest,
   type CreateItemRequest,
   type ForgotPasswordRequest,
+  type HistoryResponse,
+  historyResponseSchema,
   type HomeResponse,
   homeResponseSchema,
   type Item,
@@ -128,6 +130,14 @@ export async function fetchTimeline(): Promise<Timeline> {
 export async function fetchItems(type: ItemType): Promise<Item[]> {
   const { data } = await http.get<unknown>('/items', { params: { type } });
   return z.array(itemSchema).parse(data);
+}
+
+/** Tarefas concluídas (histórico do perfil), da mais recente para a mais antiga, por página. */
+export async function fetchHistory(before?: string): Promise<HistoryResponse> {
+  const { data } = await http.get<unknown>('/items/history', {
+    params: before ? { before } : {},
+  });
+  return historyResponseSchema.parse(data);
 }
 
 export async function createItem(body: CreateItemRequest): Promise<Item> {

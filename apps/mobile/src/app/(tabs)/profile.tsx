@@ -70,6 +70,7 @@ export default function ProfileScreen() {
         </View>
 
         <LinkRow label={t('profile.achievements')} href="/achievements" />
+        <LinkRow label={t('profile.history')} href="/history" />
         <LinkRow label={t('profile.myStory')} href="/story/timeline" />
         <LinkRow label={t('profile.customize')} href="/settings/character" />
         <LinkRow label={t('profile.settings')} href="/settings" />

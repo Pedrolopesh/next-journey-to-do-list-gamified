@@ -17,6 +17,9 @@ import {
   type CheckResult,
   type CreateItemRequest,
   createItemRequestSchema,
+  type HistoryQuery,
+  historyQuerySchema,
+  type HistoryResponse,
   type Item,
   itemTypeSchema,
   localDateSchema,
@@ -48,6 +51,15 @@ export class ItemsController {
     @Query(new ZodValidationPipe(listQuerySchema)) query: z.infer<typeof listQuerySchema>,
   ): Promise<Item[]> {
     return this.items.list(userId, query.type, query.date);
+  }
+
+  /** Histórico de tarefas concluídas. Declarada antes de `:id` para não ser lida como id. */
+  @Get('history')
+  history(
+    @CurrentUserId() userId: string,
+    @Query(new ZodValidationPipe(historyQuerySchema)) query: HistoryQuery,
+  ): Promise<HistoryResponse> {
+    return this.items.history(userId, query.before, query.limit);
   }
 
   @Post()

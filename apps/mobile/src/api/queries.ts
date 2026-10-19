@@ -1,5 +1,11 @@
 import type { CheckResult, Item, ItemType, MeResponse } from '@nextjourney/contracts';
-import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  type QueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import { useSessionStore } from '@/auth/session-store';
 
@@ -12,6 +18,7 @@ import {
   fetchAchievements,
   fetchCategories,
   fetchCosmetics,
+  fetchHistory,
   fetchHome,
   fetchItems,
   fetchMe,
@@ -28,6 +35,8 @@ export const queryKeys = {
   me: ['me'] as const,
   home: ['home'] as const,
   items: (type: ItemType) => ['items', type] as const,
+  // começa com 'items': qualquer check ou desmarcar recarrega o histórico junto
+  history: ['items', 'history'] as const,
   stories: ['stories'] as const,
   timeline: ['timeline'] as const,
   achievements: ['achievements'] as const,
@@ -52,6 +61,18 @@ export const useHome = () => {
 export const useItems = (type: ItemType) => {
   const enabled = useSignedIn();
   return useQuery({ queryKey: queryKeys.items(type), queryFn: () => fetchItems(type), enabled });
+};
+
+/** Histórico de tarefas concluídas, paginado pelo instante de conclusão. */
+export const useHistory = () => {
+  const enabled = useSignedIn();
+  return useInfiniteQuery({
+    queryKey: queryKeys.history,
+    queryFn: ({ pageParam }) => fetchHistory(pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+    enabled,
+  });
 };
 
 export const useStories = () => {
