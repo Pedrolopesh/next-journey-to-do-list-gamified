@@ -71,7 +71,8 @@
     "ios": "expo run:ios",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run && jest --ci"
+    "test": "vitest run && jest --ci",
+    "test:ui": "node scripts/ui-tests.mjs"
   },
   "private": true
 }

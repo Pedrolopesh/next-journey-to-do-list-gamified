@@ -79,6 +79,10 @@ A página "Conquistas v2" do laboratório (seção "Ritmo") compara as regras de
 
 Os ~100 itens de exemplo que o app cria não contam como criação do usuário (coluna `items.is_example`, migration `20261019180000_item_de_exemplo`). Contas antigas têm exemplos já criados **sem a marca**: ao publicar, marcar à mão (ou aceitar que já tenham as conquistas de criação). Conta de teste local do Pedro já corrigida.
 
+## Testes de interface (Maestro), 2026-10-19
+
+Camadas e como rodar em `docs/TESTES.md`. Resumo: `pnpm --filter @nextjourney/mobile test:ui` (emulador Android, Metro e API no ar). O Maestro está em `~/.maestro` (instalado pelo zip oficial; o `brew install maestro` é outro produto). **Falta:** rodar no CI (runner macOS com emulador) e validar os fluxos no iOS; hoje só no Android. Ao mexer em texto ou fluxo de tela, ajuste os fluxos em `apps/mobile/.maestro/`.
+
 ## NÃO ESQUECER: medir o banner em aparelho real
 
 Combinado com o Pedro: adiado até terminar as próximas etapas (jornada em todos os cenários), mas **é obrigatório antes da loja**. Fase 2, passos 16 e 17 e o ADR-0003 com os números. O QG e a jornada rodam a 30 quadros por segundo com escala até 3; falta medir em aparelho de entrada (quadros por segundo, memória, bateria), com o app em segundo plano e com "reduzir movimento". A jornada anima o tempo todo e tem mais desenho por quadro que o QG parado, então pesa mais.

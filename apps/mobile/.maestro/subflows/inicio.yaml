@@ -1,0 +1,12 @@
+# Ponto de partida comum: fecha modal de conquista, formulário de item e telas internas
+# (galeria, histórico) que uma execução anterior possa ter deixado abertos.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow: fechar-conquista.yaml
+- runFlow: fechar-formulario.yaml
+- runFlow:
+    when:
+      visible: 'Voltar'
+    commands:
+      # botão Voltar do Android: o de Voltar da tela fica coberto pelo botão de desenvolvimento
+      - back
