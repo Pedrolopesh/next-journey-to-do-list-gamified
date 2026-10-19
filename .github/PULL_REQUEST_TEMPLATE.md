@@ -1,33 +1,31 @@
-## Tarefa
-
-<!-- Fase e passo do plano (ex.: "Fase 2, passo 7"), issue ou proposta OpenSpec. Sem tarefa? Explique o porquê. -->
+<!--
+Título: tipo(escopo opcional): assunto em minúscula  (ex.: feat: histórico de tarefas no perfil)
+Seja direto: frases curtas, no presente, sem história do que foi tentado. A CI confere as seções abaixo.
+-->
 
 ## O que muda
 
-<!-- O que foi feito e, principalmente, por quê. -->
+<!-- Lista curta do resultado, por área (API, app, banner, contratos, docs). Uma linha por item. -->
 
-## Como testar
+## Por quê
 
-<!-- Passo a passo. Se a rota mudou, inclua o curl ou o endpoint no Swagger. Se mexeu no app, diga o aparelho/simulador. -->
+<!-- A necessidade em uma ou duas frases. Cite a proposta do OpenSpec, o ADR ou o passo do plano. -->
 
-## Checklist
+## Como foi verificado
 
-- [ ] Branch segue o padrão `<tipo>/<slug>` e os commits seguem Conventional Commits
-- [ ] `pnpm run lint`, `typecheck`, `test` e `build` passam localmente
-- [ ] Se mexeu em tela ou botão: toda ação mostra carregando e termina em toast de sucesso ou erro, e validação reprovada avisa (regra RN-FB)
-- [ ] Regra nova tem teste; mudança de comportamento está descrita acima
-- [ ] Se alterou contrato (`packages/contracts`), rota ou protocolo do banner, os consumidores foram atualizados no mesmo PR
-- [ ] Se alterou regra de jogo, contrato ou protocolo: há proposta/spec no OpenSpec ou ADR atualizado
-- [ ] Se precisa de migration do Prisma, está sinalizado aqui (migration não é aplicada automaticamente)
+<!-- O que rodou e o resultado. Diga também o que NÃO foi verificado (ex.: iPhone físico). -->
 
-## Segurança (obrigatório em todo PR)
+- [ ] `pnpm run verify` passou (lint, tipos, testes, build, e2e da API, OpenSpec, duplicação, segurança)
+- [ ] `/code-review` rodado e achados tratados antes de abrir o PR
+- [ ] Mexeu em tela: fluxos do Maestro (`pnpm --filter @nextjourney/mobile test:ui`) e RN-FB (toda ação mostra carregando e termina em toast)
 
-- [ ] Lembrei que o repositório é público: nada do que está neste PR (código, docs, commits, descrição) pode expor segredo ou infraestrutura real
-- [ ] Revisado e aprovado pelo Pedro antes de subir
-- [ ] `pnpm run security:full` passou (segredos, IP/hosts, histórico inteiro, autoria dos commits e `pnpm audit`)
-- [ ] Nenhum token, senha, chave, `.env`, certificado, IP ou host de infraestrutura no código, docs, testes, commit ou descrição do PR
-- [ ] Checklist de segurança do `AGENTS.md` percorrido para o que mudou (API, app/banner ou dependências)
-- [ ] Rotas novas nascem protegidas e devolvem só os campos necessários (sem model do ORM inteiro)
-- [ ] Nada sensível em log, mensagem de erro, URL ou storage inseguro
-- [ ] Dependência nova: nome conferido, lockfile versionado junto
-- [ ] Sem atribuição a ferramentas de IA nos commits nem na descrição do PR
+## Riscos e pendências
+
+<!-- Migration (nome e como aplicar), seed, mudança de contrato, impacto em dados existentes, dívida técnica conhecida. "Nenhum" se não houver. -->
+
+## Segurança
+
+- [ ] Repositório público: sem segredo, token, IP, host ou dado de infraestrutura em código, docs, commits e nesta descrição
+- [ ] Rotas novas protegidas, validadas com Zod e devolvendo só os campos necessários; sem acesso a objeto de outro usuário (IDOR)
+- [ ] Nada sensível em log, erro, URL ou storage inseguro; dependência nova com nome conferido e lockfile junto
+- [ ] Sem atribuição a ferramenta de IA nos commits nem aqui

@@ -1,0 +1,23 @@
+{
+  "path": [
+    "apps/api/src",
+    "apps/mobile/src",
+    "apps/banner/src",
+    "packages/contracts/src",
+    "packages/insignias/src"
+  ],
+  "minTokens": 60,
+  "minLines": 8,
+  "threshold": 2,
+  "gitignore": true,
+  "reporters": ["console"],
+  "ignore": [
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/generated/**",
+    "**/dist/**",
+    "**/qg/scenes/**",
+    "**/pixel-art-data.ts",
+    "**/insignias.ts"
+  ]
+}
