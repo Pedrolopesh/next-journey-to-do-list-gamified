@@ -13,6 +13,8 @@ const base = {
   categoryId: idSchema,
   difficulty: difficultySchema,
   notes: z.string().max(1000).optional(),
+  /** Item de exemplo criado pelo app: não conta como criação do usuário nas conquistas. */
+  example: z.literal(true).optional(),
 };
 
 /** Criar item. Campos por tipo: diário tem frequência, tarefa tem prazo opcional, hábito não tem prazo. */

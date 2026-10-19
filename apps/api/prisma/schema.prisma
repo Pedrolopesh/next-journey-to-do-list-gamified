@@ -74,13 +74,13 @@ model RefreshToken {
 
 /// Estado de jogo global: EXP, nível e moedas. O progresso de capítulo é por história (StoryProgress).
 model UserStats {
-  userId       String @id @map("user_id") @db.Uuid
-  level        Int    @default(1)
-  expInLevel   Int    @default(0) @map("exp_in_level")
-  expTotal     Int    @default(0) @map("exp_total")
-  coins        Int    @default(0)
-  totalChecks  Int    @default(0) @map("total_checks")
-  itemsCreated Int    @default(0) @map("items_created")
+  userId            String    @id @map("user_id") @db.Uuid
+  level             Int       @default(1)
+  expInLevel        Int       @default(0) @map("exp_in_level")
+  expTotal          Int       @default(0) @map("exp_total")
+  coins             Int       @default(0)
+  totalChecks       Int       @default(0) @map("total_checks")
+  itemsCreated      Int       @default(0) @map("items_created")
   /// Quantas vezes a pessoa mudou o visual do personagem (conquistas)
   lookChanges       Int       @default(0) @map("look_changes")
   /// Categorias criadas pela pessoa (as do cadastro não contam)
@@ -127,6 +127,8 @@ model Item {
   streakCurrent Int        @default(0) @map("streak_current")
   streakBest    Int        @default(0) @map("streak_best")
   position      Int        @default(0)
+  /// Item de exemplo criado pelo app para quem ainda não tem itens: não conta como criação do usuário
+  isExample     Boolean    @default(false) @map("is_example")
   createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz
   /// Exclusão lógica: mantém o histórico de EXP
   deletedAt     DateTime?  @map("deleted_at") @db.Timestamptz
@@ -309,9 +311,9 @@ model Achievement {
 }
 
 model UserAchievement {
-  userId          String   @map("user_id") @db.Uuid
-  achievementSlug String   @map("achievement_slug")
-  unlockedAt      DateTime @default(now()) @map("unlocked_at") @db.Timestamptz
+  userId          String    @map("user_id") @db.Uuid
+  achievementSlug String    @map("achievement_slug")
+  unlockedAt      DateTime  @default(now()) @map("unlocked_at") @db.Timestamptz
   /// Quando o app confirmou o aviso (modal); nulo = aviso pendente
   notifiedAt      DateTime? @map("notified_at") @db.Timestamptz
 

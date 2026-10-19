@@ -104,7 +104,7 @@ São **40 requisitos em 10 módulos**. *Obrigatório* bloqueia o lançamento; *D
 
 | ID | Módulo | Requisito | Prioridade |
 |---|---|---|---|
-| RF-32 | Conquistas | Catálogo de 69 conquistas em 7 trilhas e 4 classes (bronze, prata, ouro, diamante), com insígnia 24x24, critério, progresso e estado (bloqueada ou conquistada); conquista surpresa esconde o critério até ser desbloqueada. | Obrigatório |
+| RF-32 | Conquistas | Catálogo de 70 conquistas em 7 trilhas e 4 classes (bronze, prata, ouro, diamante), com insígnia 24x24, critério, progresso e estado (bloqueada ou conquistada); conquista surpresa esconde o critério até ser desbloqueada. | Obrigatório |
 | RF-33 | Conquistas | Modal único de conquista (topo na cor da classe, insígnia, Continuar e Ver todas as conquistas) exibido quando ela é desbloqueada, uma vez por conquista. | Obrigatório |
 | RF-34 | Conquistas | Conquistas são só de mérito: não liberam itens. Roupas, chapéus e acessórios como recompensa ficam para um estudo posterior (backlog). | Adiado |
 | RF-35 | Home | Banner QG com cena conforme o horário, saudação, 4 indicadores (diários, tarefas, sequência e moedas), card da história e, no fim, os botões de mudar personagem, história e cenário. A lista "Para hoje" saiu da Home (os itens ficam nas abas). | Obrigatório |

@@ -4,10 +4,10 @@ import { ACHIEVEMENT_CATALOG, ACHIEVEMENT_TRAILS } from './achievement-catalog';
 import { achievementSchema, appEventSchema } from './achievements';
 
 describe('catálogo de conquistas', () => {
-  it('tem 69 conquistas com slugs únicos', () => {
+  it('tem 70 conquistas com slugs únicos', () => {
     const slugs = ACHIEVEMENT_CATALOG.map((a) => a.slug);
-    expect(slugs).toHaveLength(69);
-    expect(new Set(slugs).size).toBe(69);
+    expect(slugs).toHaveLength(70);
+    expect(new Set(slugs).size).toBe(70);
   });
 
   it('toda conquista aponta para uma trilha existente e tem texto', () => {

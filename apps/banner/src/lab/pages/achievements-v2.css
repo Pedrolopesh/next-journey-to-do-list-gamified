@@ -181,3 +181,25 @@
 .tag.secret {
   color: #a78bfa;
 }
+
+.ach2 .was {
+  display: block;
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+.ach2 strong .was {
+  display: inline;
+}
+.ach2 .new {
+  display: block;
+  color: #86efac;
+}
+.ach2 strong .new {
+  display: inline;
+}
+.ach2.changed {
+  border-color: #166534;
+}
+.tag.changed {
+  color: #86efac;
+}

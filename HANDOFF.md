@@ -71,6 +71,14 @@ Branches locais, ainda **não enviadas** ao GitHub (cada PR só depois da aprova
 9. **70ª conquista (`habito-de-100`, Diamante):** ao publicar, rodar `db:seed` (cria a linha no catálogo) e `db:backfill-achievements` (libera para quem já tem 100 dias seguidos de um hábito, sem reabrir modal). Branch `feat/conquista-70`, a partir da `main`.
 10. **Ainda não verificado:** pontuação e histórico no iPhone físico (e a permissão de "Rede local" do iOS); modal com o botão X no iPhone físico.
 
+## Em análise: ritmo das conquistas (2026-10-19)
+
+A página "Conquistas v2" do laboratório (seção "Ritmo") compara as regras de hoje com uma proposta mais espaçada (simulação de 30 dias). **Ainda não está no app e depende da aprovação do Pedro.** Se aprovada: (1) um modal por ação, com o resto pendente nas ações seguintes (servidor devolve só uma na resposta do check; o app mostra uma pendente por vez); (2) novos limites e nomes (por exemplo "Chama de 5 dias"), em `achievement-catalog.ts` e `progression/domain/achievements.ts`, com migration que renomeia os slugs que mudam de nome só no texto (os slugs ficam); (3) OpenSpec `conquistas-ritmo`; (4) retroativo sem reabrir modais (quem já tem a conquista continua com ela).
+
+## Itens de exemplo e conquistas (2026-10-19)
+
+Os ~100 itens de exemplo que o app cria não contam como criação do usuário (coluna `items.is_example`, migration `20261019180000_item_de_exemplo`). Contas antigas têm exemplos já criados **sem a marca**: ao publicar, marcar à mão (ou aceitar que já tenham as conquistas de criação). Conta de teste local do Pedro já corrigida.
+
 ## NÃO ESQUECER: medir o banner em aparelho real
 
 Combinado com o Pedro: adiado até terminar as próximas etapas (jornada em todos os cenários), mas **é obrigatório antes da loja**. Fase 2, passos 16 e 17 e o ADR-0003 com os números. O QG e a jornada rodam a 30 quadros por segundo com escala até 3; falta medir em aparelho de entrada (quadros por segundo, memória, bateria), com o app em segundo plano e com "reduzir movimento". A jornada anima o tempo todo e tem mais desenho por quadro que o QG parado, então pesa mais.

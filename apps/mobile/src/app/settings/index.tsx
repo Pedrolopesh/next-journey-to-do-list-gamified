@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 
 import { deleteAccount, patchMe, sendAppEvent } from '@/api/endpoints';
-import { queryKeys, useMe } from '@/api/queries';
+import { queryKeys, showNextPending, useMe } from '@/api/queries';
 import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
 import { Pills } from '@/components/pills';
@@ -124,7 +124,7 @@ export default function SettingsScreen() {
               if (parsed.value) {
                 // Conquista "Hora marcada": o servidor não sabe do lembrete, que é do aparelho
                 void sendAppEvent('reminder_enabled')
-                  .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.achievements }))
+                  .then(() => showNextPending(queryClient))
                   .catch(() => undefined);
               }
             })();

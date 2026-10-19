@@ -2,13 +2,14 @@ import { IconTrophy } from '@tabler/icons-react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, StyleSheet, Text, View } from 'react-native';
 
 import { ackAchievements } from '@/api/endpoints';
 import { toApiError } from '@/api/errors';
-import { queryKeys, useAchievements } from '@/api/queries';
+import { queryKeys, showNextPending, useAchievements } from '@/api/queries';
+import { useSessionStore } from '@/auth/session-store';
 import { AchievementUnlockedModal } from '@/components/achievement-unlocked-modal';
 import { Button } from '@/components/button';
 import { tierColor } from '@/features/achievements/tier';
@@ -60,23 +61,20 @@ function AchievementAlert({
   );
 }
 
-/** Põe na fila o aviso das conquistas desbloqueadas que o jogador ainda não viu (qualquer ação). */
+/**
+ * Ao abrir o app, mostra UMA conquista pendente (a mais antiga), se houver. As demais saem uma por
+ * ação (o servidor devolve uma pendente a cada check; criar item, categoria, personagem e evento
+ * usam `showNextPending`), então nunca abrem juntas.
+ */
 function usePendingAchievements(): void {
-  const { data } = useAchievements();
+  const queryClient = useQueryClient();
+  const userId = useSessionStore((state) => state.user?.id ?? null);
+  const checkedFor = useRef<string | null>(null);
   useEffect(() => {
-    if (!data) return;
-    const pending = data.filter((item) => item.pending);
-    if (pending.length === 0) return;
-    useFeedbackStore.getState().enqueue(
-      pending.map((item) => ({
-        kind: 'achievement' as const,
-        slug: item.slug,
-        name: item.name,
-        tier: item.tier,
-        glyph: item.glyph,
-      })),
-    );
-  }, [data]);
+    if (!userId || checkedFor.current === userId) return;
+    checkedFor.current = userId;
+    void showNextPending(queryClient);
+  }, [queryClient, userId]);
 }
 
 /** Mostra um modal de cada vez: subida de nível, conquista e capítulo concluído. */

@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { putCharacter } from '@/api/endpoints';
 import { toApiError } from '@/api/errors';
-import { queryKeys } from '@/api/queries';
+import { queryKeys, showNextPending } from '@/api/queries';
 import { CharacterForm } from '@/components/character-form';
 import { CharacterPreview } from '@/components/character-preview';
 import { toast } from '@/features/feedback/toast-store';
@@ -38,6 +38,7 @@ export default function CharacterScreen() {
     try {
       await putCharacter(character);
       await queryClient.invalidateQueries({ queryKey: queryKeys.me });
+      void showNextPending(queryClient);
       const me = queryClient.getQueryData<{ onboarding: { hasStory: boolean } }>(queryKeys.me);
       toast.success(t('character.saved'));
       if (!me?.onboarding.hasStory) router.replace('/story');

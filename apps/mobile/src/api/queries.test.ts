@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/auth/session-store', () => ({ useSessionStore: () => true }));
 vi.mock('./endpoints', () => ({}));
+vi.mock('@/features/feedback/feedback-store', () => ({ useFeedbackStore: {} }));
 
 const { chapterProgress } = await import('./queries');
 
