@@ -100,7 +100,9 @@ export class AchievementsService {
         where: { userId, isExample: false },
         _count: { _all: true },
       }),
-      tx.item.count({ where: { userId, type: 'todo', deletedAt: null, completedAt: null } }),
+      tx.item.count({
+        where: { userId, type: 'todo', deletedAt: null, completedAt: null, isExample: false },
+      }),
       tx.item.count({ where: { userId, deletedAt: null, completedAt: null, isExample: false } }),
       tx.item.count({
         where: {
@@ -220,6 +222,8 @@ export class AchievementsService {
       select: { achievementSlug: true, unlockedAt: true },
     });
     const order = new Map(ACHIEVEMENT_CATALOG.map((a, index) => [a.slug as string, index]));
+    // Pendente cujo slug saiu do catálogo não pode travar a fila das válidas
+    pending.splice(0, pending.length, ...pending.filter((row) => order.has(row.achievementSlug)));
     pending.sort(
       (a, b) =>
         a.unlockedAt.getTime() - b.unlockedAt.getTime() ||

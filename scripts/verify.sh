@@ -11,7 +11,11 @@ step() { printf '\n\033[1m== %s\033[0m\n' "$1"; }
 
 step "1/8 Mensagens dos commits"
 base="${BASE_REF:-origin/main}"
-if [ -z "$(git rev-list "$base"..HEAD 2>/dev/null)" ]; then
+if ! git rev-parse --verify --quiet "$base" >/dev/null; then
+  echo "Referência $base não existe aqui: rode 'git fetch origin main' ou defina BASE_REF."
+  exit 1
+fi
+if [ -z "$(git rev-list "$base"..HEAD)" ]; then
   echo "Nenhum commit novo em relação a $base: nada para verificar (commit antes de rodar o verify)."
   exit 1
 fi
