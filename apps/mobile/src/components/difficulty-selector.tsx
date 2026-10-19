@@ -3,7 +3,7 @@ import { IconStarFilled } from '@tabler/icons-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, size, softGlow, space } from '@/theme';
+import { colors, radius, rgba, size, softGlow, space } from '@/theme';
 
 const OPTIONS: { value: Difficulty; stars: number; color: string }[] = [
   { value: 'easy', stars: 1, color: colors.status.success },
@@ -51,7 +51,7 @@ export function DifficultySelector({ value, onChange }: Props) {
                     selected
                       ? star <= option.stars
                         ? colors.text.onPrimary
-                        : 'rgba(255, 255, 255, 0.35)'
+                        : rgba(colors.text.onPrimary, 0.35)
                       : star <= option.stars
                         ? colors.text.secondary
                         : colors.border.strong

@@ -193,6 +193,11 @@ export function useCategoryMutations() {
   };
 }
 
+/** Barra de progresso da história (0 a 1): cheia com a história concluída, senão a EXP do capítulo. */
+export function storyRatio(me: MeResponse | undefined): number {
+  return me?.player.story.completed ? 1 : chapterProgress(me);
+}
+
 /** Progresso do capítulo (0 a 1): a EXP dentro do nível, que também move o personagem no banner. */
 export function chapterProgress(me: MeResponse | undefined): number {
   if (!me) return 0;

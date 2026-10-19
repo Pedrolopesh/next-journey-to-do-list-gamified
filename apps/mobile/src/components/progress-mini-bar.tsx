@@ -2,7 +2,7 @@ import { IconCoin } from '@tabler/icons-react-native';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { chapterProgress, useMe } from '@/api/queries';
+import { storyRatio, useMe } from '@/api/queries';
 import { colors, space } from '@/theme';
 
 /**
@@ -14,7 +14,7 @@ export function ProgressMiniBar() {
   const { data: me } = useMe();
   if (!me) return null;
   const { player } = me;
-  const ratio = player.story.completed ? 1 : chapterProgress(me);
+  const ratio = storyRatio(me);
   return (
     <View
       style={styles.bar}

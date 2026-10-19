@@ -69,6 +69,13 @@ export function ItemListScreen({
     const { y, height } = event.nativeEvent.layout;
     cardBottom.current = y + height;
   }, []);
+  // Carregando ou erro: a lista some e o cartão volta ao topo, então o resumo fixo sai também
+  // (ajuste de estado durante a renderização, o padrão recomendado em vez de um efeito)
+  const [wasLoaded, setWasLoaded] = useState(items.isSuccess);
+  if (wasLoaded !== items.isSuccess) {
+    setWasLoaded(items.isSuccess);
+    setShowMini(false);
+  }
   const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
     setShowMini(event.nativeEvent.contentOffset.y > cardBottom.current);
   }, []);

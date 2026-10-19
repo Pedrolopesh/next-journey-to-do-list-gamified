@@ -120,6 +120,8 @@ export function ItemForm({
             accessibilityRole="button"
             accessibilityLabel={t('common.close')}
             onPress={onClose}
+            disabled={submitting}
+            accessibilityState={{ disabled: submitting }}
             hitSlop={8}
             style={styles.close}
           >
