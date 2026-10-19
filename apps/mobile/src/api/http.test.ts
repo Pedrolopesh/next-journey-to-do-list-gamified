@@ -75,6 +75,24 @@ describe('cliente http com refresh automático', () => {
     expect(server.calls[2]?.auth).toBe('Bearer novo');
   });
 
+  it('a repetição usa o token novo mesmo se a sessão ainda não o gravou (POST com corpo)', async () => {
+    const server = fakeServer();
+    // onRefreshed atrasado: getAccess continua devolvendo o token velho durante a repetição
+    const client = createHttpClient({
+      baseURL: 'http://api.test',
+      adapter: server.adapter,
+      tokens: {
+        getAccess: () => 'velho',
+        getRefresh: () => 'r1',
+        onRefreshed: () => undefined,
+        onSessionExpired: vi.fn(),
+      },
+    });
+    const response = await client.post('/items', { title: 'x' });
+    expect(response.status).toBe(200);
+    expect(server.calls.at(-1)?.auth).toBe('Bearer novo');
+  });
+
   it('requisições concorrentes com 401 compartilham uma única renovação (fila)', async () => {
     const server = fakeServer();
     const { client } = setup(server);

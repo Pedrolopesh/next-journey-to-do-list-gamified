@@ -123,6 +123,9 @@ export function createHttpClient({ baseURL, tokens, adapter, log }: Options): Ax
   }
 
   client.interceptors.request.use((config) => {
+    // Na repetição depois do refresh o cabeçalho já traz o token novo; a sessão pode ainda não ter
+    // gravado esse token (grava no armazenamento seguro antes), então não se sobrescreve.
+    if ((config as RetriableConfig)._retried) return config;
     const access = tokens.getAccess();
     if (access && !isAuthPath(config.url)) config.headers.set('Authorization', `Bearer ${access}`);
     return config;
