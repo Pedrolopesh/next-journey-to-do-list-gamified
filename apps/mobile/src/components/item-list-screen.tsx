@@ -1,8 +1,17 @@
 import type { Category, Item, ItemType } from '@nextjourney/contracts';
 import { useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshControl, SectionList, StyleSheet, Text, View } from 'react-native';
+import {
+  type LayoutChangeEvent,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  RefreshControl,
+  SectionList,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { useCategories, useItems } from '@/api/queries';
 import type { BannerViewHandle } from '@/banner/banner-view';
@@ -10,6 +19,7 @@ import { ExpToast } from '@/components/exp-toast';
 import { Fab } from '@/components/fab';
 import { ItemRow } from '@/components/item-row';
 import { Pills } from '@/components/pills';
+import { ProgressMiniBar } from '@/components/progress-mini-bar';
 import { EmptyState, ErrorState, SkeletonList } from '@/components/states';
 import { StoryProgressCard } from '@/components/story-progress-card';
 import { TabScreen } from '@/components/tab-screen';
@@ -52,6 +62,16 @@ export function ItemListScreen({
   const categories = useCategories();
   const checks = useFeedbackStore((state) => state.checks);
   const [filter, setFilter] = useState<string | null>(null);
+  // O cartão do capítulo rola junto com os itens; quando some, aparece o resumo fixo
+  const [showMini, setShowMini] = useState(false);
+  const cardBottom = useRef(Infinity);
+  const onCardLayout = useCallback((event: LayoutChangeEvent) => {
+    const { y, height } = event.nativeEvent.layout;
+    cardBottom.current = y + height;
+  }, []);
+  const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    setShowMini(event.nativeEvent.contentOffset.y > cardBottom.current);
+  }, []);
 
   const sections = useMemo(() => {
     const sorted = sortItems(items.data ?? []);
@@ -72,14 +92,11 @@ export function ItemListScreen({
     router.push({ pathname: '/item/[id]', params: { id: item.id } });
   };
 
-  return (
-    <TabScreen
-      title={title}
-      bannerRef={banner}
-      debug={false}
-      onBannerMessage={flow.onBannerMessage}
-    >
-      <StoryProgressCard showCoins />
+  const header = (
+    <View style={styles.header}>
+      <View onLayout={onCardLayout}>
+        <StoryProgressCard showCoins />
+      </View>
       <Text style={styles.heading} accessibilityRole="header">
         {title}
       </Text>
@@ -108,20 +125,38 @@ export function ItemListScreen({
           {flow.error}
         </Text>
       ) : null}
+    </View>
+  );
 
+  return (
+    <TabScreen
+      title={title}
+      bannerRef={banner}
+      debug={false}
+      onBannerMessage={flow.onBannerMessage}
+    >
       {items.isPending ? (
-        <SkeletonList />
+        <>
+          {header}
+          <SkeletonList />
+        </>
       ) : items.isError ? (
-        <ErrorState
-          message={t('items.load')}
-          retryLabel={t('items.retry')}
-          retrying={items.isFetching}
-          onRetry={() => {
-            void items.refetch();
-          }}
-        />
+        <>
+          {header}
+          <ErrorState
+            message={t('items.load')}
+            retryLabel={t('items.retry')}
+            retrying={items.isFetching}
+            onRetry={() => {
+              void items.refetch();
+            }}
+          />
+        </>
       ) : (
         <SectionList
+          ListHeaderComponent={header}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           sections={sections}
           keyExtractor={(item) => item.id}
           renderSectionHeader={({ section }) =>
@@ -161,6 +196,12 @@ export function ItemListScreen({
         />
       )}
 
+      {showMini ? (
+        <View style={styles.mini} pointerEvents="none">
+          <ProgressMiniBar />
+        </View>
+      ) : null}
+
       <ExpToast
         message={flow.toast}
         onHidden={() => {
@@ -178,6 +219,9 @@ export function ItemListScreen({
 }
 
 const styles = StyleSheet.create({
+  header: { gap: space[8] },
+  // colado ao banner: a tela tem margem de 16 em volta, o resumo ocupa a largura toda
+  mini: { position: 'absolute', top: 0, left: 0, right: 0 },
   heading: { color: colors.text.primary, fontSize: 20, fontWeight: '600', marginTop: space[8] },
   error: { color: colors.status.danger, fontSize: 13 },
   section: {
