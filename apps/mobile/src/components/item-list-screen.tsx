@@ -1,4 +1,5 @@
 import type { Category, Item, ItemType } from '@nextjourney/contracts';
+import type { Icon } from '@tabler/icons-react-native';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -33,6 +34,8 @@ type Props = {
   title: string;
   emptyTitle: string;
   emptyHint: string;
+  /** Ícone do estado vazio (página sem itens). */
+  emptyIcon?: Icon;
   /** Agrupa por categoria e mostra filtro por pills (tarefas). */
   groupByCategory?: boolean;
   /** Mostra contadores de hoje e da semana (hábitos). */
@@ -54,6 +57,7 @@ export function ItemListScreen({
   title,
   emptyTitle,
   emptyHint,
+  emptyIcon,
   groupByCategory = false,
   counters = false,
   historyNotice,
@@ -193,7 +197,13 @@ export function ItemListScreen({
             );
           }}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
-          ListEmptyComponent={<EmptyState title={emptyTitle} hint={emptyHint} />}
+          ListEmptyComponent={
+            <EmptyState
+              title={emptyTitle}
+              hint={emptyHint}
+              {...(emptyIcon ? { icon: emptyIcon } : {})}
+            />
+          }
           ListFooterComponent={
             historyNotice ? (
               <Pressable
