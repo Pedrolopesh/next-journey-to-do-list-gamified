@@ -37,15 +37,9 @@ export class ChecksService {
   async check(userId: string, itemId: string, checkId: string): Promise<CheckResult> {
     const now = this.clock.now();
     return this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.findFirst({
-        where: { id: userId, deletedAt: null },
-        select: { timezone: true },
-      });
-      if (!user) throw notFound();
-
       // Serializa checks do mesmo usuário. Uma chamada concorrente com o mesmo checkId espera aqui
       // e, ao entrar, já enxerga o check gravado pela primeira.
-      await tx.$queryRaw`SELECT 1 FROM user_stats WHERE user_id = ${userId}::uuid FOR UPDATE`;
+      const user = await this.lockedUser(tx, userId);
 
       const existing = await tx.itemCheck.findUnique({ where: { id: checkId } });
       if (existing) {
@@ -189,13 +183,7 @@ export class ChecksService {
   async undo(userId: string, itemId: string, checkId: string): Promise<CheckResult> {
     const now = this.clock.now();
     return this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.findFirst({
-        where: { id: userId, deletedAt: null },
-        select: { timezone: true },
-      });
-      if (!user) throw notFound();
-
-      await tx.$queryRaw`SELECT 1 FROM user_stats WHERE user_id = ${userId}::uuid FOR UPDATE`;
+      const user = await this.lockedUser(tx, userId);
 
       const check = await tx.itemCheck.findFirst({ where: { id: checkId, itemId, userId } });
       if (!check) throw notFound();
@@ -259,6 +247,20 @@ export class ChecksService {
         achievementsUnlocked: [],
       };
     });
+  }
+
+  /** Usuário ativo com a linha de estatísticas travada: serializa as ações de EXP do mesmo usuário. */
+  private async lockedUser(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<{ timezone: string }> {
+    const user = await tx.user.findFirst({
+      where: { id: userId, deletedAt: null },
+      select: { timezone: true },
+    });
+    if (!user) throw notFound();
+    await tx.$queryRaw`SELECT 1 FROM user_stats WHERE user_id = ${userId}::uuid FOR UPDATE`;
+    return user;
   }
 
   private async streakFor(tx: Prisma.TransactionClient, item: Item, hoje: string): Promise<number> {
