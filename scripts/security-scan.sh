@@ -24,6 +24,9 @@ range=${base:+$base..HEAD}
 if [ "${FULL:-0}" = "1" ]; then range=""; echo "(modo completo: histórico inteiro, todas as branches)"; fi
 if git log ${range:---all} -p -- . ':(exclude)scripts/security-scan.sh' ':(exclude)pnpm-lock.yaml' 2>/dev/null | grep -E '^\+' | grep -E -i "$secret_re" | grep -v "scan-allow"; then fail=1; fi
 
+echo "==> Autor e mensagens dos commits novos (sem atribuição a ferramentas de IA)"
+if git log ${range:---all} --format='%an <%ae>%n%B' | grep -i -E 'claude|co-authored-by|generated with|anthropic'; then fail=1; fi
+
 if [ "${FULL:-0}" = "1" ]; then
   echo "==> Arquivos ignorados pelo Git que parecem sensíveis (não sobem, mas confira)"
   git ls-files -o -i --exclude-standard | grep -E '(^|/)\.env($|\.)|\.pem$|\.p12$|\.keystore$|id_rsa|credentials' | grep -v -E 'node_modules|\.env\.example$' || echo "nenhum"

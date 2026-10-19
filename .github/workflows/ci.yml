@@ -38,6 +38,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Histórico inteiro: a checagem de commits e a varredura de segredos olham o intervalo do PR
+          fetch-depth: 0
 
       # A versão do pnpm vem do campo packageManager do package.json
       - uses: pnpm/action-setup@v4
@@ -49,9 +52,49 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Só no PR: mensagens dos commits (Conventional Commits, sem corpo, sem atribuição a IA)
+      - name: Commits do PR
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+        run: bash scripts/check-commits.sh
+
       - run: pnpm exec turbo run lint typecheck test build
 
       - name: Testes e2e da API (Postgres de serviço)
         run: pnpm --filter @nextjourney/api test:e2e
 
+      - name: Propostas do OpenSpec alteradas no PR
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+        run: bash scripts/check-openspec.sh
+
+      - name: Código duplicado
+        run: pnpm run duplicates
+
       - run: bash scripts/security-scan.sh
+
+  # Descrição e título do PR no padrão do template (o texto vem por variável de ambiente, nunca
+  # interpolado no script, para não permitir injeção de comando pelo título ou corpo)
+  descricao:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Título e descrição do PR
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          fail=0
+          if ! printf '%s' "$PR_TITLE" | grep -E -q '^(feat|fix|chore|docs|refactor|perf|test|ci)(\([a-z0-9-]+\))?: [a-z0-9]'; then
+            echo "Título fora do padrão: tipo(escopo opcional): assunto em minúscula"; fail=1
+          fi
+          for secao in "## O que muda" "## Por quê" "## Como foi verificado" "## Riscos e pendências" "## Segurança"; do
+            printf '%s' "$PR_BODY" | grep -q "^$secao" || { echo "Falta a seção: $secao"; fail=1; }
+          done
+          if printf '%s' "$PR_BODY" | grep -i -E -q 'co-authored-by|generated with|claude|anthropic'; then
+            echo "A descrição não pode citar ferramenta de IA nem co-autor"; fail=1
+          fi
+          [ "$fail" -eq 0 ]

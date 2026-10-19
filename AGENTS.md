@@ -31,7 +31,7 @@ Docs: `docs/CENARIOS.md` (regras de construção e checagem dos cenários do ban
 
 ### O que a CI verifica em todo PR
 
-`pnpm install --frozen-lockfile` → `turbo run lint typecheck test build` → `scripts/security-scan.sh`. Rode os mesmos comandos localmente antes de abrir PR.
+`pnpm install --frozen-lockfile` → commits do PR (commitlint) → `turbo run lint typecheck test build` → e2e da API → OpenSpec alterado → duplicação (`jscpd`) → `scripts/security-scan.sh`; mais o job `descricao` (título e seções do PR). Rode tudo localmente com `pnpm run verify`.
 
 ## Arquitetura (alvo)
 
@@ -102,7 +102,7 @@ Vale para pessoas e para agentes de IA. **Nenhuma branch é enviada ao GitHub e 
 
 ### 1. Revisão e aprovação do Pedro
 
-- Deixe o trabalho **só local** (branch + commits) e pare. Não rode `git push` nem `gh pr create` ainda.
+- Deixe o trabalho **só local** (branch + commits) e pare. Não rode `git push` nem `gh pr create` ainda. Exceção: quando o Pedro autorizar de forma explícita no chat (ex.: "abra os PRs e faça o merge"), o agente abre e mescla, cumprindo todas as etapas de "Processo de PR".
 - Apresente ao Pedro: o que mudou e por quê, em linguagem simples; a lista de arquivos; o resultado de `lint`, `typecheck`, `test` e `build`; e o resultado da varredura de segredos (item 2).
 - Só suba depois de uma aprovação **explícita** ("pode subir", "aprovado"). Aprovação de um PR não vale para o próximo.
 - Mudou algo depois da aprovação? Apresente de novo.
@@ -125,6 +125,19 @@ Se achar um segredo (mesmo antigo), **pare**: não faça push, avise o Pedro, re
 - Ao executar um passo do plano, diga **o que o passo significa** (o que é e para que serve), com fase e número (ex.: "Fase 1, passo 8: configurar o ESLint, a ferramenta que aponta erros de código"), antes ou junto do resultado. O Pedro não conhece todos os termos; números soltos não bastam.
 - Diga o que foi verificado de fato e o que não foi.
 
+## Processo de PR (OBRIGATÓRIO; detalhes em `docs/PROCESSO-DE-PR.md`)
+
+1. **`pnpm run verify` verde** antes de abrir o PR: commits (commitlint), lint, tipos, testes, build, e2e da API, OpenSpec, duplicação (`jscpd`, limite 2%) e `security:full`. A CI repete os passos e ainda confere o título e a descrição do PR.
+2. **`/code-review` na branch antes de abrir o PR.** Trate os achados; o que ficar pendente vai para o `HANDOFF.md` e para "Riscos e pendências" do PR. Nunca suba dívida técnica ou de segurança sem registro.
+3. **Descrição declarativa e curta**, no padrão do `.github/PULL_REQUEST_TEMPLATE.md`: _O que muda_, _Por quê_, _Como foi verificado_, _Riscos e pendências_, _Segurança_. Título `tipo: assunto` em minúscula. Diga também o que não foi verificado.
+4. **Reuso e duplicação:** procure antes de criar; trecho repetido vira função compartilhada. Revise a segurança de todas as frentes que o PR toca (API, app, banner, contratos, dependências).
+5. **Merge por squash** com título `tipo: assunto (#N)` e corpo vazio, só com CI verde e depois da autorização do Pedro (por PR ou por pedido explícito no chat para um lote de PRs).
+
+## Não fazer
+
+- Não adicionar corpo aos commits
+- Não mencionar qualquer IA como co-autor do commit
+
 ## Safety
 
 - NUNCA commitar `.env` com valores reais; só `.env.example`.
@@ -133,7 +146,7 @@ Se achar um segredo (mesmo antigo), **pare**: não faça push, avise o Pedro, re
 - **NUNCA colocar atribuição ao Claude/IA em commits ou PRs.** Sem `Co-Authored-By`, sem `Claude-Session`, sem "Generated with". O autor é só o Pedro.
 - Sempre `git pull origin main` antes de começar.
 - **Convenção de branch:** `<tipo>/<slug-em-kebab-case>`. Tipos: `feat`, `fix`, `chore`, `docs`, `refactor`, `perf`, `test`, `ci`.
-- **Commits:** Conventional Commits. O assunto começa em minúscula (o commitlint rejeita maiúscula inicial). Um passo do plano por PR; o corpo cita a fase e o passo.
+- **Commits:** Conventional Commits. O assunto começa em minúscula (o commitlint rejeita maiúscula inicial). Um passo do plano por PR; a fase e o passo vão na descrição do PR (o commit não tem corpo).
 
 <!-- BEGIN:turborepo-agent-rules -->
 
