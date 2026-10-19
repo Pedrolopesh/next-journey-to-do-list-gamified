@@ -5,18 +5,20 @@ import {
   type ItemType,
   type UpdateItemRequest,
 } from '@nextjourney/contracts';
+import { IconX } from '@tabler/icons-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useCategories } from '@/api/queries';
 import { Button } from '@/components/button';
+import { DifficultySelector } from '@/components/difficulty-selector';
 import { Pills } from '@/components/pills';
 import { TextField } from '@/components/text-field';
 import { toast } from '@/features/feedback/toast-store';
 import { dueDateFor, type DuePreset, endOfDayIso } from '@/features/items/due-presets';
 import { deviceToday } from '@/features/items/local-date';
-import { colors, space } from '@/theme';
+import { colors, radius, size, space } from '@/theme';
 
 const WEEK_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
@@ -29,6 +31,8 @@ type Props = {
   onSubmitCreate: (body: CreateItemRequest) => void;
   onSubmitUpdate: (body: UpdateItemRequest) => void;
   onDelete?: () => void;
+  /** Fecha o modal (botão X no canto). */
+  onClose?: () => void;
 };
 
 /** Formulário de criar e editar item. Validado com o mesmo schema que a API usa. */
@@ -40,6 +44,7 @@ export function ItemForm({
   onSubmitCreate,
   onSubmitUpdate,
   onDelete,
+  onClose,
 }: Props) {
   const { t } = useTranslation();
   const categories = useCategories();
@@ -109,6 +114,19 @@ export function ItemForm({
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      {onClose ? (
+        <View style={styles.header}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+            onPress={onClose}
+            hitSlop={8}
+            style={styles.close}
+          >
+            <IconX size={22} color={colors.text.primary} strokeWidth={2} />
+          </Pressable>
+        </View>
+      ) : null}
       {!editing ? (
         <View style={styles.group}>
           <Text style={styles.label}>{t('itemForm.type')}</Text>
@@ -150,16 +168,7 @@ export function ItemForm({
 
       <View style={styles.group}>
         <Text style={styles.label}>{t('itemForm.difficulty')}</Text>
-        <Pills
-          label={t('itemForm.difficulty')}
-          value={difficulty}
-          onChange={setDifficulty}
-          options={[
-            { value: 'easy', label: t('difficulty.easy'), color: colors.status.success },
-            { value: 'medium', label: t('difficulty.medium'), color: colors.status.warning },
-            { value: 'hard', label: t('difficulty.hard'), color: colors.status.danger },
-          ]}
-        />
+        <DifficultySelector value={difficulty} onChange={setDifficulty} />
       </View>
 
       {type === 'daily' ? (
@@ -241,6 +250,15 @@ export function ItemForm({
 
 const styles = StyleSheet.create({
   container: { padding: space.screenMargin, gap: space[16], paddingBottom: space[40] },
+  header: { alignItems: 'flex-end' },
+  close: {
+    width: size.touchTarget,
+    height: size.touchTarget,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.bg.surface,
+  },
   group: { gap: space[8] },
   label: { color: colors.text.secondary, fontSize: 13, fontWeight: '500' },
   days: { flexDirection: 'row', flexWrap: 'wrap', gap: space[4] },
