@@ -178,8 +178,8 @@ export function ItemListScreen({
             section.title ? <Text style={styles.section}>{section.title}</Text> : null
           }
           renderItem={({ item }) => {
-            // O servidor diz qual check de hoje vale; a sessão cobre o que ainda está na fila offline
-            const undoId = item.lastCheckId ?? lastUndoableCheck(checks, item.id);
+            // O check desta sessão é o mais recente (e cobre a fila offline); o do servidor vale ao reabrir o app
+            const undoId = lastUndoableCheck(checks, item.id) ?? item.lastCheckId;
             return (
               <ItemRow
                 item={item}

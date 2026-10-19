@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 import { toApiError } from '@/api/errors';
-import { useCategories, useHistory, useUndoCheck } from '@/api/queries';
+import { useCategories, useHistory, useMe, useUndoCheck } from '@/api/queries';
 import { Button } from '@/components/button';
 import { DifficultyIcon } from '@/components/difficulty-icon';
 import { ScreenFrame } from '@/components/screen-frame';
@@ -18,6 +18,8 @@ export default function HistoryScreen() {
   const history = useHistory();
   const categories = useCategories();
   const undo = useUndoCheck();
+  // O dia é o do fuso do perfil (regra 8), não o do aparelho
+  const timeZone = useMe().data?.user.timezone;
 
   const rows = history.data?.pages.flatMap((page) => page.items) ?? [];
   const categoryName = (id: string): string =>
@@ -34,11 +36,10 @@ export default function HistoryScreen() {
           else toast.info(t('feedback.undoneNoCoins'));
         },
         onError: (cause) => {
-          toast.error(
-            toApiError(cause)?.code === 'CHECK_ALREADY_REVERTED'
-              ? t('feedback.undone')
-              : t('feedback.undoFailed'),
-          );
+          // Já estava desfeito (toque repetido): o resultado é o esperado, não é erro
+          if (toApiError(cause)?.code === 'CHECK_ALREADY_REVERTED')
+            toast.info(t('feedback.undone'));
+          else toast.error(t('feedback.undoFailed'));
         },
       },
     );
@@ -80,7 +81,10 @@ export default function HistoryScreen() {
                 </Text>
                 <Text style={styles.meta}>
                   {`${categoryName(row.categoryId)} · ${t('history.completedOn', {
-                    date: new Date(row.completedAt).toLocaleDateString('pt-BR'),
+                    date: new Date(row.completedAt).toLocaleDateString(
+                      'pt-BR',
+                      timeZone ? { timeZone } : {},
+                    ),
                   })}`}
                 </Text>
               </View>

@@ -52,7 +52,7 @@ export const itemSchema = z.object({
   checksToday: z.number().int().nonnegative(),
   checksThisWeek: z.number().int().nonnegative(),
   /** Check de hoje que ainda vale (o mais recente): é o que o app desmarca. Nulo sem check hoje. */
-  lastCheckId: idSchema.nullable(),
+  lastCheckId: idSchema.nullable().default(null),
 });
 export type Item = z.infer<typeof itemSchema>;
 

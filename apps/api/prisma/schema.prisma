@@ -137,6 +137,8 @@ model Item {
 
   @@index([userId, type])
   @@index([userId, deletedAt])
+  // Histórico de tarefas: filtra por tipo e ordena por conclusão
+  @@index([userId, type, completedAt])
   @@map("items")
 }
 
