@@ -29,6 +29,13 @@ ALLOWED = ["CC0", "OGA-BY 4.0", "OGA-BY 3.0", "CC-BY 4.0", "CC-BY 3.0"]
 ROOTS = ["headwear", "arms", "torso", "legs", "feet", "weapons", "tools"]
 # Asas, caudas, próteses e orelhas ficam em pastas de corpo e rosto do gerador: entram como "extras"
 EXTRAS = ["body/wings", "body/tails", "body/prostheses", "head/appendages", "head/furry_ears"]
+# Barbas, bigodes, rosto e corpo especial: "mods" (modificadores). O corpo base, a sombra e a cadeira de rodas ficam de fora
+MODS = ["hair/beards", "hair/mustaches", "body/special", "body/lizard", "body/wounds"]
+# Pastas de cabelo e rosto que já entram por outro caminho
+SKIP_DIRS = {"hair": {"beards", "mustaches"}, "head": {"appendages", "furry_ears"}}
+# Fonte -> nome da raiz na página. Fontes com prefixo dão ao grupo o nome da pasta.
+SOURCES = [(r, r) for r in ROOTS] + [(e, "extras") for e in EXTRAS] + [(m, "mods") for m in MODS] + [("head", "mods"), ("hair", "hair")]
+PREFIXED = set(EXTRAS) | set(MODS)
 FRAME = 64
 DOWN_ROW = 2
 
@@ -120,9 +127,9 @@ for _, image in sorted(BASES["male"], key=lambda t: t[0]):
     body_only.alpha_composite(image)
 body_only.save(OUT_THUMBS / "_corpo.png", optimize=True)
 
-for source in [*ROOTS, *EXTRAS]:
-    root = "extras" if source in EXTRAS else source
-    for dirpath, _, files in os.walk(f"sheet_definitions/{source}"):
+for source, root in SOURCES:
+    for dirpath, dirnames, files in os.walk(f"sheet_definitions/{source}"):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS.get(source, set())]
         for name in sorted(files):
             if not name.endswith(".json") or name.startswith("meta"):
                 continue
@@ -157,7 +164,7 @@ for source in [*ROOTS, *EXTRAS]:
                 canvas.save(OUT_THUMBS / f"{item_id}.png", optimize=True)
                 thumb = f"{item_id}.png"
             group = os.path.relpath(dirpath, f"sheet_definitions/{source}")
-            if source in EXTRAS:
+            if source in PREFIXED:
                 group = os.path.basename(source) + ("" if group == "." else "/" + group)
             items.append(
                 {

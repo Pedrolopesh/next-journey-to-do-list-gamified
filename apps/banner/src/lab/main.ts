@@ -5,9 +5,11 @@ import type { LabPage } from './page';
 import { achievementsV2Page } from './pages/achievements-v2';
 import { appButtonsPage } from './pages/app-buttons';
 import { weaponsPage } from './pages/armas-acessorios';
+import { hairPage } from './pages/cabelos';
 import { characterPage } from './pages/character';
 import { glowPage } from './pages/glow';
 import { indicatorsPage } from './pages/indicators';
+import { modifiersPage } from './pages/modificadores';
 import { petsPage } from './pages/pets-montarias';
 import { clothesPage } from './pages/roupas-acessorios';
 import { scenesPage } from './pages/scenes';
@@ -22,6 +24,8 @@ const PAGES: LabPage[] = [
   scenesPage,
   characterPage,
   clothesPage,
+  hairPage,
+  modifiersPage,
   weaponsPage,
   petsPage,
   scoringPage,
