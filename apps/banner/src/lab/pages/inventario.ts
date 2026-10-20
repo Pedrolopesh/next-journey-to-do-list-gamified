@@ -1,7 +1,7 @@
 import './inventario.css';
 
 import type { Catalog } from '../../qg/compose';
-import { choiceGroup, h, panel } from '../dom';
+import { h, panel } from '../dom';
 
 /** Uma peça do gerador LPC (gerada por `scripts/inventario-lpc.py`). */
 export type InventoryItem = {
@@ -16,8 +16,6 @@ export type InventoryItem = {
   authors: string[];
   thumb: string | null;
 };
-
-type Filter = 'all' | 'free' | 'blocked';
 
 /** Nome de cada pasta do gerador, para os títulos das seções. */
 const GROUP_NAMES: Record<string, string> = {
@@ -81,6 +79,15 @@ const GROUP_NAMES: Record<string, string> = {
   'shields/heater/pattern': 'Escudos heater, padrões',
   'shields/heater/revised_pattern': 'Escudos heater, padrões revisados',
   'shields/scutum': 'Escudos scutum',
+  wings: 'Asas',
+  'wings/dragonfly': 'Asas de libélula',
+  'wings/monarch': 'Asas de borboleta',
+  'wings/pixie': 'Asas de fada',
+  tails: 'Caudas',
+  prostheses: 'Próteses',
+  appendages: 'Apêndices de cabeça',
+  'furry_ears/side': 'Orelhas de bicho (lado)',
+  'furry_ears/top': 'Orelhas de bicho (topo)',
 };
 
 const ROOT_NAMES: Record<string, string> = {
@@ -91,6 +98,7 @@ const ROOT_NAMES: Record<string, string> = {
   feet: 'Pés',
   weapons: 'Armas e escudos',
   tools: 'Ferramentas',
+  extras: 'Asas, caudas e orelhas',
 };
 
 /** Pasta (grupo) de cada peça: tira o prefixo `headwear/` etc. e usa o nome em português. */
@@ -119,65 +127,94 @@ export function inventoryPage(options: InventoryPageOptions) {
       ]);
       const inGame = new Set(catalog.parts.map((part) => part.name));
       const items = all.filter((item) => options.roots.includes(item.root));
-      let filter: Filter = 'all';
+      const free = items.filter((item) => item.free);
+      const blocked = items.filter((item) => !item.free);
 
-      const list = h('div');
-      const summary = h('p', 'meta');
-      const render = (): void => {
-        const shown = items.filter(
-          (item) => filter === 'all' || (filter === 'free' ? item.free : !item.free),
-        );
-        const groups = new Map<string, InventoryItem[]>();
-        for (const item of shown) {
-          const key = groupTitle(item);
-          groups.set(key, [...(groups.get(key) ?? []), item]);
-        }
-        summary.textContent = `${shown.length} peças · ${shown.filter((i) => i.free).length} com licença livre · ${shown.filter((i) => i.free && i.thumb).length} com prévia`;
-        list.replaceChildren(
-          ...[...groups].map(([title, group]) => {
-            const details = h('details', 'inv-group');
-            details.open = groups.size <= 3 || group.length <= 12;
-            details.append(
-              h('summary', '', title, h('span', 'meta', `${group.length} peças`)),
-              h('div', 'inv-grid', ...group.map((item) => card(item, inGame))),
-            );
-            return details;
-          }),
-        );
-      };
-
-      const filters = h(
-        'div',
-        'inv-filters',
-        choiceGroup<Filter>(
-          [
-            { value: 'all', label: 'Todas' },
-            { value: 'free', label: 'Licença livre' },
-            { value: 'blocked', label: 'Bloqueadas pela licença' },
-          ],
-          () => filter,
-          (value) => {
-            filter = value;
-            render();
-          },
-        ),
-        summary,
+      const groups = new Map<string, InventoryItem[]>();
+      for (const item of free) {
+        const key = groupTitle(item);
+        groups.set(key, [...(groups.get(key) ?? []), item]);
+      }
+      const summary = h(
+        'p',
+        'meta',
+        `${free.length} peças com licença livre · ${free.filter((i) => i.thumb).length} com prévia · ${blocked.length} ficaram de fora (tabela no fim da página)`,
       );
+      const list = h(
+        'div',
+        '',
+        ...[...groups].map(([title, group]) => {
+          const details = h('details', 'inv-group');
+          details.open = groups.size <= 3 || group.length <= 12;
+          details.append(
+            h('summary', '', title, h('span', 'meta', `${group.length} peças`)),
+            h('div', 'inv-grid', ...group.map((item) => card(item, inGame))),
+          );
+          return details;
+        }),
+      );
+
       const license = h('div', 'license-banner');
       license.setAttribute('role', 'note');
       license.innerHTML =
-        '<strong>Regra de licença:</strong> só entra peça cuja licença permite o uso sem copyleft: <strong>CC0</strong>, <strong>OGA-BY</strong> ou <strong>CC-BY</strong> (com crédito aos autores). Peça só <strong>CC-BY-SA</strong> ou <strong>GPL</strong> aparece como <strong>bloqueada</strong> e não deve ser usada. A miniatura mostra o corpo masculino de frente, só para dar ideia da peça.';
+        '<strong>Regra de licença:</strong> só entra peça cuja licença permite o uso sem copyleft: <strong>CC0</strong>, <strong>OGA-BY</strong> ou <strong>CC-BY</strong> (com crédito aos autores). Peça com licença que obriga a abrir ou licenciar igual (<strong>CC-BY-SA</strong>, <strong>GPL</strong>) foi removida da galeria e está listada na tabela no fim da página. A miniatura mostra o corpo masculino de frente, só para dar ideia da peça.';
 
       host.append(
         h('h1', '', options.title),
         h('p', 'meta', options.intro),
         license,
-        panel('Peças do gerador LPC', filters, list),
+        panel('Peças do gerador LPC', summary, list),
+        blockedTable(blocked),
         ...(options.extra?.() ?? []),
       );
-      render();
     },
   };
+}
+
+/** Tabela simples das peças removidas da galeria: nome, pasta, licença e motivo. */
+function blockedTable(blocked: InventoryItem[]): HTMLElement {
+  const table = h('table', 'inv-table');
+  table.append(
+    h(
+      'thead',
+      '',
+      h(
+        'tr',
+        '',
+        h('th', '', 'Peça'),
+        h('th', '', 'Grupo'),
+        h('th', '', 'Licença'),
+        h('th', '', 'Por que ficou de fora'),
+      ),
+    ),
+    h(
+      'tbody',
+      '',
+      ...blocked.map((item) =>
+        h(
+          'tr',
+          '',
+          h('td', '', item.name),
+          h('td', '', groupTitle(item)),
+          h('td', '', item.license.join(', ')),
+          h(
+            'td',
+            '',
+            'Nenhuma licença livre (CC0, OGA-BY, CC-BY): exige compartilhar igual (CC-BY-SA/GPL)',
+          ),
+        ),
+      ),
+    ),
+  );
+  return panel(
+    `Peças que ficaram de fora (${blocked.length})`,
+    h(
+      'p',
+      'meta',
+      'Removidas da galeria porque ao menos uma parte da peça só permite uso com licença copyleft, incompatível com a regra do projeto. Sem prévia e sem arquivo no repositório.',
+    ),
+    table,
+  );
 }
 
 function card(item: InventoryItem, inGame: Set<string>): HTMLElement {
@@ -200,20 +237,13 @@ function card(item: InventoryItem, inGame: Set<string>): HTMLElement {
     body.width = 128;
     body.height = 128;
     thumb.classList.add('empty');
-    thumb.append(
-      body,
-      h(
-        'span',
-        'inv-reason',
-        item.free ? 'Sem animação para mostrar' : 'Licença bloqueia o uso: sem prévia',
-      ),
-    );
+    thumb.append(body, h('span', 'inv-reason', 'Sem animação para mostrar'));
   }
   const badges = h('div', 'chips');
   const license = h(
     'span',
     `badge ${item.free ? 'ok' : 'no'}`,
-    item.free ? item.license.join(' + ') || 'livre' : 'só CC-BY-SA / GPL',
+    item.license.join(' + ') || 'livre',
   );
   license.title = `Licenças da peça: ${item.license.join(', ')}`;
   badges.append(license);

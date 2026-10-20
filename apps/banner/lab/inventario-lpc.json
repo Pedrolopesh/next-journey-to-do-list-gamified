@@ -138,6 +138,347 @@
     "thumb": "arms-wrists-wrists-cuffs-lace.png"
   },
   {
+    "id": "head-appendages-head-horns-backwards",
+    "root": "extras",
+    "group": "appendages",
+    "name": "Backwards Horns",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["Nila122"],
+    "thumb": "head-appendages-head-horns-backwards.png"
+  },
+  {
+    "id": "head-appendages-head-horns-curled",
+    "root": "extras",
+    "group": "appendages",
+    "name": "Curled Horns",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["Nila122"],
+    "thumb": "head-appendages-head-horns-curled.png"
+  },
+  {
+    "id": "head-appendages-head-fins-fin",
+    "root": "extras",
+    "group": "appendages",
+    "name": "Fin",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["Nila122", "bluecarrot16"],
+    "thumb": "head-appendages-head-fins-fin.png"
+  },
+  {
+    "id": "head-appendages-head-fins-fin-short",
+    "root": "extras",
+    "group": "appendages",
+    "name": "Short fin",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["Nila122", "bluecarrot16"],
+    "thumb": "head-appendages-head-fins-fin-short.png"
+  },
+  {
+    "id": "head-furry-ears-side-head-ears-avyon",
+    "root": "extras",
+    "group": "furry_ears/side",
+    "name": "Feather Ears",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "head-furry-ears-side-head-ears-avyon.png"
+  },
+  {
+    "id": "head-furry-ears-side-head-ears-avyon-skin",
+    "root": "extras",
+    "group": "furry_ears/side",
+    "name": "Feather Ears Skintone",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "head-furry-ears-side-head-ears-avyon-skin.png"
+  },
+  {
+    "id": "head-furry-ears-side-head-ears-zabos",
+    "root": "extras",
+    "group": "furry_ears/side",
+    "name": "Side Cat Ears",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "head-furry-ears-side-head-ears-zabos.png"
+  },
+  {
+    "id": "head-furry-ears-side-head-ears-zabos-skin",
+    "root": "extras",
+    "group": "furry_ears/side",
+    "name": "Side Cat Ears Skintone",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "head-furry-ears-side-head-ears-zabos-skin.png"
+  },
+  {
+    "id": "head-furry-ears-side-head-ears-lykon",
+    "root": "extras",
+    "group": "furry_ears/side",
+    "name": "Side Wolf Ears",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "head-furry-ears-side-head-ears-lykon.png"
+  },
+  {
+    "id": "head-furry-ears-side-head-ears-lykon-skin",
+    "root": "extras",
+    "group": "furry_ears/side",
+    "name": "Side Wolf Ears Skintone",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "head-furry-ears-side-head-ears-lykon-skin.png"
+  },
+  {
+    "id": "head-furry-ears-top-head-ears-cat",
+    "root": "extras",
+    "group": "furry_ears/top",
+    "name": "Cat Ears",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "head-furry-ears-top-head-ears-cat.png"
+  },
+  {
+    "id": "head-furry-ears-top-head-ears-cat-skin",
+    "root": "extras",
+    "group": "furry_ears/top",
+    "name": "Cat Ears Skintone",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "head-furry-ears-top-head-ears-cat-skin.png"
+  },
+  {
+    "id": "head-furry-ears-top-head-ears-wolf",
+    "root": "extras",
+    "group": "furry_ears/top",
+    "name": "Wolf Ears",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "head-furry-ears-top-head-ears-wolf.png"
+  },
+  {
+    "id": "head-furry-ears-top-head-ears-wolf-skin",
+    "root": "extras",
+    "group": "furry_ears/top",
+    "name": "Wolf Ears Skintone",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "head-furry-ears-top-head-ears-wolf-skin.png"
+  },
+  {
+    "id": "body-prostheses-prosthesis-hook",
+    "root": "extras",
+    "group": "prostheses",
+    "name": "Hook Hand",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman", "bluecarrot16"],
+    "thumb": "body-prostheses-prosthesis-hook.png"
+  },
+  {
+    "id": "body-prostheses-prosthesis-peg-leg",
+    "root": "extras",
+    "group": "prostheses",
+    "name": "Peg leg",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman", "bluecarrot16"],
+    "thumb": "body-prostheses-prosthesis-peg-leg.png"
+  },
+  {
+    "id": "body-tails-tail-cat",
+    "root": "extras",
+    "group": "tails",
+    "name": "Cat Tail",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "body-tails-tail-cat.png"
+  },
+  {
+    "id": "body-tails-tail-wolf-fluffy",
+    "root": "extras",
+    "group": "tails",
+    "name": "Fluffy Wolf Tail",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "body-tails-tail-wolf-fluffy.png"
+  },
+  {
+    "id": "body-tails-tail-lizard-alt",
+    "root": "extras",
+    "group": "tails",
+    "name": "Lizard Tail (Alt Colors)",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman", "Nila122", "bluecarrot16"],
+    "thumb": "body-tails-tail-lizard-alt.png"
+  },
+  {
+    "id": "body-tails-tail-wolf",
+    "root": "extras",
+    "group": "tails",
+    "name": "Wolf Tail",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman"],
+    "thumb": "body-tails-tail-wolf.png"
+  },
+  {
+    "id": "body-wings-wings-bat",
+    "root": "extras",
+    "group": "wings",
+    "name": "Bat Wings",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["ElizaWy", "JaidynReiman"],
+    "thumb": "body-wings-wings-bat.png"
+  },
+  {
+    "id": "body-wings-wings-feathered",
+    "root": "extras",
+    "group": "wings",
+    "name": "Feathered Wings",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)"],
+    "thumb": "body-wings-wings-feathered.png"
+  },
+  {
+    "id": "body-wings-wings-lizard-alt",
+    "root": "extras",
+    "group": "wings",
+    "name": "Lizard Wings (Alt Colors)",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 3.0"],
+    "authors": ["JaidynReiman", "Nila122", "bluecarrot16"],
+    "thumb": "body-wings-wings-lizard-alt.png"
+  },
+  {
+    "id": "body-wings-wings-lunar",
+    "root": "extras",
+    "group": "wings",
+    "name": "Lunar Wings",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 4.0"],
+    "authors": ["The Foreman"],
+    "thumb": "body-wings-wings-lunar.png"
+  },
+  {
+    "id": "body-wings-dragonfly-wings-dragonfly",
+    "root": "extras",
+    "group": "wings/dragonfly",
+    "name": "Dragonfly Wings",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 4.0"],
+    "authors": ["The Foreman"],
+    "thumb": "body-wings-dragonfly-wings-dragonfly.png"
+  },
+  {
+    "id": "body-wings-dragonfly-wings-dragonfly-transparent",
+    "root": "extras",
+    "group": "wings/dragonfly",
+    "name": "Transparent Dragonfly Wings",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 4.0"],
+    "authors": ["The Foreman"],
+    "thumb": "body-wings-dragonfly-wings-dragonfly-transparent.png"
+  },
+  {
+    "id": "body-wings-monarch-wings-monarch",
+    "root": "extras",
+    "group": "wings/monarch",
+    "name": "Monarch Wings",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 4.0"],
+    "authors": ["The Foreman"],
+    "thumb": "body-wings-monarch-wings-monarch.png"
+  },
+  {
+    "id": "body-wings-monarch-wings-monarch-dots",
+    "root": "extras",
+    "group": "wings/monarch",
+    "name": "Monarch Wings Dots",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 4.0"],
+    "authors": ["The Foreman"],
+    "thumb": "body-wings-monarch-wings-monarch-dots.png"
+  },
+  {
+    "id": "body-wings-monarch-wings-monarch-edge",
+    "root": "extras",
+    "group": "wings/monarch",
+    "name": "Monarch Wings Edge",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 4.0"],
+    "authors": ["The Foreman"],
+    "thumb": "body-wings-monarch-wings-monarch-edge.png"
+  },
+  {
+    "id": "body-wings-pixie-wings-pixie",
+    "root": "extras",
+    "group": "wings/pixie",
+    "name": "Pixie Wings",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 4.0"],
+    "authors": ["The Foreman"],
+    "thumb": "body-wings-pixie-wings-pixie.png"
+  },
+  {
+    "id": "body-wings-pixie-wings-pixie-transparent",
+    "root": "extras",
+    "group": "wings/pixie",
+    "name": "Transparent Pixie Wings",
+    "free": true,
+    "walk": true,
+    "license": ["OGA-BY 4.0"],
+    "authors": ["The Foreman"],
+    "thumb": "body-wings-pixie-wings-pixie-transparent.png"
+  },
+  {
     "id": "feet-feet-armour",
     "root": "feet",
     "group": "",
@@ -186,22 +527,22 @@
     "root": "feet",
     "group": "accessory",
     "name": "Plated Toe",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman"],
-    "thumb": null
+    "thumb": "feet-accessory-feet-plate-toe.png"
   },
   {
     "id": "feet-accessory-feet-plate-toe-thick",
     "root": "feet",
     "group": "accessory",
     "name": "Thick Plated Toe",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman"],
-    "thumb": null
+    "thumb": "feet-accessory-feet-plate-toe-thick.png"
   },
   {
     "id": "feet-boots-feet-boots-basic",
@@ -219,11 +560,11 @@
     "root": "feet",
     "group": "boots",
     "name": "Folded Rim Boots",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman"],
-    "thumb": null
+    "thumb": "feet-boots-feet-boots-fold.png"
   },
   {
     "id": "feet-boots-feet-boots-revised",
@@ -247,11 +588,11 @@
     "root": "feet",
     "group": "boots",
     "name": "Rimmed Boots",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman"],
-    "thumb": null
+    "thumb": "feet-boots-feet-boots-rim.png"
   },
   {
     "id": "feet-shoes-feet-shoes-basic",
@@ -354,11 +695,11 @@
     "root": "feet",
     "group": "socks",
     "name": "Tabi Socks",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
-    "thumb": null
+    "thumb": "feet-socks-feet-socks-tabi.png"
   },
   {
     "id": "headwear-accessories-facial-mask-plain",
@@ -701,22 +1042,22 @@
     "root": "headwear",
     "group": "coverings/headbands",
     "name": "Hair Tie",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman"],
-    "thumb": null
+    "thumb": "headwear-coverings-headbands-hat-headband-hairtie.png"
   },
   {
     "id": "headwear-coverings-headbands-hat-headband-hairtie-rune",
     "root": "headwear",
     "group": "coverings/headbands",
     "name": "Hair Tie Rune",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman"],
-    "thumb": null
+    "thumb": "headwear-coverings-headbands-hat-headband-hairtie-rune.png"
   },
   {
     "id": "headwear-coverings-headbands-hat-headband-kerchief",
@@ -734,22 +1075,22 @@
     "root": "headwear",
     "group": "coverings/headbands",
     "name": "Thick Headband",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman"],
-    "thumb": null
+    "thumb": "headwear-coverings-headbands-hat-headband-thick.png"
   },
   {
     "id": "headwear-coverings-headbands-hat-headband-thick-rune",
     "root": "headwear",
     "group": "coverings/headbands",
     "name": "Thick Headband Rune",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman"],
-    "thumb": null
+    "thumb": "headwear-coverings-headbands-hat-headband-thick-rune.png"
   },
   {
     "id": "headwear-coverings-headbands-hat-headband-tied",
@@ -2477,11 +2818,11 @@
     "root": "tools",
     "group": "",
     "name": "Fishing Rod",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 4.0+", "GPL 2.0+", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["bluecarrot16"],
-    "thumb": null
+    "thumb": "tools-tool-rod.png"
   },
   {
     "id": "tools-tool-hammer",
@@ -2554,11 +2895,11 @@
     "root": "tools",
     "group": "",
     "name": "Watering Can",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 4.0+", "GPL 2.0+", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["bluecarrot16"],
-    "thumb": null
+    "thumb": "tools-tool-watering-can.png"
   },
   {
     "id": "tools-tool-whip",
@@ -2567,7 +2908,7 @@
     "name": "Whip",
     "free": true,
     "walk": true,
-    "license": ["CC-BY 4.0"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["bluecarrot16"],
     "thumb": "tools-tool-whip.png"
   },
@@ -2869,88 +3210,88 @@
     "root": "torso",
     "group": "dresses/kimono",
     "name": "Kimono",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
-    "thumb": null
+    "thumb": "torso-dresses-kimono-dress-kimono.png"
   },
   {
     "id": "torso-dresses-kimono-dress-kimono-oversize",
     "root": "torso",
     "group": "dresses/kimono",
     "name": "Kimono Oversized Sleeves",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
-    "thumb": null
+    "thumb": "torso-dresses-kimono-dress-kimono-oversize.png"
   },
   {
     "id": "torso-dresses-kimono-dress-kimono-oversize-trim",
     "root": "torso",
     "group": "dresses/kimono",
     "name": "Kimono Oversized Sleeves Trim",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
-    "thumb": null
+    "thumb": "torso-dresses-kimono-dress-kimono-oversize-trim.png"
   },
   {
     "id": "torso-dresses-kimono-dress-kimono-longsleeve",
     "root": "torso",
     "group": "dresses/kimono",
     "name": "Kimono Sleeves",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
-    "thumb": null
+    "thumb": "torso-dresses-kimono-dress-kimono-longsleeve.png"
   },
   {
     "id": "torso-dresses-kimono-dress-kimono-longsleeve-trim",
     "root": "torso",
     "group": "dresses/kimono",
     "name": "Kimono Sleeves Trim",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
-    "thumb": null
+    "thumb": "torso-dresses-kimono-dress-kimono-longsleeve-trim.png"
   },
   {
     "id": "torso-dresses-kimono-dress-kimono-trim",
     "root": "torso",
     "group": "dresses/kimono",
     "name": "Kimono Trim",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
-    "thumb": null
+    "thumb": "torso-dresses-kimono-dress-kimono-trim.png"
   },
   {
     "id": "torso-dresses-kimono-dress-kimono-split",
     "root": "torso",
     "group": "dresses/kimono",
     "name": "Split Kimono",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
-    "thumb": null
+    "thumb": "torso-dresses-kimono-dress-kimono-split.png"
   },
   {
     "id": "torso-dresses-kimono-dress-kimono-split-trim",
     "root": "torso",
     "group": "dresses/kimono",
     "name": "Split Kimono Trim",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
-    "thumb": null
+    "thumb": "torso-dresses-kimono-dress-kimono-split-trim.png"
   },
   {
     "id": "torso-jacket-torso-jacket-collared",
@@ -3899,33 +4240,33 @@
     "root": "torso",
     "group": "waist/obi",
     "name": "Obi",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman"],
-    "thumb": null
+    "thumb": "torso-waist-obi-belt-obi.png"
   },
   {
     "id": "torso-waist-obi-belt-obi-knot-left",
     "root": "torso",
     "group": "waist/obi",
     "name": "Obi Knot Left",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman"],
-    "thumb": null
+    "thumb": "torso-waist-obi-belt-obi-knot-left.png"
   },
   {
     "id": "torso-waist-obi-belt-obi-knot-right",
     "root": "torso",
     "group": "waist/obi",
     "name": "Obi Knot Right",
-    "free": false,
+    "free": true,
     "walk": true,
-    "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["JaidynReiman"],
-    "thumb": null
+    "thumb": "torso-waist-obi-belt-obi-knot-right.png"
   },
   {
     "id": "weapons-blunt-weapon-blunt-club",
@@ -3934,7 +4275,7 @@
     "name": "Club",
     "free": true,
     "walk": true,
-    "license": ["CC-BY 4.0"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["bluecarrot16"],
     "thumb": "weapons-blunt-weapon-blunt-club.png"
   },
@@ -3978,7 +4319,7 @@
     "name": "Crystal",
     "free": true,
     "walk": true,
-    "license": ["CC-BY 4.0"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["bluecarrot16"],
     "thumb": "weapons-magic-weapon-magic-crystal.png"
   },
@@ -3989,7 +4330,7 @@
     "name": "Diamond staff",
     "free": true,
     "walk": true,
-    "license": ["CC-BY 4.0"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["bluecarrot16"],
     "thumb": "weapons-magic-weapon-magic-diamond.png"
   },
@@ -4000,7 +4341,7 @@
     "name": "Gnarled staff",
     "free": true,
     "walk": true,
-    "license": ["CC-BY 4.0"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["bluecarrot16"],
     "thumb": "weapons-magic-weapon-magic-gnarled.png"
   },
@@ -4011,7 +4352,7 @@
     "name": "Loop staff",
     "free": true,
     "walk": true,
-    "license": ["CC-BY 4.0"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["bluecarrot16"],
     "thumb": "weapons-magic-weapon-magic-loop.png"
   },
@@ -4132,7 +4473,7 @@
     "name": "Boomerang",
     "free": true,
     "walk": true,
-    "license": ["CC-BY 4.0"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["bluecarrot16"],
     "thumb": "weapons-ranged-weapon-ranged-boomerang.png"
   },
@@ -4154,7 +4495,7 @@
     "name": "Slingshot",
     "free": true,
     "walk": true,
-    "license": ["CC-BY 4.0"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["bluecarrot16"],
     "thumb": "weapons-ranged-weapon-ranged-slingshot.png"
   },
@@ -4192,7 +4533,7 @@
     "name": "Normal",
     "free": true,
     "walk": true,
-    "license": ["CC-BY 4.0"],
+    "license": ["OGA-BY 3.0"],
     "authors": ["Johannes Sjölund (wulax)", "Pierre Vigier (pvigier)"],
     "thumb": "weapons-ranged-bow-weapon-ranged-bow-normal.png"
   },

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Inventário das peças do gerador LPC para as páginas do laboratório "Roupas e acessórios" e
-"Armas e acessórios". Lê as definições do gerador, resolve a licença de cada peça e gera
+"Armas e acessórios" (mais asas, caudas, próteses e orelhas). Lê as definições do gerador, resolve a licença de cada peça e gera
 uma miniatura (corpo + peça, de frente, quadro 1 da caminhada; peça só de ataque usa o quadro 1 do ataque; peça só feminina ou infantil usa esse corpo). Peça bloqueada pela licença não ganha miniatura.
 
 Uso (precisa do Pillow): LPC_GENERATOR=/caminho/Universal-LPC-Spritesheet-Character-Generator \
@@ -27,6 +27,8 @@ OUT_THUMBS = ROOT / "lab/inventory"
 # Mesma regra do importador do personagem: só CC0, OGA-BY e CC-BY entram; CC-BY-SA e GPL ficam fora
 ALLOWED = ["CC0", "OGA-BY 4.0", "OGA-BY 3.0", "CC-BY 4.0", "CC-BY 3.0"]
 ROOTS = ["headwear", "arms", "torso", "legs", "feet", "weapons", "tools"]
+# Asas, caudas, próteses e orelhas ficam em pastas de corpo e rosto do gerador: entram como "extras"
+EXTRAS = ["body/wings", "body/tails", "body/prostheses", "head/appendages", "head/furry_ears"]
 FRAME = 64
 DOWN_ROW = 2
 
@@ -118,8 +120,9 @@ for _, image in sorted(BASES["male"], key=lambda t: t[0]):
     body_only.alpha_composite(image)
 body_only.save(OUT_THUMBS / "_corpo.png", optimize=True)
 
-for root in ROOTS:
-    for dirpath, _, files in os.walk(f"sheet_definitions/{root}"):
+for source in [*ROOTS, *EXTRAS]:
+    root = "extras" if source in EXTRAS else source
+    for dirpath, _, files in os.walk(f"sheet_definitions/{source}"):
         for name in sorted(files):
             if not name.endswith(".json") or name.startswith("meta"):
                 continue
@@ -131,7 +134,9 @@ for root in ROOTS:
             used = []
             ok = bool(credits)
             for credit in credits:
-                pick = next((a for a in ALLOWED if a in credit.get("licenses", [])), None)
+                # "OGA-BY 3.0+" vale como "3.0 ou mais nova": a versão 3.0 serve
+                licenses = [l.removesuffix("+") for l in credit.get("licenses", [])]
+                pick = next((a for a in ALLOWED if a in licenses), None)
                 if pick:
                     used.append(pick)
                 else:
@@ -151,7 +156,9 @@ for root in ROOTS:
                     canvas.alpha_composite(image, (off, off))
                 canvas.save(OUT_THUMBS / f"{item_id}.png", optimize=True)
                 thumb = f"{item_id}.png"
-            group = os.path.relpath(dirpath, f"sheet_definitions/{root}")
+            group = os.path.relpath(dirpath, f"sheet_definitions/{source}")
+            if source in EXTRAS:
+                group = os.path.basename(source) + ("" if group == "." else "/" + group)
             items.append(
                 {
                     "id": item_id,

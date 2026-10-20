@@ -7,6 +7,6 @@ export const clothesPage: LabPage = inventoryPage({
   label: 'Roupas e acessórios',
   title: 'Roupas e acessórios do personagem',
   intro:
-    'Tudo que o gerador LPC oferece para vestir o personagem além do que já está no jogo: chapéus, capacetes, óculos, luvas, capas, mochilas, camisas, calças e calçados. As peças marcadas "no jogo" já existem hoje.',
-  roots: ['headwear', 'arms', 'torso', 'legs', 'feet'],
+    'Tudo que o gerador LPC oferece para vestir o personagem além do que já está no jogo: chapéus, capacetes, óculos, luvas, capas, mochilas, camisas, calças, calçados, asas, caudas e orelhas. As peças marcadas "no jogo" já existem hoje.',
+  roots: ['headwear', 'arms', 'torso', 'legs', 'feet', 'extras'],
 });
