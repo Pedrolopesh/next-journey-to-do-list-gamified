@@ -1,9 +1,23 @@
 /**
- * Utilitários que não vêm do gerador LPC (pets, montarias, veículos) e a situação de cada um.
- * Pesquisa em 2026-10-19 na OpenGameArt; as licenças vêm da página de cada obra e precisam ser
- * conferidas de novo antes de importar.
+ * Pets, montarias e veículos: o que existe fora do gerador de personagens LPC e a situação de
+ * cada um. Pesquisa em 2026-10-19 na OpenGameArt; as licenças vêm da página de cada obra e
+ * precisam ser conferidas de novo antes de importar.
  */
 export type PlannedStatus = 'viavel' | 'despriorizado' | 'bloqueado';
+
+/** Uma animação de caminhada recortada de uma folha (`lab/pets/<sheet>`), em quadros de tamanho fixo. */
+export type SpritePreview = {
+  label: string;
+  sheet: string;
+  frameWidth: number;
+  frameHeight: number;
+  sheetWidth: number;
+  /** Linha e coluna do primeiro quadro, contadas em quadros. */
+  row: number;
+  col: number;
+  frames: number;
+  scale: number;
+};
 
 export type PlannedUtility = {
   group: string;
@@ -13,6 +27,7 @@ export type PlannedUtility = {
   author: string;
   url: string;
   note: string;
+  previews?: SpritePreview[];
 };
 
 export const STATUS_LABEL: Record<PlannedStatus, string> = {
@@ -21,15 +36,53 @@ export const STATUS_LABEL: Record<PlannedStatus, string> = {
   bloqueado: 'Bloqueado pela licença',
 };
 
+/** Gatos e cães: quadros de 32 px, 16 colunas; cada cor ocupa 4 colunas (3 de caminhada). */
+const catDog = (sheet: string, colors: string[]): SpritePreview[] =>
+  colors.map((label, index) => ({
+    label,
+    sheet,
+    frameWidth: 32,
+    frameHeight: 32,
+    sheetWidth: 512,
+    row: 0,
+    col: index * 4,
+    frames: 3,
+    scale: 3,
+  }));
+
+/** Cavalo: quadros de 128 px, linha 3 (galope para a direita), 4 quadros. */
+const horse = (color: string, label: string): SpritePreview => ({
+  label,
+  sheet: `cavalo-${color}.png`,
+  frameWidth: 128,
+  frameHeight: 128,
+  sheetWidth: 512,
+  row: 3,
+  col: 0,
+  frames: 4,
+  scale: 1,
+});
+
 export const PLANNED: PlannedUtility[] = [
   {
     group: 'Pets',
-    name: 'Cães e gatos [LPC]',
+    name: 'Gatos [LPC]',
     status: 'viavel',
     license: 'OGA-BY 3.0 (também CC-BY 3.0; outras ofertas: CC-BY-SA, GPL)',
     author: 'bluecarrot16',
     url: 'https://opengameart.org/content/lpc-cats-and-dogs',
-    note: 'Mesmo padrão do personagem: ciclo de caminhada nas 4 direções, comer e dormir, 4 cores. Daria um pet que anda junto do personagem. Falta confirmar o tamanho do quadro e importar.',
+    note: 'Quadros de 32 px (metade do personagem), 4 cores, caminhada nas 4 direções, sentar e deitar. Daria um pet que anda junto do personagem. A prévia mostra a caminhada de lado.',
+    previews: catDog('gatos.png', ['branco', 'dourado', 'marrom', 'preto']),
+  },
+  {
+    group: 'Pets',
+    name: 'Cães [LPC]',
+    status: 'viavel',
+    license: 'OGA-BY 3.0 (também CC-BY 3.0; outras ofertas: CC-BY-SA, GPL)',
+    author: 'bluecarrot16',
+    url: 'https://opengameart.org/content/lpc-cats-and-dogs',
+    note: 'Mesma obra e mesma estrutura dos gatos: quadros de 32 px, 4 cores, caminhada nas 4 direções.',
+    previews: catDog('caes.png', ['branco', 'marrom', 'dourado', 'preto']),
   },
   {
     group: 'Pets',
@@ -38,7 +91,7 @@ export const PLANNED: PlannedUtility[] = [
     license: 'CC-BY 4.0 (o autor diz que o que não deriva de Sevarihk é CC0; tratar como CC-BY)',
     author: 'tapatilorenzo',
     url: 'https://opengameart.org/node/137562',
-    note: 'Pacote de animais do concurso LPC de 2022. Conferir sprite a sprite quais derivam da obra de Sevarihk (CC-BY 4.0).',
+    note: 'Pacote de animais do concurso LPC de 2022. Sem prévia aqui: ainda não foi baixado. Conferir sprite a sprite quais derivam da obra de Sevarihk (CC-BY 4.0).',
   },
   {
     group: 'Montarias',
@@ -47,7 +100,13 @@ export const PLANNED: PlannedUtility[] = [
     license: 'OGA-BY 3.0 (também CC-BY 3.0; outras ofertas: CC-BY-SA, GPL)',
     author: 'bluecarrot16',
     url: 'https://opengameart.org/content/lpc-horses',
-    note: 'Cavalo em 5 cores, caminhada e galope nas 4 direções. Serve como companheiro ao lado do personagem, não como montaria.',
+    note: 'Cavalo em 5 cores (4 na prévia), quadros de 128 px, caminhada e galope nas 4 direções. Serve como companheiro ao lado do personagem, não como montaria. A prévia mostra o galope.',
+    previews: [
+      horse('black', 'preto'),
+      horse('brown', 'marrom'),
+      horse('golden', 'dourado'),
+      horse('gray', 'cinza'),
+    ],
   },
   {
     group: 'Montarias',

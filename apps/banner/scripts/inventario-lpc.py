@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Inventário das peças do gerador LPC para as páginas do laboratório "Roupas e acessórios" e
-"Utilitários do personagem". Lê as definições do gerador, resolve a licença de cada peça e gera
+"Armas e acessórios". Lê as definições do gerador, resolve a licença de cada peça e gera
 uma miniatura (corpo masculino + peça, de frente, quadro 1 da caminhada).
 
 Uso (precisa do Pillow): LPC_GENERATOR=/caminho/Universal-LPC-Spritesheet-Character-Generator \
