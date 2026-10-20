@@ -193,7 +193,21 @@ function card(item: InventoryItem, inGame: Set<string>): HTMLElement {
     img.loading = 'lazy';
     thumb.append(img);
   } else {
-    thumb.textContent = item.free ? 'sem prévia' : 'bloqueada';
+    // Sem arquivo para mostrar: corpo base esmaecido e o motivo, em vez de um quadro vazio
+    const body = document.createElement('img');
+    body.src = '/lab/inventory/_corpo.png';
+    body.alt = '';
+    body.width = 128;
+    body.height = 128;
+    thumb.classList.add('empty');
+    thumb.append(
+      body,
+      h(
+        'span',
+        'inv-reason',
+        item.free ? 'Sem animação para mostrar' : 'Licença bloqueia o uso: sem prévia',
+      ),
+    );
   }
   const badges = h('div', 'chips');
   const license = h(

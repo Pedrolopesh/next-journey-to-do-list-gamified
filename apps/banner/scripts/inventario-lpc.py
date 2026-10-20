@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Inventário das peças do gerador LPC para as páginas do laboratório "Roupas e acessórios" e
 "Armas e acessórios". Lê as definições do gerador, resolve a licença de cada peça e gera
-uma miniatura (corpo masculino + peça, de frente, quadro 1 da caminhada).
+uma miniatura (corpo + peça, de frente, quadro 1 da caminhada; peça só de ataque usa o quadro 1 do ataque; peça só feminina ou infantil usa esse corpo). Peça bloqueada pela licença não ganha miniatura.
 
 Uso (precisa do Pillow): LPC_GENERATOR=/caminho/Universal-LPC-Spritesheet-Character-Generator \
   python3 scripts/inventario-lpc.py
@@ -31,36 +31,92 @@ FRAME = 64
 DOWN_ROW = 2
 
 
-def walk_sheet(base: str) -> Path | None:
-    """Folha da caminhada: `<base>/walk.png`, ou o primeiro arquivo de `<base>/walk/`."""
-    direct = Path("spritesheets", base, "walk.png")
-    if direct.is_file():
-        return direct
-    folder = Path("spritesheets", base, "walk")
+# Tamanho do quadro de cada animação especial; as demais usam 64 px
+CUSTOM_FRAME = {"walk_128": 128, "slash_128": 128, "slash_reverse_oversize": 192, "tool_whip": 192}
+# Corpo usado na miniatura: o primeiro que a peça tem
+BODY_ORDER = ["male", "female", "teen", "child", "muscular", "pregnant"]
+# Animações padrão, da preferida à última opção (peças só de ataque ainda ganham prévia)
+STD_ANIMS = ["walk", "idle", "slash", "shoot", "thrust", "spellcast"]
+
+
+def first_png(base: str) -> Path | None:
+    """Primeiro arquivo `.png` direto em `spritesheets/<base>/`, ou `spritesheets/<base>.png`."""
+    folder = Path("spritesheets", base)
     if folder.is_dir():
         files = sorted(folder.glob("*.png"))
         if files:
             return files[0]
+    single = Path("spritesheets", base + ".png")
+    return single if single.is_file() else None
+
+
+def std_sheet(base: str) -> tuple[int, Path] | None:
+    """Folha de uma camada padrão: (posição na lista de animações, arquivo). Menor = melhor."""
+    for rank, anim in enumerate(STD_ANIMS):
+        direct = Path("spritesheets", base, anim + ".png")
+        if direct.is_file():
+            return rank, direct
+        folder = Path("spritesheets", base, anim)
+        if folder.is_dir():
+            files = sorted(folder.glob("*.png"))
+            if files:
+                return rank, files[0]
     return None
 
 
-def frame(path: Path) -> Image.Image:
+def frame(path: Path, size: int) -> Image.Image:
+    """Primeiro quadro da linha "de frente" (linha 3 de 4) de uma folha com quadros `size` x `size`."""
     sheet = Image.open(path).convert("RGBA")
-    return sheet.crop((0, DOWN_ROW * FRAME, FRAME, (DOWN_ROW + 1) * FRAME))
+    return sheet.crop((0, DOWN_ROW * size, size, (DOWN_ROW + 1) * size))
 
 
-def base_layers() -> list[tuple[int, Image.Image]]:
+def base_layers(body: str) -> list[tuple[int, Image.Image]]:
     layers = []
-    for rel, z in (("body/bodies/male", 10), ("head/heads/human/male", 100)):
-        sheet = walk_sheet(rel)
+    for rel, z in ((f"body/bodies/{body}", 10), (f"head/heads/human/{body}", 100)):
+        sheet = std_sheet(rel)
         if sheet:
-            layers.append((z, frame(sheet)))
+            layers.append((z, frame(sheet[1], FRAME)))
     return layers
 
 
-BASE = base_layers()
+BASES = {body: base_layers(body) for body in BODY_ORDER}
+
+
+def pick_layers(data: dict) -> tuple[str, list[tuple[int, int, Path]]]:
+    """Camadas da miniatura: (zPos, tamanho do quadro, arquivo), todas da mesma animação."""
+    raw = [v for k, v in data.items() if re.fullmatch(r"layer_\d+", k) and isinstance(v, dict)]
+    bodies = [b for b in BODY_ORDER if any(v.get(b) for v in raw)]
+    if not bodies:
+        return "male", []
+    body = bodies[0]
+    found = []  # (qualidade, zPos, tamanho, arquivo)
+    for v in raw:
+        base = (v.get(body) or "").replace("${head}", body).rstrip("/")
+        if not base:
+            continue
+        custom = v.get("custom_animation")
+        if custom:
+            path = first_png(base)
+            if path:
+                found.append((0 if custom == "walk_128" else 5, v.get("zPos", 0), CUSTOM_FRAME.get(custom, FRAME), path))
+        else:
+            sheet = std_sheet(base)
+            if sheet:
+                found.append((sheet[0], v.get("zPos", 0), FRAME, sheet[1]))
+    if not found:
+        return body, []
+    best = min(f[0] for f in found)
+    return body, [(z, size, path) for q, z, size, path in found if q == best]
+
+
 items = []
 OUT_THUMBS.mkdir(parents=True, exist_ok=True)
+
+# Corpo base sem peça: fundo dos cartões de peça bloqueada pela licença (sem miniatura)
+body_only = Image.new("RGBA", (FRAME, FRAME))
+for _, image in sorted(BASES["male"], key=lambda t: t[0]):
+    body_only.alpha_composite(image)
+body_only.save(OUT_THUMBS / "_corpo.png", optimize=True)
 
 for root in ROOTS:
     for dirpath, _, files in os.walk(f"sheet_definitions/{root}"):
@@ -80,23 +136,19 @@ for root in ROOTS:
                     used.append(pick)
                 else:
                     ok = False
-            layers = [
-                (v.get("zPos", 0), v["male"])
-                for k, v in data.items()
-                if re.fullmatch(r"layer_\d+", k)
-                and isinstance(v, dict)
-                and v.get("male")
-                and "custom_animation" not in v
-            ]
-            sheets = [(z, walk_sheet(b.replace("${head}", "male").rstrip("/"))) for z, b in layers]
-            sheets = [(z, s) for z, s in sheets if s]
+            body, sheets = pick_layers(data)
             walks = bool(sheets)
             thumb = None
             item_id = re.sub(r"[^a-z0-9]+", "-", path.removeprefix("sheet_definitions/").removesuffix(".json").lower()).strip("-")
+            # Peça bloqueada pela licença não ganha miniatura: o arquivo não deve ser redistribuído
             if ok and walks:
-                canvas = Image.new("RGBA", (FRAME, FRAME))
-                for _, image in sorted(BASE + [(z, frame(s)) for z, s in sheets], key=lambda t: t[0]):
-                    canvas.alpha_composite(image)
+                size = max(FRAME, *(s for _, s, _ in sheets))
+                canvas = Image.new("RGBA", (size, size))
+                offset = (size - FRAME) // 2
+                layers = [(z, base_img, offset) for z, base_img in BASES[body]]
+                layers += [(z, frame(f, s), (size - s) // 2) for z, s, f in sheets]
+                for _, image, off in sorted(layers, key=lambda t: t[0]):
+                    canvas.alpha_composite(image, (off, off))
                 canvas.save(OUT_THUMBS / f"{item_id}.png", optimize=True)
                 thumb = f"{item_id}.png"
             group = os.path.relpath(dirpath, f"sheet_definitions/{root}")

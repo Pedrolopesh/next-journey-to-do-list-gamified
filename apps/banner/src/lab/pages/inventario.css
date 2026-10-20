@@ -144,3 +144,20 @@
 .pet-card a {
   color: inherit;
 }
+.inv-thumb {
+  position: relative;
+}
+.inv-thumb.empty img {
+  opacity: 0.18;
+  filter: grayscale(1);
+}
+.inv-reason {
+  position: absolute;
+  inset: auto 4px 4px;
+  padding: 4px;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 0.65);
+  color: #e5e7eb;
+  font-size: 11px;
+  line-height: 1.3;
+}

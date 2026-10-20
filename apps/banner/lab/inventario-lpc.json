@@ -2195,10 +2195,10 @@
     "group": "pants",
     "name": "Child pants",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["Nila122"],
-    "thumb": null
+    "thumb": "legs-pants-legs-childpants.png"
   },
   {
     "id": "legs-pants-legs-cuffed",
@@ -2292,7 +2292,7 @@
     "group": "pants",
     "name": "Pregnancy pants",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0", "GPL 3.0"],
     "authors": [
       "ElizaWy",
@@ -2328,7 +2328,7 @@
     "group": "pants",
     "name": "Wide pants",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0", "GPL 3.0"],
     "authors": [
       "ElizaWy",
@@ -2379,10 +2379,10 @@
     "group": "skirts",
     "name": "Belle skirt",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["Lanea Zimmerman (Sharm)", "Matthew Krohn (makrohn)", "bluecarrot16"],
-    "thumb": null
+    "thumb": "legs-skirts-legs-skirt-belle.png"
   },
   {
     "id": "legs-skirts-legs-childskirts",
@@ -2390,10 +2390,10 @@
     "group": "skirts",
     "name": "Child skirts",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["Nila122"],
-    "thumb": null
+    "thumb": "legs-skirts-legs-childskirts.png"
   },
   {
     "id": "legs-skirts-legs-skirts-legion",
@@ -2412,10 +2412,10 @@
     "group": "skirts",
     "name": "Overskirt",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["Lanea Zimmerman (Sharm)", "Matthew Krohn (makrohn)", "bluecarrot16"],
-    "thumb": null
+    "thumb": "legs-skirts-legs-skirt-overskirt.png"
   },
   {
     "id": "legs-skirts-legs-skirts-plain",
@@ -2451,10 +2451,10 @@
     "group": "skirts",
     "name": "Straight skirt",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["ElizaWy", "bluecarrot16"],
-    "thumb": null
+    "thumb": "legs-skirts-legs-skirt-straight.png"
   },
   {
     "id": "tools-tool-axe",
@@ -2478,7 +2478,7 @@
     "group": "",
     "name": "Fishing Rod",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 4.0+", "GPL 2.0+", "OGA-BY 3.0+"],
     "authors": ["bluecarrot16"],
     "thumb": null
@@ -2566,10 +2566,10 @@
     "group": "",
     "name": "Whip",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 4.0"],
     "authors": ["bluecarrot16"],
-    "thumb": null
+    "thumb": "tools-tool-whip.png"
   },
   {
     "id": "torso-torso-bandages",
@@ -2610,10 +2610,10 @@
     "group": "aprons",
     "name": "Apron full",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["ElizaWy", "bluecarrot16"],
-    "thumb": null
+    "thumb": "torso-aprons-torso-aprons-apron-full.png"
   },
   {
     "id": "torso-aprons-torso-aprons-apron-half",
@@ -2621,10 +2621,10 @@
     "group": "aprons",
     "name": "Apron half",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["ElizaWy", "bluecarrot16"],
-    "thumb": null
+    "thumb": "torso-aprons-torso-aprons-apron-half.png"
   },
   {
     "id": "torso-aprons-torso-aprons-overalls",
@@ -2832,10 +2832,10 @@
     "group": "dresses",
     "name": "Bodice",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["Lanea Zimmerman (Sharm)", "Matthew Krohn (makrohn)", "bluecarrot16"],
-    "thumb": null
+    "thumb": "torso-dresses-dress-bodice.png"
   },
   {
     "id": "torso-dresses-dress-sash",
@@ -2843,7 +2843,7 @@
     "group": "dresses",
     "name": "Sash dress",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0", "GPL 3.0"],
     "authors": [
       "Matthew Krohn (makrohn)",
@@ -2859,10 +2859,10 @@
     "group": "dresses",
     "name": "Slit dress",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["ElizaWy", "Nila122", "bluecarrot16"],
-    "thumb": null
+    "thumb": "torso-dresses-dress-slit.png"
   },
   {
     "id": "torso-dresses-kimono-dress-kimono",
@@ -2870,7 +2870,7 @@
     "group": "dresses/kimono",
     "name": "Kimono",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
     "thumb": null
@@ -2881,7 +2881,7 @@
     "group": "dresses/kimono",
     "name": "Kimono Oversized Sleeves",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
     "thumb": null
@@ -2892,7 +2892,7 @@
     "group": "dresses/kimono",
     "name": "Kimono Oversized Sleeves Trim",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
     "thumb": null
@@ -2903,7 +2903,7 @@
     "group": "dresses/kimono",
     "name": "Kimono Sleeves",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
     "thumb": null
@@ -2914,7 +2914,7 @@
     "group": "dresses/kimono",
     "name": "Kimono Sleeves Trim",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
     "thumb": null
@@ -2925,7 +2925,7 @@
     "group": "dresses/kimono",
     "name": "Kimono Trim",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
     "thumb": null
@@ -2936,7 +2936,7 @@
     "group": "dresses/kimono",
     "name": "Split Kimono",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
     "thumb": null
@@ -2947,7 +2947,7 @@
     "group": "dresses/kimono",
     "name": "Split Kimono Trim",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 3.0+", "GPL 3.0", "OGA-BY 3.0+"],
     "authors": ["JaidynReiman", "Johannes Sjölund (wulax)", "Stephen Challener (Redshrike)"],
     "thumb": null
@@ -3084,10 +3084,10 @@
     "group": "shirts",
     "name": "Blouse",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["ElizaWy", "Lanea Zimmerman (Sharm)", "bluecarrot16"],
-    "thumb": null
+    "thumb": "torso-shirts-torso-clothes-blouse.png"
   },
   {
     "id": "torso-shirts-torso-clothes-child-shirt",
@@ -3095,10 +3095,10 @@
     "group": "shirts",
     "name": "Child shirts",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["Nila122"],
-    "thumb": null
+    "thumb": "torso-shirts-torso-clothes-child-shirt.png"
   },
   {
     "id": "torso-shirts-torso-clothes-corset",
@@ -3106,7 +3106,7 @@
     "group": "shirts",
     "name": "Corset",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0", "GPL 3.0", "OGA-SA 3.0"],
     "authors": ["ElizaWy", "Nila122"],
     "thumb": null
@@ -3117,10 +3117,10 @@
     "group": "shirts",
     "name": "Longsleeve blouse",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["ElizaWy", "Lanea Zimmerman (Sharm)", "bluecarrot16"],
-    "thumb": null
+    "thumb": "torso-shirts-torso-clothes-blouse-longsleeve.png"
   },
   {
     "id": "torso-shirts-torso-clothes-robe",
@@ -3128,7 +3128,7 @@
     "group": "shirts",
     "name": "Robe",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0", "GPL 3.0"],
     "authors": ["Luke Mehl"],
     "thumb": null
@@ -3139,7 +3139,7 @@
     "group": "shirts",
     "name": "Sara Tunic",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": [
       "Johannes Sjölund (wulax)",
@@ -3147,7 +3147,7 @@
       "Stephen Challener (Redshrike)",
       "William.Thompsonj"
     ],
-    "thumb": null
+    "thumb": "torso-shirts-torso-clothes-tunic-sara.png"
   },
   {
     "id": "torso-shirts-torso-clothes-tunic",
@@ -3155,7 +3155,7 @@
     "group": "shirts",
     "name": "Tunic",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": [
       "JaidynReiman",
@@ -3165,7 +3165,7 @@
       "Stephen Challener (Redshrike)",
       "bluecarrot16"
     ],
-    "thumb": null
+    "thumb": "torso-shirts-torso-clothes-tunic.png"
   },
   {
     "id": "torso-shirts-longsleeve-torso-clothes-longsleeve2-cardigan",
@@ -3648,7 +3648,7 @@
     "group": "shirts/sleeveless",
     "name": "Tanktop",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": [
       "ElizaWy",
@@ -3658,7 +3658,7 @@
       "Stephen Challener (Redshrike)",
       "bluecarrot16"
     ],
-    "thumb": null
+    "thumb": "torso-shirts-sleeveless-torso-clothes-sleeveless-tanktop.png"
   },
   {
     "id": "torso-shirts-sleeves-torso-clothes-longsleeves2",
@@ -3772,7 +3772,7 @@
     "group": "waist",
     "name": "Buckles",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0", "GPL 3.0"],
     "authors": ["Luke Mehl"],
     "thumb": null
@@ -3838,7 +3838,7 @@
     "group": "waist",
     "name": "Mage Belt",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0", "GPL 3.0"],
     "authors": ["Luke Mehl"],
     "thumb": null
@@ -3882,7 +3882,7 @@
     "group": "waist",
     "name": "Waistband",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": [
       "Bluecarrot16",
@@ -3892,7 +3892,7 @@
       "William.Thompsonj",
       "bluecarrot16"
     ],
-    "thumb": null
+    "thumb": "torso-waist-belt-waistband.png"
   },
   {
     "id": "torso-waist-obi-belt-obi",
@@ -3933,10 +3933,10 @@
     "group": "blunt",
     "name": "Club",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 4.0"],
     "authors": ["bluecarrot16"],
-    "thumb": null
+    "thumb": "weapons-blunt-weapon-blunt-club.png"
   },
   {
     "id": "weapons-blunt-weapon-blunt-flail",
@@ -4043,10 +4043,10 @@
     "group": "magic",
     "name": "Wand",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["Matthew Krohn (makrohn)"],
-    "thumb": null
+    "thumb": "weapons-magic-weapon-magic-wand.png"
   },
   {
     "id": "weapons-polearm-weapon-polearm-cane",
@@ -4065,7 +4065,7 @@
     "group": "polearm",
     "name": "Dragon spear",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0"],
     "authors": ["Daniel Eddeland (daneeklu)", "Johannes Sjölund (wulax)", "gr3yh47"],
     "thumb": null
@@ -4087,7 +4087,7 @@
     "group": "polearm",
     "name": "Long spear",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0"],
     "authors": ["Inboxninja", "Johannes Sjölund (wulax)", "Pierre Vigier (pvigier)"],
     "thumb": null
@@ -4120,7 +4120,7 @@
     "group": "polearm",
     "name": "Trident",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0"],
     "authors": ["Daniel Eddeland (daneeklu)", "Johannes Sjölund (wulax)", "gr3yh47"],
     "thumb": null
@@ -4131,10 +4131,10 @@
     "group": "ranged",
     "name": "Boomerang",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 4.0"],
     "authors": ["bluecarrot16"],
-    "thumb": null
+    "thumb": "weapons-ranged-weapon-ranged-boomerang.png"
   },
   {
     "id": "weapons-ranged-weapon-ranged-crossbow",
@@ -4164,10 +4164,10 @@
     "group": "ranged/bow",
     "name": "Ammo",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": ["Johannes Sjölund (wulax)"],
-    "thumb": null
+    "thumb": "weapons-ranged-bow-weapon-ranged-bow-arrow.png"
   },
   {
     "id": "weapons-ranged-bow-weapon-ranged-bow-great",
@@ -4175,7 +4175,7 @@
     "group": "ranged/bow",
     "name": "Great",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0"],
     "authors": [
       "Daniel Eddeland (daneeklu)",
@@ -4191,10 +4191,10 @@
     "group": "ranged/bow",
     "name": "Normal",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY 4.0"],
     "authors": ["Johannes Sjölund (wulax)", "Pierre Vigier (pvigier)"],
-    "thumb": null
+    "thumb": "weapons-ranged-bow-weapon-ranged-bow-normal.png"
   },
   {
     "id": "weapons-ranged-bow-weapon-ranged-bow-recurve",
@@ -4202,7 +4202,7 @@
     "group": "ranged/bow",
     "name": "Recurve",
     "free": false,
-    "walk": false,
+    "walk": true,
     "license": ["CC-BY-SA 3.0"],
     "authors": [
       "Daniel Eddeland (daneeklu)",
@@ -4949,12 +4949,12 @@
     "group": "sword",
     "name": "Katana",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": [
       "Pierre Vigier and DCSS artists (see https://github.com/crawl/tiles/blob/master/ARTISTS.md)"
     ],
-    "thumb": null
+    "thumb": "weapons-sword-weapon-sword-katana.png"
   },
   {
     "id": "weapons-sword-weapon-sword-longsword",
@@ -4973,12 +4973,12 @@
     "group": "sword",
     "name": "Longsword alt",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": [
       "Pierre Vigier and DCSS artists (see https://github.com/crawl/tiles/blob/master/ARTISTS.md)"
     ],
-    "thumb": null
+    "thumb": "weapons-sword-weapon-sword-longsword-alt.png"
   },
   {
     "id": "weapons-sword-weapon-sword-rapier",
@@ -5013,11 +5013,11 @@
     "group": "sword",
     "name": "Scimitar",
     "free": true,
-    "walk": false,
+    "walk": true,
     "license": ["OGA-BY 3.0"],
     "authors": [
       "Pierre Vigier and DCSS artists (see https://github.com/crawl/tiles/blob/master/ARTISTS.md)"
     ],
-    "thumb": null
+    "thumb": "weapons-sword-weapon-sword-scimitar.png"
   }
 ]
