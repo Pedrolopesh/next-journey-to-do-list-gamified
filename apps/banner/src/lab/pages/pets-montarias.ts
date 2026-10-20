@@ -74,7 +74,7 @@ export const petsPage: LabPage = {
       h(
         'p',
         'meta',
-        'Companheiros e transportes para o personagem: gatos, cães, cavalo, moto e carro. Nada disso vem do gerador LPC; cada obra foi procurada na OpenGameArt (pesquisa de 2026-10-19). As prévias são as folhas originais, só para validar o visual; ainda não entram no jogo. Confira a licença na página de cada obra antes de importar.',
+        'Companheiros e transportes para o personagem: gatos, cães, cavalo, dragões, monstros, moto e carro. Nada disso vem do gerador LPC; cada obra foi procurada na OpenGameArt (pesquisa de 2026-10-19). As prévias são as folhas originais, só para validar o visual; ainda não entram no jogo. Confira a licença na página de cada obra antes de importar.',
       ),
       license,
       ...groups.map((group) =>
