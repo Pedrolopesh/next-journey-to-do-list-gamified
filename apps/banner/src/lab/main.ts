@@ -8,6 +8,7 @@ import { appButtonsPage } from './pages/app-buttons';
 import { weaponsPage } from './pages/armas-acessorios';
 import { hairPage } from './pages/cabelos';
 import { characterPage } from './pages/character';
+import { dashPage } from './pages/dash';
 import { glowPage } from './pages/glow';
 import { indicatorsPage } from './pages/indicators';
 import { modifiersPage } from './pages/modificadores';
@@ -18,6 +19,7 @@ import { scoringPage } from './pages/scoring';
 
 /** Páginas do laboratório, na ordem do menu lateral. */
 const PAGES: LabPage[] = [
+  dashPage,
   glowPage,
   appButtonsPage,
   indicatorsPage,
