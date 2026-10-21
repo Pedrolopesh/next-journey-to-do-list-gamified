@@ -63,7 +63,7 @@ function card(item: PlannedUtility): HTMLElement {
 export const petsPage: LabPage = {
   id: 'pets',
   label: 'Pets e montarias',
-  section: 'Personagem',
+  section: 'Armas e pets',
   mount(host: HTMLElement): void {
     const groups = [...new Set(PLANNED.map((item) => item.group))];
     const license = h('div', 'license-banner');

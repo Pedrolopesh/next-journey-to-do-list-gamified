@@ -2,20 +2,9 @@ import './inventario.css';
 
 import type { Catalog } from '../../qg/compose';
 import { h, panel } from '../dom';
+import { type InventoryItem, PAGE_RULES } from './inventario-regras';
 
-/** Uma peça do gerador LPC (gerada por `scripts/inventario-lpc.py`). */
-export type InventoryItem = {
-  id: string;
-  root: string;
-  group: string;
-  name: string;
-  /** Todas as licenças da peça permitem o uso no projeto (CC0, OGA-BY, CC-BY). */
-  free: boolean;
-  walk: boolean;
-  license: string[];
-  authors: string[];
-  thumb: string | null;
-};
+export type { InventoryItem };
 
 /** Nome de cada pasta do gerador, para os títulos das seções. */
 const GROUP_NAMES: Record<string, string> = {
@@ -142,7 +131,8 @@ export type InventoryPageOptions = {
   section?: string;
   title: string;
   intro: string;
-  roots: string[];
+  /** Chave de `PAGE_RULES`: decide quais peças a página mostra. */
+  rule: keyof typeof PAGE_RULES;
   /** Conteúdo extra no fim da página (ex.: itens planejados). */
   extra?: () => HTMLElement[];
 };
@@ -159,7 +149,7 @@ export function inventoryPage(options: InventoryPageOptions) {
         fetch('/lab/catalog.json').then((r) => r.json() as Promise<Catalog>),
       ]);
       const inGame = new Set(catalog.parts.map((part) => part.name));
-      const items = all.filter((item) => options.roots.includes(item.root));
+      const items = all.filter(PAGE_RULES[options.rule] as (item: InventoryItem) => boolean);
       const free = items.filter((item) => item.free);
       const blocked = items.filter((item) => !item.free);
 

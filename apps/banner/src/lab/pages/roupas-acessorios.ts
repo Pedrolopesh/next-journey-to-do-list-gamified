@@ -1,13 +1,13 @@
 import type { LabPage } from '../page';
 import { inventoryPage } from './inventario';
 
-/** Roupas e acessórios que podem entrar no personagem, com a licença de cada um. */
+/** Roupas do gerador LPC (tronco, braços, pernas e pés), com a licença de cada uma. */
 export const clothesPage: LabPage = inventoryPage({
   id: 'roupas',
-  label: 'Roupas e acessórios',
+  label: 'Roupas',
   section: 'Personagem',
-  title: 'Roupas e acessórios do personagem',
+  title: 'Roupas do personagem',
   intro:
-    'Tudo que o gerador LPC oferece para vestir o personagem além do que já está no jogo: chapéus, capacetes, óculos, luvas, capas, mochilas, camisas, calças, calçados, asas, caudas e orelhas. As peças marcadas "no jogo" já existem hoje.',
-  roots: ['headwear', 'arms', 'torso', 'legs', 'feet', 'extras'],
+    'Roupas que o gerador LPC oferece para vestir o personagem: camisas, jaquetas, vestidos, capas, armaduras, mochilas, cintos, calças, saias, shorts, meias, botas e sapatos, além de luvas e ombreiras. As peças marcadas "no jogo" já existem hoje. Chapéus, óculos, brincos e colares ficam em Acessórios.',
+  rule: 'roupas',
 });

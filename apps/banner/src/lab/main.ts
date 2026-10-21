@@ -2,6 +2,7 @@ import './lab.css';
 
 import { h } from './dom';
 import type { LabPage } from './page';
+import { accessoriesPage } from './pages/acessorios';
 import { achievementsV2Page } from './pages/achievements-v2';
 import { appButtonsPage } from './pages/app-buttons';
 import { weaponsPage } from './pages/armas-acessorios';
@@ -24,6 +25,7 @@ const PAGES: LabPage[] = [
   scenesPage,
   characterPage,
   clothesPage,
+  accessoriesPage,
   hairPage,
   modifiersPage,
   weaponsPage,

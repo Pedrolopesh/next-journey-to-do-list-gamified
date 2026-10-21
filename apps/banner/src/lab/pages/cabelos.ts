@@ -9,5 +9,5 @@ export const hairPage: LabPage = inventoryPage({
   title: 'Cabelos do personagem',
   intro:
     'Penteados do gerador LPC: curtos, longos, tranças, cacheados, afro, franjas e rabos de cavalo. A prévia mostra o corpo masculino de frente com o cabelo na cor original da peça.',
-  roots: ['hair'],
+  rule: 'cabelos',
 });
