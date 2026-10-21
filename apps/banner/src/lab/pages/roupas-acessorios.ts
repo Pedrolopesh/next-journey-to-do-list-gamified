@@ -5,6 +5,7 @@ import { inventoryPage } from './inventario';
 export const clothesPage: LabPage = inventoryPage({
   id: 'roupas',
   label: 'Roupas e acessórios',
+  section: 'Personagem',
   title: 'Roupas e acessórios do personagem',
   intro:
     'Tudo que o gerador LPC oferece para vestir o personagem além do que já está no jogo: chapéus, capacetes, óculos, luvas, capas, mochilas, camisas, calças, calçados, asas, caudas e orelhas. As peças marcadas "no jogo" já existem hoje.',

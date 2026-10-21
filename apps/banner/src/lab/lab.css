@@ -195,6 +195,29 @@ body {
   background: rgb(var(--c) / 0.2);
   border-color: rgb(var(--c) / 0.6);
 }
+.side summary {
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+.side summary::-webkit-details-marker {
+  display: none;
+}
+.side summary::before {
+  content: '▸';
+  display: inline-block;
+  width: 14px;
+  color: var(--muted);
+}
+.side details[open] > summary::before {
+  content: '▾';
+}
+.side-group > button {
+  width: calc(100% - 14px);
+  margin-left: 14px;
+}
 .view {
   flex: 1;
   min-width: 0;
@@ -222,6 +245,18 @@ body {
   }
   .side button {
     margin: 0;
+  }
+}
+@media (max-width: 720px) {
+  .side summary {
+    display: none;
+  }
+  .side-group {
+    display: contents;
+  }
+  .side-group > button {
+    width: auto;
+    margin-left: 0;
   }
 }
 .app-phone {

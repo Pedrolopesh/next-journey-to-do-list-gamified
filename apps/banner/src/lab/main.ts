@@ -47,6 +47,10 @@ async function show(page: LabPage): Promise<void> {
     if (button.dataset.page === page.id) button.setAttribute('aria-current', 'page');
     else button.removeAttribute('aria-current');
   });
+  // A seção da página aberta fica aberta no menu
+  side?.querySelectorAll<HTMLDetailsElement>('details').forEach((group) => {
+    if (group.dataset.section === page.section) group.open = true;
+  });
   const host = h('div', 'page');
   view?.append(host);
   const result = await page.mount(host);
@@ -55,15 +59,41 @@ async function show(page: LabPage): Promise<void> {
   else cleanup = result ?? undefined;
 }
 
-for (const page of PAGES) {
+function menuButton(page: LabPage): HTMLButtonElement {
   const button = h('button', '', page.label);
   button.type = 'button';
   button.dataset.page = page.id;
   button.onclick = () => {
     location.hash = page.id;
   };
-  side.append(button);
+  return button;
 }
+
+// Páginas da mesma seção viram sub-itens de um único item do menu, na posição da primeira
+const groups = new Map<string, HTMLDetailsElement>();
+for (const page of PAGES) {
+  if (!page.section) {
+    side.append(menuButton(page));
+    continue;
+  }
+  let group = groups.get(page.section);
+  if (!group) {
+    group = h('details', 'side-group');
+    group.dataset.section = page.section;
+    group.append(h('summary', '', page.section));
+    groups.set(page.section, group);
+    side.append(group);
+  }
+  group.append(menuButton(page));
+}
+
+// No celular o menu é uma barra de botões: todas as seções ficam abertas
+const phone = window.matchMedia('(max-width: 720px)');
+const openAllOnPhone = (): void => {
+  if (phone.matches) groups.forEach((group) => (group.open = true));
+};
+phone.addEventListener('change', openAllOnPhone);
+openAllOnPhone();
 
 const fromHash = (): LabPage =>
   PAGES.find((p) => `#${p.id}` === location.hash) ?? (PAGES[0] as LabPage);

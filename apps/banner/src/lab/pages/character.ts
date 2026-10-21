@@ -72,6 +72,7 @@ const PARTS = [
 export const characterPage: LabPage = {
   id: 'personagem',
   label: 'Personagem e créditos',
+  section: 'Personagem',
   async mount(host) {
     const { wrap, canvas } = stage('Personagem');
     const lab = await createLabEngine(canvas);

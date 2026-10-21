@@ -5,6 +5,7 @@ import { inventoryPage } from './inventario';
 export const modifiersPage: LabPage = inventoryPage({
   id: 'modificadores',
   label: 'Modificadores do personagem',
+  section: 'Personagem',
   title: 'Modificadores do personagem',
   intro:
     'Barbas e bigodes, rostos, cabeças, orelhas, narizes, olhos, sobrancelhas, corpo especial (pele de lagarto) e feridas e cicatrizes. A prévia mostra o corpo masculino com a peça; cabeças inteiras (fera, réptil, morto-vivo) trocam o rosto do personagem.',

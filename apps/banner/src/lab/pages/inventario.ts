@@ -139,6 +139,7 @@ const groupTitle = (item: InventoryItem): string =>
 export type InventoryPageOptions = {
   id: string;
   label: string;
+  section?: string;
   title: string;
   intro: string;
   roots: string[];
@@ -151,6 +152,7 @@ export function inventoryPage(options: InventoryPageOptions) {
   return {
     id: options.id,
     label: options.label,
+    ...(options.section ? { section: options.section } : {}),
     async mount(host: HTMLElement): Promise<void> {
       const [all, catalog] = await Promise.all([
         fetch('/lab/inventario-lpc.json').then((r) => r.json() as Promise<InventoryItem[]>),

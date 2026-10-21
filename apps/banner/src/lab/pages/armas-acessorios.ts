@@ -5,6 +5,7 @@ import { inventoryPage } from './inventario';
 export const weaponsPage: LabPage = inventoryPage({
   id: 'armas',
   label: 'Armas e acessórios',
+  section: 'Personagem',
   title: 'Armas e acessórios do personagem',
   intro:
     'Armas, escudos e ferramentas que o gerador LPC oferece para o personagem carregar: espadas, arcos, machados, cajados, lanças, escudos, enxadas e outras. As peças marcadas "no jogo" já existem hoje.',
