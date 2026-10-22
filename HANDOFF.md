@@ -110,6 +110,17 @@ Camadas e como rodar em `docs/TESTES.md`. Resumo: `pnpm --filter @nextjourney/mo
 
 Combinado com o Pedro: adiado até terminar as próximas etapas (jornada em todos os cenários), mas **é obrigatório antes da loja**. Fase 2, passos 16 e 17 e o ADR-0003 com os números. O QG e a jornada rodam a 30 quadros por segundo com escala até 3; falta medir em aparelho de entrada (quadros por segundo, memória, bateria), com o app em segundo plano e com "reduzir movimento". A jornada anima o tempo todo e tem mais desenho por quadro que o QG parado, então pesa mais.
 
+## NÃO ESQUECER: revisar antes do go live nas lojas (Google Play Console, 2026-10-21)
+
+App criado no Play Console com o pacote `br.com.wetechhub.app` (imutável), grátis, categoria app, idioma padrão pt-BR. Ficaram **pendentes de revisão antes de publicar** (cada uma é declaração legal do Pedro, não do código):
+
+1. **Políticas do programa para desenvolvedores:** reler as políticas e revisar a descrição da loja e a política de privacidade contra elas.
+2. **Termos da Assinatura de apps do Google Play:** necessário para o Android App Bundle. Ao criar a primeira versão, escolher a chave de assinatura do app.
+3. **Leis de exportação dos EUA:** confirmar que o app só usa criptografia padrão (HTTPS) e se enquadra na declaração.
+4. **Proteção automática (verificação do instalador):** estava ligada por padrão. Desligar só se for distribuir `.apk` fora do Play.
+5. Demais telas do Play Console: política de privacidade (URL pública), formulário de segurança dos dados, classificação indicativa, público-alvo, anúncios e teste fechado (exigência de testadores para contas pessoais: confirmar no painel).
+6. Página da loja em pt-BR e em inglês (en-US); README em inglês no repositório; idioma inglês no app (`en.json`) como melhoria.
+
 ## O que falta (em ordem sugerida)
 
 1. **Estudo de roupas, chapéus, trajes e acessórios do personagem (primeiro do backlog; as conquistas v2 já estão no app).** Hoje o catálogo LPC do app só tem camisas, calças e sapatos; as roupas de recompensa foram retiradas com a mudança `conquistas-v2` (eram de teste). Estudar para a sequência: (a) o que o pacote LPC traz (chapéus, capacetes, capas, trajes completos, armas, escudos, cachecol e bandana) e a licença/crédito de cada arte; (b) importar a arte e ligar ao `compose` do banner, onde acessórios hoje são ignorados (`selectionFromLayers`); (c) como o jogador ganha cada peça (conquista de classe alta, nível, capítulo ou moedas) e se uma peça "completa" bloqueia as camadas de baixo; (d) tela de personagem com peças bloqueadas e desbloqueadas; (e) cuidado com desempenho (mais camadas por quadro) e com o custo de arte no pacote do app. Conhecido: a tabela `user_cosmetics` e a rota `GET /me/cosmetics` continuam; a trava `COSMETIC_LOCKED` foi retirada com as recompensas de teste e volta junto com as peças novas.
