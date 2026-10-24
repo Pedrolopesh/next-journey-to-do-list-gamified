@@ -393,6 +393,22 @@
     "reauthCancelled": "Confirmação cancelada. Sua conta não foi excluída.",
     "about": "{{name}} versão {{version}}"
   },
+  "sessions": {
+    "title": "Aparelhos conectados",
+    "hint": "Estes são os aparelhos com a sua conta aberta. Encerre os que você não reconhece.",
+    "thisDevice": "este aparelho",
+    "lastUse": "Último uso: {{when}}",
+    "since": "Conectado em: {{when}}",
+    "end": "Encerrar sessão",
+    "endThis": "Sair deste aparelho",
+    "endAll": "Sair de todos os aparelhos",
+    "ended": "Sessão encerrada.",
+    "endedAll": "Você saiu de todos os aparelhos.",
+    "empty": "Nenhuma sessão ativa.",
+    "loading": "Carregando",
+    "loadFailed": "Não foi possível carregar os aparelhos. Confira a conexão e tente de novo.",
+    "retry": "Tentar de novo"
+  },
   "reminder": {
     "channel": "Lembrete diário",
     "title": "Next Journey",

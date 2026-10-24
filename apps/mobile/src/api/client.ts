@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 import { useSessionStore } from '@/auth/session-store';
 import { log } from '@/logging';
 
+import { deviceName } from './device-name';
 import { createHttpClient } from './http';
 
 // Emulador Android enxerga o localhost do computador em 10.0.2.2
@@ -28,6 +29,9 @@ export const http = createHttpClient({
     },
   },
 });
+
+// A lista de sessões da conta mostra este nome (a API limpa e limita o texto)
+http.defaults.headers.common['X-Device-Name'] = encodeURIComponent(deviceName());
 
 /**
  * Ao abrir o app: se há refresh token salvo, troca por tokens novos e entra; senão, vai para o login.

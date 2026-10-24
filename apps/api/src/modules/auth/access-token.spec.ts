@@ -52,7 +52,9 @@ const sign = (
 
 describe('token de acesso: emissor, audiência e chave', () => {
   it('aceita o token da chave atual', async () => {
-    await expect(service().verifyAccessToken(await sign(CURRENT))).resolves.toBe(SUB);
+    await expect(service().verifyAccessToken(await sign(CURRENT))).resolves.toEqual({
+      userId: SUB,
+    });
   });
 
   it('recusa emissor ou audiência diferentes, mesmo com o segredo certo', async () => {
@@ -84,10 +86,10 @@ describe('token de acesso: emissor, audiência e chave', () => {
 
     it('durante a troca aceita a chave atual e a anterior', async () => {
       const tokens = service(rotating);
-      await expect(tokens.verifyAccessToken(await sign(CURRENT))).resolves.toBe(SUB);
-      await expect(tokens.verifyAccessToken(await sign(PREVIOUS, { keyid: 'k1' }))).resolves.toBe(
-        SUB,
-      );
+      await expect(tokens.verifyAccessToken(await sign(CURRENT))).resolves.toEqual({ userId: SUB });
+      await expect(
+        tokens.verifyAccessToken(await sign(PREVIOUS, { keyid: 'k1' })),
+      ).resolves.toEqual({ userId: SUB });
     });
 
     it('depois da troca (sem a anterior configurada) o token antigo cai', async () => {

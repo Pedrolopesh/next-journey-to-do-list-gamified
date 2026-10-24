@@ -20,7 +20,7 @@ function build(findFirst: () => Promise<{ id: string } | null>, sub: string = US
   } as unknown as ExecutionContext;
   const guard = new JwtAuthGuard(
     { getAllAndOverride: () => false } as unknown as Reflector,
-    { verifyAccessToken: () => Promise.resolve(sub) } as unknown as TokensService,
+    { verifyAccessToken: () => Promise.resolve({ userId: sub }) } as unknown as TokensService,
     { user: { findFirst: vi.fn(findFirst) } } as unknown as PrismaService,
   );
   return { guard, context, request };

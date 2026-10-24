@@ -23,6 +23,7 @@ import {
   fetchHome,
   fetchItems,
   fetchMe,
+  fetchSessions,
   fetchStories,
   fetchStoryTimeline,
   fetchTimeline,
@@ -43,6 +44,7 @@ export const queryKeys = {
   achievements: ['achievements'] as const,
   categories: ['categories'] as const,
   cosmetics: ['cosmetics'] as const,
+  sessions: ['sessions'] as const,
 };
 
 function useSignedIn(): boolean {
@@ -52,6 +54,11 @@ function useSignedIn(): boolean {
 export const useMe = () => {
   const enabled = useSignedIn();
   return useQuery({ queryKey: queryKeys.me, queryFn: fetchMe, enabled });
+};
+
+export const useSessions = () => {
+  const enabled = useSignedIn();
+  return useQuery({ queryKey: queryKeys.sessions, queryFn: fetchSessions, enabled });
 };
 
 export const useHome = () => {

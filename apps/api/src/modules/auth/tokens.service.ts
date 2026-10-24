@@ -46,9 +46,13 @@ export class TokensService {
   ) {}
 
   /** Cria um par de tokens. Sem `familyId`, abre uma família nova (login). */
-  async issue(userId: string, familyId: string = randomUUID()): Promise<AuthTokens> {
-    const refreshToken = await this.createRefreshToken(this.prisma, userId, familyId);
-    return { ...(await this.signAccessToken(userId)), refreshToken };
+  async issue(
+    userId: string,
+    familyId: string = randomUUID(),
+    deviceName: string | null = null,
+  ): Promise<AuthTokens> {
+    const refreshToken = await this.createRefreshToken(this.prisma, userId, familyId, deviceName);
+    return { ...(await this.signAccessToken(userId, familyId)), refreshToken };
   }
 
   /** Grava o refresh token novo (na transação `db`, quando a rotação precisa ser atômica). */
@@ -56,6 +60,7 @@ export class TokensService {
     db: Pick<Prisma.TransactionClient, 'refreshToken'>,
     userId: string,
     familyId: string,
+    deviceName: string | null,
   ): Promise<string> {
     const now = this.clock.now();
     const id = randomUUID();
@@ -65,6 +70,7 @@ export class TokensService {
         id,
         userId,
         familyId,
+        deviceName,
         tokenHash: sha256(secret),
         expiresAt: new Date(now.getTime() + this.env.REFRESH_TOKEN_TTL_DAYS * 86_400_000),
       },
@@ -72,9 +78,13 @@ export class TokensService {
     return `${id}.${secret}`;
   }
 
-  private async signAccessToken(userId: string): Promise<Omit<AuthTokens, 'refreshToken'>> {
+  /** O `sid` (id da sessão = família do refresh token) deixa a API saber qual é a sessão atual. */
+  private async signAccessToken(
+    userId: string,
+    familyId: string,
+  ): Promise<Omit<AuthTokens, 'refreshToken'>> {
     const accessToken = await this.jwt.signAsync(
-      { sub: userId },
+      { sub: userId, sid: familyId },
       {
         expiresIn: this.env.ACCESS_TOKEN_TTL_SECONDS,
         issuer: this.env.JWT_ISSUER,
@@ -88,17 +98,20 @@ export class TokensService {
   /**
    * Confere o token de acesso: assinatura HS256, validade, emissor e audiência. O `kid` do cabeçalho
    * escolhe a chave (a atual ou a anterior durante a troca do segredo); `kid` desconhecido usa a atual
-   * e, se a assinatura não bater, é recusado. Devolve o id do usuário ou lança erro.
+   * e, se a assinatura não bater, é recusado. Devolve o id do usuário (e da sessão, quando o token tem) ou lança erro.
    */
-  async verifyAccessToken(token: string): Promise<string> {
-    const payload = await this.jwt.verifyAsync<{ sub?: string }>(token, {
+  async verifyAccessToken(token: string): Promise<{ userId: string; sessionId?: string }> {
+    const payload = await this.jwt.verifyAsync<{ sub?: string; sid?: string }>(token, {
       secret: this.secretFor(token),
       algorithms: ['HS256'],
       issuer: this.env.JWT_ISSUER,
       audience: this.env.JWT_AUDIENCE,
     });
     if (!payload.sub) throw new Error('sem sub');
-    return payload.sub;
+    return {
+      userId: payload.sub,
+      ...(typeof payload.sid === 'string' ? { sessionId: payload.sid } : {}),
+    };
   }
 
   private secretFor(token: string): string {
@@ -136,7 +149,7 @@ export class TokensService {
     // Revogar o antigo e criar o novo é uma operação só: o UPDATE condicional (revokedAt nulo e ainda
     // válido) deixa passar apenas UMA de várias requisições simultâneas com o mesmo token
     const now = this.clock.now();
-    const access = await this.signAccessToken(stored.userId);
+    const access = await this.signAccessToken(stored.userId, stored.familyId);
     let next: string | null;
     try {
       next = await this.prisma.$transaction(async (tx) => {
@@ -145,7 +158,7 @@ export class TokensService {
           data: { revokedAt: now },
         });
         if (claimed.count !== 1) return null;
-        return this.createRefreshToken(tx, stored.userId, stored.familyId);
+        return this.createRefreshToken(tx, stored.userId, stored.familyId, stored.deviceName);
       });
     } catch (error) {
       // Conflito de transação sob concorrência: nega (falha fechada). Outro erro (banco fora) segue como

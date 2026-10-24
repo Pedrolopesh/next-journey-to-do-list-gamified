@@ -116,6 +116,13 @@ export default function SettingsScreen() {
         }}
       />
       <Button
+        label={t('sessions.title')}
+        variant="secondary"
+        onPress={() => {
+          router.push('/settings/sessions');
+        }}
+      />
+      <Button
         label={t('credits.title')}
         variant="secondary"
         onPress={() => {
