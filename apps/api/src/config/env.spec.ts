@@ -44,6 +44,12 @@ describe('troca do segredo do JWT', () => {
     );
   });
 
+  it('o segredo anterior não pode ser igual ao atual', () => {
+    expect(() =>
+      loadEnv({ ...base, ...previous, JWT_ACCESS_SECRET_PREVIOUS: base.JWT_ACCESS_SECRET }),
+    ).toThrow(/JWT_ACCESS_SECRET_PREVIOUS/);
+  });
+
   it('sem configuração extra usa emissor e audiência padrão', () => {
     expect(loadEnv(base)).toMatchObject({
       JWT_ISSUER: 'nextjourney-api',

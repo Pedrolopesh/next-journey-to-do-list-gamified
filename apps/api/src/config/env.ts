@@ -51,6 +51,10 @@ const envSchema = z
     path: ['JWT_ACCESS_SECRET_PREVIOUS'],
     message: 'a chave anterior precisa do segredo e do identificador juntos',
   })
+  .refine((env) => env.JWT_ACCESS_SECRET_PREVIOUS !== env.JWT_ACCESS_SECRET, {
+    path: ['JWT_ACCESS_SECRET_PREVIOUS'],
+    message: 'o segredo anterior precisa ser diferente do atual',
+  })
   .refine((env) => env.JWT_PREVIOUS_KEY_ID !== env.JWT_KEY_ID, {
     path: ['JWT_PREVIOUS_KEY_ID'],
     message: 'o identificador da chave anterior precisa ser diferente do atual',
