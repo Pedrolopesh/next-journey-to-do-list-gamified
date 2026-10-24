@@ -39,15 +39,20 @@ export class SessionsService {
     }));
   }
 
-  /** Encerra uma sessão da própria conta; se for a atual, equivale ao logout. */
+  /** Encerra uma sessão da própria conta (repetir é seguro); se for a atual, equivale ao logout. */
   async revoke(userId: string, sessionId: string): Promise<void> {
     const result = await this.prisma.refreshToken.updateMany({
       where: { userId, familyId: sessionId, revokedAt: null },
       data: { revokedAt: this.clock.now() },
     });
-    if (result.count === 0) {
-      throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Sessão não encontrada');
-    }
+    if (result.count > 0) return;
+    // Já estava encerrada (toque repetido, resposta perdida): continua sendo sucesso. Só é 404 quando a
+    // sessão nem é desta conta
+    const own = await this.prisma.refreshToken.findFirst({
+      where: { userId, familyId: sessionId },
+      select: { id: true },
+    });
+    if (!own) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Sessão não encontrada');
   }
 
   /** Encerra todas as sessões da conta, inclusive a atual. */

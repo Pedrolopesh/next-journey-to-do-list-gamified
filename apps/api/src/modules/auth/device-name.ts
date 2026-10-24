@@ -29,5 +29,6 @@ export function cleanDeviceName(raw: string | undefined): string | null {
     .join('')
     .replace(/\s+/g, ' ')
     .trim();
-  return clean ? clean.slice(0, MAX_LENGTH) : null;
+  // Corta por caractere (não por unidade UTF-16), para não partir um emoji ao meio
+  return clean ? [...clean].slice(0, MAX_LENGTH).join('') : null;
 }

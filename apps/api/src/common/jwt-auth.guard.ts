@@ -44,6 +44,10 @@ export class JwtAuthGuard implements CanActivate {
       // O id é um UUID: qualquer outra coisa nem chega ao banco (que rejeitaria com erro 500)
       if (!UUID.test(verified.userId)) throw new Error('sub inválido');
       userId = verified.userId;
+      // O id da sessão também é um UUID (e vai para a consulta abaixo)
+      if (verified.sessionId !== undefined && !UUID.test(verified.sessionId)) {
+        throw new Error('sid inválido');
+      }
       sessionId = verified.sessionId;
     } catch {
       throw new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Não autenticado');
@@ -52,7 +56,13 @@ export class JwtAuthGuard implements CanActivate {
     // Erro de banco aqui NÃO vira 401 (nega o acesso com erro 500): uma falha temporária não pode
     // deslogar o app, que trata 401 como sessão encerrada
     const user = await this.prisma.user.findFirst({
-      where: { id: userId, deletedAt: null },
+      // Com `sid`, a sessão precisa continuar ativa: encerrar um aparelho (ou trocar a senha, ou sair) derruba
+      // o token de acesso na hora, na mesma consulta. Token antigo sem `sid` só confere a conta.
+      where: {
+        id: userId,
+        deletedAt: null,
+        ...(sessionId ? { refreshTokens: { some: { familyId: sessionId, revokedAt: null } } } : {}),
+      },
       select: { id: true },
     });
     if (!user) throw new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Não autenticado');

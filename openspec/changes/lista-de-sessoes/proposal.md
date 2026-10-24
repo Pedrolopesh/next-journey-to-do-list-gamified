@@ -34,9 +34,9 @@ A pessoa não tem como ver em quais aparelhos está logada nem encerrar uma sess
 
 - IDOR: toda busca filtra por `userId`; id de sessão de outra pessoa dá 404, sem revelar que existe.
 - A lista nunca devolve segredo, hash nem id de token; só o id da família.
-- O token de acesso de uma sessão encerrada vale até expirar (até 15 minutos), como no logout de hoje; o refresh token cai na hora.
+- O token de acesso leva o id da sessão (`sid`) e o guard confere, na mesma consulta que já faz da conta, que a sessão continua ativa: encerrar um aparelho derruba também o token de acesso dele na hora. Token antigo sem `sid` só confere a conta e expira em até 15 minutos.
 - Nome do aparelho é dado do cliente: limpo, limitado e mostrado como texto.
 
 ## Fora do escopo
 
-- Localização ou IP das sessões, e encerrar o acesso dos tokens de acesso na hora.
+- Localização ou IP das sessões.

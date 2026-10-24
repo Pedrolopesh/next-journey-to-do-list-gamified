@@ -95,12 +95,39 @@ describe('sessões da conta', () => {
       .post('/v1/auth/refresh')
       .send({ refreshToken: keep.tokens.refreshToken })
       .expect(200);
-    // Encerrar de novo a mesma sessão: já não existe
+    // Encerrar de novo a mesma sessão é seguro (toque repetido, resposta perdida)
     await ctx
       .http()
       .delete(`/v1/me/sessions/${target.id}`)
       .set('authorization', bearer(keep))
-      .expect(404);
+      .expect(204);
+  });
+
+  it('o token de acesso de um aparelho encerrado deixa de valer na hora', async () => {
+    const first = await registerUser(ctx);
+    const keep = await loginAs(first.user.email, 'Fica');
+    const drop = await loginAs(first.user.email, 'Sai');
+    await ctx.http().get('/v1/me').set('authorization', bearer(drop)).expect(200);
+    const target = (await list(keep)).find((s) => s.deviceName === 'Sai')!;
+    await ctx
+      .http()
+      .delete(`/v1/me/sessions/${target.id}`)
+      .set('authorization', bearer(keep))
+      .expect(204);
+    await ctx.http().get('/v1/me').set('authorization', bearer(drop)).expect(401);
+    await ctx.http().get('/v1/me').set('authorization', bearer(keep)).expect(200);
+  });
+
+  it('logout também derruba o token de acesso daquela sessão', async () => {
+    const first = await registerUser(ctx);
+    const device = await loginAs(first.user.email, 'Sai pelo logout');
+    await ctx.http().get('/v1/me').set('authorization', bearer(device)).expect(200);
+    await ctx
+      .http()
+      .post('/v1/auth/logout')
+      .send({ refreshToken: device.tokens.refreshToken })
+      .expect(204);
+    await ctx.http().get('/v1/me').set('authorization', bearer(device)).expect(401);
   });
 
   it('encerrar a sessão atual funciona como logout', async () => {
@@ -161,8 +188,8 @@ describe('sessões da conta', () => {
         .post('/v1/auth/refresh')
         .send({ refreshToken: auth.tokens.refreshToken })
         .expect(401);
+      await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(401);
     }
-    expect(await list(a)).toEqual([]);
   });
 
   it('exige autenticação', async () => {

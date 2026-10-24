@@ -21,12 +21,17 @@ O sistema SHALL listar, para a pessoa autenticada, apenas as sessões ativas del
 
 ### Requirement: Encerrar uma sessão
 
-O sistema SHALL encerrar uma sessão da própria conta, revogando o refresh token dela na hora, e responder `404` para id que não existe ou é de outra conta.
+O sistema SHALL encerrar uma sessão da própria conta, revogando o refresh token dela na hora, tratar repetir o pedido como sucesso e responder `404` para id que não existe ou é de outra conta.
 
 #### Scenario: Encerrar outro aparelho
 
 - **WHEN** a pessoa encerra a sessão de outro aparelho
 - **THEN** o refresh token daquela sessão deixa de valer e as demais sessões continuam
+
+#### Scenario: Token de acesso do aparelho encerrado
+
+- **WHEN** a sessão de um aparelho é encerrada (por esta rota, por logout, por troca de senha ou por reuso de refresh token)
+- **THEN** o token de acesso daquela sessão também deixa de valer na hora (`401`), sem esperar os 15 minutos; as demais sessões não são afetadas
 
 #### Scenario: Encerrar a sessão atual
 

@@ -1,15 +1,15 @@
 import type { Session } from '@nextjourney/contracts';
 import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { revokeAllSessions, revokeSession } from '@/api/endpoints';
 import { queryKeys, useSessions } from '@/api/queries';
-import { useSessionStore } from '@/auth/session-store';
+import { signOutLocally } from '@/auth/sign-out-local';
 import { Button } from '@/components/button';
 import { ScreenFrame } from '@/components/screen-frame';
 import { describeError } from '@/features/feedback/error-message';
-import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { useAction } from '@/features/feedback/use-action';
 import { colors, radius, space } from '@/theme';
 
@@ -22,6 +22,7 @@ export default function SessionsScreen() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: sessions, isError, isLoading, refetch } = useSessions();
+  const [endingId, setEndingId] = useState<string | null>(null);
 
   const end = useAction({
     name: 'sessions.revoke',
@@ -35,28 +36,25 @@ export default function SessionsScreen() {
   });
 
   const endOne = (session: Session): void => {
+    setEndingId(session.id);
     void end
       .run(async () => {
         await revokeSession(session.id);
         // Encerrar a sessão deste aparelho é o mesmo que sair: volta ao login
-        if (session.current) {
-          queryClient.clear();
-          useFeedbackStore.getState().clear();
-          await useSessionStore.getState().clear();
-        }
+        if (session.current) await signOutLocally(queryClient);
       })
       .then((ok) => {
-        if (ok && !session.current)
+        setEndingId(null);
+        if (ok && !session.current) {
           void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
+        }
       });
   };
 
   const endEverything = (): void => {
     void endAll.run(async () => {
       await revokeAllSessions();
-      queryClient.clear();
-      useFeedbackStore.getState().clear();
-      await useSessionStore.getState().clear();
+      await signOutLocally(queryClient);
     });
   };
 
@@ -75,7 +73,9 @@ export default function SessionsScreen() {
           />
         </>
       ) : isLoading || sessions === undefined ? (
-        <Button label={t('sessions.loading')} loading onPress={() => undefined} />
+        <Text style={styles.hint} accessibilityLiveRegion="polite">
+          {t('sessions.loading')}
+        </Text>
       ) : (
         <>
           {sessions.length === 0 ? <Text style={styles.hint}>{t('sessions.empty')}</Text> : null}
@@ -94,7 +94,8 @@ export default function SessionsScreen() {
               <Button
                 label={session.current ? t('sessions.endThis') : t('sessions.end')}
                 variant="secondary"
-                loading={end.loading}
+                loading={end.loading && endingId === session.id}
+                disabled={end.loading || endAll.loading}
                 onPress={() => {
                   endOne(session);
                 }}
@@ -106,6 +107,7 @@ export default function SessionsScreen() {
               label={t('sessions.endAll')}
               variant="danger"
               loading={endAll.loading}
+              disabled={end.loading}
               onPress={endEverything}
             />
           ) : null}

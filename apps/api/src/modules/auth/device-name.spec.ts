@@ -17,6 +17,11 @@ describe('cleanDeviceName', () => {
     expect(cleanDeviceName('100% bateria')).toBe('100% bateria');
   });
 
+  it('o corte não parte um emoji ao meio', () => {
+    const name = `${'a'.repeat(79)}📱📱`;
+    expect(cleanDeviceName(name)).toBe(`${'a'.repeat(79)}📱`);
+  });
+
   it('vazio, só espaços ou só lixo vira nulo', () => {
     expect(cleanDeviceName(undefined)).toBeNull();
     expect(cleanDeviceName('')).toBeNull();
