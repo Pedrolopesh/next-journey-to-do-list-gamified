@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Inject, Ip, Post } from '@nestjs/common';
 import {
   type AuthResponse,
   type ForgotPasswordRequest,
@@ -36,8 +36,9 @@ export class AuthController {
   @HttpCode(202)
   register(
     @Body(new ZodValidationPipe(registerRequestSchema)) body: RegisterRequest,
+    @Ip() ip: string,
   ): Promise<RegisterResponse> {
-    return this.auth.register(body);
+    return this.auth.register(body, ip);
   }
 
   @Public()
@@ -45,8 +46,9 @@ export class AuthController {
   @HttpCode(200)
   verifyEmail(
     @Body(new ZodValidationPipe(verifyEmailRequestSchema)) body: VerifyEmailRequest,
+    @Ip() ip: string,
   ): Promise<AuthResponse> {
-    return this.auth.verifyEmail(body);
+    return this.auth.verifyEmail(body, ip);
   }
 
   /** Sempre 202, exista ou não a conta. */
@@ -56,8 +58,9 @@ export class AuthController {
   @HttpCode(202)
   async resendVerification(
     @Body(new ZodValidationPipe(resendVerificationRequestSchema)) body: ResendVerificationRequest,
+    @Ip() ip: string,
   ): Promise<void> {
-    await this.auth.resendVerification(body.email);
+    await this.auth.resendVerification(body.email, ip);
   }
 
   @Public()
@@ -65,8 +68,9 @@ export class AuthController {
   @HttpCode(200)
   login(
     @Body(new ZodValidationPipe(loginRequestSchema)) body: LoginRequest,
+    @Ip() ip: string,
   ): Promise<AuthResponse> {
-    return this.auth.login(body);
+    return this.auth.login(body, ip);
   }
 
   @Public()
@@ -94,8 +98,9 @@ export class AuthController {
   @HttpCode(202)
   async forgotPassword(
     @Body(new ZodValidationPipe(forgotPasswordRequestSchema)) body: ForgotPasswordRequest,
+    @Ip() ip: string,
   ): Promise<void> {
-    await this.auth.forgotPassword(body.email);
+    await this.auth.forgotPassword(body.email, ip);
   }
 
   @Public()

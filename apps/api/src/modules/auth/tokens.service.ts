@@ -99,9 +99,11 @@ export class TokensService {
         if (claimed.count !== 1) return null;
         return this.createRefreshToken(tx, stored.userId, stored.familyId);
       });
-    } catch {
-      // Conflito de transação sob concorrência: nega (falha fechada) em vez de virar erro 500
-      throw unauthorized();
+    } catch (error) {
+      // Conflito de transação sob concorrência: nega (falha fechada). Outro erro (banco fora) segue como
+      // 5xx, senão o app trataria uma falha temporária como sessão encerrada e deslogaria a pessoa
+      if ((error as { code?: unknown }).code === 'P2034') throw unauthorized();
+      throw error;
     }
     if (!next) {
       // Perdeu a corrida: o mesmo token foi usado duas vezes, tratado como reuso (token possivelmente roubado)

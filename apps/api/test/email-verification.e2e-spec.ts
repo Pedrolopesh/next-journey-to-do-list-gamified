@@ -80,11 +80,13 @@ describe('verificação de e-mail no cadastro', () => {
     await register(email);
     const otp = code(email);
     const wrong = otp === WRONG ? '111111' : WRONG;
-    await Promise.all(Array.from({ length: 20 }, () => verify(email, wrong)));
+    const burst = await Promise.all(Array.from({ length: 8 }, () => verify(email, wrong)));
+    expect(burst.every((res) => res.status === 400)).toBe(true);
     const user = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
     const row = await ctx.prisma.emailVerification.findFirstOrThrow({ where: { userId: user.id } });
     expect(row.attempts).toBe(5);
     expect(row.usedAt).not.toBeNull();
+    // O código certo já não vale: foi invalidado pelas tentativas erradas
     await verify(email, otp).expect(400);
   });
 

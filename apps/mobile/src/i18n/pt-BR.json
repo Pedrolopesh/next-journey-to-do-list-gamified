@@ -32,6 +32,7 @@
     "linkSent": "Se o e-mail existir, enviamos o link.",
     "passwordChanged": "Senha alterada. Entre com a nova senha.",
     "genericError": "Algo deu errado. Tente de novo.",
+    "rateLimited": "Muitas tentativas. Aguarde alguns minutos e tente de novo.",
     "welcomeTitle": "Next Journey",
     "welcomeSubtitle": "Cada tarefa é um passo da sua história",
     "logout": "Sair",

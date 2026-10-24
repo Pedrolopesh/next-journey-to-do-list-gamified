@@ -13,5 +13,6 @@ export function describeError(
 ): string {
   if (isNetworkError(error)) return t('auth.networkError');
   const code = toApiError(error)?.code;
+  if (code === 'RATE_LIMITED') return t('auth.rateLimited');
   return (code ? byCode[code] : undefined) ?? t('auth.genericError');
 }
