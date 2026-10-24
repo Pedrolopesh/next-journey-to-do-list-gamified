@@ -37,6 +37,10 @@ export class AuthCleanupService {
 
   async purgeExpired(): Promise<PurgeCounts> {
     const limit = new Date(this.clock.now().getTime() - EXPIRED_GRACE_DAYS * DAY_MS);
+    // Contadores do limite de tentativas: a janela mais longa é de 1 hora
+    await this.prisma.rateLimit.deleteMany({
+      where: { windowStart: { lt: new Date(this.clock.now().getTime() - DAY_MS) } },
+    });
     return {
       refreshTokens: await this.purgeInBatches(this.prisma.refreshToken, limit),
       passwordResets: await this.purgeInBatches(this.prisma.passwordReset, limit),

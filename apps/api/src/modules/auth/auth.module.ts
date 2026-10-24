@@ -10,6 +10,7 @@ import { AuthCleanupService } from './auth-cleanup.service.js';
 import { EmailVerificationService } from './email-verification.service.js';
 import { IdTokenVerifier, RemoteIdTokenVerifier } from './id-token-verifier.js';
 import { Mailer, ResendMailer } from './mailer.js';
+import { RateLimitService } from './rate-limit.service.js';
 import { TokensService } from './tokens.service.js';
 
 @Module({
@@ -28,6 +29,7 @@ import { TokensService } from './tokens.service.js';
   providers: [
     AuthService,
     AuthCleanupService,
+    RateLimitService,
     EmailVerificationService,
     TokensService,
     { provide: Mailer, useClass: ResendMailer },

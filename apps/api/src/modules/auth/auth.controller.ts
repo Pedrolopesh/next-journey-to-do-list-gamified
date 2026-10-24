@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Inject, Ip, Post } from '@nestjs/common';
 import {
   type AuthResponse,
   type ForgotPasswordRequest,
@@ -65,8 +65,9 @@ export class AuthController {
   @HttpCode(200)
   login(
     @Body(new ZodValidationPipe(loginRequestSchema)) body: LoginRequest,
+    @Ip() ip: string,
   ): Promise<AuthResponse> {
-    return this.auth.login(body);
+    return this.auth.login(body, ip);
   }
 
   @Public()

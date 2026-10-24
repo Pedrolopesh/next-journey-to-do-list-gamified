@@ -80,12 +80,14 @@ describe('verificação de e-mail no cadastro', () => {
     await register(email);
     const otp = code(email);
     const wrong = otp === WRONG ? '111111' : WRONG;
-    await Promise.all(Array.from({ length: 20 }, () => verify(email, wrong)));
+    const burst = await Promise.all(Array.from({ length: 20 }, () => verify(email, wrong)));
+    // Passam no máximo 10 pelo limite por e-mail; as demais são recusadas com 429
+    expect(burst.every((res) => res.status === 400 || res.status === 429)).toBe(true);
     const user = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
     const row = await ctx.prisma.emailVerification.findFirstOrThrow({ where: { userId: user.id } });
     expect(row.attempts).toBe(5);
     expect(row.usedAt).not.toBeNull();
-    await verify(email, otp).expect(400);
+    expect([400, 429]).toContain((await verify(email, otp)).status);
   });
 
   it('senha errada não gasta tentativas: quem só sabe o e-mail não invalida o código da dona', async () => {

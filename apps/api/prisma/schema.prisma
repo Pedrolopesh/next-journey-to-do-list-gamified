@@ -240,6 +240,17 @@ model EmailVerification {
   @@map("email_verifications")
 }
 
+/// Contadores do limite de tentativas por conta (login, cadastro, recuperação). A chave é um hash:
+/// nunca guarda e-mail nem IP em texto.
+model RateLimit {
+  key         String   @id
+  count       Int      @default(0)
+  windowStart DateTime @map("window_start") @db.Timestamptz
+
+  @@index([windowStart])
+  @@map("rate_limits")
+}
+
 model Character {
   userId    String  @id @map("user_id") @db.Uuid
   name      String

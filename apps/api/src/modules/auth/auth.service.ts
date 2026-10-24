@@ -19,6 +19,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { EmailVerificationService } from './email-verification.service.js';
 import { IdTokenVerifier, type SocialProvider } from './id-token-verifier.js';
 import { Mailer } from './mailer.js';
+import { LIMITS, RateLimitService } from './rate-limit.service.js';
 import { TokensService } from './tokens.service.js';
 
 /** Categorias padrão criadas no cadastro (RF-23), com cores do design system. */
@@ -52,6 +53,7 @@ export class AuthService {
     @Inject(Mailer) private readonly mailer: Mailer,
     @Inject(IdTokenVerifier) private readonly verifier: IdTokenVerifier,
     @Inject(EmailVerificationService) private readonly verification: EmailVerificationService,
+    @Inject(RateLimitService) private readonly rateLimit: RateLimitService,
   ) {}
 
   /**
@@ -60,6 +62,7 @@ export class AuthService {
    */
   async register(input: RegisterRequest): Promise<RegisterResponse> {
     const email = input.email.trim().toLowerCase();
+    await this.rateLimit.hit('register', email, LIMITS.register);
     const passwordHash = await argon2.hash(input.password, { type: argon2.argon2id });
     const profile = {
       passwordHash,
@@ -109,6 +112,7 @@ export class AuthService {
   /** Confirma o e-mail com o código (e a senha do cadastro) e só então entrega a sessão. */
   async verifyEmail(input: VerifyEmailRequest): Promise<AuthResponse> {
     const email = input.email.trim().toLowerCase();
+    await this.rateLimit.hit('verify-email', email, LIMITS.verifyEmail);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     const pending = user && !user.emailVerifiedAt && user.passwordHash ? user : null;
     // Mesmo custo e mesma resposta para qualquer falha (sem enumeração)
@@ -137,18 +141,23 @@ export class AuthService {
   /** Reenvio do código: responde sempre igual; só envia para conta pendente e fora do intervalo mínimo. */
   async resendVerification(emailInput: string): Promise<void> {
     const email = emailInput.trim().toLowerCase();
+    await this.rateLimit.hit('resend-verification', email, LIMITS.resendVerification);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     if (user && !user.emailVerifiedAt && user.passwordHash) await this.verification.sendCode(user);
   }
 
-  async login(input: LoginRequest): Promise<AuthResponse> {
+  async login(input: LoginRequest, ip: string): Promise<AuthResponse> {
     const email = input.email.trim().toLowerCase();
+    // Conta a tentativa ANTES de conferir a senha: tentativas paralelas também contam
+    await this.rateLimit.hit('login-email', email, LIMITS.loginPerEmail);
+    await this.rateLimit.hit('login-email-ip', `${email}|${ip}`, LIMITS.loginPerEmailAndIp);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
 
     // Mesma resposta e mesmo custo para e-mail inexistente e senha errada (sem enumeração)
     const hash = user?.passwordHash ?? (await this.getDummyHash());
     const valid = await argon2.verify(hash, input.password).catch(() => false);
     if (!user || !valid) throw invalidCredentials();
+    await this.rateLimit.reset('login-email-ip', `${email}|${ip}`);
     if (!user.emailVerifiedAt) {
       // Só quem sabe a senha chega aqui: o aviso não revela a conta a terceiros
       await this.verification.sendCode(user).catch(() => undefined);
@@ -181,6 +190,7 @@ export class AuthService {
    */
   async forgotPassword(emailInput: string): Promise<void> {
     const email = emailInput.trim().toLowerCase();
+    await this.rateLimit.hit('forgot-password', email, LIMITS.forgotPassword);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     if (!user) {
       await this.getDummyHash(); // gasta um tempo parecido
