@@ -123,10 +123,8 @@ describe('auth e segurança básica', () => {
       ),
     );
     const winners = responses.filter((response) => response.status === 200);
-    expect(winners.length).toBeLessThanOrEqual(1);
-    expect(responses.filter((response) => response.status === 401).length).toBeGreaterThanOrEqual(
-      7,
-    );
+    expect(winners).toHaveLength(1);
+    expect(responses.filter((response) => response.status === 401)).toHaveLength(7);
     // Houve reuso: nenhum token da família continua valendo, nem o que o vencedor recebeu
     for (const winner of winners) {
       await ctx

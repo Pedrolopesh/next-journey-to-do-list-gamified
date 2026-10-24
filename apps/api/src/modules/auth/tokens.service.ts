@@ -32,7 +32,7 @@ export class TokensService {
   /** Cria um par de tokens. Sem `familyId`, abre uma família nova (login). */
   async issue(userId: string, familyId: string = randomUUID()): Promise<AuthTokens> {
     const refreshToken = await this.createRefreshToken(this.prisma, userId, familyId);
-    return this.withAccessToken(userId, refreshToken);
+    return { ...(await this.signAccessToken(userId)), refreshToken };
   }
 
   /** Grava o refresh token novo (na transação `db`, quando a rotação precisa ser atômica). */
@@ -56,12 +56,12 @@ export class TokensService {
     return `${id}.${secret}`;
   }
 
-  private async withAccessToken(userId: string, refreshToken: string): Promise<AuthTokens> {
+  private async signAccessToken(userId: string): Promise<Omit<AuthTokens, 'refreshToken'>> {
     const accessToken = await this.jwt.signAsync(
       { sub: userId },
       { expiresIn: this.env.ACCESS_TOKEN_TTL_SECONDS },
     );
-    return { accessToken, refreshToken, expiresIn: this.env.ACCESS_TOKEN_TTL_SECONDS };
+    return { accessToken, expiresIn: this.env.ACCESS_TOKEN_TTL_SECONDS };
   }
 
   /** Troca um refresh token válido por um par novo (rotação). */
@@ -85,23 +85,33 @@ export class TokensService {
     }
     if (stored.expiresAt <= this.clock.now()) throw unauthorized();
 
-    // Revogar o antigo e criar o novo é uma operação só: o UPDATE condicional (revokedAt nulo) deixa
-    // passar apenas UMA de várias requisições simultâneas com o mesmo token
+    // Revogar o antigo e criar o novo é uma operação só: o UPDATE condicional (revokedAt nulo e ainda
+    // válido) deixa passar apenas UMA de várias requisições simultâneas com o mesmo token
     const now = this.clock.now();
-    const next = await this.prisma.$transaction(async (tx) => {
-      const claimed = await tx.refreshToken.updateMany({
-        where: { id, revokedAt: null },
-        data: { revokedAt: now },
+    const access = await this.signAccessToken(stored.userId);
+    let next: string | null;
+    try {
+      next = await this.prisma.$transaction(async (tx) => {
+        const claimed = await tx.refreshToken.updateMany({
+          where: { id, revokedAt: null, expiresAt: { gt: now } },
+          data: { revokedAt: now },
+        });
+        if (claimed.count !== 1) return null;
+        return this.createRefreshToken(tx, stored.userId, stored.familyId);
       });
-      if (claimed.count !== 1) return null;
-      return this.createRefreshToken(tx, stored.userId, stored.familyId);
-    });
+    } catch {
+      // Conflito de transação sob concorrência: nega (falha fechada) em vez de virar erro 500
+      throw unauthorized();
+    }
     if (!next) {
       // Perdeu a corrida: o mesmo token foi usado duas vezes, tratado como reuso (token possivelmente roubado)
       await this.revokeFamily(stored.familyId);
       throw unauthorized();
     }
-    return { userId: stored.userId, tokens: await this.withAccessToken(stored.userId, next) };
+    return {
+      userId: stored.userId,
+      tokens: { ...access, refreshToken: next },
+    };
   }
 
   /** Logout: revoga a família do refresh token informado. Silencioso se o token for inválido. */
