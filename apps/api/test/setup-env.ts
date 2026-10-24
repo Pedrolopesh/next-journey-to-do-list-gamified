@@ -7,3 +7,5 @@ process.env.JWT_ACCESS_SECRET = 'segredo-de-teste-com-pelo-menos-32-caracteres!'
 // Os testes fazem muitas chamadas seguidas: o limite só é testado no throttle.e2e-spec
 process.env.THROTTLE_LIMIT = '100000';
 process.env.THROTTLE_AUTH_LIMIT = '100000';
+// O piso de tempo das rotas de conta só é testado em test/constant-time.e2e-spec
+process.env.AUTH_MIN_RESPONSE_MS = '0';

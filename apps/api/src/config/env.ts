@@ -29,6 +29,8 @@ const envSchema = z.object({
   /** Requisições por minuto por IP, no geral e nas rotas de autenticação. */
   THROTTLE_LIMIT: z.coerce.number().int().positive().default(120),
   THROTTLE_AUTH_LIMIT: z.coerce.number().int().positive().default(10),
+  /** Tempo mínimo (ms) de resposta das rotas de conta que respondem igual com e-mail existente ou não. */
+  AUTH_MIN_RESPONSE_MS: z.coerce.number().int().min(0).default(250),
   /** Dias até a remoção definitiva dos dados de uma conta excluída. */
   ACCOUNT_PURGE_DAYS: z.coerce.number().int().positive().default(30),
 });

@@ -14,6 +14,7 @@ import * as argon2 from 'argon2';
 
 import { AppError } from '../../common/app-error.js';
 import { Clock } from '../../common/clock.js';
+import { withMinDuration } from '../../common/min-duration.js';
 import { ENV, type Env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { EmailVerificationService } from './email-verification.service.js';
@@ -58,7 +59,11 @@ export class AuthService {
    * Cadastro por senha: nunca devolve sessão. Responde igual para e-mail novo, pendente ou já
    * confirmado (sem enumeração); o código só chega ao e-mail e a conta só vale depois de confirmar.
    */
-  async register(input: RegisterRequest): Promise<RegisterResponse> {
+  register(input: RegisterRequest): Promise<RegisterResponse> {
+    return withMinDuration(this.env.AUTH_MIN_RESPONSE_MS, () => this.registerNow(input));
+  }
+
+  private async registerNow(input: RegisterRequest): Promise<RegisterResponse> {
     const email = input.email.trim().toLowerCase();
     const passwordHash = await argon2.hash(input.password, { type: argon2.argon2id });
     const profile = {
@@ -135,7 +140,11 @@ export class AuthService {
   }
 
   /** Reenvio do código: responde sempre igual; só envia para conta pendente e fora do intervalo mínimo. */
-  async resendVerification(emailInput: string): Promise<void> {
+  resendVerification(emailInput: string): Promise<void> {
+    return withMinDuration(this.env.AUTH_MIN_RESPONSE_MS, () => this.resendNow(emailInput));
+  }
+
+  private async resendNow(emailInput: string): Promise<void> {
     const email = emailInput.trim().toLowerCase();
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     if (user && !user.emailVerifiedAt && user.passwordHash) await this.verification.sendCode(user);
@@ -179,7 +188,11 @@ export class AuthService {
    * "Esqueci a senha": responde SEMPRE igual, exista ou não o e-mail (sem enumeração). O link tem o
    * segredo de uso único, válido por 30 minutos; só o sha256 dele fica no banco.
    */
-  async forgotPassword(emailInput: string): Promise<void> {
+  forgotPassword(emailInput: string): Promise<void> {
+    return withMinDuration(this.env.AUTH_MIN_RESPONSE_MS, () => this.forgotNow(emailInput));
+  }
+
+  private async forgotNow(emailInput: string): Promise<void> {
     const email = emailInput.trim().toLowerCase();
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     if (!user) {
@@ -202,7 +215,8 @@ export class AuthService {
         },
       }),
     ]);
-    await this.mailer
+    // Sem esperar o envio: o tempo da resposta não pode depender do provedor de e-mail
+    void this.mailer
       .send({
         to: user.email,
         subject: 'Recuperação de senha do Next Journey',

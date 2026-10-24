@@ -39,9 +39,11 @@ export const NOON_09 = '2026-10-09T15:00:00Z';
 /** E-mail capturado pelo teste (não há envio real). */
 export class FakeMailer extends Mailer {
   readonly sent: { to: string; subject: string; text: string }[] = [];
-  send(message: { to: string; subject: string; text: string }): Promise<void> {
+  /** Simula um provedor lento (ms) para provar que a resposta não espera o envio. */
+  delayMs = 0;
+  async send(message: { to: string; subject: string; text: string }): Promise<void> {
     this.sent.push(message);
-    return Promise.resolve();
+    if (this.delayMs > 0) await new Promise((resolve) => setTimeout(resolve, this.delayMs));
   }
   /** Código de confirmação do último e-mail para o endereço. */
   lastVerificationCode(to: string): string | undefined {
