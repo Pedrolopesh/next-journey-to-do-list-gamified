@@ -115,6 +115,32 @@ describe('auth e segurança básica', () => {
     }
   });
 
+  it('refresh simultâneo com o mesmo token: só um vence e a sessão toda cai (reuso)', async () => {
+    const auth = await registerUser(ctx);
+    const responses = await Promise.all(
+      Array.from({ length: 8 }, () =>
+        ctx.http().post('/v1/auth/refresh').send({ refreshToken: auth.tokens.refreshToken }),
+      ),
+    );
+    const winners = responses.filter((response) => response.status === 200);
+    expect(winners.length).toBeLessThanOrEqual(1);
+    expect(responses.filter((response) => response.status === 401).length).toBeGreaterThanOrEqual(
+      7,
+    );
+    // Houve reuso: nenhum token da família continua valendo, nem o que o vencedor recebeu
+    for (const winner of winners) {
+      await ctx
+        .http()
+        .post('/v1/auth/refresh')
+        .send({ refreshToken: winner.body.tokens.refreshToken })
+        .expect(401);
+    }
+    const active = await ctx.prisma.refreshToken.count({
+      where: { userId: auth.user.id, revokedAt: null },
+    });
+    expect(active).toBe(0);
+  });
+
   it('refresh rotaciona o token; reusar o antigo derruba a sessão inteira', async () => {
     const auth = await registerUser(ctx);
     const first = auth.tokens.refreshToken;
