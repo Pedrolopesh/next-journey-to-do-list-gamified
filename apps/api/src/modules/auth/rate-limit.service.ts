@@ -7,6 +7,7 @@ import { AppError } from '../../common/app-error.js';
 import { Clock } from '../../common/clock.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { SecurityEvents } from '../security/security-events.service.js';
 
 const MINUTE_MS = 60_000;
 
@@ -52,6 +53,7 @@ export class RateLimitService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(Clock) private readonly clock: Clock,
+    @Inject(SecurityEvents) private readonly events: SecurityEvents,
   ) {}
 
   /** Conta uma tentativa e recusa (429) quando passou do limite da janela. */
@@ -73,6 +75,7 @@ export class RateLimitService {
         1,
         Math.ceil((row.window_start.getTime() + rule.windowMs - now.getTime()) / 1000),
       );
+      this.events.record('rate_limited', { scope });
       throw new AppError(
         429,
         ERROR_CODES.RATE_LIMITED,

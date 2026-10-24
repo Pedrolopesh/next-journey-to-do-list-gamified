@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { Clock } from '../../common/clock.js';
 import type { Env } from '../../config/env.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
+import type { SecurityEvents } from '../security/security-events.service.js';
 import { TokensService } from './tokens.service.js';
 
 const SUB = '5f0f4d4e-6b43-4f5e-9f55-0d1c1b8a8b11';
@@ -20,10 +21,13 @@ const baseEnv = {
 } as Env;
 
 const service = (env: Partial<Env> = {}) =>
-  new TokensService(new JwtService({ secret: CURRENT }), {} as PrismaService, {} as Clock, {
-    ...baseEnv,
-    ...env,
-  });
+  new TokensService(
+    new JwtService({ secret: CURRENT }),
+    {} as PrismaService,
+    {} as Clock,
+    { ...baseEnv, ...env },
+    { record: () => undefined } as unknown as SecurityEvents,
+  );
 
 const sign = (
   secret: string,

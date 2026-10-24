@@ -42,6 +42,14 @@ const envSchema = z
       .enum(['true', 'false'])
       .default('false')
       .transform((value) => value === 'true'),
+    /** Aviso opcional de contagem anormal de eventos de segurança (POST com texto curto, sem dado pessoal). */
+    SECURITY_ALERT_WEBHOOK_URL: z.preprocess(
+      emptyToUndefined,
+      z
+        .url()
+        .refine((value) => value.startsWith('https://'), 'precisa ser https')
+        .optional(),
+    ),
     /** Requisições por minuto por IP, no geral e nas rotas de autenticação. */
     THROTTLE_LIMIT: z.coerce.number().int().positive().default(120),
     THROTTLE_AUTH_LIMIT: z.coerce.number().int().positive().default(10),

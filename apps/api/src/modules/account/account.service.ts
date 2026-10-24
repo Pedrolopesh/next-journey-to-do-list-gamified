@@ -10,6 +10,7 @@ import { ENV, type Env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { IdTokenVerifier } from '../auth/id-token-verifier.js';
 import { RateLimitService } from '../auth/rate-limit.service.js';
+import { SecurityEvents } from '../security/security-events.service.js';
 
 /** Tentativas de prova por conta: 5 a cada 15 minutos. */
 const REAUTH_LIMIT = { limit: 5, windowMs: 15 * 60_000 };
@@ -32,6 +33,7 @@ export class AccountService {
     @Inject(Logger) private readonly logger: Logger,
     @Inject(IdTokenVerifier) private readonly verifier: IdTokenVerifier,
     @Inject(RateLimitService) private readonly rateLimit: RateLimitService,
+    @Inject(SecurityEvents) private readonly events: SecurityEvents,
   ) {}
 
   /**
@@ -44,7 +46,14 @@ export class AccountService {
       select: { id: true, passwordHash: true },
     });
     if (!user) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Usuário não encontrado');
-    await this.confirmOwner(user, proof);
+    try {
+      await this.confirmOwner(user, proof);
+    } catch (error) {
+      if (error instanceof AppError && error.code === ERROR_CODES.REAUTH_FAILED) {
+        this.events.record('reauth_failed', { userId });
+      }
+      throw error;
+    }
 
     const now = this.clock.now();
     await this.prisma.$transaction([
@@ -66,6 +75,7 @@ export class AccountService {
       this.prisma.authIdentity.deleteMany({ where: { userId } }),
       this.prisma.passwordReset.deleteMany({ where: { userId } }),
     ]);
+    this.events.record('account_deleted', { userId });
   }
 
   /**
