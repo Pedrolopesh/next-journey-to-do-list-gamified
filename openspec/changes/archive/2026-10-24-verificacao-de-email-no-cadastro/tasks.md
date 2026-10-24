@@ -27,4 +27,4 @@
 ## 5. Documentação e verificação
 
 - [x] 5.1 Atualizar `docs/SEGURANCA.md` (§6), `docs/adr/0008-autenticacao-e-sessao.md` e `docs/COMO-FUNCIONA.md`, sem achados de auditoria
-- [ ] 5.2 `pnpm run verify` verde, `/code-review` na branch e tratar achados; medir tempo de resposta do cadastro (novo x existente) e registrar o resultado no PR
+- [x] 5.2 `pnpm run verify` verde, `/code-review` na branch e tratar achados; medir tempo de resposta do cadastro (novo x existente) e registrar o resultado no PR
