@@ -105,6 +105,23 @@ describe('auth e segurança básica', () => {
     await ctx.http().get('/v1/items').set('authorization', bearer(auth)).expect(200);
   });
 
+  it('o token de acesso emitido leva emissor, audiência e identificador da chave', async () => {
+    const auth = await registerUser(ctx);
+    const [header, payload] = auth.tokens.accessToken
+      .split('.')
+      .slice(0, 2)
+      .map(
+        (part) =>
+          JSON.parse(Buffer.from(part, 'base64url').toString('utf8')) as Record<string, unknown>,
+      );
+    expect(header).toMatchObject({ alg: 'HS256', kid: 'k1' });
+    expect(payload).toMatchObject({
+      iss: 'nextjourney-api',
+      aud: 'nextjourney-app',
+      sub: auth.user.id,
+    });
+  });
+
   it('JWT assinado com outro segredo ou com alg none é recusado', async () => {
     const forged = [
       'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ4In0.', // alg: none
