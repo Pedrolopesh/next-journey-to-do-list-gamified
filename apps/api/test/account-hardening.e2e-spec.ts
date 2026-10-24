@@ -12,6 +12,14 @@ import {
   uniqueEmail,
 } from './helpers.js';
 
+const deleteWithPassword = (ctx: TestContext, auth: Awaited<ReturnType<typeof registerUser>>) =>
+  ctx
+    .http()
+    .delete('/v1/me')
+    .set('authorization', bearer(auth))
+    .send({ password: PASSWORD }) // scan-allow: senha falsa de teste
+    .expect(204);
+
 describe('exclusão de conta', () => {
   let ctx: TestContext;
   beforeAll(async () => {
@@ -26,7 +34,12 @@ describe('exclusão de conta', () => {
     const auth = await registerUser(ctx, email);
     await createItem(ctx, auth, { type: 'habit', title: 'Beber água' });
 
-    await ctx.http().delete('/v1/me').set('authorization', bearer(auth)).expect(204);
+    await ctx
+      .http()
+      .delete('/v1/me')
+      .set('authorization', bearer(auth))
+      .send({ password: PASSWORD }) // scan-allow: senha falsa de teste
+      .expect(204);
 
     const row = await ctx.prisma.user.findUniqueOrThrow({ where: { id: auth.user.id } });
     expect(row.deletedAt).not.toBeNull();
@@ -72,8 +85,8 @@ describe('exclusão de conta', () => {
   it('o expurgo apaga de vez só o que passou do prazo de retenção', async () => {
     const old = await registerUser(ctx);
     const recent = await registerUser(ctx);
-    await ctx.http().delete('/v1/me').set('authorization', bearer(old)).expect(204);
-    await ctx.http().delete('/v1/me').set('authorization', bearer(recent)).expect(204);
+    await deleteWithPassword(ctx, old);
+    await deleteWithPassword(ctx, recent);
     // 31 dias atrás para a conta antiga
     await ctx.prisma.user.update({
       where: { id: old.user.id },

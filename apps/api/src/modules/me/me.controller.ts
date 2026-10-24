@@ -4,6 +4,8 @@ import {
   appEventSchema,
   type Character,
   characterSchema,
+  type DeleteAccountRequest,
+  deleteAccountRequestSchema,
   ERROR_CODES,
   type LpcLook,
   lpcLookSchema,
@@ -65,6 +67,7 @@ export class MeController {
         email: true,
         timezone: true,
         notifyAt: true,
+        passwordHash: true,
         tutorialSeenAt: true,
         stats: true,
         character: true,
@@ -95,6 +98,7 @@ export class MeController {
         email: user.email,
         timezone: user.timezone,
         notifyAt: user.notifyAt,
+        hasPassword: user.passwordHash !== null,
       },
       player: {
         ...player,
@@ -147,8 +151,11 @@ export class MeController {
   /** Exclui a conta: anonimiza agora e apaga de vez depois do prazo de retenção. */
   @Delete()
   @HttpCode(204)
-  async deleteAccount(@CurrentUserId() userId: string): Promise<void> {
-    await this.account.requestDeletion(userId);
+  async deleteAccount(
+    @CurrentUserId() userId: string,
+    @Body(new ZodValidationPipe(deleteAccountRequestSchema)) body: DeleteAccountRequest,
+  ): Promise<void> {
+    await this.account.requestDeletion(userId, body);
   }
 
   /** Cria ou edita o personagem. Mudar o visual de um personagem existente conta para conquistas. */

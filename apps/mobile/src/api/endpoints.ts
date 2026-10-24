@@ -11,6 +11,7 @@ import {
   checkResultSchema,
   type CreateCategoryRequest,
   type CreateItemRequest,
+  type DeleteAccountRequest,
   type ForgotPasswordRequest,
   type HistoryResponse,
   historyResponseSchema,
@@ -91,8 +92,8 @@ export async function fetchMe(): Promise<MeResponse> {
 }
 
 /** Exclui a conta (anonimiza agora, apaga de vez depois do prazo de retenção). */
-export async function deleteAccount(): Promise<void> {
-  await http.delete('/me');
+export async function deleteAccount(proof: DeleteAccountRequest): Promise<void> {
+  await http.delete('/me', { data: proof });
 }
 
 export async function patchMe(body: PatchMeRequest): Promise<MeResponse> {

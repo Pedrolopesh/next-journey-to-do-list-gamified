@@ -3,16 +3,14 @@ import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { deleteAccount, patchMe, sendAppEvent } from '@/api/endpoints';
+import { patchMe, sendAppEvent } from '@/api/endpoints';
 import { queryKeys, showNextPending, useMe } from '@/api/queries';
-import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
 import { Pills } from '@/components/pills';
 import { ScreenFrame } from '@/components/screen-frame';
 import { TextField } from '@/components/text-field';
-import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { toast } from '@/features/feedback/toast-store';
 import { parseNotifyTime } from '@/features/settings/notify-time';
 import { syncDailyReminder } from '@/features/settings/reminder';
@@ -29,7 +27,6 @@ export default function SettingsScreen() {
   const [notify, setNotify] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const apply = async (body: Parameters<typeof patchMe>[0], success: string): Promise<void> => {
     setSaving(true);
@@ -46,33 +43,6 @@ export default function SettingsScreen() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const confirmDelete = (): void => {
-    Alert.alert(t('settings.deleteTitle'), t('settings.deleteBody'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('settings.deleteConfirm'),
-        style: 'destructive',
-        onPress: () => {
-          void (async () => {
-            setDeletingAccount(true);
-            try {
-              await deleteAccount();
-            } catch {
-              setMessage(t('settings.deleteFailed'));
-              toast.error(t('settings.deleteFailed'));
-              setDeletingAccount(false);
-              return;
-            }
-            toast.success(t('settings.deleted'));
-            queryClient.clear();
-            useFeedbackStore.getState().clear();
-            await useSessionStore.getState().clear();
-          })();
-        },
-      },
-    ]);
   };
 
   const notifyValue = notify ?? me?.user.notifyAt ?? '';
@@ -155,8 +125,9 @@ export default function SettingsScreen() {
       <Button
         label={t('settings.delete')}
         variant="secondary"
-        loading={deletingAccount}
-        onPress={confirmDelete}
+        onPress={() => {
+          router.push('/settings/delete-account');
+        }}
       />
       <Text style={styles.about}>
         {t('settings.about', {

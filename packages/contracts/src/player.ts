@@ -32,6 +32,8 @@ export const meResponseSchema = z.object({
     email: z.email(),
     timezone: z.string(),
     notifyAt: z.string().nullable(),
+    /** Falso em conta criada só por login social: a exclusão pede o provedor em vez da senha. */
+    hasPassword: z.boolean(),
   }),
   player: playerStateSchema.extend({
     expForNextLevel: z.number().int().positive(),

@@ -14,6 +14,8 @@ export type VerifiedIdentity = {
   email: string | null;
   emailVerified: boolean;
   name: string | null;
+  /** Quando o provedor emitiu o token (claim `iat`, em segundos). Ausente = desconhecido. */
+  issuedAt?: number;
 };
 
 /** Valida o ID token do provedor NO SERVIDOR. Trocável nos testes (sem rede). */
@@ -59,6 +61,7 @@ export class RemoteIdTokenVerifier extends IdTokenVerifier {
       email: payload.email ?? null,
       emailVerified: payload.email_verified === true,
       name: payload.name ?? null,
+      ...(payload.iat === undefined ? {} : { issuedAt: payload.iat }),
     };
   }
 
@@ -76,6 +79,7 @@ export class RemoteIdTokenVerifier extends IdTokenVerifier {
       email: typeof payload.email === 'string' ? payload.email : null,
       emailVerified: payload.email_verified === true || payload.email_verified === 'true',
       name: null,
+      ...(typeof payload.iat === 'number' ? { issuedAt: payload.iat } : {}),
     };
   }
 }
