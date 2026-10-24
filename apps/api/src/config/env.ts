@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+/** Variável opcional deixada vazia (`CHAVE=` no .env) vale como ausente. */
+const emptyToUndefined = (value: unknown): unknown => (value === '' ? undefined : value);
+
 /** Variáveis de ambiente. A API não sobe se faltar ou estiver inválida alguma delas. */
 const envSchema = z
   .object({
@@ -16,15 +19,15 @@ const envSchema = z
     JWT_AUDIENCE: z.string().min(1).default('nextjourney-app'),
     /** Identificador (kid) da chave atual. Na troca do segredo, a anterior segue valendo até o fim do token. */
     JWT_KEY_ID: z.string().min(1).default('k1'),
-    JWT_ACCESS_SECRET_PREVIOUS: z
-      .string()
-      .min(32, 'precisa ter pelo menos 32 caracteres')
-      .optional(),
-    JWT_PREVIOUS_KEY_ID: z.string().min(1).optional(),
+    JWT_ACCESS_SECRET_PREVIOUS: z.preprocess(
+      emptyToUndefined,
+      z.string().min(32, 'precisa ter pelo menos 32 caracteres').optional(),
+    ),
+    JWT_PREVIOUS_KEY_ID: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
     ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
     // E-mail transacional (Resend). Sem chave, nada é enviado (desenvolvimento).
-    RESEND_API_KEY: z.string().min(1).optional(),
+    RESEND_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
     MAIL_FROM: z.string().default('Next Journey <no-reply@example.com>'),
     /** Link que abre o app na tela de nova senha (deep link). */
     PASSWORD_RESET_URL: z.string().default('nextjourney://reset-password'),

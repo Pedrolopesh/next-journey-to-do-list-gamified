@@ -58,3 +58,17 @@ describe('troca do segredo do JWT', () => {
     });
   });
 });
+
+describe('variáveis opcionais vazias', () => {
+  it('RESEND_API_KEY= e chave anterior vazia valem como ausentes', () => {
+    const env = loadEnv({
+      ...base,
+      RESEND_API_KEY: '',
+      JWT_ACCESS_SECRET_PREVIOUS: '',
+      JWT_PREVIOUS_KEY_ID: '',
+    });
+    expect(env.RESEND_API_KEY).toBeUndefined();
+    expect(env.JWT_ACCESS_SECRET_PREVIOUS).toBeUndefined();
+    expect(env.JWT_PREVIOUS_KEY_ID).toBeUndefined();
+  });
+});

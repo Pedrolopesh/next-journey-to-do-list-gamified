@@ -6,8 +6,13 @@ import type { AuthResponse, CheckResult, Item } from '@nextjourney/contracts';
 import request from 'supertest';
 
 import { AppModule } from '../src/app.module.js';
+import { AppError } from '../src/common/app-error.js';
 import { Clock } from '../src/common/clock.js';
-import { IdTokenVerifier } from '../src/modules/auth/id-token-verifier.js';
+import {
+  IdTokenVerifier,
+  type SocialProvider,
+  type VerifiedIdentity,
+} from '../src/modules/auth/id-token-verifier.js';
 import { Mailer } from '../src/modules/auth/mailer.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { setupApp } from '../src/setup-app.js';
@@ -80,6 +85,21 @@ export async function createTestApp(
     clock,
     http: () => request(app.getHttpServer()),
   };
+}
+
+/** Verificador falso: devolve a identidade configurada ou recusa o token "invalido". */
+export class FakeVerifier extends IdTokenVerifier {
+  identity: VerifiedIdentity = {
+    subject: 'sub-1',
+    email: 'x@exemplo.com',
+    emailVerified: true,
+    name: 'Pessoa Social',
+  };
+  verify(_provider: SocialProvider, idToken: string): Promise<VerifiedIdentity> {
+    if (idToken === 'invalido')
+      return Promise.reject(new AppError(401, 'UNAUTHORIZED', 'Login social inválido'));
+    return Promise.resolve(this.identity);
+  }
 }
 
 export const PASSWORD = 'Teste#1234'; // scan-allow: senha falsa de teste

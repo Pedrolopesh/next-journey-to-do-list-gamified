@@ -7,6 +7,7 @@ import {
   createCategoryRequestSchema,
   createItemRequestSchema,
   DEFAULT_GAME_CONFIG,
+  deleteAccountRequestSchema,
   ERROR_CODES,
   gameConfigSchema,
   localDateSchema,
@@ -196,5 +197,20 @@ describe('fase 5: categorias, perfil e histórias', () => {
   it('cadastro responde só o status, nunca sessão', () => {
     expect(registerResponseSchema.safeParse({ status: 'verification_sent' }).success).toBe(true);
     expect(registerResponseSchema.safeParse({ status: 'ok' }).success).toBe(false);
+  });
+
+  it('exclusão de conta: senha ou provedor com ID token, nunca vazio nem misturado', () => {
+    expect(deleteAccountRequestSchema.safeParse({ password: 'Teste#1234' }).success).toBe(true); // scan-allow: senha falsa
+    expect(
+      deleteAccountRequestSchema.safeParse({ provider: 'google', idToken: 'token' }).success,
+    ).toBe(true);
+    for (const body of [
+      {},
+      { password: '' },
+      { provider: 'github', idToken: 'x' },
+      { provider: 'apple' },
+    ]) {
+      expect(deleteAccountRequestSchema.safeParse(body).success).toBe(false);
+    }
   });
 });

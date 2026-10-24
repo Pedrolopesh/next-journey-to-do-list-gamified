@@ -15,6 +15,8 @@ export const ERROR_CODES = {
   EMAIL_NOT_VERIFIED: 'EMAIL_NOT_VERIFIED',
   /** Código de confirmação do e-mail errado, expirado ou já usado. */
   INVALID_VERIFICATION_CODE: 'INVALID_VERIFICATION_CODE',
+  /** Senha ou ID token de confirmação errado ao excluir a conta. 403 (nunca 401: a sessão continua valendo). */
+  REAUTH_FAILED: 'REAUTH_FAILED',
   /** O provedor (Google/Apple) não verificou o e-mail do login social. */
   EMAIL_NOT_VERIFIED_BY_PROVIDER: 'EMAIL_NOT_VERIFIED_BY_PROVIDER',
   INTERNAL_ERROR: 'INTERNAL_ERROR',

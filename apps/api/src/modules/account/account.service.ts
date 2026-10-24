@@ -1,12 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { ERROR_CODES } from '@nextjourney/contracts';
+import { type DeleteAccountRequest, ERROR_CODES } from '@nextjourney/contracts';
+import * as argon2 from 'argon2';
 import { Logger } from 'nestjs-pino';
 
 import { AppError } from '../../common/app-error.js';
 import { Clock } from '../../common/clock.js';
 import { ENV, type Env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { IdTokenVerifier } from '../auth/id-token-verifier.js';
+import { RateLimitService } from '../auth/rate-limit.service.js';
+
+/** Tentativas de prova por conta: 5 a cada 15 minutos. */
+const REAUTH_LIMIT = { limit: 5, windowMs: 15 * 60_000 };
+/** O ID token do provedor precisa ter sido emitido há no máximo 5 minutos (a dona está presente agora). */
+const REAUTH_MAX_TOKEN_AGE_MS = 5 * 60_000;
+const reauthFailed = (): AppError =>
+  new AppError(403, ERROR_CODES.REAUTH_FAILED, 'Não foi possível confirmar sua identidade');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** Dias até apagar a conta cujo e-mail nunca foi confirmado. */
@@ -20,18 +30,21 @@ export class AccountService {
     @Inject(Clock) private readonly clock: Clock,
     @Inject(ENV) private readonly env: Env,
     @Inject(Logger) private readonly logger: Logger,
+    @Inject(IdTokenVerifier) private readonly verifier: IdTokenVerifier,
+    @Inject(RateLimitService) private readonly rateLimit: RateLimitService,
   ) {}
 
   /**
    * Remove tudo que identifica a pessoa e encerra as sessões. O e-mail original é liberado
    * (a pessoa pode se cadastrar de novo); o restante dos dados some no expurgo.
    */
-  async requestDeletion(userId: string): Promise<void> {
+  async requestDeletion(userId: string, proof: DeleteAccountRequest): Promise<void> {
     const user = await this.prisma.user.findFirst({
       where: { id: userId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, passwordHash: true },
     });
     if (!user) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Usuário não encontrado');
+    await this.confirmOwner(user, proof);
 
     const now = this.clock.now();
     await this.prisma.$transaction([
@@ -53,6 +66,42 @@ export class AccountService {
       this.prisma.authIdentity.deleteMany({ where: { userId } }),
       this.prisma.passwordReset.deleteMany({ where: { userId } }),
     ]);
+  }
+
+  /**
+   * Segunda prova antes de apagar: a senha atual (conta com senha) ou um ID token novo do provedor cuja
+   * identidade está ligada à conta (conta só social). Conta cada tentativa; qualquer falha dá o mesmo
+   * erro 403 (nunca 401, para o app não tratar como sessão encerrada).
+   */
+  private async confirmOwner(
+    user: { id: string; passwordHash: string | null },
+    proof: DeleteAccountRequest,
+  ): Promise<void> {
+    await this.rateLimit.hit('delete-account', user.id, REAUTH_LIMIT);
+    if (user.passwordHash) {
+      if (!('password' in proof)) throw reauthFailed();
+      const ok = await argon2.verify(user.passwordHash, proof.password).catch(() => false);
+      if (!ok) throw reauthFailed();
+      await this.rateLimit.reset('delete-account', user.id);
+      return;
+    }
+    if (!('idToken' in proof)) throw reauthFailed();
+    const identity = await this.verifier.verify(proof.provider, proof.idToken).catch(() => null);
+    if (!identity) throw reauthFailed();
+    // Token antigo (vazado ou repetido) não prova presença agora. Sem `iat` o provedor não deu como saber: recusa
+    const age =
+      identity.issuedAt === undefined
+        ? Infinity
+        : this.clock.now().getTime() - identity.issuedAt * 1000;
+    if (age > REAUTH_MAX_TOKEN_AGE_MS) throw reauthFailed();
+    const linked = await this.prisma.authIdentity.findUnique({
+      where: {
+        provider_providerUserId: { provider: proof.provider, providerUserId: identity.subject },
+      },
+      select: { userId: true },
+    });
+    if (linked?.userId !== user.id) throw reauthFailed();
+    await this.rateLimit.reset('delete-account', user.id);
   }
 
   /** Apaga de vez as contas excluídas há mais de ACCOUNT_PURGE_DAYS (cascata nas tabelas filhas). */

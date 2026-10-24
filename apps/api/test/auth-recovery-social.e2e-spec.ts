@@ -1,14 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { AppError } from '../src/common/app-error.js';
-import {
-  IdTokenVerifier,
-  type SocialProvider,
-  type VerifiedIdentity,
-} from '../src/modules/auth/id-token-verifier.js';
 import {
   bearer,
   createTestApp,
+  FakeVerifier,
   NOON_09,
   PASSWORD,
   registerBody,
@@ -18,21 +13,6 @@ import {
 } from './helpers.js';
 
 const NEW_PASSWORD = 'Outra#9876'; // scan-allow: senha falsa de teste
-
-/** Verificador falso: devolve a identidade configurada ou recusa o token "invalido". */
-class FakeVerifier extends IdTokenVerifier {
-  identity: VerifiedIdentity = {
-    subject: 'sub-1',
-    email: 'x@exemplo.com',
-    emailVerified: true,
-    name: 'Pessoa Social',
-  };
-  verify(_provider: SocialProvider, idToken: string): Promise<VerifiedIdentity> {
-    if (idToken === 'invalido')
-      return Promise.reject(new AppError(401, 'UNAUTHORIZED', 'Login social inválido'));
-    return Promise.resolve(this.identity);
-  }
-}
 
 describe('recuperação de senha', () => {
   let ctx: TestContext & { mailer: import('./helpers.js').FakeMailer };

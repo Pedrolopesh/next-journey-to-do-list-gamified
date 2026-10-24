@@ -1,22 +1,23 @@
-import { GoogleSignin, isSuccessResponse } from '@react-native-google-signin/google-signin';
-import * as AppleAuthentication from 'expo-apple-authentication';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { socialLogin } from '@/api/endpoints';
 import { isNetworkError, toApiError } from '@/api/errors';
 import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
+import {
+  configureGoogle,
+  getAppleIdToken,
+  getGoogleIdToken,
+  googleEnabled,
+  isAppleAvailable,
+} from '@/features/auth/social-id-token';
 import { toast } from '@/features/feedback/toast-store';
 import { colors, space } from '@/theme';
 
 /** Termos aceitos no primeiro acesso por login social (LGPD). Sobe quando os textos mudarem. */
 const TERMS_VERSION = '2026-10-01';
-
-// Client ids são públicos (não são segredos). Sem eles o botão do Google não aparece.
-const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
-const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '';
 
 /**
  * Login com Google e com Apple. O aparelho obtém o ID token e só ele vai para a API, que valida no
@@ -28,19 +29,11 @@ export function SocialButtons() {
   const [busy, setBusy] = useState<'google' | 'apple' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const googleEnabled = GOOGLE_WEB_CLIENT_ID !== '';
 
   useEffect(() => {
-    if (googleEnabled) {
-      GoogleSignin.configure({
-        webClientId: GOOGLE_WEB_CLIENT_ID,
-        ...(GOOGLE_IOS_CLIENT_ID ? { iosClientId: GOOGLE_IOS_CLIENT_ID } : {}),
-      });
-    }
-    if (Platform.OS === 'ios') {
-      void AppleAuthentication.isAvailableAsync().then(setAppleAvailable);
-    }
-  }, [googleEnabled]);
+    configureGoogle();
+    void isAppleAvailable().then(setAppleAvailable);
+  }, []);
 
   const finish = async (provider: 'google' | 'apple', idToken: string): Promise<void> => {
     try {
@@ -66,10 +59,8 @@ export function SocialButtons() {
     setError(null);
     setBusy('google');
     try {
-      await GoogleSignin.hasPlayServices();
-      const result = await GoogleSignin.signIn();
-      if (isSuccessResponse(result) && result.data.idToken)
-        await finish('google', result.data.idToken);
+      const idToken = await getGoogleIdToken();
+      if (idToken) await finish('google', idToken);
     } catch {
       setError(t('auth.genericError'));
       toast.error(t('auth.genericError'));
@@ -82,18 +73,10 @@ export function SocialButtons() {
     setError(null);
     setBusy('apple');
     try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-        ],
-      });
-      if (credential.identityToken) await finish('apple', credential.identityToken);
-    } catch (cause) {
-      // cancelar o fluxo da Apple não é erro; qualquer outra falha precisa ser avisada
-      if ((cause as { code?: string }).code !== 'ERR_REQUEST_CANCELED') {
-        toast.error(t('auth.genericError'));
-      }
+      const idToken = await getAppleIdToken();
+      if (idToken) await finish('apple', idToken);
+    } catch {
+      toast.error(t('auth.genericError'));
     } finally {
       setBusy(null);
     }

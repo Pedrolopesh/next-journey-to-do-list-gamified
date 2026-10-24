@@ -66,6 +66,13 @@ export const socialLoginRequestSchema = z.object({
 });
 export type SocialLoginRequest = z.infer<typeof socialLoginRequestSchema>;
 
+/** DELETE /me: prova de que quem pede é a dona da conta (senha atual ou ID token novo do provedor). */
+export const deleteAccountRequestSchema = z.union([
+  z.object({ password: z.string().min(1).max(128) }),
+  z.object({ provider: z.enum(['google', 'apple']), idToken: z.string().min(1) }),
+]);
+export type DeleteAccountRequest = z.infer<typeof deleteAccountRequestSchema>;
+
 export const forgotPasswordRequestSchema = z.object({ email: z.email() });
 export type ForgotPasswordRequest = z.infer<typeof forgotPasswordRequestSchema>;
 

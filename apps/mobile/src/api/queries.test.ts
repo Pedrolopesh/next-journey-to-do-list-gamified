@@ -14,6 +14,7 @@ const me = (exp: number, next: number): MeResponse => ({
     email: 'p@exemplo.com',
     timezone: 'UTC',
     notifyAt: null,
+    hasPassword: true,
   },
   player: {
     level: 1,
