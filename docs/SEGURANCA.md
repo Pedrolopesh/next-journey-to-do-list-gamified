@@ -93,6 +93,7 @@ A moderada que resta (`sprintf-js`, só em ferramenta de desenvolvimento do Expo
 | Tema | Situação | Quando |
 |---|---|---|
 | Cadastro e posse do e-mail | Feito: o cadastro por senha responde `202` igual para e-mail novo, pendente ou já confirmado e só dá sessão depois do código de 6 dígitos enviado ao e-mail (validade de 15 minutos, 5 tentativas, uso único, junto com a senha). Login social só cria ou vincula conta com e-mail verificado pelo provedor. Contas não confirmadas são apagadas em 7 dias (OpenSpec `verificacao-de-email-no-cadastro`) | Medir o tempo de resposta em produção e validar a entrega do e-mail antes da loja |
+| Tempo de resposta igual | Feito: cadastro, reenvio do código e "esqueci a senha" têm um tempo mínimo de resposta (`AUTH_MIN_RESPONSE_MS`, padrão 250 ms, obrigatório em produção) e o e-mail sai em segundo plano, então o tempo não revela se a conta existe. É um piso: se o trabalho real passar dele (banco lento), a diferença volta a aparecer | Medir em produção e ajustar o piso |
 | Rate limit | Feito: limite geral por IP e limite menor nas rotas de autenticação (`@nestjs/throttler`, ajustável por variável de ambiente). Limite por e-mail no login ainda não existe | Avaliar na Fase 7 |
 | `helmet` e CORS com allowlist | Feitos (`apps/api/src/setup-app.ts`); sem lista de origens o CORS fica desligado | Concluído |
 | HTTPS | Obrigatório em produção; o app em desenvolvimento usa HTTP para o emulador | Antes do primeiro deploy |

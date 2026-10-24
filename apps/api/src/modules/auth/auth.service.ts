@@ -202,13 +202,12 @@ export class AuthService {
         },
       }),
     ]);
-    await this.mailer
-      .send({
-        to: user.email,
-        subject: 'Recuperação de senha do Next Journey',
-        text: `Para criar uma nova senha, abra o link no celular em até ${this.env.PASSWORD_RESET_TTL_MINUTES} minutos:\n\n${this.env.PASSWORD_RESET_URL}?token=${secret}\n\nSe você não pediu, ignore este e-mail.`,
-      })
-      .catch(() => undefined);
+    // Sem esperar o envio: o tempo da resposta não pode depender do provedor de e-mail
+    this.mailer.sendInBackground({
+      to: user.email,
+      subject: 'Recuperação de senha do Next Journey',
+      text: `Para criar uma nova senha, abra o link no celular em até ${this.env.PASSWORD_RESET_TTL_MINUTES} minutos:\n\n${this.env.PASSWORD_RESET_URL}?token=${secret}\n\nSe você não pediu, ignore este e-mail.`,
+    });
   }
 
   /** Troca a senha com o link de uso único e derruba todas as sessões abertas. */

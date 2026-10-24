@@ -20,6 +20,7 @@ import {
   verifyEmailRequestSchema,
 } from '@nextjourney/contracts';
 
+import { ConstantTime } from '../../common/constant-time.interceptor.js';
 import { Public } from '../../common/public.decorator.js';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe.js';
 import { AuthService } from './auth.service.js';
@@ -30,6 +31,7 @@ export class AuthController {
 
   /** Sempre 202, sem sessão: a pessoa confirma o e-mail com o código antes de entrar. */
   @Public()
+  @ConstantTime()
   @Post('register')
   @HttpCode(202)
   register(
@@ -49,6 +51,7 @@ export class AuthController {
 
   /** Sempre 202, exista ou não a conta. */
   @Public()
+  @ConstantTime()
   @Post('resend-verification')
   @HttpCode(202)
   async resendVerification(
@@ -86,6 +89,7 @@ export class AuthController {
 
   /** Sempre 202, exista ou não o e-mail. */
   @Public()
+  @ConstantTime()
   @Post('forgot-password')
   @HttpCode(202)
   async forgotPassword(
