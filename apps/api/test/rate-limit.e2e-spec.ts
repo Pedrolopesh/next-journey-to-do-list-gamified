@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { LIMITS, RateLimitService } from '../src/modules/auth/rate-limit.service.js';
@@ -117,11 +119,14 @@ describe('limite de tentativas por e-mail', () => {
   it('a tabela guarda só hash: nem e-mail nem IP em texto', async () => {
     const email = (await registerUser(ctx)).user.email;
     await login(email, WRONG);
-    const rows = await ctx.prisma.rateLimit.findMany();
-    expect(rows.length).toBeGreaterThan(0);
-    const dump = JSON.stringify(rows);
+    const expectedKey = createHash('sha256').update(`login:email:${email}`).digest('hex');
+    const row = await ctx.prisma.rateLimit.findUnique({ where: { key: expectedKey } });
+    expect(row?.count).toBe(1);
+    const mine = await ctx.prisma.rateLimit.findMany({
+      where: { windowStart: { gte: row!.windowStart } },
+    });
+    const dump = JSON.stringify(mine);
     expect(dump).not.toContain(email);
     expect(dump).not.toContain('127.0.0.1');
-    expect(rows.every((row) => /^[0-9a-f]{64}$/.test(row.key))).toBe(true);
   });
 });

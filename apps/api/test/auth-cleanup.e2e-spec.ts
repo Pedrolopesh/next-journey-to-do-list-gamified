@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -90,8 +90,9 @@ describe('limpeza de tokens, links e códigos expirados', () => {
   });
 
   it('contadores do limite de tentativas: some o que passou de 1 dia, fica o recente', async () => {
-    const oldKey = randomUUID();
-    const freshKey = randomUUID();
+    // Mesmo formato das chaves reais (sha256 em hexadecimal)
+    const oldKey = randomBytes(32).toString('hex');
+    const freshKey = randomBytes(32).toString('hex');
     await ctx.prisma.rateLimit.createMany({
       data: [
         { key: oldKey, count: 3, windowStart: ago(2) },
