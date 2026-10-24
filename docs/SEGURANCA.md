@@ -106,3 +106,15 @@ A moderada que resta (`sprintf-js`, só em ferramenta de desenvolvimento do Expo
 - [ ] Fase 7: teste de exclusão de conta e de restauração de backup.
 - [ ] Antes de cada submissão às lojas: revisão de permissões, `EXPO_PUBLIC_*`, deep links e WebView.
 - [ ] Adicionar um scanner dedicado de segredos (gitleaks) ao CI quando o repositório tiver mais código.
+
+## 8. Troca do segredo do JWT (sem derrubar os logins)
+
+O token de acesso leva emissor (`iss`), audiência (`aud`) e o identificador da chave (`kid`). A verificação aceita a chave atual e, durante a troca, a anterior. Os tokens de acesso duram 15 minutos, então a janela é curta. Procedimento, sem valores:
+
+1. Gerar um segredo novo (mínimo de 32 caracteres) e guardar no gerenciador de segredos.
+2. No ambiente da API: mover o segredo atual para `JWT_ACCESS_SECRET_PREVIOUS` e o `JWT_KEY_ID` atual para `JWT_PREVIOUS_KEY_ID`; colocar o segredo novo em `JWT_ACCESS_SECRET` e um `JWT_KEY_ID` novo (diferente do anterior).
+3. Reiniciar a API. Os tokens emitidos com a chave anterior continuam valendo até expirar; os novos já saem com a chave nova.
+4. Depois de pelo menos o tempo de vida do token (15 minutos), remover `JWT_ACCESS_SECRET_PREVIOUS` e `JWT_PREVIOUS_KEY_ID` e reiniciar de novo.
+5. Se o segredo vazou: pule a espera, remova a chave anterior na hora (todos refazem o login por refresh) e revogue os refresh tokens se houver suspeita de uso indevido.
+
+A troca de `JWT_ISSUER` ou `JWT_AUDIENCE` invalida todos os tokens em circulação; o app renova sozinho pelo refresh token.

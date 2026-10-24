@@ -11,6 +11,16 @@ const envSchema = z
       .default('info'),
     DATABASE_URL: z.string().min(1),
     JWT_ACCESS_SECRET: z.string().min(32, 'precisa ter pelo menos 32 caracteres'),
+    /** Emissor e audiência do token de acesso: o token de outro serviço ou ambiente não vale aqui. */
+    JWT_ISSUER: z.string().min(1).default('nextjourney-api'),
+    JWT_AUDIENCE: z.string().min(1).default('nextjourney-app'),
+    /** Identificador (kid) da chave atual. Na troca do segredo, a anterior segue valendo até o fim do token. */
+    JWT_KEY_ID: z.string().min(1).default('k1'),
+    JWT_ACCESS_SECRET_PREVIOUS: z
+      .string()
+      .min(32, 'precisa ter pelo menos 32 caracteres')
+      .optional(),
+    JWT_PREVIOUS_KEY_ID: z.string().min(1).optional(),
     ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
     // E-mail transacional (Resend). Sem chave, nada é enviado (desenvolvimento).
@@ -36,6 +46,18 @@ const envSchema = z
     AUTH_MIN_RESPONSE_MS: z.coerce.number().int().min(0).max(5000).default(250),
     /** Dias até a remoção definitiva dos dados de uma conta excluída. */
     ACCOUNT_PURGE_DAYS: z.coerce.number().int().positive().default(30),
+  })
+  .refine((env) => Boolean(env.JWT_ACCESS_SECRET_PREVIOUS) === Boolean(env.JWT_PREVIOUS_KEY_ID), {
+    path: ['JWT_ACCESS_SECRET_PREVIOUS'],
+    message: 'a chave anterior precisa do segredo e do identificador juntos',
+  })
+  .refine((env) => env.JWT_ACCESS_SECRET_PREVIOUS !== env.JWT_ACCESS_SECRET, {
+    path: ['JWT_ACCESS_SECRET_PREVIOUS'],
+    message: 'o segredo anterior precisa ser diferente do atual',
+  })
+  .refine((env) => env.JWT_PREVIOUS_KEY_ID !== env.JWT_KEY_ID, {
+    path: ['JWT_PREVIOUS_KEY_ID'],
+    message: 'o identificador da chave anterior precisa ser diferente do atual',
   })
   .refine((env) => env.NODE_ENV !== 'production' || env.AUTH_MIN_RESPONSE_MS > 0, {
     path: ['AUTH_MIN_RESPONSE_MS'],

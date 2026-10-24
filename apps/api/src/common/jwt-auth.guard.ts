@@ -1,9 +1,9 @@
 import { type CanActivate, type ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
 import { ERROR_CODES } from '@nextjourney/contracts';
 import type { Request } from 'express';
 
+import { TokensService } from '../modules/auth/tokens.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AppError } from './app-error.js';
 import { IS_PUBLIC_KEY } from './public.decorator.js';
@@ -21,7 +21,7 @@ export type AuthenticatedRequest = Request & { user: { id: string } };
 export class JwtAuthGuard implements CanActivate {
   constructor(
     @Inject(Reflector) private readonly reflector: Reflector,
-    @Inject(JwtService) private readonly jwt: JwtService,
+    @Inject(TokensService) private readonly tokens: TokensService,
     @Inject(PrismaService) private readonly prisma: PrismaService,
   ) {}
 
@@ -39,12 +39,10 @@ export class JwtAuthGuard implements CanActivate {
 
     let userId: string;
     try {
-      const payload = await this.jwt.verifyAsync<{ sub?: string }>(token, {
-        algorithms: ['HS256'],
-      });
+      const sub = await this.tokens.verifyAccessToken(token);
       // O id é um UUID: qualquer outra coisa nem chega ao banco (que rejeitaria com erro 500)
-      if (!payload.sub || !UUID.test(payload.sub)) throw new Error('sub inválido');
-      userId = payload.sub;
+      if (!UUID.test(sub)) throw new Error('sub inválido');
+      userId = sub;
     } catch {
       throw new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Não autenticado');
     }

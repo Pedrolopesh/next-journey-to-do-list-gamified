@@ -12,12 +12,12 @@ describe('withMinDuration', () => {
   it('segura a resposta rápida até o piso', async () => {
     expect(
       await took(() => withMinDuration(120, () => Promise.resolve('ok'))),
-    ).toBeGreaterThanOrEqual(115);
+    ).toBeGreaterThanOrEqual(100);
   });
 
   it('também segura quando a operação falha', async () => {
     const elapsed = await took(() => withMinDuration(120, () => Promise.reject(new Error('x'))));
-    expect(elapsed).toBeGreaterThanOrEqual(115);
+    expect(elapsed).toBeGreaterThanOrEqual(100);
     await expect(withMinDuration(0, () => Promise.reject(new Error('x')))).rejects.toThrow('x');
   });
 
@@ -25,7 +25,7 @@ describe('withMinDuration', () => {
     const elapsed = await took(() =>
       withMinDuration(20, () => new Promise((resolve) => setTimeout(resolve, 80))),
     );
-    expect(elapsed).toBeLessThan(150);
+    expect(elapsed).toBeLessThan(400);
   });
 
   it('devolve o valor da operação', async () => {

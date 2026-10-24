@@ -1,8 +1,8 @@
 import type { ExecutionContext } from '@nestjs/common';
 import type { Reflector } from '@nestjs/core';
-import type { JwtService } from '@nestjs/jwt';
 import { describe, expect, it, vi } from 'vitest';
 
+import type { TokensService } from '../modules/auth/tokens.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import { AppError } from './app-error.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
@@ -20,7 +20,7 @@ function build(findFirst: () => Promise<{ id: string } | null>, sub: string = US
   } as unknown as ExecutionContext;
   const guard = new JwtAuthGuard(
     { getAllAndOverride: () => false } as unknown as Reflector,
-    { verifyAsync: () => Promise.resolve({ sub }) } as unknown as JwtService,
+    { verifyAccessToken: () => Promise.resolve(sub) } as unknown as TokensService,
     { user: { findFirst: vi.fn(findFirst) } } as unknown as PrismaService,
   );
   return { guard, context, request };

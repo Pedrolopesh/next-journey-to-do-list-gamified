@@ -12,6 +12,20 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 
 const sha256 = (value: string): string => createHash('sha256').update(value).digest('hex');
 
+/** Lê o `kid` do cabeçalho do JWT sem confiar nele: só escolhe qual chave tentar; a assinatura decide. */
+function readKeyId(token: string): string | undefined {
+  try {
+    const header = JSON.parse(
+      Buffer.from(token.split('.')[0] ?? '', 'base64url').toString('utf8'),
+    ) as {
+      kid?: unknown;
+    };
+    return typeof header.kid === 'string' ? header.kid : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 const unauthorized = (): AppError =>
   new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Sessão inválida ou expirada');
 
@@ -59,9 +73,40 @@ export class TokensService {
   private async signAccessToken(userId: string): Promise<Omit<AuthTokens, 'refreshToken'>> {
     const accessToken = await this.jwt.signAsync(
       { sub: userId },
-      { expiresIn: this.env.ACCESS_TOKEN_TTL_SECONDS },
+      {
+        expiresIn: this.env.ACCESS_TOKEN_TTL_SECONDS,
+        issuer: this.env.JWT_ISSUER,
+        audience: this.env.JWT_AUDIENCE,
+        keyid: this.env.JWT_KEY_ID,
+      },
     );
     return { accessToken, expiresIn: this.env.ACCESS_TOKEN_TTL_SECONDS };
+  }
+
+  /**
+   * Confere o token de acesso: assinatura HS256, validade, emissor e audiência. O `kid` do cabeçalho
+   * escolhe a chave (a atual ou a anterior durante a troca do segredo); `kid` desconhecido usa a atual
+   * e, se a assinatura não bater, é recusado. Devolve o id do usuário ou lança erro.
+   */
+  async verifyAccessToken(token: string): Promise<string> {
+    const payload = await this.jwt.verifyAsync<{ sub?: string }>(token, {
+      secret: this.secretFor(token),
+      algorithms: ['HS256'],
+      issuer: this.env.JWT_ISSUER,
+      audience: this.env.JWT_AUDIENCE,
+    });
+    if (!payload.sub) throw new Error('sem sub');
+    return payload.sub;
+  }
+
+  private secretFor(token: string): string {
+    const { JWT_PREVIOUS_KEY_ID: previousId, JWT_ACCESS_SECRET_PREVIOUS: previousSecret } =
+      this.env;
+    if (previousId && previousSecret) {
+      const kid = readKeyId(token);
+      if (kid === previousId) return previousSecret;
+    }
+    return this.env.JWT_ACCESS_SECRET;
   }
 
   /** Troca um refresh token válido por um par novo (rotação). */
