@@ -19,10 +19,14 @@ if (!email || !url) {
   process.stderr.write('Informe o e-mail e defina DATABASE_URL.\n');
   process.exit(1);
 }
-if (
-  process.env.NODE_ENV === 'production' ||
-  !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(new URL(url).hostname)
-) {
+const isLocal = (): boolean => {
+  try {
+    return /^(localhost|127\.0\.0\.1|\[::1\])$/.test(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+};
+if (process.env.NODE_ENV === 'production' || !isLocal()) {
   process.stderr.write('Recusado: só roda contra banco local e fora de produção.\n');
   process.exit(1);
 }

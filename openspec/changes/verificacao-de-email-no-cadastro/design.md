@@ -43,6 +43,9 @@
 - Quem já tem conta por senha de teste cai em "pendente" depois da migration → aceitável enquanto não há usuários reais nas lojas.
 - Enumeração por tempo: o envio assíncrono iguala o tempo, mas não foi medido em produção → registrar a medição na verificação.
 
+- Quem sabe o e-mail de alguém consegue recadastrá-lo e trocar a senha da conta pendente, o que faz a confirmação da pessoa falhar até ela cadastrar de novo (negação de serviço do cadastro, sem tomada de conta, porque o código só chega à caixa de e-mail e vale junto com a senha) → risco aceito: o último cadastro vence, de propósito, e o limite de auth por IP e o intervalo de 60 s reduzem o abuso; o limite por e-mail fica para outra mudança.
+- Senha errada na confirmação não gasta as tentativas do código (não revela nada sobre ele), para quem só conhece o e-mail não conseguir travar o código da dona.
+
 ## Migration Plan
 
 1. Migration nova (nunca editar as aplicadas): colunas `email_verified_at` e `verification_mail_sent_at` em `users`, tabela `email_verifications`, backfill descrito acima.

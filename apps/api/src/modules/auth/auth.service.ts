@@ -151,7 +151,7 @@ export class AuthService {
     if (!user || !valid) throw invalidCredentials();
     if (!user.emailVerifiedAt) {
       // Só quem sabe a senha chega aqui: o aviso não revela a conta a terceiros
-      await this.verification.sendCode(user);
+      await this.verification.sendCode(user).catch(() => undefined);
       throw new AppError(403, ERROR_CODES.EMAIL_NOT_VERIFIED, 'Confirme seu e-mail para entrar');
     }
 
@@ -298,6 +298,25 @@ export class AuthService {
    * confirmada, a senha antiga some e as sessões e códigos abertos deixam de valer.
    */
   private async linkIdentity(
+    existing: { id: string; emailVerifiedAt: Date | null },
+    provider: SocialProvider,
+    providerUserId: string,
+  ) {
+    try {
+      return await this.linkIdentityOnce(existing, provider, providerUserId);
+    } catch (error) {
+      if (!isUniqueViolation(error)) throw error;
+      // Duas entradas simultâneas: a outra já ligou a identidade. Se foi a esta conta, segue normal
+      const linked = await this.prisma.authIdentity.findUnique({
+        where: { provider_providerUserId: { provider, providerUserId } },
+        include: { user: true },
+      });
+      if (linked?.userId !== existing.id) throw error;
+      return linked.user;
+    }
+  }
+
+  private async linkIdentityOnce(
     existing: { id: string; emailVerifiedAt: Date | null },
     provider: SocialProvider,
     providerUserId: string,

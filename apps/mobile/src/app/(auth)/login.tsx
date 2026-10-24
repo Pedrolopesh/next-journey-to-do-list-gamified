@@ -23,11 +23,9 @@ export default function LoginScreen() {
   const router = useRouter();
   const { run, loading } = useAction({
     name: 'auth.login',
-    success: t('auth.loginSuccess'),
     error: (error) =>
       describeError(error, t, {
         UNAUTHORIZED: t('auth.invalidCredentials'),
-        EMAIL_NOT_VERIFIED: t('auth.emailNotVerified'),
       }),
   });
   const {
@@ -44,13 +42,13 @@ export default function LoginScreen() {
       run(async () => {
         try {
           await useSessionStore.getState().setSession(await login(values));
+          toast.success(t('auth.loginSuccess'));
         } catch (cause) {
+          if (toApiError(cause)?.code !== 'EMAIL_NOT_VERIFIED') throw cause;
           // Senha certa, e-mail ainda sem confirmar: segue para a tela do código (a API já reenviou)
-          if (toApiError(cause)?.code === 'EMAIL_NOT_VERIFIED') {
-            usePendingVerificationStore.getState().set(values);
-            router.push('/verify-email');
-          }
-          throw cause;
+          usePendingVerificationStore.getState().set(values);
+          router.push('/verify-email');
+          toast.info(t('auth.emailNotVerified'));
         }
       }),
     (invalid) => {

@@ -75,6 +75,27 @@ describe('verificação de e-mail no cadastro', () => {
     await verify(email, otp).expect(400);
   });
 
+  it('requisições paralelas não passam do limite de 5 tentativas', async () => {
+    const email = uniqueEmail();
+    await register(email);
+    const otp = code(email);
+    const wrong = otp === WRONG ? '111111' : WRONG;
+    await Promise.all(Array.from({ length: 20 }, () => verify(email, wrong)));
+    const user = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
+    const row = await ctx.prisma.emailVerification.findFirstOrThrow({ where: { userId: user.id } });
+    expect(row.attempts).toBe(5);
+    expect(row.usedAt).not.toBeNull();
+    await verify(email, otp).expect(400);
+  });
+
+  it('senha errada não gasta tentativas: quem só sabe o e-mail não invalida o código da dona', async () => {
+    const email = uniqueEmail();
+    await register(email);
+    const otp = code(email);
+    for (let i = 0; i < 8; i += 1) await verify(email, WRONG, 'Invasor#1234').expect(400); // scan-allow: senha falsa
+    await verify(email, otp).expect(200);
+  });
+
   it('reenvio: respeita o intervalo, invalida o código antigo e responde sempre 202', async () => {
     const email = uniqueEmail();
     await register(email);

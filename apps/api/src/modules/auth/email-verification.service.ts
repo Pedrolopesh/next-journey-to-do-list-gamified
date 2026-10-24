@@ -49,17 +49,26 @@ export class EmailVerificationService {
   /**
    * Consome o código: certo e dentro da validade devolve true (uso único); errado conta uma tentativa
    * e a quinta errada invalida o código. Nunca diz se o motivo foi expiração, tentativas ou erro.
+   * A senha errada não prova nada e não gasta tentativas: assim quem só sabe o e-mail da vítima não
+   * consegue invalidar o código dela. A tentativa é reservada num UPDATE condicional, então
+   * requisições paralelas não passam do limite.
    */
   async consume(userId: string, code: string, passwordOk: boolean): Promise<boolean> {
+    if (!passwordOk) return false;
     const now = this.clock.now();
     const current = await this.prisma.emailVerification.findFirst({
       where: { userId, usedAt: null, expiresAt: { gt: now } },
       orderBy: { createdAt: 'desc' },
     });
-    if (!current || current.attempts >= VERIFICATION_MAX_ATTEMPTS) return false;
+    if (!current) return false;
 
-    const match = passwordOk && sameHash(current.codeHash, hashCode(userId, code));
-    if (match) {
+    const attempt = await this.prisma.emailVerification.updateMany({
+      where: { id: current.id, usedAt: null, attempts: { lt: VERIFICATION_MAX_ATTEMPTS } },
+      data: { attempts: { increment: 1 } },
+    });
+    if (attempt.count !== 1) return false;
+
+    if (sameHash(current.codeHash, hashCode(userId, code))) {
       // Uso único mesmo sob duas confirmações simultâneas
       const claimed = await this.prisma.emailVerification.updateMany({
         where: { id: current.id, usedAt: null },
@@ -67,25 +76,11 @@ export class EmailVerificationService {
       });
       return claimed.count === 1;
     }
-    const failed = await this.prisma.emailVerification.update({
-      where: { id: current.id },
-      data: { attempts: { increment: 1 } },
+    await this.prisma.emailVerification.updateMany({
+      where: { id: current.id, usedAt: null, attempts: { gte: VERIFICATION_MAX_ATTEMPTS } },
+      data: { usedAt: now },
     });
-    if (failed.attempts >= VERIFICATION_MAX_ATTEMPTS) {
-      await this.prisma.emailVerification.updateMany({
-        where: { id: current.id, usedAt: null },
-        data: { usedAt: now },
-      });
-    }
     return false;
-  }
-
-  /** Invalida os códigos abertos da conta (ex.: a conta foi assumida pelo login social). */
-  invalidateAll(userId: string) {
-    return this.prisma.emailVerification.updateMany({
-      where: { userId, usedAt: null },
-      data: { usedAt: this.clock.now() },
-    });
   }
 
   /**
@@ -109,6 +104,19 @@ export class EmailVerificationService {
     if (!withCode) return true;
 
     const code = randomInt(0, 1_000_000).toString().padStart(6, '0');
+    try {
+      await this.storeCode(userId, code, now);
+    } catch (error) {
+      // Falhou antes de existir código: devolve o intervalo, senão a pessoa fica um minuto sem poder pedir de novo
+      await this.prisma.user
+        .update({ where: { id: userId }, data: { verificationMailSentAt: null } })
+        .catch(() => undefined);
+      throw error;
+    }
+    return code;
+  }
+
+  private async storeCode(userId: string, code: string, now: Date): Promise<void> {
     await this.prisma.$transaction([
       this.prisma.emailVerification.updateMany({
         where: { userId, usedAt: null },
@@ -122,7 +130,6 @@ export class EmailVerificationService {
         },
       }),
     ]);
-    return code;
   }
 
   /** Envio sem esperar: o tempo da resposta não depende de o e-mail existir. Falha não vaza. */
