@@ -6,7 +6,9 @@ import {
   ERROR_CODES,
   type LoginRequest,
   type RegisterRequest,
+  type RegisterResponse,
   type SocialLoginRequest,
+  type VerifyEmailRequest,
 } from '@nextjourney/contracts';
 import * as argon2 from 'argon2';
 
@@ -14,6 +16,7 @@ import { AppError } from '../../common/app-error.js';
 import { Clock } from '../../common/clock.js';
 import { ENV, type Env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { EmailVerificationService } from './email-verification.service.js';
 import { IdTokenVerifier, type SocialProvider } from './id-token-verifier.js';
 import { Mailer } from './mailer.js';
 import { TokensService } from './tokens.service.js';
@@ -26,6 +29,12 @@ const DEFAULT_CATEGORIES = [
   { name: 'Freela', color: '#f59e0b' },
   { name: 'Pessoal', color: '#ef4444' },
 ] as const;
+
+const invalidVerificationCode = (): AppError =>
+  new AppError(400, ERROR_CODES.INVALID_VERIFICATION_CODE, 'Código inválido ou expirado');
+
+const isUniqueViolation = (error: unknown): boolean =>
+  typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'P2002';
 
 const invalidCredentials = (): AppError =>
   new AppError(401, ERROR_CODES.UNAUTHORIZED, 'E-mail ou senha inválidos');
@@ -42,35 +51,94 @@ export class AuthService {
     @Inject(ENV) private readonly env: Env,
     @Inject(Mailer) private readonly mailer: Mailer,
     @Inject(IdTokenVerifier) private readonly verifier: IdTokenVerifier,
+    @Inject(EmailVerificationService) private readonly verification: EmailVerificationService,
   ) {}
 
-  async register(input: RegisterRequest): Promise<AuthResponse> {
+  /**
+   * Cadastro por senha: nunca devolve sessão. Responde igual para e-mail novo, pendente ou já
+   * confirmado (sem enumeração); o código só chega ao e-mail e a conta só vale depois de confirmar.
+   */
+  async register(input: RegisterRequest): Promise<RegisterResponse> {
     const email = input.email.trim().toLowerCase();
     const passwordHash = await argon2.hash(input.password, { type: argon2.argon2id });
+    const profile = {
+      passwordHash,
+      name: input.name.trim(),
+      timezone: input.timezone,
+      termsAcceptedAt: this.clock.now(),
+      termsVersion: input.termsVersion,
+    };
+    const response: RegisterResponse = { status: 'verification_sent' };
 
-    const existing = await this.prisma.user.findUnique({ where: { email } });
+    const existing = await this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true, email: true, emailVerifiedAt: true, deletedAt: true },
+    });
     if (existing) {
-      // Sem verificação de e-mail ainda (Fase 5), não há como esconder a existência da conta.
-      throw new AppError(409, 'EMAIL_UNAVAILABLE', 'Não foi possível concluir o cadastro');
+      if (existing.deletedAt) return response;
+      if (existing.emailVerifiedAt) {
+        await this.verification.sendNotice(existing);
+      } else {
+        // Cadastro ainda pendente: o último cadastro vence; só quem confirma com o código e a senha ativa
+        await this.prisma.user.update({ where: { id: existing.id }, data: profile });
+        await this.verification.sendCode(existing);
+      }
+      return response;
     }
 
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        passwordHash,
-        name: input.name.trim(),
-        timezone: input.timezone,
-        termsAcceptedAt: this.clock.now(),
-        termsVersion: input.termsVersion,
-        stats: { create: {} },
-        categories: {
-          create: DEFAULT_CATEGORIES.map((category, position) => ({ ...category, position })),
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          email,
+          ...profile,
+          stats: { create: {} },
+          categories: {
+            create: DEFAULT_CATEGORIES.map((category, position) => ({ ...category, position })),
+          },
         },
-      },
-      select: { id: true, name: true, email: true, timezone: true },
-    });
+        select: { id: true, email: true },
+      });
+      await this.verification.sendCode(user);
+    } catch (error) {
+      // Dois cadastros simultâneos do mesmo e-mail: o outro venceu a corrida, a resposta é a mesma
+      if (!isUniqueViolation(error)) throw error;
+    }
+    return response;
+  }
 
-    return { tokens: await this.tokens.issue(user.id), user };
+  /** Confirma o e-mail com o código (e a senha do cadastro) e só então entrega a sessão. */
+  async verifyEmail(input: VerifyEmailRequest): Promise<AuthResponse> {
+    const email = input.email.trim().toLowerCase();
+    const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
+    const pending = user && !user.emailVerifiedAt && user.passwordHash ? user : null;
+    // Mesmo custo e mesma resposta para qualquer falha (sem enumeração)
+    const hash = pending?.passwordHash ?? (await this.getDummyHash());
+    const passwordOk = await argon2.verify(hash, input.password).catch(() => false);
+    if (!pending) throw invalidVerificationCode();
+
+    if (!(await this.verification.consume(pending.id, input.code, passwordOk))) {
+      throw invalidVerificationCode();
+    }
+    await this.prisma.user.update({
+      where: { id: pending.id },
+      data: { emailVerifiedAt: this.clock.now() },
+    });
+    return {
+      tokens: await this.tokens.issue(pending.id),
+      user: {
+        id: pending.id,
+        name: pending.name,
+        email: pending.email,
+        timezone: pending.timezone,
+      },
+    };
+  }
+
+  /** Reenvio do código: responde sempre igual; só envia para conta pendente e fora do intervalo mínimo. */
+  async resendVerification(emailInput: string): Promise<void> {
+    const email = emailInput.trim().toLowerCase();
+    const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
+    if (user && !user.emailVerifiedAt && user.passwordHash) await this.verification.sendCode(user);
   }
 
   async login(input: LoginRequest): Promise<AuthResponse> {
@@ -81,6 +149,11 @@ export class AuthService {
     const hash = user?.passwordHash ?? (await this.getDummyHash());
     const valid = await argon2.verify(hash, input.password).catch(() => false);
     if (!user || !valid) throw invalidCredentials();
+    if (!user.emailVerifiedAt) {
+      // Só quem sabe a senha chega aqui: o aviso não revela a conta a terceiros
+      await this.verification.sendCode(user);
+      throw new AppError(403, ERROR_CODES.EMAIL_NOT_VERIFIED, 'Confirme seu e-mail para entrar');
+    }
 
     return {
       tokens: await this.tokens.issue(user.id),
@@ -171,55 +244,88 @@ export class AuthService {
     });
     let user = linked?.user && !linked.user.deletedAt ? linked.user : null;
 
-    if (!user && email && identity.emailVerified) {
-      const existing = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
-      if (existing) {
-        await this.prisma.authIdentity.create({
-          data: { userId: existing.id, provider, providerUserId: identity.subject },
-        });
-        user = existing;
-      }
-    }
-
     if (!user) {
-      if (!input.termsVersion) {
-        throw new AppError(
-          400,
-          'TERMS_REQUIRED',
-          'É preciso aceitar os Termos e a Política de Privacidade',
-        );
-      }
       if (!email) {
         throw new AppError(400, 'EMAIL_REQUIRED', 'O provedor não informou um e-mail');
       }
-      // E-mail já cadastrado mas NÃO verificado pelo provedor: não vincula (evita tomada de conta)
-      const taken = await this.prisma.user.findFirst({
-        where: { email, deletedAt: null },
-        select: { id: true },
-      });
-      if (taken)
-        throw new AppError(409, 'EMAIL_UNAVAILABLE', 'Não foi possível concluir o cadastro');
-      user = await this.prisma.user.create({
-        data: {
-          email,
-          passwordHash: null,
-          name: identity.name?.trim() || email.split('@')[0] || 'Aventureiro',
-          timezone: input.timezone ?? 'UTC',
-          termsAcceptedAt: this.clock.now(),
-          termsVersion: input.termsVersion,
-          stats: { create: {} },
-          categories: {
-            create: DEFAULT_CATEGORIES.map((category, position) => ({ ...category, position })),
+      // Sem e-mail verificado pelo provedor não há como provar a posse: nunca cria nem vincula
+      if (!identity.emailVerified) {
+        throw new AppError(
+          400,
+          ERROR_CODES.EMAIL_NOT_VERIFIED_BY_PROVIDER,
+          'O provedor não confirmou o seu e-mail',
+        );
+      }
+      const existing = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
+      if (existing) {
+        user = await this.linkIdentity(existing, provider, identity.subject);
+      } else {
+        if (!input.termsVersion) {
+          throw new AppError(
+            400,
+            'TERMS_REQUIRED',
+            'É preciso aceitar os Termos e a Política de Privacidade',
+          );
+        }
+        user = await this.prisma.user.create({
+          data: {
+            email,
+            passwordHash: null,
+            name: identity.name?.trim() || email.split('@')[0] || 'Aventureiro',
+            timezone: input.timezone ?? 'UTC',
+            termsAcceptedAt: this.clock.now(),
+            termsVersion: input.termsVersion,
+            emailVerifiedAt: this.clock.now(),
+            stats: { create: {} },
+            categories: {
+              create: DEFAULT_CATEGORIES.map((category, position) => ({ ...category, position })),
+            },
+            identities: { create: { provider, providerUserId: identity.subject } },
           },
-          identities: { create: { provider, providerUserId: identity.subject } },
-        },
-      });
+        });
+      }
     }
 
     return {
       tokens: await this.tokens.issue(user.id),
       user: { id: user.id, name: user.name, email: user.email, timezone: user.timezone },
     };
+  }
+
+  /**
+   * Liga o login social a uma conta que já existe com o mesmo e-mail (verificado pelo provedor). Se a
+   * conta por senha nunca confirmou o e-mail, quem a criou não provou ser dono dele: a conta é
+   * confirmada, a senha antiga some e as sessões e códigos abertos deixam de valer.
+   */
+  private async linkIdentity(
+    existing: { id: string; emailVerifiedAt: Date | null },
+    provider: SocialProvider,
+    providerUserId: string,
+  ) {
+    const now = this.clock.now();
+    const identity = this.prisma.authIdentity.create({
+      data: { userId: existing.id, provider, providerUserId },
+    });
+    if (existing.emailVerifiedAt) {
+      await identity;
+      return this.prisma.user.findUniqueOrThrow({ where: { id: existing.id } });
+    }
+    const [, user] = await this.prisma.$transaction([
+      identity,
+      this.prisma.user.update({
+        where: { id: existing.id },
+        data: { emailVerifiedAt: now, passwordHash: null },
+      }),
+      this.prisma.emailVerification.updateMany({
+        where: { userId: existing.id, usedAt: null },
+        data: { usedAt: now },
+      }),
+      this.prisma.refreshToken.updateMany({
+        where: { userId: existing.id, revokedAt: null },
+        data: { revokedAt: now },
+      }),
+    ]);
+    return user;
   }
 
   private getDummyHash(): Promise<string> {

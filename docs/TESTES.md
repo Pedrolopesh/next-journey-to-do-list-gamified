@@ -32,7 +32,7 @@ Comando:
 pnpm --filter @nextjourney/mobile test:ui
 ```
 
-O script `apps/mobile/scripts/ui-tests.mjs` cria uma conta de teste nova na API a cada execução (e-mail e senha aleatórios, só na memória; nada fica no repositório) e passa para o Maestro. Para rodar só alguns fluxos (o de entrada vai sempre primeiro, porque loga na conta nova; os fluxos seguintes dependem dos anteriores, então rode sempre em sequência a partir do 00, sem pular):
+O script `apps/mobile/scripts/ui-tests.mjs` cria uma conta de teste nova na API a cada execução (e-mail e senha aleatórios, só na memória; nada fica no repositório) e confirma o e-mail dela direto no banco local (`apps/api/prisma/confirm-test-email.ts`, que recusa banco não local) e passa para o Maestro. Para rodar só alguns fluxos (o de entrada vai sempre primeiro, porque loga na conta nova; os fluxos seguintes dependem dos anteriores, então rode sempre em sequência a partir do 00, sem pular):
 
 ```bash
 UI_FLOW=.maestro/flows/00-entrar-e-onboarding.yaml,.maestro/flows/01-criar-e-marcar-tarefa.yaml \

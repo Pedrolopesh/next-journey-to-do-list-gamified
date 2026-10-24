@@ -54,8 +54,8 @@ export function SocialButtons() {
     } catch (cause) {
       const message = isNetworkError(cause)
         ? t('auth.networkError')
-        : toApiError(cause)?.code === 'EMAIL_UNAVAILABLE'
-          ? t('auth.emailUnavailable')
+        : toApiError(cause)?.code === 'EMAIL_NOT_VERIFIED_BY_PROVIDER'
+          ? t('auth.providerEmailNotVerified')
           : t('auth.genericError');
       setError(message);
       toast.error(message);

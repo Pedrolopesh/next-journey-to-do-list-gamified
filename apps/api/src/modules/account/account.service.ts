@@ -9,6 +9,8 @@ import { ENV, type Env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** Dias até apagar a conta cujo e-mail nunca foi confirmado. */
+const UNVERIFIED_ACCOUNT_DAYS = 7;
 
 /** Exclusão de conta (RF de privacidade): anonimiza na hora e apaga de vez depois do prazo. */
 @Injectable()
@@ -57,7 +59,12 @@ export class AccountService {
   async purgeExpired(): Promise<number> {
     const limit = new Date(this.clock.now().getTime() - this.env.ACCOUNT_PURGE_DAYS * DAY_MS);
     const result = await this.prisma.user.deleteMany({ where: { deletedAt: { lt: limit } } });
-    return result.count;
+    // Cadastro por senha que nunca confirmou o e-mail (os códigos saem em cascata)
+    const pendingLimit = new Date(this.clock.now().getTime() - UNVERIFIED_ACCOUNT_DAYS * DAY_MS);
+    const pending = await this.prisma.user.deleteMany({
+      where: { emailVerifiedAt: null, identities: { none: {} }, createdAt: { lt: pendingLimit } },
+    });
+    return result.count + pending.count;
   }
 
   @Cron('0 3 * * *')

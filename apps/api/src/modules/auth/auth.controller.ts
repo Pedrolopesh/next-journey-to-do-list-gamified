@@ -9,10 +9,15 @@ import {
   refreshRequestSchema,
   type RegisterRequest,
   registerRequestSchema,
+  type RegisterResponse,
+  type ResendVerificationRequest,
+  resendVerificationRequestSchema,
   type ResetPasswordRequest,
   resetPasswordRequestSchema,
   type SocialLoginRequest,
   socialLoginRequestSchema,
+  type VerifyEmailRequest,
+  verifyEmailRequestSchema,
 } from '@nextjourney/contracts';
 
 import { Public } from '../../common/public.decorator.js';
@@ -23,12 +28,33 @@ import { AuthService } from './auth.service.js';
 export class AuthController {
   constructor(@Inject(AuthService) private readonly auth: AuthService) {}
 
+  /** Sempre 202, sem sessão: a pessoa confirma o e-mail com o código antes de entrar. */
   @Public()
   @Post('register')
+  @HttpCode(202)
   register(
     @Body(new ZodValidationPipe(registerRequestSchema)) body: RegisterRequest,
-  ): Promise<AuthResponse> {
+  ): Promise<RegisterResponse> {
     return this.auth.register(body);
+  }
+
+  @Public()
+  @Post('verify-email')
+  @HttpCode(200)
+  verifyEmail(
+    @Body(new ZodValidationPipe(verifyEmailRequestSchema)) body: VerifyEmailRequest,
+  ): Promise<AuthResponse> {
+    return this.auth.verifyEmail(body);
+  }
+
+  /** Sempre 202, exista ou não a conta. */
+  @Public()
+  @Post('resend-verification')
+  @HttpCode(202)
+  async resendVerification(
+    @Body(new ZodValidationPipe(resendVerificationRequestSchema)) body: ResendVerificationRequest,
+  ): Promise<void> {
+    await this.auth.resendVerification(body.email);
   }
 
   @Public()

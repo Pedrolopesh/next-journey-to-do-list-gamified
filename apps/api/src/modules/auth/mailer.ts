@@ -20,8 +20,14 @@ export class ResendMailer extends Mailer {
 
   async send(message: { to: string; subject: string; text: string }): Promise<void> {
     if (!this.env.RESEND_API_KEY) {
-      // Nunca loga destinatário nem conteúdo (pode ter link com token)
-      this.logger.warn('RESEND_API_KEY ausente: e-mail não enviado (desenvolvimento)');
+      // Fora do desenvolvimento nunca loga destinatário nem conteúdo (tem código ou link com token)
+      if (this.env.NODE_ENV === 'development') {
+        this.logger.warn(
+          `RESEND_API_KEY ausente: e-mail não enviado (desenvolvimento)\nPara: ${message.to}\n${message.text}`,
+        );
+      } else {
+        this.logger.warn('RESEND_API_KEY ausente: e-mail não enviado');
+      }
       return;
     }
     const response = await fetch('https://api.resend.com/emails', {

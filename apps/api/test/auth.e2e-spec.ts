@@ -4,6 +4,7 @@ import {
   bearer,
   createTestApp,
   PASSWORD,
+  registerBody,
   registerUser,
   type TestContext,
   uniqueEmail,
@@ -39,23 +40,20 @@ describe('auth e segurança básica', () => {
     expect(stored.passwordHash?.startsWith('$argon2id$')).toBe(true);
   });
 
-  it('e-mail repetido é recusado sem expor o motivo detalhado', async () => {
+  it('e-mail repetido responde igual ao e-mail novo (sem revelar que a conta existe)', async () => {
     const email = uniqueEmail();
     await registerUser(ctx, email);
-    const res = await ctx
+    const repeated = await ctx
       .http()
       .post('/v1/auth/register')
-      .send({
-        name: 'Outra',
-        email: email.toUpperCase(),
-        password: PASSWORD, // scan-allow: senha falsa de teste
-        confirmPassword: PASSWORD, // scan-allow: senha falsa de teste
-        acceptedTerms: true,
-        termsVersion: '1',
-        timezone: 'UTC',
-      })
-      .expect(409);
-    expect(res.body.code).toBe('EMAIL_UNAVAILABLE');
+      .send({ ...registerBody(email.toUpperCase()), name: 'Outra' })
+      .expect(202);
+    const fresh = await ctx
+      .http()
+      .post('/v1/auth/register')
+      .send(registerBody(uniqueEmail()))
+      .expect(202);
+    expect(repeated.body).toEqual(fresh.body);
   });
 
   it('validação não devolve o valor enviado (senha) e usa o formato padrão de erro', async () => {

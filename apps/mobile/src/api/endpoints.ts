@@ -24,6 +24,9 @@ import {
   meResponseSchema,
   type PatchMeRequest,
   type RegisterRequest,
+  type RegisterResponse,
+  registerResponseSchema,
+  type ResendVerificationRequest,
   type ResetPasswordRequest,
   type SocialLoginRequest,
   type StorySummary,
@@ -32,6 +35,7 @@ import {
   timelineSchema,
   type UpdateCategoryRequest,
   type UpdateItemRequest,
+  type VerifyEmailRequest,
 } from '@nextjourney/contracts';
 import { z } from 'zod';
 
@@ -45,9 +49,19 @@ export async function login(body: LoginRequest): Promise<AuthResponse> {
   return authResponseSchema.parse(data);
 }
 
-export async function register(body: RegisterRequest): Promise<AuthResponse> {
+/** O cadastro não devolve sessão: a pessoa confirma o e-mail com o código e só então entra. */
+export async function register(body: RegisterRequest): Promise<RegisterResponse> {
   const { data } = await http.post<unknown>('/auth/register', body);
+  return registerResponseSchema.parse(data);
+}
+
+export async function verifyEmail(body: VerifyEmailRequest): Promise<AuthResponse> {
+  const { data } = await http.post<unknown>('/auth/verify-email', body);
   return authResponseSchema.parse(data);
+}
+
+export async function resendVerification(body: ResendVerificationRequest): Promise<void> {
+  await http.post('/auth/resend-verification', body);
 }
 
 export async function socialLogin(

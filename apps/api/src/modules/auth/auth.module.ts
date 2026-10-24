@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../../common/jwt-auth.guard.js';
 import { ENV, type Env } from '../../config/env.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
+import { EmailVerificationService } from './email-verification.service.js';
 import { IdTokenVerifier, RemoteIdTokenVerifier } from './id-token-verifier.js';
 import { Mailer, ResendMailer } from './mailer.js';
 import { TokensService } from './tokens.service.js';
@@ -25,6 +26,7 @@ import { TokensService } from './tokens.service.js';
   controllers: [AuthController],
   providers: [
     AuthService,
+    EmailVerificationService,
     TokensService,
     { provide: Mailer, useClass: ResendMailer },
     { provide: IdTokenVerifier, useClass: RemoteIdTokenVerifier },

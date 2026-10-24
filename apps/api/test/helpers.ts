@@ -30,6 +30,7 @@ export type TestContext = {
   prisma: PrismaService;
   clock: TestClock;
   http: () => ReturnType<typeof request>;
+  mailer: FakeMailer;
 };
 
 // 12:00 em America/Sao_Paulo (UTC-3)
@@ -42,6 +43,11 @@ export class FakeMailer extends Mailer {
     this.sent.push(message);
     return Promise.resolve();
   }
+  /** Código de confirmação do último e-mail para o endereço. */
+  lastVerificationCode(to: string): string | undefined {
+    const mail = [...this.sent].reverse().find((entry) => entry.to === to);
+    return mail?.text.match(/é (\d{6})\./)?.[1];
+  }
   /** Segredo do link de recuperação do último e-mail para o endereço. */
   lastResetToken(to: string): string | undefined {
     const mail = [...this.sent].reverse().find((entry) => entry.to === to);
@@ -51,7 +57,7 @@ export class FakeMailer extends Mailer {
 
 export async function createTestApp(
   overrides: { verifier?: IdTokenVerifier } = {},
-): Promise<TestContext & { mailer: FakeMailer }> {
+): Promise<TestContext> {
   const clock = new TestClock(new Date(NOON_09));
   const mailer = new FakeMailer();
   let builder = Test.createTestingModule({ imports: [AppModule] })
@@ -80,24 +86,30 @@ export function uniqueEmail(prefix = 'user'): string {
   return `${prefix}-${randomUUID()}@exemplo.com`;
 }
 
+/** Dados válidos de cadastro por senha. */
+export const registerBody = (email: string, password = PASSWORD) => ({
+  name: 'Pessoa de Teste',
+  email,
+  password,
+  confirmPassword: password,
+  acceptedTerms: true,
+  termsVersion: '2026-10-01',
+  timezone: 'America/Sao_Paulo',
+});
+
+/** Cadastra, confirma o e-mail com o código capturado e devolve a sessão. */
 export async function registerUser(
   ctx: TestContext,
   email = uniqueEmail(),
   options: { story?: string | false } = {},
 ): Promise<AuthResponse> {
+  await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
+  const code = ctx.mailer.lastVerificationCode(email.trim().toLowerCase());
   const response = await ctx
     .http()
-    .post('/v1/auth/register')
-    .send({
-      name: 'Pessoa de Teste',
-      email,
-      password: PASSWORD, // scan-allow: senha falsa de teste
-      confirmPassword: PASSWORD, // scan-allow: senha falsa de teste
-      acceptedTerms: true,
-      termsVersion: '2026-10-01',
-      timezone: 'America/Sao_Paulo',
-    })
-    .expect(201);
+    .post('/v1/auth/verify-email')
+    .send({ email, code, password: PASSWORD }) // scan-allow: senha falsa de teste
+    .expect(200);
   const auth = response.body as AuthResponse;
   // A maioria dos testes precisa de uma história ativa (onboarding completo)
   const story = options.story === undefined ? 'beach' : options.story;

@@ -23,9 +23,10 @@
     "goToLogin": "Já tem conta? Entrar",
     "terms": "Li e aceito os Termos de Uso e a Política de Privacidade",
     "invalidCredentials": "E-mail ou senha inválidos",
-    "emailUnavailable": "Não foi possível concluir o cadastro. Tente entrar ou use outro e-mail.",
     "networkError": "Sem conexão com o servidor. Tente de novo.",
-    "registerSuccess": "Conta criada! Bem-vindo(a).",
+    "registerSuccess": "Enviamos um código para o seu e-mail.",
+    "providerEmailNotVerified": "O seu e-mail não está confirmado no Google/Apple. Confirme lá e tente de novo.",
+    "emailNotVerified": "Confirme seu e-mail: enviamos um código para você.",
     "loginSuccess": "Você entrou.",
     "logoutSuccess": "Você saiu da conta.",
     "linkSent": "Se o e-mail existir, enviamos o link.",
@@ -58,7 +59,18 @@
     "newPasswordLabel": "Nova senha",
     "resetSubmit": "Salvar nova senha",
     "resetDone": "Senha alterada. Entre com a nova senha.",
-    "resetInvalid": "Link inválido ou expirado. Peça um novo."
+    "resetInvalid": "Link inválido ou expirado. Peça um novo.",
+    "verify": {
+      "title": "Confirme seu e-mail",
+      "intro": "Enviamos um código de 6 dígitos para {{email}}. Ele vale por 15 minutos.",
+      "codeLabel": "Código",
+      "codeInvalid": "Digite os 6 dígitos do código",
+      "invalidCode": "Código inválido ou expirado. Peça um novo.",
+      "submit": "Confirmar",
+      "resend": "Reenviar código",
+      "resendIn": "Reenviar código em {{seconds}}s",
+      "resent": "Se o cadastro estiver pendente, enviamos um novo código."
+    }
   },
   "placeholder": {
     "comingSoon": "Em construção"

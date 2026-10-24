@@ -31,6 +31,23 @@ export const registerRequestSchema = z
   });
 export type RegisterRequest = z.infer<typeof registerRequestSchema>;
 
+/** Cadastro por senha não cria sessão: a pessoa confirma o e-mail com um código antes de entrar. */
+export const registerResponseSchema = z.object({ status: z.literal('verification_sent') });
+export type RegisterResponse = z.infer<typeof registerResponseSchema>;
+
+export const VERIFICATION_CODE_LENGTH = 6;
+
+/** Confirma o e-mail: o código vale só junto com a senha escolhida no cadastro. */
+export const verifyEmailRequestSchema = z.object({
+  email: z.email(),
+  code: z.string().regex(/^\d{6}$/),
+  password: z.string().min(1).max(128),
+});
+export type VerifyEmailRequest = z.infer<typeof verifyEmailRequestSchema>;
+
+export const resendVerificationRequestSchema = z.object({ email: z.email() });
+export type ResendVerificationRequest = z.infer<typeof resendVerificationRequestSchema>;
+
 export const loginRequestSchema = z.object({
   email: z.email(),
   password: z.string().min(1).max(128),

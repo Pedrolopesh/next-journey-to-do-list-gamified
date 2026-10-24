@@ -98,7 +98,7 @@ Pré-requisitos, comandos e armadilhas conhecidas estão no [`HANDOFF.md`](../HA
 - **Staging e produção:** uma VPS própria da We Tech Hub (Ubuntu 24.04), em Docker, com nginx no host (80/443) e certbot. Regras: Postgres próprio do Next Journey em compose project separado, portas publicadas só em `127.0.0.1`, limites de memória e CPU por container, staging e produção em projetos e portas distintos, backup diário do Postgres com 7 dias de retenção, monitor externo no `/health`. Endereço, inventário e achados de auditoria ficam fora do repositório.
 - **Pré-requisito de segurança:** concluir a revisão da hospedagem (registrada fora do repositório) antes do primeiro deploy.
 - **Builds do app:** EAS Build e EAS Submit, perfis `development`, `preview` e `production`; OTA (EAS Update) para correções de JavaScript e do banner.
-- **E-mail:** Resend, só para recuperação de senha.
+- **E-mail:** Resend, para recuperação de senha e para o código de confirmação do cadastro.
 - **Identidade:** nome Next Journey; bundle id `br.com.wetechhub.app` (dev: `br.com.wetechhub.app.dev`), imutável a partir do primeiro build iOS com credenciais Apple.
 
 ## 9. Como o trabalho é conduzido

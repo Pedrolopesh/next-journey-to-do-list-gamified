@@ -16,7 +16,9 @@ import { join } from 'node:path';
 
 const api = (process.env.E2E_API_URL ?? 'http://localhost:3010').replace(/\/$/, '');
 if (!/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(api)) {
-  process.stderr.write('E2E_API_URL precisa ser local (localhost): o script cria uma conta de teste.\n');
+  process.stderr.write(
+    'E2E_API_URL precisa ser local (localhost): o script cria uma conta de teste.\n',
+  );
   process.exit(1);
 }
 const email = `ui-${Date.now()}@exemplo.com`;
@@ -31,7 +33,7 @@ async function call(path, init = {}) {
   return response.status === 204 ? null : response.json();
 }
 
-const session = await call('/auth/register', {
+await call('/auth/register', {
   method: 'POST',
   body: JSON.stringify({
     name: 'Teste de interface',
@@ -42,6 +44,17 @@ const session = await call('/auth/register', {
     termsVersion: '1',
     timezone: 'America/Sao_Paulo',
   }),
+});
+// O cadastro não devolve sessão: confirma o e-mail direto no banco local (utilitário só de desenvolvimento)
+const confirm = spawnSync(
+  'pnpm',
+  ['--filter', '@nextjourney/api', 'exec', 'tsx', 'prisma/confirm-test-email.ts', email],
+  { stdio: 'inherit' },
+);
+if (confirm.status !== 0) throw new Error('não foi possível confirmar o e-mail da conta de teste');
+const session = await call('/auth/login', {
+  method: 'POST',
+  body: JSON.stringify({ email, password }),
 });
 const auth = { authorization: `Bearer ${session.tokens.accessToken}` };
 const categories = await call('/categories', { headers: auth });
