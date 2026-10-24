@@ -107,13 +107,13 @@ describe('limite de tentativas por e-mail', () => {
     const email = uniqueEmail('vitima');
     // O atacante (IP A) esgota o limite dele
     for (let i = 0; i < LIMITS.forgotPassword.perEmailAndIp.limit; i += 1) {
-      await service.hitBoth('forgot-password', email, '203.0.113.1', LIMITS.forgotPassword);
+      await service.hitBoth('forgot-password', email, 'cliente-a', LIMITS.forgotPassword);
     }
     await expect(
-      service.hitBoth('forgot-password', email, '203.0.113.1', LIMITS.forgotPassword),
+      service.hitBoth('forgot-password', email, 'cliente-a', LIMITS.forgotPassword),
     ).rejects.toMatchObject({ status: 429 });
     // A dona (IP B) não é afetada
-    await service.hitBoth('forgot-password', email, '203.0.113.2', LIMITS.forgotPassword);
+    await service.hitBoth('forgot-password', email, 'cliente-b', LIMITS.forgotPassword);
   });
 
   it('a tabela guarda só hash: nem e-mail nem IP em texto', async () => {
