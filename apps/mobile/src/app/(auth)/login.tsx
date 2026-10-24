@@ -1,11 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type LoginRequest, loginRequestSchema } from '@nextjourney/contracts';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { login } from '@/api/endpoints';
+import { toApiError } from '@/api/errors';
+import { usePendingVerificationStore } from '@/auth/pending-verification-store';
 import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
 import { SocialButtons } from '@/components/social-buttons';
@@ -18,10 +20,13 @@ import { colors, space } from '@/theme';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { run, loading } = useAction({
     name: 'auth.login',
-    success: t('auth.loginSuccess'),
-    error: (error) => describeError(error, t, { UNAUTHORIZED: t('auth.invalidCredentials') }),
+    error: (error) =>
+      describeError(error, t, {
+        UNAUTHORIZED: t('auth.invalidCredentials'),
+      }),
   });
   const {
     control,
@@ -35,7 +40,16 @@ export default function LoginScreen() {
   const onSubmit = handleSubmit(
     (values) =>
       run(async () => {
-        await useSessionStore.getState().setSession(await login(values));
+        try {
+          await useSessionStore.getState().setSession(await login(values));
+          toast.success(t('auth.loginSuccess'));
+        } catch (cause) {
+          if (toApiError(cause)?.code !== 'EMAIL_NOT_VERIFIED') throw cause;
+          // Senha certa, e-mail ainda sem confirmar: segue para a tela do código (a API já reenviou)
+          usePendingVerificationStore.getState().set(values);
+          router.push('/verify-email');
+          toast.info(t('auth.emailNotVerified'));
+        }
       }),
     (invalid) => {
       log.warn('form.invalid', { form: 'login', fields: Object.keys(invalid) });

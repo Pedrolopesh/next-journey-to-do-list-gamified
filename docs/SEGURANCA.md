@@ -84,6 +84,7 @@ Exceções ao `pnpm audit --audit-level=high` são **sempre documentadas**: fica
 |---|---|---|---|---|---|
 | 2026-10-03 | Alta | `node-forge` (GHSA-86w9-cpqp-85rv) | CLI do Expo (certificados de assinatura) | Só ferramenta de desenvolvimento; sem versão corrigida; não vai para o app | 2026-11-03 |
 | 2026-10-03 | Alta | `braces` (GHSA-vfj7-8cjw-p6xm) | Metro (empacotador) | Só ferramenta de desenvolvimento; sem versão corrigida; não vai para o app | 2026-11-03 |
+| 2026-10-24 | Alta | `zod` 3.x (GHSA-mrhx-c7xc-m3w5) | CLI do Expo (cópia interna do zod 3) | Só ferramenta de desenvolvimento; a linha 3 não recebeu correção; o projeto usa zod 4 corrigido | 2026-11-03 |
 
 A moderada que resta (`sprintf-js`, só em ferramenta de desenvolvimento do Expo) não bloqueia o CI e não tem versão corrigida; `uuid`, `decode-uri-component` e `esbuild` foram resolvidos por `overrides` em 2026-10-12.
 
@@ -91,7 +92,7 @@ A moderada que resta (`sprintf-js`, só em ferramenta de desenvolvimento do Expo
 
 | Tema | Situação | Quando |
 |---|---|---|
-| Cadastro revela se o e-mail já existe (`409 EMAIL_UNAVAILABLE`) | O e-mail transacional já existe (recuperação de senha), mas o cadastro ainda não exige verificação de e-mail. Login, refresh e "esqueci a senha" não vazam essa informação | Fase 7, com verificação de e-mail no cadastro |
+| Cadastro e posse do e-mail | Feito: o cadastro por senha responde `202` igual para e-mail novo, pendente ou já confirmado e só dá sessão depois do código de 6 dígitos enviado ao e-mail (validade de 15 minutos, 5 tentativas, uso único, junto com a senha). Login social só cria ou vincula conta com e-mail verificado pelo provedor. Contas não confirmadas são apagadas em 7 dias (OpenSpec `verificacao-de-email-no-cadastro`) | Medir o tempo de resposta em produção e validar a entrega do e-mail antes da loja |
 | Rate limit | Feito: limite geral por IP e limite menor nas rotas de autenticação (`@nestjs/throttler`, ajustável por variável de ambiente). Limite por e-mail no login ainda não existe | Avaliar na Fase 7 |
 | `helmet` e CORS com allowlist | Feitos (`apps/api/src/setup-app.ts`); sem lista de origens o CORS fica desligado | Concluído |
 | HTTPS | Obrigatório em produção; o app em desenvolvimento usa HTTP para o emulador | Antes do primeiro deploy |

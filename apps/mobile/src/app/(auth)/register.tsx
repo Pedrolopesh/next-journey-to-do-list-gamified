@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerRequestSchema } from '@nextjourney/contracts';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { Controller, type Resolver, useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 
 import { register } from '@/api/endpoints';
-import { useSessionStore } from '@/auth/session-store';
+import { usePendingVerificationStore } from '@/auth/pending-verification-store';
 import { Button } from '@/components/button';
 import { PasswordChecklist } from '@/components/password-checklist';
 import { SocialButtons } from '@/components/social-buttons';
@@ -38,10 +38,11 @@ type FormValues = {
 
 export default function RegisterScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { run, loading } = useAction({
     name: 'auth.register',
     success: t('auth.registerSuccess'),
-    error: (error) => describeError(error, t, { EMAIL_UNAVAILABLE: t('auth.emailUnavailable') }),
+    error: (error) => describeError(error, t),
   });
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -66,7 +67,7 @@ export default function RegisterScreen() {
   const onSubmit = handleSubmit(
     (values) =>
       run(async () => {
-        const response = await register({
+        await register({
           name: values.name,
           email: values.email,
           password: values.password,
@@ -75,7 +76,11 @@ export default function RegisterScreen() {
           termsVersion: TERMS_VERSION,
           timezone,
         });
-        await useSessionStore.getState().setSession(response);
+        // Sem sessão ainda: e-mail e senha ficam só na memória para a tela do código
+        usePendingVerificationStore
+          .getState()
+          .set({ email: values.email, password: values.password });
+        router.replace('/verify-email');
       }),
     (invalid) => {
       log.warn('form.invalid', { form: 'register', fields: Object.keys(invalid) });

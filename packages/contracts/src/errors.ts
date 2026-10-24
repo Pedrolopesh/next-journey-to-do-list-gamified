@@ -11,6 +11,12 @@ export const ERROR_CODES = {
   UNDO_NOT_ALLOWED: 'UNDO_NOT_ALLOWED',
   /** O check fechou o capítulo (ou o capítulo já fechou): é definitivo. */
   CHECK_LOCKED: 'CHECK_LOCKED',
+  /** Login com senha certa, mas o e-mail do cadastro ainda não foi confirmado. */
+  EMAIL_NOT_VERIFIED: 'EMAIL_NOT_VERIFIED',
+  /** Código de confirmação do e-mail errado, expirado ou já usado. */
+  INVALID_VERIFICATION_CODE: 'INVALID_VERIFICATION_CODE',
+  /** O provedor (Google/Apple) não verificou o e-mail do login social. */
+  EMAIL_NOT_VERIFIED_BY_PROVIDER: 'EMAIL_NOT_VERIFIED_BY_PROVIDER',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
 

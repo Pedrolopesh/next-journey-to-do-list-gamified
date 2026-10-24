@@ -16,8 +16,11 @@ import {
   playerStateSchema,
   putStoryRequestSchema,
   registerRequestSchema,
+  registerResponseSchema,
+  resendVerificationRequestSchema,
   scheduleDaysSchema,
   timezoneSchema,
+  verifyEmailRequestSchema,
 } from './index';
 
 const categoryId = '3f1f4c2e-5a7b-4f3e-9c1d-2b8a6d4e7f10';
@@ -176,5 +179,22 @@ describe('fase 5: categorias, perfil e histórias', () => {
   it('escolher história exige o slug', () => {
     expect(putStoryRequestSchema.safeParse({ slug: 'empreendedor' }).success).toBe(true);
     expect(putStoryRequestSchema.safeParse({ slug: '' }).success).toBe(false);
+  });
+
+  it('confirmação de e-mail: código de exatamente 6 dígitos, com a senha', () => {
+    const base = { email: 'a@exemplo.com', password: 'Teste#1234' }; // scan-allow: senha falsa de teste
+    expect(verifyEmailRequestSchema.safeParse({ ...base, code: '012345' }).success).toBe(true);
+    for (const code of ['12345', '1234567', '12345a', '']) {
+      expect(verifyEmailRequestSchema.safeParse({ ...base, code }).success).toBe(false);
+    }
+    expect(verifyEmailRequestSchema.safeParse({ email: base.email, code: '012345' }).success).toBe(
+      false,
+    );
+    expect(resendVerificationRequestSchema.safeParse({ email: 'x' }).success).toBe(false);
+  });
+
+  it('cadastro responde só o status, nunca sessão', () => {
+    expect(registerResponseSchema.safeParse({ status: 'verification_sent' }).success).toBe(true);
+    expect(registerResponseSchema.safeParse({ status: 'ok' }).success).toBe(false);
   });
 });

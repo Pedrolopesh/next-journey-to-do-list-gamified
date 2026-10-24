@@ -23,25 +23,30 @@ enum Difficulty {
 }
 
 model User {
-  id              String    @id @default(uuid()) @db.Uuid
-  email           String    @unique
+  id                     String    @id @default(uuid()) @db.Uuid
+  email                  String    @unique
   /// Nulo para contas criadas só por login social
-  passwordHash    String?   @map("password_hash")
-  name            String
-  timezone        String
-  termsAcceptedAt DateTime  @map("terms_accepted_at") @db.Timestamptz
-  termsVersion    String    @map("terms_version")
+  passwordHash           String?   @map("password_hash")
+  name                   String
+  timezone               String
+  termsAcceptedAt        DateTime  @map("terms_accepted_at") @db.Timestamptz
+  termsVersion           String    @map("terms_version")
   /// Quando o tutorial foi visto (ou pulado)
-  tutorialSeenAt  DateTime? @map("tutorial_seen_at") @db.Timestamptz
+  tutorialSeenAt         DateTime? @map("tutorial_seen_at") @db.Timestamptz
   /// Horário do lembrete diário (HH:MM), no fuso do perfil
-  notifyAt        String?   @map("notify_at") @db.VarChar(5)
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz
+  notifyAt               String?   @map("notify_at") @db.VarChar(5)
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  deletedAt              DateTime? @map("deleted_at") @db.Timestamptz
+  /// Quando a pessoa provou ser dona do e-mail (nulo = cadastro ainda pendente)
+  emailVerifiedAt        DateTime? @map("email_verified_at") @db.Timestamptz
+  /// Último envio de código ou aviso de confirmação (intervalo mínimo entre envios)
+  verificationMailSentAt DateTime? @map("verification_mail_sent_at") @db.Timestamptz
 
   stats              UserStats?
   character          Character?
   identities         AuthIdentity[]
   passwordResets     PasswordReset[]
+  emailVerifications EmailVerification[]
   storyProgress      StoryProgress[]
   chapterCompletions ChapterCompletion[]
   achievements       UserAchievement[]
@@ -214,6 +219,22 @@ model PasswordReset {
 
   @@index([userId])
   @@map("password_resets")
+}
+
+model EmailVerification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  /// sha256 de "userId:código"; o código em si nunca é guardado
+  codeHash  String    @map("code_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  attempts  Int       @default(0)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verifications")
 }
 
 model Character {

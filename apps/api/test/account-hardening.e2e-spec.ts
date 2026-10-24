@@ -6,6 +6,7 @@ import {
   createItem,
   createTestApp,
   PASSWORD,
+  registerBody,
   registerUser,
   type TestContext,
   uniqueEmail,
@@ -44,6 +45,26 @@ describe('exclusão de conta', () => {
     // O mesmo e-mail pode abrir uma conta nova
     const again = await registerUser(ctx, email);
     expect(again.user.id).not.toBe(auth.user.id);
+  });
+
+  it('o expurgo também apaga cadastro por senha nunca confirmado há mais de 7 dias', async () => {
+    const stale = uniqueEmail('pendente-antigo');
+    const fresh = uniqueEmail('pendente-novo');
+    for (const email of [stale, fresh]) {
+      await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
+    }
+    const confirmed = await registerUser(ctx);
+    const old = new Date(ctx.clock.now().getTime() - 8 * 24 * 60 * 60 * 1000);
+    await ctx.prisma.user.updateMany({
+      where: { email: { in: [stale, confirmed.user.email] } },
+      data: { createdAt: old },
+    });
+
+    await ctx.app.get(AccountService).purgeExpired();
+
+    expect(await ctx.prisma.user.count({ where: { email: stale } })).toBe(0);
+    expect(await ctx.prisma.user.count({ where: { email: fresh } })).toBe(1);
+    expect(await ctx.prisma.user.count({ where: { id: confirmed.user.id } })).toBe(1);
   });
 
   it('o expurgo apaga de vez só o que passou do prazo de retenção', async () => {

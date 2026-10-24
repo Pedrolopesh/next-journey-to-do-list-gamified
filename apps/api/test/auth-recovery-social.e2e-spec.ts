@@ -11,6 +11,7 @@ import {
   createTestApp,
   NOON_09,
   PASSWORD,
+  registerBody,
   registerUser,
   type TestContext,
   uniqueEmail,
@@ -56,7 +57,11 @@ describe('recuperação de senha', () => {
       .send({ email: uniqueEmail('nao') })
       .expect(202);
     expect(known.body).toEqual(unknown.body);
-    expect(ctx.mailer.sent.filter((m) => m.to === auth.user.email)).toHaveLength(1);
+    expect(
+      ctx.mailer.sent.filter(
+        (m) => m.to === auth.user.email && m.subject.startsWith('Recuperação'),
+      ),
+    ).toHaveLength(1);
     expect(ctx.mailer.sent.some((m) => m.to.startsWith('nao-'))).toBe(false);
   });
 
@@ -221,9 +226,40 @@ describe('login social', () => {
       .http()
       .post('/v1/auth/google')
       .send({ idToken: 'ok', termsVersion: '1' })
-      .expect(409);
-    expect(res.body.code).toBe('EMAIL_UNAVAILABLE');
+      .expect(400);
+    expect(res.body.code).toBe('EMAIL_NOT_VERIFIED_BY_PROVIDER');
     expect(await ctx.prisma.authIdentity.count({ where: { userId: existing.user.id } })).toBe(0);
+  });
+
+  it('provedor sem e-mail verificado não cria conta nova', async () => {
+    const email = uniqueEmail('naoverificado');
+    verifier.identity = { subject: `n-${email}`, email, emailVerified: false, name: null };
+    const res = await ctx
+      .http()
+      .post('/v1/auth/google')
+      .send({ idToken: 'ok', termsVersion: '1' })
+      .expect(400);
+    expect(res.body.code).toBe('EMAIL_NOT_VERIFIED_BY_PROVIDER');
+    expect(await ctx.prisma.user.count({ where: { email } })).toBe(0);
+  });
+
+  it('login social assume a conta por senha NÃO confirmada: apaga a senha e as sessões', async () => {
+    const email = uniqueEmail('pendente');
+    await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
+    const pendingCode = ctx.mailer.lastVerificationCode(email) ?? '';
+    verifier.identity = { subject: `p-${email}`, email, emailVerified: true, name: null };
+    await ctx.http().post('/v1/auth/apple').send({ idToken: 'ok' }).expect(200);
+
+    const user = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
+    expect(user.emailVerifiedAt).not.toBeNull();
+    expect(user.passwordHash).toBeNull();
+    // A senha de quem cadastrou antes e o código pendente deixam de valer
+    await ctx.http().post('/v1/auth/login').send({ email, password: PASSWORD }).expect(401); // scan-allow: senha falsa
+    await ctx
+      .http()
+      .post('/v1/auth/verify-email')
+      .send({ email, code: pendingCode, password: PASSWORD }) // scan-allow: senha falsa
+      .expect(400);
   });
 
   it('conta só social não entra com senha; token inválido é 401', async () => {
