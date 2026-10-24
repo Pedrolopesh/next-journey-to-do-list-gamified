@@ -8,6 +8,8 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AppError } from './app-error.js';
 import { IS_PUBLIC_KEY } from './public.decorator.js';
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export type AuthenticatedRequest = Request & { user: { id: string } };
 
 /**
@@ -40,7 +42,8 @@ export class JwtAuthGuard implements CanActivate {
       const payload = await this.jwt.verifyAsync<{ sub?: string }>(token, {
         algorithms: ['HS256'],
       });
-      if (!payload.sub) throw new Error('sem sub');
+      // O id é um UUID: qualquer outra coisa nem chega ao banco (que rejeitaria com erro 500)
+      if (!payload.sub || !UUID.test(payload.sub)) throw new Error('sub inválido');
       userId = payload.sub;
     } catch {
       throw new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Não autenticado');

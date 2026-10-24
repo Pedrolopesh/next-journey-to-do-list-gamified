@@ -9,7 +9,7 @@ import { JwtAuthGuard } from './jwt-auth.guard.js';
 
 const USER_ID = '5f0f4d4e-6b43-4f5e-9f55-0d1c1b8a8b11';
 
-function build(findFirst: () => Promise<{ id: string } | null>) {
+function build(findFirst: () => Promise<{ id: string } | null>, sub: string = USER_ID) {
   const request: { headers: Record<string, string>; user?: { id: string } } = {
     headers: { authorization: 'Bearer token-de-teste' }, // scan-allow: token falso de teste
   };
@@ -20,7 +20,7 @@ function build(findFirst: () => Promise<{ id: string } | null>) {
   } as unknown as ExecutionContext;
   const guard = new JwtAuthGuard(
     { getAllAndOverride: () => false } as unknown as Reflector,
-    { verifyAsync: () => Promise.resolve({ sub: USER_ID }) } as unknown as JwtService,
+    { verifyAsync: () => Promise.resolve({ sub }) } as unknown as JwtService,
     { user: { findFirst: vi.fn(findFirst) } } as unknown as PrismaService,
   );
   return { guard, context, request };
@@ -36,6 +36,13 @@ describe('JwtAuthGuard com a conta', () => {
   it('conta excluída ou inexistente dá 401', async () => {
     const { guard, context } = build(() => Promise.resolve(null));
     await expect(guard.canActivate(context)).rejects.toMatchObject({ status: 401 });
+  });
+
+  it('sub que não é UUID dá 401 sem consultar o banco', async () => {
+    const find = vi.fn(() => Promise.resolve({ id: USER_ID }));
+    const { guard, context } = build(find, 'nao-e-uuid');
+    await expect(guard.canActivate(context)).rejects.toMatchObject({ status: 401 });
+    expect(find).not.toHaveBeenCalled();
   });
 
   it('falha do banco NÃO vira 401 (não desloga o app), mas também nega o acesso', async () => {
