@@ -24,5 +24,6 @@ O app precisa manter o usuário logado com segurança, em um repositório públi
 - Roubar o banco não dá sessões: só hashes de refresh token.
 - Um refresh token roubado e usado pelo atacante derruba a sessão do dono também (e força novo login): comportamento intencional.
 - O cadastro por senha só dá sessão depois que a pessoa confirma o e-mail com um código de 6 dígitos (a conta fica pendente até lá e é apagada em 7 dias). Cadastro e reenvio respondem igual para e-mail novo ou já usado; o código vale 15 minutos, 5 tentativas e uso único, e a confirmação exige também a senha.
-- Falta rate limit (Fase 7) e login social (Fase 5).
+- Rate limit por IP e login social (Google/Apple) já existem; o limite por e-mail ainda não (ver `docs/SEGURANCA.md`).
 - A rotação do refresh token é atômica: duas renovações simultâneas com o mesmo token contam como reuso (só uma passa e a sessão inteira é revogada). O app serializa a renovação (uma por vez), então o uso normal não é afetado.
+- O guard global confere a cada requisição se a conta ainda existe (busca por chave primária, sem cache; custo medido dentro do ruído): conta excluída perde o acesso na hora, sem esperar os 15 minutos do token. Erro de banco no guard nega o acesso com 500, nunca com 401, para uma falha temporária não deslogar o app. Ainda não existe bloqueio de conta (moderação); quando existir, entra nessa mesma consulta.

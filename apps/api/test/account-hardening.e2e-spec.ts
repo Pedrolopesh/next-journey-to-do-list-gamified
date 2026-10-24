@@ -34,6 +34,8 @@ describe('exclusão de conta', () => {
     expect(row.name).toBe('Conta excluída');
     expect(row.passwordHash).toBeNull();
 
+    // O token de acesso ainda dentro da validade deixa de valer na hora
+    await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(401);
     // Login e renovação de sessão deixam de funcionar
     await ctx.http().post('/v1/auth/login').send({ email, password: PASSWORD }).expect(401);
     await ctx
