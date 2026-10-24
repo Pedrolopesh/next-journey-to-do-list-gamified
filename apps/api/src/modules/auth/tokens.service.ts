@@ -9,6 +9,7 @@ import { Clock } from '../../common/clock.js';
 import { ENV, type Env } from '../../config/env.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { SecurityEvents } from '../security/security-events.service.js';
 
 const sha256 = (value: string): string => createHash('sha256').update(value).digest('hex');
 
@@ -41,6 +42,7 @@ export class TokensService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(Clock) private readonly clock: Clock,
     @Inject(ENV) private readonly env: Env,
+    @Inject(SecurityEvents) private readonly events: SecurityEvents,
   ) {}
 
   /** Cria um par de tokens. Sem `familyId`, abre uma família nova (login). */
@@ -125,6 +127,7 @@ export class TokensService {
 
     if (stored.revokedAt) {
       // Reuso de token já rotacionado: derruba a sessão inteira
+      this.events.record('refresh_reuse_detected', { userId: stored.userId });
       await this.revokeFamily(stored.familyId);
       throw unauthorized();
     }
@@ -152,6 +155,7 @@ export class TokensService {
     }
     if (!next) {
       // Perdeu a corrida: o mesmo token foi usado duas vezes, tratado como reuso (token possivelmente roubado)
+      this.events.record('refresh_reuse_detected', { userId: stored.userId });
       await this.revokeFamily(stored.familyId);
       throw unauthorized();
     }

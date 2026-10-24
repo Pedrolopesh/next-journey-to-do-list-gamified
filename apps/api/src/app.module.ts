@@ -17,6 +17,7 @@ import { HealthModule } from './modules/health/health.module.js';
 import { HomeModule } from './modules/home/home.module.js';
 import { ItemsModule } from './modules/items/items.module.js';
 import { MeModule } from './modules/me/me.module.js';
+import { SecurityModule } from './modules/security/security.module.js';
 import { StoriesModule } from './modules/stories/stories.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 
@@ -85,6 +86,7 @@ const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
         },
       }),
     }),
+    SecurityModule,
     AuthModule,
     ItemsModule,
     MeModule,

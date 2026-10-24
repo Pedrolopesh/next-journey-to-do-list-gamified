@@ -16,6 +16,7 @@ import { AppError } from '../../common/app-error.js';
 import { Clock } from '../../common/clock.js';
 import { ENV, type Env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { SecurityEvents } from '../security/security-events.service.js';
 import { EmailVerificationService } from './email-verification.service.js';
 import { IdTokenVerifier, type SocialProvider } from './id-token-verifier.js';
 import { Mailer } from './mailer.js';
@@ -54,6 +55,7 @@ export class AuthService {
     @Inject(IdTokenVerifier) private readonly verifier: IdTokenVerifier,
     @Inject(EmailVerificationService) private readonly verification: EmailVerificationService,
     @Inject(RateLimitService) private readonly rateLimit: RateLimitService,
+    @Inject(SecurityEvents) private readonly events: SecurityEvents,
   ) {}
 
   /**
@@ -155,7 +157,10 @@ export class AuthService {
     // Mesma resposta e mesmo custo para e-mail inexistente e senha errada (sem enumeração)
     const hash = user?.passwordHash ?? (await this.getDummyHash());
     const valid = await argon2.verify(hash, input.password).catch(() => false);
-    if (!user || !valid) throw invalidCredentials();
+    if (!user || !valid) {
+      this.events.record('login_failed', { ip, ...(user ? { userId: user.id } : {}) });
+      throw invalidCredentials();
+    }
     await this.rateLimit.reset('login:email-ip', `${email}|${ip}`);
     if (!user.emailVerifiedAt) {
       // Só quem sabe a senha chega aqui: o aviso não revela a conta a terceiros
@@ -195,6 +200,7 @@ export class AuthService {
       await this.getDummyHash(); // gasta um tempo parecido
       return;
     }
+    this.events.record('password_reset_requested', { userId: user.id, ip });
     const secret = randomBytes(32).toString('base64url');
     const now = this.clock.now();
     await this.prisma.$transaction([
@@ -236,6 +242,7 @@ export class AuthService {
         data: { revokedAt: now },
       }),
     ]);
+    this.events.record('password_reset_completed', { userId: reset.userId });
   }
 
   /**
