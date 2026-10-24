@@ -29,7 +29,7 @@ export class EmailVerificationService {
   async sendCode(user: Recipient): Promise<void> {
     const code = await this.reserve(user.id, true);
     if (!code) return;
-    this.deliver({
+    this.mailer.sendInBackground({
       to: user.email,
       subject: 'Seu código de confirmação do Next Journey',
       text: `Seu código para confirmar o e-mail é ${code}. Ele vale por 15 minutos.\n\nSe você não pediu, ignore este e-mail.`,
@@ -39,7 +39,7 @@ export class EmailVerificationService {
   /** Aviso (sem código) para quem tenta cadastrar um e-mail que já tem conta confirmada. */
   async sendNotice(user: Recipient): Promise<void> {
     if (!(await this.reserve(user.id, false))) return;
-    this.deliver({
+    this.mailer.sendInBackground({
       to: user.email,
       subject: 'Tentativa de cadastro no Next Journey',
       text: 'Alguém tentou criar uma conta no Next Journey com este e-mail, que já tem conta. Se foi você, entre com sua senha ou use "Esqueci a senha". Se não foi, ignore este e-mail.',
@@ -130,11 +130,6 @@ export class EmailVerificationService {
         },
       }),
     ]);
-  }
-
-  /** Envio sem esperar: o tempo da resposta não depende de o e-mail existir. Falha não vaza. */
-  private deliver(message: { to: string; subject: string; text: string }): void {
-    void this.mailer.send(message).catch(() => undefined);
   }
 }
 

@@ -6,6 +6,13 @@ import { ENV, type Env } from '../../config/env.js';
 /** Envio de e-mail transacional. Trocável nos testes por um fake que captura a mensagem. */
 export abstract class Mailer {
   abstract send(message: { to: string; subject: string; text: string }): Promise<void>;
+
+  /** Envio sem esperar: a resposta da rota não depende do provedor. Falha não vaza para quem pediu. */
+  sendInBackground(message: { to: string; subject: string; text: string }): void {
+    void Promise.resolve()
+      .then(() => this.send(message))
+      .catch(() => undefined);
+  }
 }
 
 /** Resend (https://resend.com). Sem RESEND_API_KEY nada é enviado (desenvolvimento). */
@@ -31,20 +38,30 @@ export class ResendMailer extends Mailer {
       }
       return;
     }
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: this.env.MAIL_FROM,
-        to: [message.to],
-        subject: message.subject,
-        text: message.text,
-      }),
-      signal: AbortSignal.timeout(10_000),
-    });
+    let response: Response;
+    try {
+      response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: this.env.MAIL_FROM,
+          to: [message.to],
+          subject: message.subject,
+          text: message.text,
+        }),
+        signal: AbortSignal.timeout(10_000),
+      });
+    } catch (error) {
+      // Só a classe do erro (rede, tempo esgotado): nunca destinatário nem conteúdo
+      this.logger.error(
+        { error: error instanceof Error ? error.name : 'desconhecido' },
+        'Falha de rede ao enviar e-mail pelo Resend',
+      );
+      return;
+    }
     if (!response.ok) {
       this.logger.error({ status: response.status }, 'Falha ao enviar e-mail pelo Resend');
     }

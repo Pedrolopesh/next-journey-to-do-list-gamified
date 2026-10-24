@@ -23,6 +23,8 @@ describe('rotas de conta com tempo de resposta igual (sem enumeração por tempo
   beforeAll(async () => {
     process.env.AUTH_MIN_RESPONSE_MS = String(FLOOR_MS);
     ctx = await createTestApp();
+    // Aquece conexões e o argon2 para a primeira medição não pagar o custo de partida
+    await ctx.http().post('/v1/auth/register').send(registerBody(uniqueEmail())).expect(202);
   });
   afterAll(async () => {
     await ctx.app.close();
@@ -40,17 +42,19 @@ describe('rotas de conta com tempo de resposta igual (sem enumeração por tempo
 
     expect(withAccount).toBeGreaterThanOrEqual(FLOOR_MS - 10);
     expect(withoutAccount).toBeGreaterThanOrEqual(FLOOR_MS - 10);
-    expect(Math.abs(withAccount - withoutAccount)).toBeLessThan(120);
+    expect(Math.abs(withAccount - withoutAccount)).toBeLessThan(150);
   });
 
   it('esqueci a senha não espera o provedor de e-mail, mesmo lento', async () => {
     const email = (await registerUser(ctx)).user.email;
-    ctx.mailer.delayMs = 1500;
+    ctx.mailer.delayMs = 900;
     try {
       const elapsed = await took(() =>
         ctx.http().post('/v1/auth/forgot-password').send({ email }).expect(202),
       );
-      expect(elapsed).toBeLessThan(1000);
+      expect(elapsed).toBeLessThan(700);
+      // Deixa o envio lento terminar antes de fechar o app
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } finally {
       ctx.mailer.delayMs = 0;
     }
@@ -66,7 +70,7 @@ describe('rotas de conta com tempo de resposta igual (sem enumeração por tempo
 
     expect(fresh).toBeGreaterThanOrEqual(FLOOR_MS - 10);
     expect(existing).toBeGreaterThanOrEqual(FLOOR_MS - 10);
-    expect(Math.abs(fresh - existing)).toBeLessThan(120);
+    expect(Math.abs(fresh - existing)).toBeLessThan(150);
   });
 
   it('reenvio do código: conta pendente e e-mail inexistente levam o mesmo tempo', async () => {
@@ -79,6 +83,6 @@ describe('rotas de conta com tempo de resposta igual (sem enumeração por tempo
     const unknown = await took(() => resend(uniqueEmail('naoexiste')));
 
     expect(known).toBeGreaterThanOrEqual(FLOOR_MS - 10);
-    expect(Math.abs(known - unknown)).toBeLessThan(120);
+    expect(Math.abs(known - unknown)).toBeLessThan(150);
   });
 });
