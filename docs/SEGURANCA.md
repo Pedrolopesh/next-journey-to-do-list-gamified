@@ -84,6 +84,7 @@ Exceções ao `pnpm audit --audit-level=high` são **sempre documentadas**: fica
 |---|---|---|---|---|---|
 | 2026-10-03 | Alta | `node-forge` (GHSA-86w9-cpqp-85rv) | CLI do Expo (certificados de assinatura) | Só ferramenta de desenvolvimento; sem versão corrigida; não vai para o app | 2026-11-03 |
 | 2026-10-03 | Alta | `braces` (GHSA-vfj7-8cjw-p6xm) | Metro (empacotador) | Só ferramenta de desenvolvimento; sem versão corrigida; não vai para o app | 2026-11-03 |
+| 2026-10-24 | Alta | `zod` 3.x (GHSA-mrhx-c7xc-m3w5) | CLI do Expo (cópia interna do zod 3) | Só ferramenta de desenvolvimento; a linha 3 não recebeu correção; o projeto usa zod 4 corrigido | 2026-11-03 |
 
 A moderada que resta (`sprintf-js`, só em ferramenta de desenvolvimento do Expo) não bloqueia o CI e não tem versão corrigida; `uuid`, `decode-uri-component` e `esbuild` foram resolvidos por `overrides` em 2026-10-12.
 
