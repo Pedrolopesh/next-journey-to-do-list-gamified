@@ -60,9 +60,9 @@ export class AuthService {
    * Cadastro por senha: nunca devolve sessão. Responde igual para e-mail novo, pendente ou já
    * confirmado (sem enumeração); o código só chega ao e-mail e a conta só vale depois de confirmar.
    */
-  async register(input: RegisterRequest): Promise<RegisterResponse> {
+  async register(input: RegisterRequest, ip: string): Promise<RegisterResponse> {
     const email = input.email.trim().toLowerCase();
-    await this.rateLimit.hit('register', email, LIMITS.register);
+    await this.rateLimit.hitBoth('register', email, ip, LIMITS.register);
     const passwordHash = await argon2.hash(input.password, { type: argon2.argon2id });
     const profile = {
       passwordHash,
@@ -110,9 +110,9 @@ export class AuthService {
   }
 
   /** Confirma o e-mail com o código (e a senha do cadastro) e só então entrega a sessão. */
-  async verifyEmail(input: VerifyEmailRequest): Promise<AuthResponse> {
+  async verifyEmail(input: VerifyEmailRequest, ip: string): Promise<AuthResponse> {
     const email = input.email.trim().toLowerCase();
-    await this.rateLimit.hit('verify-email', email, LIMITS.verifyEmail);
+    await this.rateLimit.hitBoth('verify-email', email, ip, LIMITS.verifyEmail);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     const pending = user && !user.emailVerifiedAt && user.passwordHash ? user : null;
     // Mesmo custo e mesma resposta para qualquer falha (sem enumeração)
@@ -139,9 +139,9 @@ export class AuthService {
   }
 
   /** Reenvio do código: responde sempre igual; só envia para conta pendente e fora do intervalo mínimo. */
-  async resendVerification(emailInput: string): Promise<void> {
+  async resendVerification(emailInput: string, ip: string): Promise<void> {
     const email = emailInput.trim().toLowerCase();
-    await this.rateLimit.hit('resend-verification', email, LIMITS.resendVerification);
+    await this.rateLimit.hitBoth('resend-verification', email, ip, LIMITS.resendVerification);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     if (user && !user.emailVerifiedAt && user.passwordHash) await this.verification.sendCode(user);
   }
@@ -149,15 +149,14 @@ export class AuthService {
   async login(input: LoginRequest, ip: string): Promise<AuthResponse> {
     const email = input.email.trim().toLowerCase();
     // Conta a tentativa ANTES de conferir a senha: tentativas paralelas também contam
-    await this.rateLimit.hit('login-email', email, LIMITS.loginPerEmail);
-    await this.rateLimit.hit('login-email-ip', `${email}|${ip}`, LIMITS.loginPerEmailAndIp);
+    await this.rateLimit.hitBoth('login', email, ip, LIMITS.login);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
 
     // Mesma resposta e mesmo custo para e-mail inexistente e senha errada (sem enumeração)
     const hash = user?.passwordHash ?? (await this.getDummyHash());
     const valid = await argon2.verify(hash, input.password).catch(() => false);
     if (!user || !valid) throw invalidCredentials();
-    await this.rateLimit.reset('login-email-ip', `${email}|${ip}`);
+    await this.rateLimit.reset('login:email-ip', `${email}|${ip}`);
     if (!user.emailVerifiedAt) {
       // Só quem sabe a senha chega aqui: o aviso não revela a conta a terceiros
       await this.verification.sendCode(user).catch(() => undefined);
@@ -188,9 +187,9 @@ export class AuthService {
    * "Esqueci a senha": responde SEMPRE igual, exista ou não o e-mail (sem enumeração). O link tem o
    * segredo de uso único, válido por 30 minutos; só o sha256 dele fica no banco.
    */
-  async forgotPassword(emailInput: string): Promise<void> {
+  async forgotPassword(emailInput: string, ip: string): Promise<void> {
     const email = emailInput.trim().toLowerCase();
-    await this.rateLimit.hit('forgot-password', email, LIMITS.forgotPassword);
+    await this.rateLimit.hitBoth('forgot-password', email, ip, LIMITS.forgotPassword);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     if (!user) {
       await this.getDummyHash(); // gasta um tempo parecido

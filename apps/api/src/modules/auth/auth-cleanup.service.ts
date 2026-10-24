@@ -8,7 +8,12 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BATCH_SIZE = 1000;
 
-type PurgeCounts = { refreshTokens: number; passwordResets: number; emailVerifications: number };
+type PurgeCounts = {
+  refreshTokens: number;
+  passwordResets: number;
+  emailVerifications: number;
+  rateLimits: number;
+};
 type ExpiringTable = {
   findMany(args: {
     where: { expiresAt: { lt: Date } };
@@ -37,15 +42,31 @@ export class AuthCleanupService {
 
   async purgeExpired(): Promise<PurgeCounts> {
     const limit = new Date(this.clock.now().getTime() - EXPIRED_GRACE_DAYS * DAY_MS);
-    // Contadores do limite de tentativas: a janela mais longa é de 1 hora
-    await this.prisma.rateLimit.deleteMany({
-      where: { windowStart: { lt: new Date(this.clock.now().getTime() - DAY_MS) } },
-    });
     return {
       refreshTokens: await this.purgeInBatches(this.prisma.refreshToken, limit),
       passwordResets: await this.purgeInBatches(this.prisma.passwordReset, limit),
       emailVerifications: await this.purgeInBatches(this.prisma.emailVerification, limit),
+      rateLimits: await this.purgeRateLimits(),
     };
+  }
+
+  /** Contadores do limite de tentativas: a janela mais longa é de 1 hora, então 1 dia já é folga. */
+  private async purgeRateLimits(): Promise<number> {
+    const limit = new Date(this.clock.now().getTime() - DAY_MS);
+    let total = 0;
+    for (;;) {
+      const rows = await this.prisma.rateLimit.findMany({
+        where: { windowStart: { lt: limit } },
+        select: { key: true },
+        take: BATCH_SIZE,
+      });
+      if (rows.length === 0) return total;
+      const { count } = await this.prisma.rateLimit.deleteMany({
+        where: { key: { in: rows.map((row) => row.key) } },
+      });
+      total += count;
+      if (rows.length < BATCH_SIZE) return total;
+    }
   }
 
   /** Apaga em lotes: uma tabela grande não vira um DELETE único longo, com travas e logs pesados. */

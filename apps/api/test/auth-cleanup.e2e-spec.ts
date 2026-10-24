@@ -89,6 +89,21 @@ describe('limpeza de tokens, links e códigos expirados', () => {
     ).toEqual([codes[1]!.id]);
   });
 
+  it('contadores do limite de tentativas: some o que passou de 1 dia, fica o recente', async () => {
+    const oldKey = randomUUID();
+    const freshKey = randomUUID();
+    await ctx.prisma.rateLimit.createMany({
+      data: [
+        { key: oldKey, count: 3, windowStart: ago(2) },
+        { key: freshKey, count: 1, windowStart: ago(0) },
+      ],
+    });
+    const counts = await ctx.app.get(AuthCleanupService).purgeExpired();
+    expect(counts.rateLimits).toBeGreaterThanOrEqual(1);
+    expect(await ctx.prisma.rateLimit.findUnique({ where: { key: oldKey } })).toBeNull();
+    expect(await ctx.prisma.rateLimit.findUnique({ where: { key: freshKey } })).not.toBeNull();
+  });
+
   it('rodar de novo não apaga mais nada do que já ficou dentro do prazo', async () => {
     const auth = await registerUser(ctx);
     const kept = await ctx.prisma.refreshToken.create({

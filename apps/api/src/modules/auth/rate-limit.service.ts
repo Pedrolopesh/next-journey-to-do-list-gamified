@@ -10,17 +10,35 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 
 const MINUTE_MS = 60_000;
 
-/** Regras de limite por conta. O limite por IP continua no Throttler; estes valem para o e-mail. */
+/**
+ * Regras de limite por conta. O limite por IP continua no Throttler. Toda rota tem dois níveis: um por
+ * e-mail + IP (quem abusa trava só a si mesmo) e um teto por e-mail, mais alto, contra ataque vindo de
+ * vários IPs sem deixar um desconhecido trancar a conta de outra pessoa com facilidade.
+ */
 export const LIMITS = {
-  /** Senha errada por e-mail + IP: o atacante de um IP só trava a si mesmo. */
-  loginPerEmailAndIp: { limit: 5, windowMs: 15 * MINUTE_MS },
-  /** Teto só por e-mail, para ataque distribuído: alto, para ninguém trancar a conta de outra pessoa com facilidade. */
-  loginPerEmail: { limit: 30, windowMs: 15 * MINUTE_MS },
-  forgotPassword: { limit: 3, windowMs: 15 * MINUTE_MS },
-  register: { limit: 5, windowMs: 60 * MINUTE_MS },
-  resendVerification: { limit: 5, windowMs: 60 * MINUTE_MS },
-  verifyEmail: { limit: 10, windowMs: 15 * MINUTE_MS },
+  login: {
+    perEmailAndIp: { limit: 5, windowMs: 15 * MINUTE_MS },
+    perEmail: { limit: 30, windowMs: 15 * MINUTE_MS },
+  },
+  forgotPassword: {
+    perEmailAndIp: { limit: 3, windowMs: 15 * MINUTE_MS },
+    perEmail: { limit: 10, windowMs: 60 * MINUTE_MS },
+  },
+  register: {
+    perEmailAndIp: { limit: 5, windowMs: 60 * MINUTE_MS },
+    perEmail: { limit: 15, windowMs: 60 * MINUTE_MS },
+  },
+  resendVerification: {
+    perEmailAndIp: { limit: 5, windowMs: 60 * MINUTE_MS },
+    perEmail: { limit: 15, windowMs: 60 * MINUTE_MS },
+  },
+  verifyEmail: {
+    perEmailAndIp: { limit: 10, windowMs: 15 * MINUTE_MS },
+    perEmail: { limit: 40, windowMs: 15 * MINUTE_MS },
+  },
 } as const;
+
+export type LimitRules = { perEmailAndIp: Rule; perEmail: Rule };
 
 type Rule = { limit: number; windowMs: number };
 
@@ -62,6 +80,14 @@ export class RateLimitService {
         { retryAfterSeconds: retryAfter },
       );
     }
+  }
+
+  /** Conta a tentativa nos dois níveis (e-mail + IP e só e-mail), em paralelo. */
+  async hitBoth(scope: string, email: string, ip: string, rules: LimitRules): Promise<void> {
+    await Promise.all([
+      this.hit(`${scope}:email`, email, rules.perEmail),
+      this.hit(`${scope}:email-ip`, `${email}|${ip}`, rules.perEmailAndIp),
+    ]);
   }
 
   /** Zera o contador (ex.: login certo apaga as senhas erradas daquele e-mail + IP). */
