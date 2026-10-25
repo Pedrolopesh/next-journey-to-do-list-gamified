@@ -34,5 +34,6 @@ A LGPD dá à pessoa o direito de acessar os dados que o serviço guarda sobre e
 
 ## Fora do escopo
 
+- Registros técnicos (logs e eventos de segurança) e metadados de sessões e de login social: não são conteúdo da pessoa e não vão no arquivo; a política de retenção (`docs/PRIVACIDADE.md`) descreve o que existe e por quanto tempo.
 - Formato de portabilidade além de JSON, exportação por e-mail e histórico de logs.
 - Correção/atualização de dados pela própria pessoa além do que o app já permite.

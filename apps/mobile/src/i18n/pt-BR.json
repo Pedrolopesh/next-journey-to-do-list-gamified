@@ -383,6 +383,7 @@
     "export": "Exportar meus dados",
     "exportTitle": "Meus dados do Next Journey",
     "exported": "Seus dados estão prontos para compartilhar.",
+    "exportCancelled": "Exportação cancelada. Nada foi compartilhado.",
     "deleteConfirm": "Excluir minha conta",
     "deleteFailed": "Não foi possível excluir a conta. Tente de novo.",
     "deleteLoadFailed": "Não foi possível carregar sua conta. Confira a conexão e tente de novo.",

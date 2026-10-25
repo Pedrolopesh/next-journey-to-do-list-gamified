@@ -12,7 +12,6 @@ import {
   type CreateCategoryRequest,
   type CreateItemRequest,
   type DataExport,
-  dataExportSchema,
   type DeleteAccountRequest,
   type ForgotPasswordRequest,
   type HistoryResponse,
@@ -101,8 +100,9 @@ export async function revokeAllSessions(): Promise<void> {
 
 /** Exportação dos dados da própria conta (LGPD). */
 export async function fetchDataExport(): Promise<DataExport> {
-  const { data } = await http.get<unknown>('/me/export');
-  return dataExportSchema.parse(data);
+  // Sem validar no cliente: o app só repassa o arquivo e um campo novo da API não pode impedir a exportação
+  const { data } = await http.get<DataExport>('/me/export');
+  return data;
 }
 
 export async function logout(refreshToken: string): Promise<void> {

@@ -26,7 +26,7 @@ describe('ExportDataButton', () => {
       expect(share).toHaveBeenCalled();
     });
     const { message } = share.mock.calls[0]![0] as { message: string };
-    expect(JSON.parse(message)).toEqual({ account: { name: 'Pessoa' } });
+    expect(message).toBe('{"account":{"name":"Pessoa"}}');
     expect(useToastStore.getState().current?.message).toBe(
       'Seus dados estão prontos para compartilhar.',
     );
@@ -52,5 +52,20 @@ describe('ExportDataButton', () => {
     });
     expect(useToastStore.getState().current?.message).toMatch(/Muitas tentativas/);
     expect(share).not.toHaveBeenCalled();
+  });
+
+  it('fechar a folha sem compartilhar não é sucesso', async () => {
+    (fetchDataExport as jest.Mock).mockResolvedValue({ account: { name: 'Pessoa' } });
+    jest
+      .spyOn(Share, 'share')
+      .mockResolvedValue({ action: Share.dismissedAction, activityType: undefined });
+    await render(<ExportDataButton />);
+    await fireEvent.press(screen.getByLabelText('Exportar meus dados'));
+    await waitFor(() => {
+      expect(useToastStore.getState().current?.kind).toBe('error');
+    });
+    expect(useToastStore.getState().current?.message).toBe(
+      'Exportação cancelada. Nada foi compartilhado.',
+    );
   });
 });

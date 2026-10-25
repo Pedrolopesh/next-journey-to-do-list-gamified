@@ -45,8 +45,29 @@ export class DataExportService {
         emailVerifiedAt: true,
         passwordHash: true,
         identities: { select: { provider: true } },
-        stats: true,
-        character: true,
+        stats: {
+          select: {
+            level: true,
+            expInLevel: true,
+            expTotal: true,
+            coins: true,
+            totalChecks: true,
+            itemsCreated: true,
+            lookChanges: true,
+            categoriesCreated: true,
+          },
+        },
+        character: {
+          select: {
+            name: true,
+            title: true,
+            skin: true,
+            hair: true,
+            outfit: true,
+            accessory: true,
+            look: true,
+          },
+        },
       },
     });
     if (!user) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Usuário não encontrado');
