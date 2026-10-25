@@ -19,23 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
-    # Postgres só para os testes e2e da API (descartado ao fim do job)
-    services:
-      postgres:
-        # Espelho oficial do Docker Hub na AWS: evita o limite de downloads do Docker Hub
-        image: public.ecr.aws/docker/library/postgres:16-alpine
-        env:
-          POSTGRES_USER: ci
-          POSTGRES_PASSWORD: ci-senha-descartavel # scan-allow: credencial efêmera do container de teste
-          POSTGRES_DB: nextjourney_test
-        ports:
-          - 127.0.0.1:5432:5432
-        options: >-
-          --health-cmd "pg_isready -U ci -d nextjourney_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
     env:
       # O Prisma 7 lê esta variável até para gerar o cliente; o valor aponta para o banco efêmero acima
       DATABASE_URL: postgresql://ci:ci-senha-descartavel@127.0.0.1:5432/nextjourney_test # scan-allow: credencial efêmera
@@ -57,6 +40,15 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Postgres só para os testes e2e da API: o PostgreSQL que já vem instalado no runner (descartado ao fim
+      # do job). Evita baixar imagem de container, que falha de vez em quando por limite de downloads.
+      - name: Banco de teste (PostgreSQL do runner)
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres psql -v ON_ERROR_STOP=1 -c "CREATE ROLE ci WITH LOGIN SUPERUSER PASSWORD 'ci-senha-descartavel'" # scan-allow: credencial efêmera
+          sudo -u postgres createdb -O ci nextjourney_test
+          pg_isready -h 127.0.0.1 -p 5432 -d nextjourney_test -U ci
+
       # Só no PR: mensagens dos commits (Conventional Commits, sem corpo, sem atribuição a IA)
       - name: Commits do PR
         if: github.event_name == 'pull_request'
@@ -66,7 +58,7 @@ jobs:
 
       - run: pnpm exec turbo run lint typecheck test build
 
-      - name: Testes e2e da API (Postgres de serviço)
+      - name: Testes e2e da API
         run: pnpm --filter @nextjourney/api test:e2e
 
       - name: Propostas do OpenSpec alteradas no PR

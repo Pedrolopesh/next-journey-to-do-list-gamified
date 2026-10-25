@@ -27,7 +27,7 @@ Objetivo: nenhum PR sobe com erro que uma máquina acharia, e todo PR é fácil 
 
 ## 3. CI (`.github/workflows/ci.yml`)
 
-- Job `check`: commits do PR, lint, tipos, testes, build, e2e da API (Postgres de serviço), OpenSpec, duplicação e varredura de segredos.
+- Job `check`: commits do PR, lint, tipos, testes, build, e2e da API (PostgreSQL que já vem no runner), OpenSpec, duplicação e varredura de segredos.
 - Job `descricao`: título no formato `tipo: assunto` e as cinco seções do template; bloqueia citação de ferramenta de IA.
 - Ações oficiais com versão fixada; nenhum segredo de repositório no fluxo.
 - Fora da CI, por ora: testes de interface (Maestro, precisam de emulador). Rode antes do PR se mexeu em tela (`docs/TESTES.md`).
