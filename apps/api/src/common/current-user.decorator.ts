@@ -7,3 +7,9 @@ export const CurrentUserId = createParamDecorator(
   (_data: unknown, context: ExecutionContext) =>
     context.switchToHttp().getRequest<AuthenticatedRequest>().user.id,
 );
+
+/** Id da sessão atual (família do refresh token), quando o token de acesso o traz. */
+export const CurrentSessionId = createParamDecorator(
+  (_data: unknown, context: ExecutionContext) =>
+    context.switchToHttp().getRequest<AuthenticatedRequest>().user.sessionId,
+);

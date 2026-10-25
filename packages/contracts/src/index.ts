@@ -11,4 +11,5 @@ export * from './game-config';
 export * from './home';
 export * from './item';
 export * from './player';
+export * from './sessions';
 export * from './story';

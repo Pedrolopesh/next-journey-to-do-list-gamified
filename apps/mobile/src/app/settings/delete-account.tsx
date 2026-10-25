@@ -6,7 +6,7 @@ import { StyleSheet, Text } from 'react-native';
 
 import { deleteAccount } from '@/api/endpoints';
 import { useMe } from '@/api/queries';
-import { useSessionStore } from '@/auth/session-store';
+import { signOutLocally } from '@/auth/sign-out-local';
 import { Button } from '@/components/button';
 import { ScreenFrame } from '@/components/screen-frame';
 import { TextField } from '@/components/text-field';
@@ -18,7 +18,6 @@ import {
   isAppleAvailable,
 } from '@/features/auth/social-id-token';
 import { describeError } from '@/features/feedback/error-message';
-import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { toast } from '@/features/feedback/toast-store';
 import { useAction } from '@/features/feedback/use-action';
 import { colors, space } from '@/theme';
@@ -55,9 +54,7 @@ export default function DeleteAccountScreen() {
   const confirm = (getProof: () => Promise<DeleteAccountRequest>): Promise<boolean> =>
     run(async () => {
       await deleteAccount(await getProof());
-      queryClient.clear();
-      useFeedbackStore.getState().clear();
-      await useSessionStore.getState().clear();
+      await signOutLocally(queryClient);
     });
 
   const withPassword = (): void => {

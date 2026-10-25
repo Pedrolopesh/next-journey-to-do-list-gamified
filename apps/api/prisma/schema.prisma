@@ -66,6 +66,8 @@ model RefreshToken {
   tokenHash String    @unique @map("token_hash")
   /// Todos os tokens rotacionados a partir do mesmo login compartilham a família
   familyId  String    @map("family_id") @db.Uuid
+  /// Nome do aparelho informado pelo app (cabeçalho X-Device-Name), mantido na rotação
+  deviceName String?   @map("device_name") @db.VarChar(80)
   expiresAt DateTime  @map("expires_at") @db.Timestamptz
   revokedAt DateTime? @map("revoked_at") @db.Timestamptz
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz

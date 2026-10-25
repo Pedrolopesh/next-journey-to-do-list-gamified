@@ -17,6 +17,7 @@ import { Clock } from '../../common/clock.js';
 import { ENV, type Env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { SecurityEvents } from '../security/security-events.service.js';
+import { cleanDeviceName } from './device-name.js';
 import { EmailVerificationService } from './email-verification.service.js';
 import { IdTokenVerifier, type SocialProvider } from './id-token-verifier.js';
 import { Mailer } from './mailer.js';
@@ -112,7 +113,11 @@ export class AuthService {
   }
 
   /** Confirma o e-mail com o código (e a senha do cadastro) e só então entrega a sessão. */
-  async verifyEmail(input: VerifyEmailRequest, ip: string): Promise<AuthResponse> {
+  async verifyEmail(
+    input: VerifyEmailRequest,
+    ip: string,
+    deviceName?: string,
+  ): Promise<AuthResponse> {
     const email = input.email.trim().toLowerCase();
     await this.rateLimit.hitBoth('verify-email', email, ip, LIMITS.verifyEmail);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
@@ -130,7 +135,7 @@ export class AuthService {
       data: { emailVerifiedAt: this.clock.now() },
     });
     return {
-      tokens: await this.tokens.issue(pending.id),
+      tokens: await this.tokens.issue(pending.id, undefined, cleanDeviceName(deviceName)),
       user: {
         id: pending.id,
         name: pending.name,
@@ -148,7 +153,7 @@ export class AuthService {
     if (user && !user.emailVerifiedAt && user.passwordHash) await this.verification.sendCode(user);
   }
 
-  async login(input: LoginRequest, ip: string): Promise<AuthResponse> {
+  async login(input: LoginRequest, ip: string, deviceName?: string): Promise<AuthResponse> {
     const email = input.email.trim().toLowerCase();
     // Conta a tentativa ANTES de conferir a senha: tentativas paralelas também contam
     await this.rateLimit.hitBoth('login', email, ip, LIMITS.login);
@@ -169,7 +174,7 @@ export class AuthService {
     }
 
     return {
-      tokens: await this.tokens.issue(user.id),
+      tokens: await this.tokens.issue(user.id, undefined, cleanDeviceName(deviceName)),
       user: { id: user.id, name: user.name, email: user.email, timezone: user.timezone },
     };
   }
@@ -249,7 +254,11 @@ export class AuthService {
    * Login social: o app manda só o ID token; a API o valida com o provedor. Vincula ao mesmo usuário
    * quando o e-mail verificado coincide; cria a conta no primeiro acesso (exige o aceite dos termos).
    */
-  async socialLogin(provider: SocialProvider, input: SocialLoginRequest): Promise<AuthResponse> {
+  async socialLogin(
+    provider: SocialProvider,
+    input: SocialLoginRequest,
+    deviceName?: string,
+  ): Promise<AuthResponse> {
     const identity = await this.verifier.verify(provider, input.idToken);
     const email = identity.email?.trim().toLowerCase() ?? null;
 
@@ -302,7 +311,7 @@ export class AuthService {
     }
 
     return {
-      tokens: await this.tokens.issue(user.id),
+      tokens: await this.tokens.issue(user.id, undefined, cleanDeviceName(deviceName)),
       user: { id: user.id, name: user.name, email: user.email, timezone: user.timezone },
     };
   }

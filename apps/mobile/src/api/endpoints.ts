@@ -29,6 +29,8 @@ import {
   registerResponseSchema,
   type ResendVerificationRequest,
   type ResetPasswordRequest,
+  type Session,
+  sessionsResponseSchema,
   type SocialLoginRequest,
   type StorySummary,
   storySummarySchema,
@@ -79,6 +81,20 @@ export async function forgotPassword(body: ForgotPasswordRequest): Promise<void>
 
 export async function resetPassword(body: ResetPasswordRequest): Promise<void> {
   await http.post('/auth/reset-password', body);
+}
+
+// --- sessões da conta (aparelhos)
+export async function fetchSessions(): Promise<Session[]> {
+  const { data } = await http.get<unknown>('/me/sessions');
+  return sessionsResponseSchema.parse(data).sessions;
+}
+
+export async function revokeSession(id: string): Promise<void> {
+  await http.delete(`/me/sessions/${id}`);
+}
+
+export async function revokeAllSessions(): Promise<void> {
+  await http.delete('/me/sessions');
 }
 
 export async function logout(refreshToken: string): Promise<void> {

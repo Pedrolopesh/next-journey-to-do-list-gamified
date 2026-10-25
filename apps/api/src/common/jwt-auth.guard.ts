@@ -10,7 +10,7 @@ import { IS_PUBLIC_KEY } from './public.decorator.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export type AuthenticatedRequest = Request & { user: { id: string } };
+export type AuthenticatedRequest = Request & { user: { id: string; sessionId?: string } };
 
 /**
  * Guard global: valida o JWT de acesso (algoritmo fixo HS256) em toda rota não pública e confere que a
@@ -38,11 +38,17 @@ export class JwtAuthGuard implements CanActivate {
     if (!token) throw new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Não autenticado');
 
     let userId: string;
+    let sessionId: string | undefined;
     try {
-      const sub = await this.tokens.verifyAccessToken(token);
+      const verified = await this.tokens.verifyAccessToken(token);
       // O id é um UUID: qualquer outra coisa nem chega ao banco (que rejeitaria com erro 500)
-      if (!UUID.test(sub)) throw new Error('sub inválido');
-      userId = sub;
+      if (!UUID.test(verified.userId)) throw new Error('sub inválido');
+      userId = verified.userId;
+      // O id da sessão também é um UUID (e vai para a consulta abaixo)
+      if (verified.sessionId !== undefined && !UUID.test(verified.sessionId)) {
+        throw new Error('sid inválido');
+      }
+      sessionId = verified.sessionId;
     } catch {
       throw new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Não autenticado');
     }
@@ -50,11 +56,17 @@ export class JwtAuthGuard implements CanActivate {
     // Erro de banco aqui NÃO vira 401 (nega o acesso com erro 500): uma falha temporária não pode
     // deslogar o app, que trata 401 como sessão encerrada
     const user = await this.prisma.user.findFirst({
-      where: { id: userId, deletedAt: null },
+      // Com `sid`, a sessão precisa continuar ativa: encerrar um aparelho (ou trocar a senha, ou sair) derruba
+      // o token de acesso na hora, na mesma consulta. Token antigo sem `sid` só confere a conta.
+      where: {
+        id: userId,
+        deletedAt: null,
+        ...(sessionId ? { refreshTokens: { some: { familyId: sessionId, revokedAt: null } } } : {}),
+      },
       select: { id: true },
     });
     if (!user) throw new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Não autenticado');
-    request.user = { id: user.id };
+    request.user = { id: user.id, ...(sessionId ? { sessionId } : {}) };
     return true;
   }
 }

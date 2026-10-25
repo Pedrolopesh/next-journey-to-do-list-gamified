@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Inject, Ip, Post } from '@nestjs/common';
+import { Body, Controller, Headers, HttpCode, Inject, Ip, Post } from '@nestjs/common';
 import {
   type AuthResponse,
   type ForgotPasswordRequest,
@@ -47,8 +47,9 @@ export class AuthController {
   verifyEmail(
     @Body(new ZodValidationPipe(verifyEmailRequestSchema)) body: VerifyEmailRequest,
     @Ip() ip: string,
+    @Headers('x-device-name') deviceName?: string,
   ): Promise<AuthResponse> {
-    return this.auth.verifyEmail(body, ip);
+    return this.auth.verifyEmail(body, ip, deviceName);
   }
 
   /** Sempre 202, exista ou não a conta. */
@@ -69,8 +70,9 @@ export class AuthController {
   login(
     @Body(new ZodValidationPipe(loginRequestSchema)) body: LoginRequest,
     @Ip() ip: string,
+    @Headers('x-device-name') deviceName?: string,
   ): Promise<AuthResponse> {
-    return this.auth.login(body, ip);
+    return this.auth.login(body, ip, deviceName);
   }
 
   @Public()
@@ -117,8 +119,9 @@ export class AuthController {
   @HttpCode(200)
   google(
     @Body(new ZodValidationPipe(socialLoginRequestSchema)) body: SocialLoginRequest,
+    @Headers('x-device-name') deviceName?: string,
   ): Promise<AuthResponse> {
-    return this.auth.socialLogin('google', body);
+    return this.auth.socialLogin('google', body, deviceName);
   }
 
   @Public()
@@ -126,7 +129,8 @@ export class AuthController {
   @HttpCode(200)
   apple(
     @Body(new ZodValidationPipe(socialLoginRequestSchema)) body: SocialLoginRequest,
+    @Headers('x-device-name') deviceName?: string,
   ): Promise<AuthResponse> {
-    return this.auth.socialLogin('apple', body);
+    return this.auth.socialLogin('apple', body, deviceName);
   }
 }
