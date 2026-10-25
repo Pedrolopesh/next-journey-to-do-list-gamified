@@ -4,6 +4,7 @@ import {
   appEventSchema,
   type Character,
   characterSchema,
+  type DataExport,
   type DeleteAccountRequest,
   deleteAccountRequestSchema,
   ERROR_CODES,
@@ -20,6 +21,7 @@ import { ZodValidationPipe } from '../../common/zod-validation.pipe.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AccountService } from '../account/account.service.js';
+import { DataExportService } from '../account/data-export.service.js';
 import { AchievementsService } from '../achievements/achievements.service.js';
 import { expParaNivel } from '../progression/domain/index.js';
 import { GameConfigService } from '../progression/game-config.service.js';
@@ -53,6 +55,7 @@ export class MeController {
     @Inject(GameConfigService) private readonly gameConfig: GameConfigService,
     @Inject(StoriesService) private readonly stories: StoriesService,
     @Inject(AccountService) private readonly account: AccountService,
+    @Inject(DataExportService) private readonly dataExport: DataExportService,
     @Inject(AchievementsService) private readonly achievements: AchievementsService,
   ) {}
 
@@ -146,6 +149,12 @@ export class MeController {
       },
     });
     return this.me(userId);
+  }
+
+  /** Exporta os dados da própria conta (LGPD, direito de acesso): JSON só com campos permitidos. */
+  @Get('export')
+  export(@CurrentUserId() userId: string): Promise<DataExport> {
+    return this.dataExport.export(userId);
   }
 
   /** Exclui a conta: anonimiza agora e apaga de vez depois do prazo de retenção. */
