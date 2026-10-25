@@ -71,6 +71,19 @@ Tudo isto já está na `main` (#29 a #34). Ao publicar em outro ambiente, **rele
 9. **70ª conquista (`habito-de-100`, Diamante):** ao publicar, rodar `db:seed` (cria a linha no catálogo) e `db:backfill-achievements` (libera para quem já tem 100 dias seguidos de um hábito, sem reabrir modal).
 10. **Ainda não verificado:** pontuação e histórico no iPhone físico (e a permissão de "Rede local" do iOS); modal com o botão X no iPhone físico.
 
+## NÃO ESQUECER ao publicar: endurecimento da conta e da sessão (2026-10-24, #36 a #47)
+
+Tudo isto já está na `main`. Detalhes de cada regra em `docs/SEGURANCA.md`, `docs/PRIVACIDADE.md` e nas specs vivas em `openspec/specs/` (`email-verification`, `account-deletion`, `session-management`, `data-export`).
+
+1. **Migrations novas, nesta ordem (`db:deploy`):** `20261024120000_verificacao_de_email`, `20261024150000_indice_expiracao_tokens`, `20261024170000_limite_de_tentativas`, `20261024190000_nome_do_aparelho_na_sessao`. Contas por senha que já existiam ficam **pendentes** de confirmação do e-mail (hoje só há contas de teste).
+2. **O cadastro não devolve mais sessão:** o e-mail de código precisa chegar. Antes de publicar, conferir o envio real (Resend com chave e domínio de envio com SPF/DKIM/DMARC) e o `MAIL_FROM`.
+3. **Variáveis novas (todas com padrão):** `AUTH_MIN_RESPONSE_MS` (piso de tempo das rotas de conta; a API **não sobe com 0 em produção**), `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_KEY_ID` e, só durante a troca do segredo, `JWT_ACCESS_SECRET_PREVIOUS` + `JWT_PREVIOUS_KEY_ID` (procedimento em `docs/SEGURANCA.md`, seção 8); `SECURITY_ALERT_WEBHOOK_URL` (https, opcional). Variável opcional vazia (`CHAVE=`) vale como ausente.
+4. **No deploy**, os tokens de acesso emitidos antes (até 15 min) deixam de valer; o app renova sozinho pelo refresh token.
+5. **`TRUST_PROXY=true` atrás do proxy reverso:** sem isso o limite por IP enxerga só o IP do proxy.
+6. **App e API sobem juntos:** `DELETE /v1/me` agora exige corpo (senha ou ID token) e o cadastro mudou de contrato.
+7. **Ainda não verificado em aparelho real:** tela do código de confirmação, exclusão de conta com Google/Apple (o ID token precisa ter até 5 min), lista de aparelhos (nome do aparelho), folha de compartilhar da exportação de dados, e o Maestro destes fluxos.
+8. **Em aberto (cards no Plane):** nonce no login social (o SDK do Google instalado não expõe), Universal/App Links (precisa de domínio), backup com teste de restauração, TLS/firewall e segredos em produção.
+
 ## Ritmo das conquistas (aprovado e na `main`, 2026-10-19)
 
 A página "Conquistas v2" do laboratório (seção "Ritmo") compara as regras de hoje com uma proposta mais espaçada (simulação de 30 dias). **Já está no app (#33).** O que foi feito: (1) um modal por ação, com o resto pendente nas ações seguintes (servidor devolve só uma na resposta do check; o app mostra uma pendente por vez); (2) novos limites e nomes (por exemplo "Chama de 5 dias"), em `achievement-catalog.ts` e `progression/domain/achievements.ts`, com migration que renomeia os slugs que mudam de nome só no texto (os slugs ficam); (3) OpenSpec `conquistas-ritmo`; (4) retroativo sem reabrir modais (quem já tem a conquista continua com ela).
