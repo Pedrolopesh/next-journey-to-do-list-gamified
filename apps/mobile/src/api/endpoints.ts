@@ -11,6 +11,8 @@ import {
   checkResultSchema,
   type CreateCategoryRequest,
   type CreateItemRequest,
+  type DataExport,
+  dataExportSchema,
   type DeleteAccountRequest,
   type ForgotPasswordRequest,
   type HistoryResponse,
@@ -95,6 +97,12 @@ export async function revokeSession(id: string): Promise<void> {
 
 export async function revokeAllSessions(): Promise<void> {
   await http.delete('/me/sessions');
+}
+
+/** Exportação dos dados da própria conta (LGPD). */
+export async function fetchDataExport(): Promise<DataExport> {
+  const { data } = await http.get<unknown>('/me/export');
+  return dataExportSchema.parse(data);
 }
 
 export async function logout(refreshToken: string): Promise<void> {

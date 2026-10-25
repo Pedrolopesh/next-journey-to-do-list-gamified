@@ -8,6 +8,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { patchMe, sendAppEvent } from '@/api/endpoints';
 import { queryKeys, showNextPending, useMe } from '@/api/queries';
 import { Button } from '@/components/button';
+import { ExportDataButton } from '@/components/export-data-button';
 import { Pills } from '@/components/pills';
 import { ScreenFrame } from '@/components/screen-frame';
 import { TextField } from '@/components/text-field';
@@ -129,6 +130,7 @@ export default function SettingsScreen() {
           router.push('/settings/credits');
         }}
       />
+      <ExportDataButton />
       <Button
         label={t('settings.delete')}
         variant="secondary"

@@ -12,7 +12,8 @@ export type SecurityEventType =
   | 'password_reset_completed'
   | 'refresh_reuse_detected'
   | 'reauth_failed'
-  | 'account_deleted';
+  | 'account_deleted'
+  | 'data_exported';
 
 type Context = {
   userId?: string;

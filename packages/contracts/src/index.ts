@@ -6,6 +6,7 @@ export * from './categories';
 export * from './character';
 export * from './check';
 export * from './common';
+export * from './data-export';
 export * from './errors';
 export * from './game-config';
 export * from './home';
