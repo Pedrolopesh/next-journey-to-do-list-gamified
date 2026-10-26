@@ -1,0 +1,10 @@
+---
+# Run after confirming access from a new session: cancels the automatic rollback.
+- name: Confirm access and cancel the automatic rollback
+  hosts: nj
+  become: true
+  tasks:
+    - name: Stop the rollback timer
+      ansible.builtin.systemd_service:
+        name: nj-rollback.timer
+        state: stopped

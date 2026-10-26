@@ -1,0 +1,36 @@
+---
+- name: Base packages
+  ansible.builtin.apt:
+    name: '{{ base_packages }}'
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: UTC time zone (comparable logs)
+  community.general.timezone:
+    name: Etc/UTC
+
+- name: Time sync (systemd-timesyncd ships enabled on Ubuntu)
+  ansible.builtin.systemd_service:
+    name: systemd-timesyncd
+    state: started
+    enabled: true
+
+- name: Automatic security updates only, no automatic reboot
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/52nj-unattended
+    mode: '0644'
+    content: |
+      // Managed by Ansible.
+      Unattended-Upgrade::Automatic-Reboot "false";
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+      Unattended-Upgrade::Mail "";
+
+- name: Automatic updates enabled
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    mode: '0644'
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+      APT::Periodic::AutocleanInterval "7";

@@ -1,0 +1,38 @@
+#!/bin/bash
+# Runs on the VPS (via sudo, called by deploy.sh): builds the images from the uploaded source, migrates and starts.
+# Usage: nj-deploy-remote <dev|prd> <tag> <file.tgz> [seed]
+set -euo pipefail
+env="${1:?}"; tag="${2:?}"; tgz="${3:?}"; seed="${4:-}"
+work=$(mktemp -d /var/tmp/nj-build.XXXXXX)
+trap 'rm -rf "$work" "$tgz"' EXIT
+tar -xzf "$tgz" -C "$work"
+cd "$work"
+docker build -f apps/infra/docker/Dockerfile.api -t "nj-api:${tag}" .
+docker build -f apps/infra/docker/Dockerfile.api --target migrate -t "nj-api-migrate:${tag}" .
+
+port=$(awk -v e="$env" '$1==e {print $2}' /etc/nextjourney/ports)
+conf="/etc/nextjourney/${env}.env"
+prev=$(grep -s '^NJ_TAG=' "$conf" | cut -d= -f2 || true)
+
+set -a
+. /etc/nextjourney/common.env
+set +a
+# Secrets in tmpfs: the unit creates them; make sure they exist before migrating
+systemctl start "nj-secrets@${env}.service"
+export NJ_ENV="$env" NJ_PORT="$port" NJ_TAG="$tag" NJ_SECRETS_DIR="/run/nj-${env}/secrets"
+export NJ_MIGRATE="${seed:-deploy}"
+docker compose -f /opt/nextjourney/compose.yml --profile tools run --rm migrate
+
+# The new tag only takes effect (including after a reboot) once the migration succeeded
+prev_saved=$(grep -s '^NJ_PREV_TAG=' "$conf" | cut -d= -f2 || true)
+[ -n "$prev" ] && [ "$prev" != "$tag" ] && prev_saved="$prev"
+printf 'NJ_PORT=%s\nNJ_TAG=%s\nNJ_PREV_TAG=%s\n' "$port" "$tag" "${prev_saved:-}" > "$conf"
+systemctl enable "nj@${env}.service" >/dev/null 2>&1
+if systemctl is-active --quiet "nj@${env}.service"; then
+  systemctl reload "nj@${env}.service"
+else
+  systemctl start "nj@${env}.service"
+fi
+docker image prune -af --filter "until=168h" >/dev/null
+docker builder prune -f --filter "until=168h" >/dev/null
+echo "deploy ${env} ${tag} done"

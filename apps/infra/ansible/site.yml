@@ -1,0 +1,16 @@
+---
+# Order matters: the guard sets up the safety net before SSH and firewall are touched.
+- name: Secure host baseline
+  hosts: nj
+  become: true
+  roles:
+    - role: access_guard
+      tags: [guard, ssh, firewall]
+    - role: base
+      tags: [base]
+    - role: ssh
+      tags: [ssh]
+    - role: firewall
+      tags: [firewall]
+    - role: tailscale
+      tags: [tailscale]

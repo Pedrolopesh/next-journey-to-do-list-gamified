@@ -1,0 +1,96 @@
+---
+- name: ACME challenge directory
+  ansible.builtin.file:
+    path: '{{ edge_webroot }}'
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Default nginx site removed
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+
+- name: Global nginx configuration
+  ansible.builtin.template:
+    src: 00-nj-global.conf.j2
+    dest: /etc/nginx/conf.d/00-nj-global.conf
+    mode: '0644'
+    owner: root
+    group: root
+  notify: Reload nginx
+
+- name: Which environments already have certificates?
+  ansible.builtin.stat:
+    path: '/etc/letsencrypt/live/{{ item.value.host }}/fullchain.pem'
+  loop: '{{ app_envs | dict2items }}'
+  register: edge_certs
+
+- name: Hosts that already have a certificate
+  ansible.builtin.set_fact:
+    edge_tls_hosts: "{{ edge_certs.results | selectattr('stat.exists') | map(attribute='item.value.host') | list }}"
+
+- name: Sites (HTTP first; HTTPS once the certificates exist)
+  ansible.builtin.template:
+    src: nj.conf.j2
+    dest: /etc/nginx/conf.d/nj.conf
+    mode: '0644'
+    owner: root
+    group: root
+  notify: Reload nginx
+
+- name: Nginx running
+  ansible.builtin.systemd_service:
+    name: nginx
+    enabled: true
+    state: started
+
+- name: Apply nginx now
+  ansible.builtin.meta: flush_handlers
+
+- name: Certificates (webroot; only for hosts without one)
+  ansible.builtin.command:
+    cmd: >-
+      certbot certonly --webroot -w {{ edge_webroot }} -d {{ item.value.host }}
+      --non-interactive --agree-tos --keep-until-expiring
+      {{ ('--email ' ~ edge_certbot_email) if edge_certbot_email else '--register-unsafely-without-email' }}
+    creates: '/etc/letsencrypt/live/{{ item.value.host }}/fullchain.pem'
+  loop: '{{ app_envs | dict2items }}'
+
+- name: Do the certificates exist now?
+  ansible.builtin.stat:
+    path: '/etc/letsencrypt/live/{{ item.value.host }}/fullchain.pem'
+  loop: '{{ app_envs | dict2items }}'
+  register: edge_certs_after
+
+- name: Hosts with a certificate after certbot
+  ansible.builtin.set_fact:
+    edge_tls_hosts: "{{ edge_certs_after.results | selectattr('stat.exists') | map(attribute='item.value.host') | list }}"
+
+- name: Re-render the sites with the final TLS state
+  ansible.builtin.template:
+    src: nj.conf.j2
+    dest: /etc/nginx/conf.d/nj.conf
+    mode: '0644'
+    owner: root
+    group: root
+  notify: Reload nginx
+
+- name: Apply nginx with TLS
+  ansible.builtin.meta: flush_handlers
+
+- name: Certbot renewal hook
+  ansible.builtin.template:
+    src: certbot-deploy-hook.sh.j2
+    dest: /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Automatic renewal enabled
+  ansible.builtin.systemd_service:
+    name: certbot.timer
+    enabled: true
+    state: started

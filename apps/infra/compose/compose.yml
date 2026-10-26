@@ -1,0 +1,96 @@
+# Stack of one environment (dev or prd). Required variables, set by the nj@<env> systemd unit:
+#   NJ_ENV, NJ_PORT (loopback), NJ_TAG (image), NJ_SECRETS_DIR (tmpfs), NJ_MAIL_FROM
+name: next-journey-${NJ_ENV:?}
+
+x-hardening: &hardening
+  restart: unless-stopped
+  security_opt: ['no-new-privileges:true']
+  logging:
+    driver: json-file
+    options: { max-size: '10m', max-file: '5' }
+
+services:
+  db:
+    <<: *hardening
+    image: postgres:16-bookworm@sha256:d81f7b51697014367236d07ec58b54153fc28f828b72bf247fe5c7487520bcb0
+    environment:
+      POSTGRES_USER: nj
+      POSTGRES_DB: nj
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password]
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks: [internal]
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nj -d nj']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    deploy:
+      resources:
+        limits: { memory: 1g, cpus: '1.0' }
+
+  api:
+    <<: *hardening
+    image: nj-api:${NJ_TAG:?}
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      NODE_ENV: production
+      TRUST_PROXY: 'true'
+      LOG_LEVEL: info
+      AUTH_MIN_RESPONSE_MS: '250'
+      MAIL_FROM: ${NJ_MAIL_FROM:?}
+      JWT_ISSUER: nextjourney-api-${NJ_ENV}
+      JWT_AUDIENCE: nextjourney-app-${NJ_ENV}
+    user: '10001:10001' # uid with no user on the host: no host user can read the secrets by ownership
+    secrets: [database_url, jwt_access_secret, resend_api_key]
+    ports:
+      - '127.0.0.1:${NJ_PORT:?}:3000'
+    networks: [internal, edge]
+    read_only: true
+    tmpfs: ['/tmp:size=64m,mode=1777']
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits: { memory: 768m, cpus: '1.0' }
+
+  # One-off job: [NJ_MIGRATE=seed] docker compose --profile tools run --rm migrate
+  migrate:
+    image: nj-api-migrate:${NJ_TAG:?}
+    profiles: [tools]
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      NJ_MIGRATE: ${NJ_MIGRATE:-deploy}
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        set -eu
+        export DATABASE_URL="$$(cat /run/secrets/database_url)"
+        case "$$NJ_MIGRATE" in
+          deploy) /repo/apps/api/node_modules/.bin/prisma migrate deploy ;;
+          seed) /repo/apps/api/node_modules/.bin/prisma migrate deploy && /repo/apps/api/node_modules/.bin/prisma db seed ;;
+          *) echo "NJ_MIGRATE must be deploy or seed"; exit 2 ;;
+        esac
+    user: '10001:10001'
+    secrets: [database_url]
+    networks: [internal]
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+
+networks:
+  internal:
+    internal: true # no outbound internet: the database only talks to the API
+  edge: {}
+
+volumes:
+  db-data: {}
+
+secrets:
+  postgres_password: { file: '${NJ_SECRETS_DIR:?}/postgres_password' }
+  database_url: { file: '${NJ_SECRETS_DIR:?}/database_url' }
+  jwt_access_secret: { file: '${NJ_SECRETS_DIR:?}/jwt_access_secret' }
+  resend_api_key: { file: '${NJ_SECRETS_DIR:?}/resend_api_key' }

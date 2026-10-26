@@ -1,0 +1,17 @@
+# Real environment data never goes to git
+ansible/inventory/hosts.yml
+ansible/inventory/group_vars/all/local.yml
+ansible/.vault-pass*
+*.vault
+tofu/.terraform/
+tofu/*.tfstate*
+tofu/*.tfvars
+!tofu/*.tfvars.example
+*.pem
+*.key
+*.age
+.env
+.env.*
+!.env.example
+collections/
+.ansible/

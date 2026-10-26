@@ -1,0 +1,32 @@
+---
+# Safety net: if something goes wrong, SSH and the firewall are reverted after N minutes.
+- name: Keep a copy of the previous state (sshd and ufw)
+  ansible.builtin.shell: |
+    set -e
+    d=/var/lib/nj-rollback
+    mkdir -p "$d"
+    [ -f "$d/before.tgz" ] || tar -czf "$d/before.tgz" -C / etc/ssh etc/ufw
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Install the rollback script
+  ansible.builtin.copy:
+    dest: /usr/local/sbin/nj-rollback.sh
+    mode: '0750'
+    content: |
+      #!/bin/bash
+      # Reverts the SSH and firewall changes made by Ansible (triggered by a timer).
+      set -u
+      rm -f /etc/ssh/sshd_config.d/10-nextjourney.conf
+      ufw --force disable >/dev/null 2>&1
+      ufw default allow incoming >/dev/null 2>&1
+      systemctl reload ssh
+      logger -t nj-rollback "automatic rollback executed"
+
+- name: Schedule the rollback (cancelled by confirm-access.yml)
+  ansible.builtin.command: >-
+    systemd-run --unit=nj-rollback --on-active={{ access_guard_minutes }}m /usr/local/sbin/nj-rollback.sh
+  register: access_guard_run
+  changed_when: access_guard_run.rc == 0
+  failed_when: access_guard_run.rc != 0 and 'already' not in access_guard_run.stderr

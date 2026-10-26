@@ -1,0 +1,12 @@
+---
+app_envs:
+  dev:
+    port: 3010
+    host: api-dev.example.com
+  prd:
+    port: 3020
+    host: api.example.com
+app_dir: /opt/nextjourney
+app_conf_dir: /etc/nextjourney
+# Sender of transactional emails (the domain must be verified at the email provider)
+app_mail_from: 'Next Journey <no-reply@example.com>'

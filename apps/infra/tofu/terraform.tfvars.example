@@ -1,0 +1,2 @@
+zone     = "example.com"
+vps_ipv4 = "<vps-ip>"
