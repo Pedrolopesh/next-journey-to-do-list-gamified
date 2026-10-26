@@ -1,0 +1,3 @@
+---
+# TCP ports that may listen on a public address. Loopback and Tailscale addresses are ignored.
+verify_public_ports: [22, 80, 443]

@@ -47,6 +47,10 @@ server {
     ssl_protocols TLSv1.2 TLSv1.3;
     # No OCSP stapling: Let's Encrypt no longer publishes OCSP
 
+    # The API (helmet) sends the same headers: hide its copies so each header appears once
+    proxy_hide_header Strict-Transport-Security;
+    proxy_hide_header X-Content-Type-Options;
+    proxy_hide_header Referrer-Policy;
     add_header Strict-Transport-Security "max-age=31536000" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "no-referrer" always;
