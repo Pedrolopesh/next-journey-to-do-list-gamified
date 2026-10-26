@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 
 import { authResponseSchema, dataExportSchema, meResponseSchema } from '@nextjourney/contracts';
@@ -16,11 +16,17 @@ test.describe('public surface', () => {
     });
   });
 
-  test('security headers are present and nothing leaks the framework', async ({ request }) => {
-    const headers = (await request.get('/health')).headers();
-    expect(headers['strict-transport-security']).toBeTruthy();
-    expect(headers['x-content-type-options']).toBe('nosniff');
-    expect(headers['x-powered-by']).toBeUndefined();
+  test('security headers appear exactly once and nothing leaks the framework', async ({
+    request,
+  }) => {
+    const response = await request.get('/health');
+    const count = (name: string): number =>
+      response.headersArray().filter((header) => header.name.toLowerCase() === name).length;
+    expect(count('strict-transport-security')).toBe(1);
+    expect(count('x-content-type-options')).toBe(1);
+    expect(count('referrer-policy')).toBe(1);
+    expect(response.headers()['x-content-type-options']).toBe('nosniff');
+    expect(count('x-powered-by')).toBe(0);
   });
 
   test('validation rejects an empty login body', async ({ request }) => {
@@ -35,7 +41,7 @@ test.describe('public surface', () => {
 
 // Needs a way to confirm the test account's email without opening an inbox. Without it, the whole
 // account flow is skipped and nothing is created.
-// SMOKE_CONFIRM_COMMAND is an executable that receives the email as its only argument.
+// SMOKE_CONFIRM_COMMAND is a shell command that receives the email as its last argument.
 const confirmCommand = process.env['SMOKE_CONFIRM_COMMAND'];
 
 test.describe.serial('account lifecycle', () => {
@@ -43,18 +49,33 @@ test.describe.serial('account lifecycle', () => {
 
   const email = `smoke+${Date.now()}@example.invalid`;
   const password = `Smoke-${randomBytes(6).toString('hex')}-Aa1!`;
+  let registered = false;
   let accessToken = '';
   let refreshToken = '';
 
+  // Always tries to delete the account, even when an earlier step failed.
   test.afterAll(async ({ playwright }, testInfo) => {
-    if (!accessToken) return;
+    if (!registered) return;
     const baseURL = testInfo.project.use.baseURL;
     const context = await playwright.request.newContext(baseURL ? { baseURL } : {});
-    const response = await context.delete('/v1/me', {
-      headers: { ...JSON_HEADERS, authorization: `Bearer ${accessToken}` },
-      data: { password },
-    });
-    expect([200, 204]).toContain(response.status());
+    if (!accessToken) {
+      const login = await context.post('/v1/auth/login', {
+        headers: JSON_HEADERS,
+        data: { email, password },
+      });
+      if (login.ok()) accessToken = authResponseSchema.parse(await login.json()).tokens.accessToken;
+    }
+    if (accessToken) {
+      const response = await context.delete('/v1/me', {
+        headers: { ...JSON_HEADERS, authorization: `Bearer ${accessToken}` },
+        data: { password },
+      });
+      expect([200, 204]).toContain(response.status());
+    } else {
+      process.stderr.write(
+        `The smoke test account could not be deleted and was left behind: ${email}\n`,
+      );
+    }
     await context.dispose();
   });
 
@@ -72,11 +93,18 @@ test.describe.serial('account lifecycle', () => {
       },
     });
     expect([200, 201, 202]).toContain(response.status());
+    registered = true;
     expect(await response.json()).toEqual({ status: 'verification_sent' });
   });
 
+  test('the confirmation command marks the email as confirmed', () => {
+    const result = spawnSync('/bin/sh', ['-c', `${confirmCommand ?? ''} "$1"`, 'confirm', email], {
+      encoding: 'utf8',
+    });
+    expect(result.status, result.stderr).toBe(0);
+  });
+
   test('login returns tokens that match the contract', async ({ request }) => {
-    execFileSync(confirmCommand ?? '', [email], { stdio: 'ignore' });
     const response = await request.post('/v1/auth/login', {
       headers: JSON_HEADERS,
       data: { email, password },

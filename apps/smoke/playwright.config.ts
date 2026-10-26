@@ -1,9 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
-const baseURL = process.env['SMOKE_BASE_URL'];
-if (!baseURL) {
-  throw new Error('Set SMOKE_BASE_URL to the API base URL, for example https://api.example.com');
-}
+// Defaults to a local API; point it at a deployed environment with SMOKE_BASE_URL.
+const baseURL = process.env['SMOKE_BASE_URL'] ?? 'http://127.0.0.1:3000';
 
 // API-only: no browser projects, so no browser download is needed.
 export default defineConfig({
