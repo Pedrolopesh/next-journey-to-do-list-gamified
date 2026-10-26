@@ -36,3 +36,7 @@ Dados de infraestrutura (endereços, portas, nomes de servidor) **nunca** entram
 | [0007](./0007-api-nestjs-12-esm-e-vitest.md) | API em NestJS 12, ESM e Vitest | Aceita |
 | [0008](./0008-autenticacao-e-sessao.md) | Autenticação, tokens e sessão | Aceita |
 | [0009](./0009-fase-5-decisoes.md) | Decisões da Fase 5 (loop completo) | Aceita |
+| [0010](./0010-secrets-in-tmpfs-from-systemd-creds.md) | Secrets in tmpfs from systemd-creds | Aceita |
+| [0011](./0011-docker-user-firewall-chain.md) | Firewall with the DOCKER-USER chain | Aceita |
+| [0012](./0012-automatic-rollback-for-access-changes.md) | Automatic rollback for access changes | Aceita |
+| [0013](./0013-deploy-user-with-passwordless-sudo.md) | `deploy` user with passwordless sudo | Aceita |
