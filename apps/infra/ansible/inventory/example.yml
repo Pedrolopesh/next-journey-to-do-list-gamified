@@ -1,0 +1,9 @@
+# Template. Copy to hosts.yml (git-ignored) and fill in the real environment.
+all:
+  children:
+    nj:
+      hosts:
+        nj-vps:
+          ansible_host: '<vps-ip>'
+          ansible_user: deploy
+          ansible_become: true

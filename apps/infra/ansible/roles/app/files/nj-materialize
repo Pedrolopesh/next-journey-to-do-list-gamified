@@ -1,0 +1,17 @@
+#!/bin/bash
+# Runs inside the nj-secrets@<env> unit (root): copies the credentials decrypted by systemd into a
+# tmpfs with the right owner (db = uid 999, API = uid 10001). Gone after a reboot or when the unit stops.
+set -euo pipefail
+env="${1:?usage: nj-materialize <dev|prd>}"
+src="${CREDENTIALS_DIRECTORY:?must run inside the unit}"
+dst="/run/nj-${env}/secrets"
+install -d -m 0711 "/run/nj-${env}"
+install -d -m 0755 "$dst"
+umask 077
+put() { # put <name> <uid>
+  install -m 0400 -o "$2" -g "$2" "${src}/$1" "${dst}/$1"
+}
+put postgres_password 999
+put database_url 10001
+put jwt_access_secret 10001
+put resend_api_key 10001

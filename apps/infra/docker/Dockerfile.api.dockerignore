@@ -1,0 +1,17 @@
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+**/.env
+**/.env.*
+.git
+apps/mobile
+apps/banner
+apps/infra/ansible
+apps/infra/compose
+apps/infra/tofu
+apps/infra/scripts
+apps/infra/runbooks
+apps/infra/adr
+docs
+openspec

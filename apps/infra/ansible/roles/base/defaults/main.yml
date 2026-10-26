@@ -1,0 +1,1 @@
+base_packages: [ca-certificates, curl, jq, unattended-upgrades, ufw, nginx, certbot]

@@ -1,0 +1,37 @@
+---
+- name: Default ufw policy (inbound denied, outbound allowed)
+  community.general.ufw:
+    default: '{{ item.d }}'
+    direction: '{{ item.dir }}'
+  loop:
+    - d: deny
+      dir: incoming
+    - d: allow
+      dir: outgoing
+
+- name: Allowed public ports
+  community.general.ufw:
+    rule: allow
+    port: '{{ item }}'
+    proto: tcp
+  loop: '{{ firewall_tcp_ports }}'
+
+- name: 'Docker does not bypass the firewall (DOCKER-USER): drop new connections from the internet to containers'
+  ansible.builtin.blockinfile:
+    path: /etc/ufw/after.rules
+    marker: '# {mark} NJ DOCKER-USER'
+    block: |
+      *filter
+      :DOCKER-USER - [0:0]
+      -A DOCKER-USER -m conntrack --ctstate RELATED,ESTABLISHED -j RETURN
+      -A DOCKER-USER -i {{ firewall_public_iface }} -m conntrack --ctstate NEW -j DROP
+      -A DOCKER-USER -j RETURN
+      COMMIT
+  notify: Reload ufw
+
+- name: Ufw enabled
+  community.general.ufw:
+    state: enabled
+
+- name: Apply the firewall now
+  ansible.builtin.meta: flush_handlers

@@ -1,0 +1,12 @@
+# Managed by Ansible.
+server_tokens off;
+limit_req_zone $binary_remote_addr zone=nj_api:10m rate=10r/s;
+limit_req_status 429;
+limit_conn_zone $binary_remote_addr zone=nj_conn:10m;
+
+ssl_session_timeout 1d;
+ssl_session_cache shared:SSL:10m;
+ssl_session_tickets off;
+
+log_format nj_main '$remote_addr - $request_method $uri $status $body_bytes_sent '
+                   'rt=$request_time host=$host';

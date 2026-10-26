@@ -1,0 +1,16 @@
+# Template. Copy to inventory/group_vars/all/local.yml (git-ignored).
+deploy_user: deploy
+# One public key per admin machine. Public keys only, never private ones.
+admin_ssh_public_keys:
+  - 'ssh-ed25519 AAAA... notebook'
+  - 'ssh-ed25519 AAAA... desktop'
+# Only set to true after logging in by key from every machine.
+ssh_disable_password_auth: false
+app_envs:
+  dev:
+    port: 3010
+    host: api-dev.example.com
+  prd:
+    port: 3020
+    host: api.example.com
+app_mail_from: 'Next Journey <no-reply@example.com>'

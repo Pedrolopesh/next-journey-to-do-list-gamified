@@ -1,0 +1,4 @@
+---
+edge_webroot: /var/www/certbot
+# No contact email at Let's Encrypt; set one to receive expiry notices.
+edge_certbot_email: ''

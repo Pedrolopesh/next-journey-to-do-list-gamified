@@ -1,0 +1,76 @@
+# Managed by Ansible. One server per environment; any other host name is dropped.
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+    return 444;
+}
+
+{% if edge_tls_hosts | length > 0 %}
+server {
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_reject_handshake on;
+}
+{% endif %}
+
+{% for name, cfg in app_envs.items() %}
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{ cfg.host }};
+
+    location /.well-known/acme-challenge/ {
+        root {{ edge_webroot }};
+    }
+{% if cfg.host in edge_tls_hosts %}
+    location / {
+        return 301 https://$host$request_uri;
+    }
+{% else %}
+    location / {
+        return 503;
+    }
+{% endif %}
+}
+
+{% if cfg.host in edge_tls_hosts %}
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name {{ cfg.host }};
+
+    ssl_certificate     /etc/letsencrypt/live/{{ cfg.host }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ cfg.host }}/privkey.pem;
+    # Ubuntu's nginx.conf enables TLS 1.0/1.1: override it here
+    ssl_protocols TLSv1.2 TLSv1.3;
+    # No OCSP stapling: Let's Encrypt no longer publishes OCSP
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer" always;
+
+    client_max_body_size 1m;
+    client_body_timeout 15s;
+    client_header_timeout 15s;
+    keepalive_timeout 30s;
+    limit_conn nj_conn 30;
+    access_log /var/log/nginx/nj-{{ name }}.access.log nj_main;
+    error_log  /var/log/nginx/nj-{{ name }}.error.log warn;
+
+    location / {
+        limit_req zone=nj_api burst=30 nodelay;
+        proxy_pass http://127.0.0.1:{{ cfg.port }};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+        proxy_read_timeout 30s;
+        proxy_connect_timeout 5s;
+    }
+}
+{% endif %}
+{% endfor %}

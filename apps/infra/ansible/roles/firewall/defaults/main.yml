@@ -1,0 +1,2 @@
+firewall_tcp_ports: [22, 80, 443]
+firewall_public_iface: "{{ ansible_facts['default_ipv4']['interface'] }}"

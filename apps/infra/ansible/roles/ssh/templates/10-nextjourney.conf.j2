@@ -1,0 +1,13 @@
+# Managed by Ansible. The 10- prefix wins over 50-cloud-init.conf (sshd uses the first value it reads).
+PermitRootLogin prohibit-password
+PasswordAuthentication {{ 'no' if ssh_disable_password_auth | default(false) else 'yes' }}
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+MaxAuthTries 3
+LoginGraceTime 30
+X11Forwarding no
+AllowAgentForwarding no
+AllowTcpForwarding no
+ClientAliveInterval 300
+ClientAliveCountMax 2
+AllowUsers root {{ deploy_user }}

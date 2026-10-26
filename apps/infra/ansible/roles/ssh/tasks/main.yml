@@ -1,0 +1,34 @@
+---
+- name: Deploy user
+  ansible.builtin.user:
+    name: '{{ deploy_user }}'
+    shell: /bin/bash
+    groups: sudo
+    append: true
+    create_home: true
+    password_lock: true
+
+- name: Deploy public keys (one per admin machine)
+  ansible.posix.authorized_key:
+    user: '{{ deploy_user }}'
+    key: '{{ item }}'
+    exclusive: false
+  loop: '{{ admin_ssh_public_keys }}'
+
+- name: Passwordless sudo for deploy (key-only access)
+  ansible.builtin.copy:
+    dest: '/etc/sudoers.d/90-{{ deploy_user }}'
+    mode: '0440'
+    content: "{{ deploy_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    validate: /usr/sbin/visudo -cf %s
+
+- name: SSH daemon configuration (validated before applying)
+  ansible.builtin.template:
+    src: 10-nextjourney.conf.j2
+    dest: /etc/ssh/sshd_config.d/10-nextjourney.conf
+    mode: '0644'
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Reload sshd
+
+- name: Apply sshd now (do not leave a reload pending if a later step fails)
+  ansible.builtin.meta: flush_handlers

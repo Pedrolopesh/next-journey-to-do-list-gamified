@@ -1,0 +1,23 @@
+---
+# Installing and logging in to Tailscale is manual; here we only ensure the service.
+- name: Tailscale daemon running and enabled at boot
+  ansible.builtin.systemd_service:
+    name: tailscaled
+    state: started
+    enabled: true
+
+- name: Tailscale daemon drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/tailscaled.service.d
+    state: directory
+    mode: '0755'
+
+- name: Tailscale daemon automatic restart
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/tailscaled.service.d/10-restart.conf
+    mode: '0644'
+    content: |
+      [Service]
+      Restart=always
+      RestartSec=5
+  notify: Reload systemd

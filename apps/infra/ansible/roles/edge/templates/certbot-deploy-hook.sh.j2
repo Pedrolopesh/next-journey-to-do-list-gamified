@@ -1,0 +1,3 @@
+#!/bin/sh
+# Managed by Ansible. After a renewal, reloads nginx (only if the configuration is valid).
+nginx -t && systemctl reload nginx

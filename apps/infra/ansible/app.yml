@@ -1,0 +1,10 @@
+---
+# Does not change SSH or the firewall, so it skips the guard.
+- name: Application (Docker, secrets, units) and edge (nginx, TLS)
+  hosts: nj
+  become: true
+  roles:
+    - role: app
+      tags: [app]
+    - role: edge
+      tags: [edge]

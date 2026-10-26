@@ -1,0 +1,80 @@
+---
+- name: Docker Engine with Compose v2 installed (prerequisite, manual install)
+  ansible.builtin.command: docker compose version
+  changed_when: false
+
+- name: Docker running
+  ansible.builtin.systemd_service:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Application directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop:
+    - '{{ app_dir }}'
+    - '{{ app_conf_dir }}'
+
+- name: Stack Compose file
+  ansible.builtin.copy:
+    src: '{{ playbook_dir }}/../compose/compose.yml'
+    dest: '{{ app_dir }}/compose.yml'
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Ports per environment (loopback)
+  ansible.builtin.copy:
+    content: "{% for name, cfg in app_envs.items() %}{{ name }} {{ cfg.port }}\n{% endfor %}"
+    dest: '{{ app_conf_dir }}/ports'
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Variables shared by the environments
+  ansible.builtin.copy:
+    content: "NJ_MAIL_FROM='{{ app_mail_from }}'\n"
+    dest: '{{ app_conf_dir }}/common.env'
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Helper scripts
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '/usr/local/sbin/{{ item }}'
+    mode: '0750'
+    owner: root
+    group: root
+  loop: [nj-secrets-init, nj-materialize, nj-deploy-remote]
+
+- name: Systemd units
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/etc/systemd/system/{{ item }}'
+    mode: '0644'
+    owner: root
+    group: root
+  loop: ['nj@.service', 'nj-secrets@.service']
+  notify: Reload systemd
+
+- name: Apply units now
+  ansible.builtin.meta: flush_handlers
+
+- name: Secrets of each environment (created once, never printed)
+  ansible.builtin.command:
+    cmd: '/usr/local/sbin/nj-secrets-init {{ item.key }}'
+    creates: '{{ app_conf_dir }}/creds/{{ item.key }}/jwt_access_secret.cred'
+  loop: '{{ app_envs | dict2items }}'
+  no_log: true
+
+- name: Secrets of each environment available at boot (the stack is enabled by the first deploy)
+  ansible.builtin.systemd_service:
+    name: 'nj-secrets@{{ item }}'
+    enabled: true
+  loop: '{{ app_envs.keys() | list }}'
