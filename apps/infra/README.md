@@ -45,6 +45,6 @@ ansible-playbook site.yml --check --diff                        # secure host ba
 ansible-playbook app.yml                                        # Docker, secrets, nginx and TLS
 ```
 
-After that, `scripts/deploy.sh` publishes the API and `scripts/smoke.sh` validates the environment. Details are in `runbooks/`.
+After that, `scripts/deploy.sh` publishes the API and the Playwright tests in `apps/smoke` validate the environment. `app.yml` also fails if anything listens on a public port other than the allowed ones. Details are in `runbooks/`.
 
 Before changing SSH, the firewall or the Tailscale ACL, read `runbooks/access.md`. The infrastructure decisions are ADR-0010 to ADR-0013 in `docs/adr/`.
