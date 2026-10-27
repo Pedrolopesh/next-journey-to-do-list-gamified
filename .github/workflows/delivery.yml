@@ -10,6 +10,7 @@ on:
       - apps/infra/docker/**
       - pnpm-lock.yaml
       - .github/workflows/delivery.yml
+      - .github/workflows/release.yml
   push:
     branches: [main]
     paths:
@@ -18,6 +19,7 @@ on:
       - apps/infra/docker/**
       - pnpm-lock.yaml
       - .github/workflows/delivery.yml
+      - .github/workflows/release.yml
   workflow_dispatch:
 
 permissions:

@@ -43,6 +43,8 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile --filter @nextjourney/smoke...
+      # The smoke tests import the shared contracts from their build output
+      - run: pnpm --filter @nextjourney/contracts build
 
       - uses: tailscale/github-action@99a8333667fff04fdd6cffb46dfd409f8329a7bf # v4.3.0
         with:
