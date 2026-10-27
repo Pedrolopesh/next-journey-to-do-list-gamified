@@ -27,7 +27,8 @@ if git log ${range:---all} -p -- . ':(exclude)scripts/security-scan.sh' ':(exclu
 echo "==> Atribuição a IA nos commits (trailer de co-autor, \"Generated with\", id de sessão)"
 ia_re='co-authored-by:|generated with|claude-session:|claude\.ai/code/session'
 for commit in $(git log ${range:---all} --format='%h'); do
-  if git show -s --format='%an <%ae>%n%B' "$commit" | grep -q -i -E "$ia_re"; then
+  # Os bots de atualização de dependências assinam o commit com Co-authored-by: não são IA
+  if git show -s --format='%an <%ae>%n%B' "$commit" | grep -v -i -E '^co-authored-by:.*(dependabot|github-actions)\[bot\]' | grep -q -i -E "$ia_re"; then
     echo "commit $commit cita atribuição a IA: $(git show -s --format='%s' "$commit")"; fail=1
   fi
 done

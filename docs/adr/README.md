@@ -40,3 +40,4 @@ Dados de infraestrutura (endereços, portas, nomes de servidor) **nunca** entram
 | [0011](./0011-docker-user-firewall-chain.md) | Firewall with the DOCKER-USER chain | Aceita |
 | [0012](./0012-automatic-rollback-for-access-changes.md) | Automatic rollback for access changes | Aceita |
 | [0013](./0013-deploy-user-with-passwordless-sudo.md) | `deploy` user with passwordless sudo | Aceita |
+| [0014](./0014-signed-images-verified-on-the-host.md) | Signed images, verified on the host before release | Aceita |

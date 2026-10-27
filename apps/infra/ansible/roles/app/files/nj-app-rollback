@@ -1,0 +1,15 @@
+#!/bin/bash
+# Switches an environment back to the previous image. Migrations are not undone.
+# Usage: nj-app-rollback <dev|prd>
+set -euo pipefail
+env="${1:?}"
+case "$env" in dev|prd) ;; *) echo "environment must be dev or prd"; exit 2 ;; esac
+conf="/etc/nextjourney/${env}.env"
+port=$(grep -s '^NJ_PORT=' "$conf" | cut -d= -f2 || true)
+current=$(grep -s '^NJ_TAG=' "$conf" | cut -d= -f2 || true)
+previous=$(grep -s '^NJ_PREV_TAG=' "$conf" | cut -d= -f2 || true)
+[ -n "$previous" ] || { echo "no previous release recorded for ${env}"; exit 1; }
+docker image inspect "nj-api:${previous}" >/dev/null 2>&1 || { echo "image nj-api:${previous} is no longer on the host"; exit 1; }
+printf 'NJ_PORT=%s\nNJ_TAG=%s\nNJ_PREV_TAG=%s\n' "$port" "$previous" "$current" > "$conf"
+systemctl reload "nj@${env}.service"
+echo "rolled back ${env}: ${current} -> ${previous}"

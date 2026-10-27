@@ -51,7 +51,19 @@
     mode: '0750'
     owner: root
     group: root
-  loop: [nj-secrets-init, nj-materialize, nj-deploy-remote]
+  loop:
+    - nj-secrets-init
+    - nj-materialize
+    - nj-build-local
+    - nj-pull-verified
+    - nj-release
+    - nj-app-rollback
+    - nj-ci-entry
+
+- name: Scripts replaced by the release pipeline are removed
+  ansible.builtin.file:
+    path: /usr/local/sbin/nj-deploy-remote
+    state: absent
 
 - name: Systemd units
   ansible.builtin.template:

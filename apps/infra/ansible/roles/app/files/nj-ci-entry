@@ -1,0 +1,37 @@
+#!/bin/bash
+# Only entry point of the CI key (forced command in authorized_keys, run through sudo).
+# Accepts exactly one request line and rejects everything else:
+#   release <dev|prd> <tag> <api-image@sha256:...> <migrate-image@sha256:...> [seed]
+#   rollback <dev|prd>
+# NJ_DRY_RUN=1 prints the command instead of running it (used by the tests).
+set -euo pipefail
+. "${NJ_CI_CONF:-/etc/nextjourney/ci.conf}"
+bin="${NJ_BIN_DIR:-/usr/local/sbin}"
+
+fail() { echo "nj-ci-entry: $1" >&2; exit 2; }
+run() { if [ "${NJ_DRY_RUN:-0}" = 1 ]; then echo "$*"; else "$@"; fi; }
+
+[[ "${1:-}" != *[$'\n\r']* ]] || fail "invalid request"
+read -r -a req <<<"${1:-}"
+[ "${#req[@]}" -gt 0 ] || fail "empty request"
+
+env_ok() { [[ "$1" == dev || "$1" == prd ]]; }
+
+case "${req[0]}" in
+  release)
+    [ "${#req[@]}" -ge 5 ] && [ "${#req[@]}" -le 6 ] || fail "usage: release <env> <tag> <api> <migrate> [seed]"
+    env_ok "${req[1]}" || fail "environment must be dev or prd"
+    [[ "${req[2]}" =~ ^[0-9a-f]{8}$ ]] || fail "tag must be 8 hex characters"
+    [[ "${req[3]}" =~ ^${NJ_IMAGE_REPO//./\\.}/api@sha256:[0-9a-f]{64}$ ]] || fail "unexpected api image"
+    [[ "${req[4]}" =~ ^${NJ_IMAGE_REPO//./\\.}/api-migrate@sha256:[0-9a-f]{64}$ ]] || fail "unexpected migrate image"
+    [ -z "${req[5]:-}" ] || [ "${req[5]}" = seed ] || fail "last argument can only be: seed"
+    run "$bin/nj-pull-verified" "${req[2]}" "${req[3]}" "${req[4]}"
+    run "$bin/nj-release" "${req[1]}" "${req[2]}" ${req[5]:+"${req[5]}"}
+    ;;
+  rollback)
+    [ "${#req[@]}" -eq 2 ] || fail "usage: rollback <env>"
+    env_ok "${req[1]}" || fail "environment must be dev or prd"
+    run "$bin/nj-app-rollback" "${req[1]}"
+    ;;
+  *) fail "unknown request" ;;
+esac

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Publishes the API: uploads the versioned code, builds the image on the VPS, migrates the database and updates the stack.
+# Manual publish (no registry): uploads the versioned code, builds the images on the VPS, migrates and updates the stack.
+# The pipeline does the same from signed registry images; this script is the fallback.
 # Usage: deploy.sh <dev|prd> [git-ref] [seed]
 #   git-ref  commit, tag or branch to publish (default: main)
 #   seed     also runs db:seed (first publish or new achievement in the catalog)
@@ -20,4 +21,4 @@ git -C "$repo" archive "$ref" | gzip > "$tmp/src.tgz"
 
 remote="$(ssh "deploy@${VPS_HOST}" mktemp /var/tmp/nj-src.XXXXXX)"
 scp -q "$tmp/src.tgz" "deploy@${VPS_HOST}:${remote}"
-ssh "deploy@${VPS_HOST}" "sudo /usr/local/sbin/nj-deploy-remote '${env}' '${sha}' '${remote}' ${seed}"
+ssh "deploy@${VPS_HOST}" "sudo /usr/local/sbin/nj-build-local '${sha}' '${remote}' && sudo /usr/local/sbin/nj-release '${env}' '${sha}' ${seed}"

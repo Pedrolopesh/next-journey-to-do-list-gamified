@@ -1,14 +1,10 @@
 #!/bin/bash
-# Runs on the VPS (via sudo, called by deploy.sh): builds the images from the uploaded source, migrates and starts.
-# Usage: nj-deploy-remote <dev|prd> <tag> <file.tgz> [seed]
+# Migrates the database and switches an environment to images already present on the host.
+# Usage: nj-release <dev|prd> <tag> [seed]
 set -euo pipefail
-env="${1:?}"; tag="${2:?}"; tgz="${3:?}"; seed="${4:-}"
-work=$(mktemp -d /var/tmp/nj-build.XXXXXX)
-trap 'rm -rf "$work" "$tgz"' EXIT
-tar -xzf "$tgz" -C "$work"
-cd "$work"
-docker build -f apps/infra/docker/Dockerfile.api -t "nj-api:${tag}" .
-docker build -f apps/infra/docker/Dockerfile.api --target migrate -t "nj-api-migrate:${tag}" .
+env="${1:?}"; tag="${2:?}"; seed="${3:-}"
+case "$env" in dev|prd) ;; *) echo "environment must be dev or prd"; exit 2 ;; esac
+docker image inspect "nj-api:${tag}" "nj-api-migrate:${tag}" >/dev/null
 
 port=$(awk -v e="$env" '$1==e {print $2}' /etc/nextjourney/ports)
 conf="/etc/nextjourney/${env}.env"
@@ -35,4 +31,4 @@ else
 fi
 docker image prune -af --filter "until=168h" >/dev/null
 docker builder prune -f --filter "until=168h" >/dev/null
-echo "deploy ${env} ${tag} done"
+echo "release ${env} ${tag} done"

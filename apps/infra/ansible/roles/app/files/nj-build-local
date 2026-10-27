@@ -1,0 +1,11 @@
+#!/bin/bash
+# Builds the API images on the host from an uploaded source archive (manual deploys, no registry).
+# Usage: nj-build-local <tag> <file.tgz>
+set -euo pipefail
+tag="${1:?}"; tgz="${2:?}"
+work=$(mktemp -d /var/tmp/nj-build.XXXXXX)
+trap 'rm -rf "$work" "$tgz"' EXIT
+tar -xzf "$tgz" -C "$work"
+cd "$work"
+docker build -f apps/infra/docker/Dockerfile.api -t "nj-api:${tag}" .
+docker build -f apps/infra/docker/Dockerfile.api --target migrate -t "nj-api-migrate:${tag}" .

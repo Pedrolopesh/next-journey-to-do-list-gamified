@@ -2,7 +2,9 @@
 
 Dev and production run on the same host, in separate stacks (`next-journey-dev` and `next-journey-prd`), each with its own database, secrets and JWT. The token issuer and audience change per environment: a dev token is not valid in production.
 
-## Publish
+## Publish manually (fallback)
+
+The normal path is the pipeline (`pipeline.md`). This script builds on the host and works without a registry.
 
 ```bash
 export VPS_HOST=<ip-or-tailnet-name>
@@ -10,7 +12,7 @@ apps/infra/scripts/deploy.sh dev main        # or prd; 3rd argument "seed" on th
 SMOKE_BASE_URL=https://<api-host> SMOKE_CONFIRM_COMMAND=<command-that-confirms-the-email> pnpm --filter @nextjourney/smoke smoke
 ```
 
-The deploy builds the image on the VPS, runs `prisma migrate deploy` before swapping the API and reloads the unit. The previous tag is kept in `NJ_PREV_TAG`, in `/etc/nextjourney/<env>.env`.
+The script builds the image on the VPS (`nj-build-local`), then `nj-release` runs `prisma migrate deploy` before swapping the API and reloads the unit. The previous tag is kept in `NJ_PREV_TAG`, in `/etc/nextjourney/<env>.env`.
 
 ## Smoke test
 
@@ -18,7 +20,7 @@ The deploy builds the image on the VPS, runs `prisma migrate deploy` before swap
 
 ## Roll back
 
-Run the deploy again pointing to the previous commit: `deploy.sh prd <previous-commit>`. Migrations are not undone; reverting a migration is a separate decision (restore a backup).
+`sudo nj-app-rollback <dev|prd>` on the host switches back to the previous image (see `pipeline.md`). Migrations are not undone; reverting a migration is a separate decision (restore a backup).
 
 ## Operate
 

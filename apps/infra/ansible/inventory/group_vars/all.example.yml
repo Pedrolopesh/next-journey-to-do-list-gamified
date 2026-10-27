@@ -14,3 +14,8 @@ app_envs:
     port: 3020
     host: api.example.com
 app_mail_from: 'Next Journey <no-reply@example.com>'
+# Pipeline access: public half of the key the CI uses to publish (empty = no CI access is created).
+release_ci_ssh_public_key: ''
+# Registry path of the images and the repository (owner/name) whose workflow signs them.
+release_image_repo: ghcr.io/example/next-journey
+release_signer_repo: example/next-journey
