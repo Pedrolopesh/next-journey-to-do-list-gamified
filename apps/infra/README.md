@@ -18,7 +18,7 @@ internet --443--> nginx (TLS, rate limiting)
 ## Tooling notes
 
 - Ansible configures the server (agentless, idempotent); OpenTofu only manages resources that have a stable API, such as DNS.
-- Until a pipeline publishes images to a registry, `scripts/deploy.sh` builds the image on the VPS itself, tagged with the commit.
+- The pipeline publishes signed images to GHCR and the host verifies the signature before releasing (ADR-0014); `scripts/deploy.sh` builds on the host as a fallback.
 
 ## Layout
 
@@ -28,8 +28,9 @@ internet --443--> nginx (TLS, rate limiting)
 | `compose/`  | One environment's stack (Postgres, API and the migrations job)                      |
 | `docker/`   | The API Dockerfile and the entrypoint that reads the secrets                        |
 | `tofu/`     | DNS records with OpenTofu                                                           |
-| `scripts/`  | `deploy.sh`, `smoke.sh` and `verify-ports.sh`                                       |
-| `runbooks/` | VPS access and API publishing                                                       |
+| `scripts/`  | `deploy.sh`, the manual fallback publish                                            |
+| `tests/`    | bats tests for the scripts that gate releases                                       |
+| `runbooks/` | VPS access, API publishing and the delivery pipeline                                |
 | `adr/`      | Architecture decisions for the infrastructure                                       |
 
 ## Usage
@@ -47,4 +48,4 @@ ansible-playbook app.yml                                        # Docker, secret
 
 After that, `scripts/deploy.sh` publishes the API and the Playwright tests in `apps/smoke` validate the environment. `app.yml` also fails if anything listens on a public port other than the allowed ones. Details are in `runbooks/`.
 
-Before changing SSH, the firewall or the Tailscale ACL, read `runbooks/access.md`. The infrastructure decisions are ADR-0010 to ADR-0013 in `docs/adr/`.
+Before changing SSH, the firewall or the Tailscale ACL, read `runbooks/access.md`. The infrastructure decisions are ADR-0010 to ADR-0014 in `docs/adr/`.
