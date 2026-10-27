@@ -1,0 +1,17 @@
+#!/bin/bash
+# Pulls the API images by digest, but only after checking they were signed by this repository's
+# delivery workflow running on main, then tags them locally for nj-release.
+# Usage: nj-pull-verified <tag> <api-image@sha256:...> <migrate-image@sha256:...>
+# Settings come from /etc/nextjourney/ci.conf: NJ_IMAGE_REPO and NJ_SIGNER_REPO (owner/name).
+set -euo pipefail
+tag="${1:?}"; api="${2:?}"; migrate="${3:?}"
+. "${NJ_CI_CONF:-/etc/nextjourney/ci.conf}"
+identity="^https://github.com/${NJ_SIGNER_REPO}/\.github/workflows/delivery\.yml@refs/heads/main$"
+issuer="https://token.actions.githubusercontent.com"
+for ref in "$api" "$migrate"; do
+  cosign verify --certificate-identity-regexp "$identity" --certificate-oidc-issuer "$issuer" "$ref" >/dev/null
+  docker pull -q "$ref" >/dev/null
+done
+docker tag "$api" "nj-api:${tag}"
+docker tag "$migrate" "nj-api-migrate:${tag}"
+echo "verified and pulled ${tag}"

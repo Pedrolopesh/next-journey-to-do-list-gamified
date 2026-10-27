@@ -1,0 +1,43 @@
+---
+- name: Install cosign (verifies image signatures before a release)
+  ansible.builtin.get_url:
+    url: 'https://github.com/sigstore/cosign/releases/download/{{ release_cosign_version }}/cosign-linux-amd64'
+    dest: /usr/local/bin/cosign
+    checksum: 'sha256:{{ release_cosign_sha256 }}'
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Pipeline settings (read by the release scripts)
+  ansible.builtin.copy:
+    content: |
+      NJ_IMAGE_REPO='{{ release_image_repo }}'
+      NJ_SIGNER_REPO='{{ release_signer_repo }}'
+    dest: '{{ app_conf_dir }}/ci.conf'
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Pipeline user and key
+  when: release_ci_ssh_public_key | length > 0
+  block:
+    - name: Pipeline user (no password, no group with extra rights)
+      ansible.builtin.user:
+        name: '{{ release_ci_user }}'
+        shell: /bin/bash
+        create_home: true
+        password_lock: true
+
+    - name: Pipeline key restricted to the release entry point
+      ansible.posix.authorized_key:
+        user: '{{ release_ci_user }}'
+        key: '{{ release_ci_ssh_public_key }}'
+        key_options: 'restrict,command="sudo /usr/local/sbin/nj-ci-entry \"$SSH_ORIGINAL_COMMAND\""'
+        exclusive: true
+
+    - name: The pipeline user may run only the entry point as root
+      ansible.builtin.copy:
+        dest: '/etc/sudoers.d/91-{{ release_ci_user }}'
+        mode: '0440'
+        content: "{{ release_ci_user }} ALL=(root) NOPASSWD: /usr/local/sbin/nj-ci-entry\n"
+        validate: /usr/sbin/visudo -cf %s

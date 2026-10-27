@@ -10,4 +10,4 @@ AllowAgentForwarding no
 AllowTcpForwarding no
 ClientAliveInterval 300
 ClientAliveCountMax 2
-AllowUsers root {{ deploy_user }}
+AllowUsers root {{ deploy_user }}{% if release_ci_ssh_public_key | default('') | length > 0 %} {{ release_ci_user | default('nj-ci') }}{% endif %}
