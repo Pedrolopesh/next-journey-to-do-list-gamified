@@ -16,7 +16,7 @@
     "@nextjourney/eslint-config": "workspace:*",
     "@nextjourney/tsconfig": "workspace:*",
     "@playwright/test": "^1.64.1",
-    "@types/node": "^24.19.1",
+    "@types/node": "^26.6.5",
     "eslint": "^9.39.5",
     "typescript": "~5.9.3"
   }
