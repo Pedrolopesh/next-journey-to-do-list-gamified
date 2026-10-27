@@ -25,15 +25,15 @@ jobs:
       TEST_DATABASE_URL: postgresql://ci:ci-senha-descartavel@127.0.0.1:5432/nextjourney_test # scan-allow: credencial efêmera
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # Histórico inteiro: a checagem de commits e a varredura de segredos olham o intervalo do PR
           fetch-depth: 0
 
       # A versão do pnpm vem do campo packageManager do package.json
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
