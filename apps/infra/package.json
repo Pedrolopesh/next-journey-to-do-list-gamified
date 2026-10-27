@@ -1,0 +1,12 @@
+{
+  "name": "@nextjourney/infra",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Tests for the infrastructure scripts (bats)",
+  "scripts": {
+    "test": "bats tests"
+  },
+  "devDependencies": {
+    "bats": "^1.13.0"
+  }
+}
