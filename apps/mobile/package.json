@@ -60,7 +60,7 @@
     "@nextjourney/eslint-config": "workspace:*",
     "@testing-library/react-native": "^14.1.0",
     "@types/react": "~19.2.2",
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-expo": "*",
     "typescript": "~6.0.3",
     "vitest": "^5.0.3"

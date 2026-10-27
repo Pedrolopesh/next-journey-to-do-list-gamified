@@ -57,7 +57,7 @@
     "@types/node": "^24.0.0",
     "@types/supertest": "^7.2.1",
     "@vitest/coverage-v8": "^5.0.3",
-    "eslint": "^9",
+    "eslint": "^10",
     "fast-check": "^4",
     "prisma": "^7.10.0",
     "supertest": "^7.3.1",
