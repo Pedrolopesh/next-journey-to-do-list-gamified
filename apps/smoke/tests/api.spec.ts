@@ -39,6 +39,46 @@ test.describe('public surface', () => {
   });
 });
 
+// A fixed account that already exists and is confirmed (used by the pipeline, so nothing is created
+// or deleted on every release). Skipped when the credentials are not set.
+const fixedEmail = process.env['SMOKE_EMAIL'];
+const fixedPassword = process.env['SMOKE_PASSWORD'];
+
+test.describe.serial('existing account', () => {
+  test.skip(!fixedEmail || !fixedPassword, 'set SMOKE_EMAIL and SMOKE_PASSWORD to run this flow');
+
+  let accessToken = '';
+  let refreshToken = '';
+
+  test('login returns tokens that match the contract', async ({ request }) => {
+    const response = await request.post('/v1/auth/login', {
+      headers: JSON_HEADERS,
+      data: { email: fixedEmail, password: fixedPassword },
+    });
+    expect([200, 201]).toContain(response.status());
+    const body = authResponseSchema.parse(await response.json());
+    accessToken = body.tokens.accessToken;
+    refreshToken = body.tokens.refreshToken;
+  });
+
+  test('GET /v1/me matches the contract', async ({ request }) => {
+    const response = await request.get('/v1/me', {
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+    expect(response.status()).toBe(200);
+    meResponseSchema.parse(await response.json());
+  });
+
+  test('refresh rotates the session', async ({ request }) => {
+    const response = await request.post('/v1/auth/refresh', {
+      headers: JSON_HEADERS,
+      data: { refreshToken },
+    });
+    expect([200, 201]).toContain(response.status());
+    authResponseSchema.parse(await response.json());
+  });
+});
+
 // Needs a way to confirm the test account's email without opening an inbox. Without it, the whole
 // account flow is skipped and nothing is created.
 // SMOKE_CONFIRM_COMMAND is a shell command that receives the email as its last argument.

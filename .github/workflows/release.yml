@@ -1,0 +1,78 @@
+name: Release
+
+# Reusable: joins the tailnet as an ephemeral node, asks the VPS to verify and release the signed
+# images, then runs the smoke tests against the environment's public URL.
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub environment (controls approvals and secrets)
+        required: true
+        type: string
+      env_name:
+        description: Environment on the host (dev or prd)
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
+      api:
+        required: true
+        type: string
+      migrate:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.env_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @nextjourney/smoke...
+
+      - uses: tailscale/github-action@99a8333667fff04fdd6cffb46dfd409f8329a7bf # v4.3.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: SSH access to the host
+        env:
+          KEY: ${{ secrets.CI_SSH_KEY }}
+          HOST_KEY: ${{ secrets.VPS_SSH_HOST_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/ci_key && chmod 600 ~/.ssh/ci_key
+          printf '%s\n' "$HOST_KEY" > ~/.ssh/known_hosts
+
+      - name: Release
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          TARGET: ${{ inputs.env_name }}
+          TAG: ${{ inputs.tag }}
+          API: ${{ inputs.api }}
+          MIGRATE: ${{ inputs.migrate }}
+        run: |
+          ssh -i ~/.ssh/ci_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            "nj-ci@${VPS_HOST}" "release ${TARGET} ${TAG} ${API} ${MIGRATE}"
+
+      - name: Smoke tests
+        env:
+          SMOKE_BASE_URL: ${{ vars.API_URL }}
+          SMOKE_EMAIL: ${{ secrets.SMOKE_EMAIL }}
+          SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
+        run: pnpm --filter @nextjourney/smoke smoke
