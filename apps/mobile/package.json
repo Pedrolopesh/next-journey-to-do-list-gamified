@@ -62,7 +62,7 @@
     "@types/react": "~19.2.2",
     "eslint": "^9",
     "eslint-config-expo": "*",
-    "typescript": "~6.0.3",
+    "typescript": "~7.0.2",
     "vitest": "^5.0.3"
   },
   "scripts": {
