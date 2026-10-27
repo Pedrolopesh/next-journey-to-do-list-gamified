@@ -1,0 +1,21 @@
+---
+- name: List listening sockets on public addresses outside the allowed ports
+  ansible.builtin.shell: |
+    set -eo pipefail
+    listeners=$(ss -H -tln)
+    printf '%s\n' "$listeners" \
+      | awk '{print $4}' \
+      | { grep -v -E '^(127\.|\[::1\]|\[fd7a:|100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.)|%lo' || true; } \
+      | sed -E 's/.*:([0-9]+)$/\1/' \
+      | sort -un \
+      | { grep -v -x -E '{{ verify_public_ports | join("|") }}' || true; }
+  args:
+    executable: /bin/bash
+  register: verify_unexpected
+  changed_when: false
+
+- name: Fail if an unexpected port is listening
+  ansible.builtin.assert:
+    that: verify_unexpected.stdout | trim == ''
+    fail_msg: "Unexpected listening ports on public addresses: {{ verify_unexpected.stdout_lines | join(', ') }}"
+    success_msg: Only the allowed ports listen on public addresses

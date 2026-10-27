@@ -7,10 +7,14 @@ Dev and production run on the same host, in separate stacks (`next-journey-dev` 
 ```bash
 export VPS_HOST=<ip-or-tailnet-name>
 apps/infra/scripts/deploy.sh dev main        # or prd; 3rd argument "seed" on the first run or with a new achievement
-apps/infra/scripts/smoke.sh https://<api-host> <command-that-confirms-the-email>
+SMOKE_BASE_URL=https://<api-host> SMOKE_CONFIRM_COMMAND=<command-that-confirms-the-email> pnpm --filter @nextjourney/smoke smoke
 ```
 
 The deploy builds the image on the VPS, runs `prisma migrate deploy` before swapping the API and reloads the unit. The previous tag is kept in `NJ_PREV_TAG`, in `/etc/nextjourney/<env>.env`.
+
+## Smoke test
+
+`apps/smoke` runs Playwright in API mode (no browser): health, security headers, validation, protected routes and, when `SMOKE_CONFIRM_COMMAND` is set, the account lifecycle (sign-up, login, refresh, `me`, data export and deletion), with every response checked against the shared contracts. The command receives the test account's email and must mark it as confirmed, for example by running an `UPDATE` on the environment database. Without it, the account tests are skipped and nothing is created.
 
 ## Roll back
 
@@ -42,4 +46,4 @@ They are stored encrypted in `/etc/nextjourney/creds/<env>/` (ADR-0010).
 
 ## VPS reboot
 
-`nj-secrets@<env>` and `nj@<env>` start on their own. Check with `smoke.sh` after a reboot.
+`nj-secrets@<env>` and `nj@<env>` start on their own. Check with the smoke test after a reboot.

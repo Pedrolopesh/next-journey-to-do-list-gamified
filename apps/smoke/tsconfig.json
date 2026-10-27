@@ -1,0 +1,5 @@
+{
+  "extends": "@nextjourney/tsconfig/base.json",
+  "compilerOptions": { "noEmit": true, "types": ["node"] },
+  "include": ["tests", "playwright.config.ts", "eslint.config.js"]
+}

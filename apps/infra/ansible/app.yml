@@ -8,3 +8,5 @@
       tags: [app]
     - role: edge
       tags: [edge]
+    - role: verify
+      tags: [verify]
