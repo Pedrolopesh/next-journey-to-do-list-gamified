@@ -22,15 +22,15 @@
     "check:openspec": "bash scripts/check-openspec.sh"
   },
   "devDependencies": {
-    "@commitlint/cli": "^21.2.3",
-    "@commitlint/config-conventional": "^21.2.3",
-    "@fission-ai/openspec": "1.4.1",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@fission-ai/openspec": "1.15.0",
     "eslint": "^9.39.5",
     "husky": "^9.1.7",
-    "jscpd": "5.4.1",
+    "jscpd": "5.4.2",
     "lint-staged": "^17.6.0",
-    "prettier": "^3.9.9",
-    "turbo": "^2.11.6"
+    "prettier": "^3.9.10",
+    "turbo": "^2.11.10"
   },
   "type": "module",
   "lint-staged": {
