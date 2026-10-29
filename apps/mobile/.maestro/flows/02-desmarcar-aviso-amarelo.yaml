@@ -2,9 +2,12 @@
 appId: br.com.wetechhub.app.dev
 ---
 - runFlow: ../subflows/inicio.yaml
-- tapOn: 'Hábitos'
+- tapOn: 'Hábitos(, tab.*)?'
 - tapOn: 'Novo item'
-- tapOn: 'Título'
+- runFlow:
+    file: ../subflows/tocar-campo.yaml
+    env:
+      CAMPO: 'Título'
 - inputText: 'Beber água'
 - hideKeyboard
 - tapOn: 'Criar item'

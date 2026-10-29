@@ -2,23 +2,26 @@
 appId: br.com.wetechhub.app.dev
 ---
 - runFlow: ../subflows/inicio.yaml
-- tapOn: 'Tarefas'
+- tapOn: 'Tarefas(, tab.*)?'
 - tapOn: 'Novo item'
-- tapOn: 'Título'
+- runFlow:
+    file: ../subflows/tocar-campo.yaml
+    env:
+      CAMPO: 'Título'
 - inputText: 'Pagar a conta de luz'
 - hideKeyboard
 # Seletor de dificuldade com estrelas (Figma) e botão X para fechar
 - assertVisible: 'Dificuldade'
 - assertVisible: 'Fechar'
-- assertVisible: 'Médio'
-- tapOn: 'Fácil'
+- assertVisible: '(Dificuldade: )?Médio'
+- tapOn: '(Dificuldade: )?Fácil'
 - tapOn: 'Criar item'
 # Criar libera "Primeira tarefa": o modal aparece depois da criação, um só
 - extendedWaitUntil:
     visible: 'Conquista desbloqueada!'
     timeout: 15000
 - runFlow: ../subflows/fechar-conquista.yaml
-- assertVisible: 'Pagar a conta de luz'
+- assertVisible: '.*Pagar a conta de luz.*'
 # Marcar (dificuldade fácil): o servidor dá 5 de EXP e 1 moeda; o aviso e o modal vêm juntos,
 # então o valor é conferido na API
 - tapOn: 'Marcar Pagar a conta de luz'

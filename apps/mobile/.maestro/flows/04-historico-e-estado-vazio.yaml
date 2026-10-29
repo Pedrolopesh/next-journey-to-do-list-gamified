@@ -3,13 +3,13 @@
 appId: br.com.wetechhub.app.dev
 ---
 - runFlow: ../subflows/inicio.yaml
-- tapOn: 'Tarefas'
+- tapOn: 'Tarefas(, tab.*)?'
 - scrollUntilVisible:
     element: 'Tarefas concluídas saem desta lista e ficam no histórico, em Perfil.'
 - assertVisible: 'Tarefas concluídas saem desta lista e ficam no histórico, em Perfil.'
-- tapOn: 'Perfil'
+- tapOn: 'Perfil(, tab.*)?'
 - tapOn: 'Histórico de tarefas'
-- assertVisible: 'Pagar a conta de luz'
+- assertVisible: '.*Pagar a conta de luz.*'
 - tapOn: 'Desfazer'
 - assertVisible: 'Nada concluído ainda'
 - assertVisible: 'Quando você concluir uma tarefa.*'

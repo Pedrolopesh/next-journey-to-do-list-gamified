@@ -6,14 +6,14 @@ appId: br.com.wetechhub.app.dev
 - launchApp
 # O bundle leva um tempo para carregar
 - extendedWaitUntil:
-    visible: 'Entrar|Perfil|Pular|Comece rápido|Escolha sua história|Conquista desbloqueada!'
+    visible: 'Entrar|Perfil(, tab.*)?|Pular|Comece rápido|Escolha sua história|Conquista desbloqueada!'
     timeout: 120000
 - runFlow: ../subflows/onboarding.yaml
 - runFlow:
     when:
-      visible: 'Perfil'
+      visible: 'Perfil(, tab.*)?'
     commands:
-      - tapOn: 'Perfil'
+      - tapOn: 'Perfil(, tab.*)?'
       - scrollUntilVisible:
           element: 'Sair'
       - tapOn: 'Sair'
@@ -21,9 +21,15 @@ appId: br.com.wetechhub.app.dev
     visible: 'Entrar'
     timeout: 30000
 - tapOn: 'Entrar'
-- tapOn: 'E-mail'
+- runFlow:
+    file: ../subflows/tocar-campo.yaml
+    env:
+      CAMPO: 'E-mail'
 - inputText: ${MAESTRO_EMAIL}
-- tapOn: 'Senha'
+- runFlow:
+    file: ../subflows/tocar-campo.yaml
+    env:
+      CAMPO: 'Senha'
 - inputText: ${MAESTRO_PASSWORD}
 - hideKeyboard
 - tapOn:
