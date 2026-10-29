@@ -1,0 +1,15 @@
+# Toca num campo de texto pelo rótulo (variável CAMPO). No Android o toque no rótulo foca o campo;
+# no iOS o rótulo é um texto à parte, então toca no que está logo abaixo dele.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: ${CAMPO}
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          below: ${CAMPO}

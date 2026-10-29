@@ -1,0 +1,13 @@
+# Volta uma tela: o botão Voltar do sistema no Android; no iOS, o botão Voltar do cabeçalho.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - back
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: 'Voltar'

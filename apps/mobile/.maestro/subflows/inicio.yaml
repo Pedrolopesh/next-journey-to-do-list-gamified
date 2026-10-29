@@ -8,5 +8,5 @@ appId: br.com.wetechhub.app.dev
     when:
       visible: 'Voltar'
     commands:
-      # botão Voltar do Android: o de Voltar da tela fica coberto pelo botão de desenvolvimento
-      - back
+      # Android: o Voltar da tela fica coberto pelo botão de desenvolvimento, então usa o do sistema
+      - runFlow: voltar.yaml

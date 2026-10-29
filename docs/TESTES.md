@@ -24,7 +24,8 @@ Pré-requisitos, uma vez:
 
 - Java 17 ou mais (`java -version`).
 - Maestro (`~/.maestro/bin/maestro --version`). Instalação oficial: <https://docs.maestro.dev/getting-started/installing-maestro/macos>. O pacote do Homebrew chamado só `maestro` é outro produto; o certo é `mobile-dev-inc/tap/maestro`.
-- Emulador Android aberto com o app de desenvolvimento instalado, Metro rodando e a API no ar (`PORT=3010 HOST=0.0.0.0`).
+- Emulador Android **ou simulador iOS** aberto com o app de desenvolvimento instalado, Metro rodando e a API no ar (`PORT=3010 HOST=0.0.0.0`). Os fluxos foram escritos para os dois; validados no simulador iOS (5 de 5), falta o emulador Android (NJ-21).
+- No simulador iOS, suba o Metro apontando para a API local (`EXPO_PUBLIC_API_URL=http://localhost:3010 pnpm --filter @nextjourney/mobile exec expo start --dev-client`) e abra o app pelo link do Metro; o `.env` do app pode estar apontando para outro ambiente.
 
 Comando:
 
@@ -53,6 +54,7 @@ Convenções:
 
 - Textos e rótulos vêm do `pt-BR.json`; o fluxo usa o mesmo texto que o usuário vê. Mudou o texto, ajuste o fluxo.
 - Avisos que somem em poucos segundos (toast) não são conferidos pela tela; o fluxo confere o estado na API (`.maestro/scripts/conferir-jogador.js`).
+- Android e iOS leem a tela de jeitos diferentes: no iOS a aba aparece como `Perfil, tab, 5 of 5`, o cartão de item ou conquista é um rótulo só (`Abrir <título>`, `<nome>. <descrição> bloqueada`) e o rótulo de um campo não recebe o foco. Por isso os fluxos usam expressões (`Perfil(, tab.*)?`, `.*Pagar a conta de luz.*`) e, onde o comportamento muda, `when: platform:` (`subflows/tocar-campo.yaml`, `subflows/voltar.yaml`). Fluxo novo precisa passar nos dois.
 - Todo fluxo começa por `subflows/inicio.yaml`, que fecha modal, formulário ou tela deixados abertos por uma execução que falhou.
 - Os fluxos dependem do anterior (mesma conta, mesma ordem). A ordem fica em `.maestro/config.yaml`.
 - Relatório da última execução: `apps/mobile/.maestro/relatorio.xml` (ignorado pelo Git).
@@ -60,5 +62,5 @@ Convenções:
 ## O que falta
 
 - Rodar a camada 5 no CI: precisa de um runner macOS com emulador (lento e caro); por ora é antes de abrir PR.
-- Fluxo no iOS: o Maestro roda no simulador iOS, mas os fluxos só foram validados no Android.
+- Fluxos no Android depois da adaptação ao iOS (2026-10-29): passaram no simulador iOS; falta repetir no emulador Android (NJ-21). No iOS o contador `1/6` da galeria não é conferido, porque o cartão não expõe o número.
 - Comparação visual (captura de tela) das telas principais.

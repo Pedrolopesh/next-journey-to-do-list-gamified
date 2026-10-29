@@ -2,23 +2,28 @@
 appId: br.com.wetechhub.app.dev
 ---
 - runFlow: ../subflows/inicio.yaml
-- tapOn: 'Perfil'
+- tapOn: 'Perfil(, tab.*)?'
 - tapOn: 'Conquistas'
 # Título e contador são um texto só; a conta tem 3 conquistas (Primeiro passo, tarefa e hábito)
 - assertVisible: 'Primeiros passos.*3/12'
 # Metas novas do ritmo, com o progresso vindo do servidor
-- assertVisible: '1/6'
+# Android lê o contador da meta como texto; no iOS o cartão é um rótulo só, sem o contador
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible: '1/6'
 - scrollUntilVisible:
-    element: 'Chama de 5 dias'
-- assertVisible: 'Chama de 5 dias'
+    element: 'Chama de 5 dias.*'
+- assertVisible: 'Chama de 5 dias.*'
 - scrollUntilVisible:
-    element: 'Dia perfeito'
-- tapOn: 'Dia perfeito'
+    element: 'Dia perfeito.*'
+- tapOn: 'Dia perfeito.*'
 - assertVisible: 'Conclua todos os diários.*em 8 dias diferentes'
 - assertVisible: '0 de 8'
 - tapOn: 'Fechar'
 - scrollUntilVisible:
-    element: 'Hábito de 100 dias'
-- assertVisible: 'Hábito de 100 dias'
+    element: 'Hábito de 100 dias.*'
+- assertVisible: 'Hábito de 100 dias.*'
 # volta ao Perfil
-- back
+- runFlow: ../subflows/voltar.yaml

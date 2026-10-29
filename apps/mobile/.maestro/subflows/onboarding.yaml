@@ -13,17 +13,40 @@ appId: br.com.wetechhub.app.dev
     when:
       visible: 'Comece rápido'
     commands:
-      - scrollUntilVisible:
-          element: 'Nome do personagem'
-      - tapOn: 'Nome do personagem'
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - scrollUntilVisible:
+                element: 'Nome do personagem'
+      # iOS: scrollUntilVisible não acha o rótulo do campo; rola a tela duas vezes
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - scroll
+            - scroll
+      - runFlow:
+          file: tocar-campo.yaml
+          env:
+            CAMPO: 'Nome do personagem'
       - inputText: 'Testadora'
       - hideKeyboard
-      - scrollUntilVisible:
-          element: 'Criar personagem'
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - scrollUntilVisible:
+                element: 'Criar personagem'
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - scroll
       - tapOn: 'Criar personagem'
 - runFlow:
     when:
       visible: 'Escolha sua história'
     commands:
-      - tapOn: 'Praia'
+      - tapOn: 'Praia.*'
       - tapOn: 'Começar esta história'
