@@ -11,7 +11,6 @@ import {
   type Selection,
 } from './compose';
 import { extrasOf, followSpot, journeySpot, patrolSpot } from './extras';
-import { drawOutfit, type Outfit } from './outfits';
 import { SCENES } from './scenes';
 import { applyTint, drawLights, vignette } from './scenes/lighting';
 import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay } from './scenes/types';
@@ -103,6 +102,8 @@ function selectionKey(selection: Selection, anim: AnimationName): string {
     selection.legsColor,
     selection.feet,
     selection.feetColor,
+    selection.hat ?? '',
+    selection.arms ?? '',
   ].join('|');
 }
 
@@ -179,6 +180,8 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     const def = SCENES.find((scene) => scene.id === state.sceneId) ?? SCENES[0];
     const anim = currentAnim();
     const walks = state.journey && def?.journey !== undefined;
+    // Os extras (guardas, magos, nobres) vêm da cena e do nível, que já estão na chave: o visual deles só
+    // muda trocando de cena ou nível. Mudar `extra.selection` sem isso deixaria camadas velhas.
     const key = `${state.sceneId}|${state.level}|${walks ? 'j' : 'q'}|${selectionKey(state.selection, anim)}`;
     if (key === resolvedKey) return resolving;
     resolvedKey = key;
@@ -187,7 +190,11 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
       const nextExtras = await Promise.all(
         (def ? extrasOf(def, state.level, walks) : []).map(async (extra, index) => ({
           index,
-          layers: await resolveLayers({ ...state.selection, ...extra.selection }, extra.anim),
+          // Chapéu e braços do herói não passam para os extras: cada extra declara os seus
+          layers: await resolveLayers(
+            { ...state.selection, hat: null, arms: null, ...extra.selection },
+            extra.anim,
+          ),
         })),
       );
       // Só aplica se o estado não mudou de novo enquanto carregava
@@ -224,7 +231,6 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     x: number,
     feetY: number,
     clock: number,
-    outfit?: Outfit,
   ): void => {
     const index = Math.floor(clock * FPS[anim]) % catalog.animations[anim];
     const { sy } = frameRect(direction, 0);
@@ -249,7 +255,6 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
         FRAME,
       );
     }
-    if (outfit) drawOutfit(ctx, outfit, x, feetY, direction, index);
   };
 
   const draw = (clock: number): void => {
@@ -284,15 +289,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
           if (walking && extra.follow) spot = followSpot(extra.follow, heroX, clock, chase);
           else if (walking) spot = journeySpot(extra, scroll, clock, def.journeyPeriod ?? 820);
           else if (extra.patrol) spot = patrolSpot(extra.patrol, clock);
-          drawCharacter(
-            layers,
-            extra.anim,
-            spot.direction,
-            spot.x,
-            extra.feetY,
-            clock,
-            extra.outfit,
-          );
+          drawCharacter(layers, extra.anim, spot.direction, spot.x, extra.feetY, clock);
         },
       });
     }

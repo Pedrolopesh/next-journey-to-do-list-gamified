@@ -34,7 +34,7 @@ export const CASTLE_LEVELS: LevelInfo[] = [
   {
     name: 'Guarda real',
     blurb:
-      'O castelo se organiza: cavaleiros de elmo e armadura flanqueiam o trono e braseiros acendem as laterais.',
+      'O castelo se organiza: guardas de viseira Pigface e proteção nos braços flanqueiam o trono e braseiros acendem as laterais.',
     changes: [
       'Seis cavaleiros no salão: dois no tablado e os outros nas laterais, com braseiros nos cantos.',
       'Jornada: cavaleiros de cada lado do tapete, braseiros e escudos na parede.',
@@ -56,7 +56,7 @@ export const CASTLE_LEVELS: LevelInfo[] = [
       'O salão vira laboratório arcano: estantes de livros, esferas mágicas flutuando, caldeirão e bola de cristal.',
     changes: [
       'Estantes de livros no lugar das armaduras, esferas flutuantes e luz mágica.',
-      'Caldeirão borbulhando, bola de cristal e magos de chapéu pontudo e túnica longa.',
+      'Caldeirão borbulhando, bola de cristal e magos com o chapéu Celestial Wizard Moon.',
       'Jornada: estantes na parede ao lado das armaduras, caldeirão, bola de cristal e magos.',
     ],
   },
@@ -193,13 +193,15 @@ const APPRENTICE: Look = {
   feet: 'feet-basic-shoes',
 };
 const guard = (i: number): Look => GUARD[i % GUARD.length] ?? {};
+/** Guarda real: viseira Pigface e a proteção "Armour" nos braços, por cima das roupas de cada um. */
 const knightOf = (extra: ExtraCharacter): ExtraCharacter => ({
   ...extra,
-  outfit: { kind: 'knight' },
+  selection: { ...extra.selection, hat: 'hat-visor-pigface', arms: 'arms-armour' },
 });
+/** Torre do mago: só o chapéu Celestial Wizard Moon Hat, na cor de cada um. */
 const mageOf = (extra: ExtraCharacter, color: string): ExtraCharacter => ({
   ...extra,
-  outfit: { kind: 'wizard', color },
+  selection: { ...extra.selection, hat: `hat-celestial-moon-${color}` },
 });
 const noble = (i: number): Look => NOBLE[i % NOBLE.length] ?? {};
 
@@ -625,9 +627,9 @@ export function castleExtras(n: number): ExtraCharacter[] {
       ];
     case 4:
       return [
-        mageOf(stand(WIZARD, 262, 162, 'left'), '#5b2e91'),
-        mageOf(stand(APPRENTICE, 78, 190, 'right'), '#2f5fb0'),
-        mageOf(roamer(APPRENTICE, 'walk', 120, 270, 11, 214), '#2a9d8f'),
+        mageOf(stand(WIZARD, 262, 162, 'left'), 'purple'),
+        mageOf(stand(APPRENTICE, 78, 190, 'right'), 'blue'),
+        mageOf(roamer(APPRENTICE, 'walk', 120, 270, 11, 214), 'teal'),
       ];
     case 5:
       return [
@@ -668,10 +670,10 @@ export function castleJourneyExtras(n: number): ExtraCharacter[] {
       ];
     case 4:
       return [
-        mageOf(stander(WIZARD, 350, 164, 'left'), '#5b2e91'),
-        mageOf(stander(APPRENTICE, 720, 164, 'right'), '#2f5fb0'),
-        mageOf(walker(APPRENTICE, 'walk', 100, 12, 208), '#2a9d8f'),
-        mageOf(walker(WIZARD, 'walk', 820, -9, 212), '#8f1d1d'),
+        mageOf(stander(WIZARD, 350, 164, 'left'), 'purple'),
+        mageOf(stander(APPRENTICE, 720, 164, 'right'), 'blue'),
+        mageOf(walker(APPRENTICE, 'walk', 100, 12, 208), 'teal'),
+        mageOf(walker(WIZARD, 'walk', 820, -9, 212), 'maroon'),
       ];
     case 5:
       return [

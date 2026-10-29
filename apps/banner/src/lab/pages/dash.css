@@ -1,0 +1,48 @@
+.dash-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.dash-kpi {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.03);
+}
+.dash-kpi strong {
+  display: block;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.dash-kpi span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.dash-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dash-links a {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+.dash-links a:hover {
+  background: rgb(255 255 255 / 0.08);
+}
+.dash-note {
+  margin: 8px 0 0;
+}
+.inv-table td.num,
+.inv-table th.num {
+  text-align: right;
+}
+.inv-table tfoot td {
+  font-weight: 600;
+}

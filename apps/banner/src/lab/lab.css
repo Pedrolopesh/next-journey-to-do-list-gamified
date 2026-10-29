@@ -160,40 +160,118 @@ body {
   gap: 0;
   padding: 0;
 }
+/* Menu lateral no estilo Material UI: lista com estados de hover, foco e seleção, e seções recolhíveis */
 .side {
   position: sticky;
   top: 0;
   align-self: flex-start;
   flex: none;
-  width: 210px;
+  width: 240px;
   height: 100vh;
-  padding: 24px 12px;
+  overflow-y: auto;
+  padding: 16px 0;
   background: var(--surface);
   border-right: 1px solid var(--line);
+  font-family:
+    Roboto,
+    'Helvetica Neue',
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 .side h2 {
-  margin: 0 8px 14px;
+  margin: 0 0 8px;
+  padding: 8px 24px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.side button {
-  display: block;
-  width: 100%;
-  margin-bottom: 6px;
-  padding: 10px 12px;
-  border: 1px solid transparent;
-  border-radius: 10px;
+.side button,
+.side summary {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: calc(100% - 16px);
+  min-height: 40px;
+  margin: 2px 8px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 8px;
   background: transparent;
   color: var(--text);
   font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.43;
+  letter-spacing: 0.01em;
   text-align: left;
   cursor: pointer;
+  list-style: none;
+  transition: background-color 150ms ease;
+}
+.side summary::-webkit-details-marker {
+  display: none;
+}
+.side button:hover,
+.side summary:hover {
+  background: rgb(255 255 255 / 0.08);
+}
+.side button:focus-visible,
+.side summary:focus-visible {
+  outline: 0;
+  background: rgb(255 255 255 / 0.12);
+  box-shadow: inset 0 0 0 2px rgb(var(--c) / 0.8);
+}
+.side button:active,
+.side summary:active {
+  background: rgb(255 255 255 / 0.16);
 }
 .side button[aria-current='page'] {
-  background: rgb(var(--c) / 0.2);
-  border-color: rgb(var(--c) / 0.6);
+  background: rgb(var(--c) / 0.22);
+  color: #fff;
+}
+.side button[aria-current='page']:hover {
+  background: rgb(var(--c) / 0.3);
+}
+/* Barra lateral de destaque no item aberto, como o indicador do Material UI */
+.side button[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: rgb(var(--c));
+}
+/* Seção recolhível: título com seta que gira ao abrir */
+.side summary {
+  justify-content: space-between;
+}
+.side summary::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  background: var(--muted);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  transition: transform 200ms ease;
+}
+.side details[open] > summary::after {
+  transform: rotate(180deg);
+}
+.side details:has(button[aria-current='page']) > summary {
+  color: rgb(var(--c) / 1);
+  filter: brightness(1.5);
+}
+/* Sub-itens recuados */
+.side-group > button {
+  padding-left: 32px;
+  font-weight: 400;
 }
 .view {
   flex: 1;
@@ -222,6 +300,16 @@ body {
   }
   .side button {
     margin: 0;
+  }
+  .side summary {
+    display: none;
+  }
+  .side-group {
+    display: contents;
+  }
+  .side-group > button {
+    width: auto;
+    padding-left: 14px;
   }
 }
 .app-phone {
@@ -286,8 +374,11 @@ html {
     min-height: 40px;
     padding: 8px 14px;
     white-space: nowrap;
-    border-color: var(--line);
+    border: 1px solid var(--line);
     border-radius: 999px;
+  }
+  .side button[aria-current='page']::before {
+    display: none;
   }
   .view {
     width: 100%;

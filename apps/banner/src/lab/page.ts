@@ -2,5 +2,7 @@
 export type LabPage = {
   id: string;
   label: string;
+  /** Seção do menu: páginas com a mesma seção ficam como sub-itens de um único item. */
+  section?: string;
   mount: (host: HTMLElement) => void | (() => void) | Promise<void | (() => void)>;
 };
