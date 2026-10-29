@@ -1,0 +1,12 @@
+# Garante que um item da lista está na tela (variável ITEM, expressão). Em tela pequena (emulador
+# Android de 1280 px) o banner e o cartão da história empurram a lista para baixo da dobra.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - scrollUntilVisible:
+          element: ${ITEM}
+          centerElement: true
+- assertVisible: ${ITEM}

@@ -21,7 +21,10 @@ appId: br.com.wetechhub.app.dev
 - tapOn: 'Dia perfeito.*'
 - assertVisible: 'Conclua todos os diários.*em 8 dias diferentes'
 - assertVisible: '0 de 8'
-- tapOn: 'Fechar'
+# No Android há dois "Fechar" (o fundo da folha e o botão); o botão é o que está abaixo do título
+- tapOn:
+    text: 'Fechar'
+    below: 'Dia perfeito'
 - scrollUntilVisible:
     element: 'Hábito de 100 dias.*'
 - assertVisible: 'Hábito de 100 dias.*'

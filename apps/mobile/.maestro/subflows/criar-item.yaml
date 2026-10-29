@@ -1,0 +1,12 @@
+# Toca em "Criar item". Em tela pequena (emulador Android de 1280 px) o botão fica abaixo da
+# dobra do formulário, então rola até ele e o centraliza (colado na borda, o toque cai na barra de navegação); no iOS o botão já aparece.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - scrollUntilVisible:
+          element: 'Criar item'
+          centerElement: true
+- tapOn: 'Criar item'

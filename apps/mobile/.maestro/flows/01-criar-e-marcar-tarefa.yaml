@@ -15,13 +15,16 @@ appId: br.com.wetechhub.app.dev
 - assertVisible: 'Fechar'
 - assertVisible: '(Dificuldade: )?Médio'
 - tapOn: '(Dificuldade: )?Fácil'
-- tapOn: 'Criar item'
+- runFlow: ../subflows/criar-item.yaml
 # Criar libera "Primeira tarefa": o modal aparece depois da criação, um só
 - extendedWaitUntil:
     visible: 'Conquista desbloqueada!'
     timeout: 15000
 - runFlow: ../subflows/fechar-conquista.yaml
-- assertVisible: '.*Pagar a conta de luz.*'
+- runFlow:
+    file: ../subflows/ver-item.yaml
+    env:
+      ITEM: '.*Pagar a conta de luz.*'
 # Marcar (dificuldade fácil): o servidor dá 5 de EXP e 1 moeda; o aviso e o modal vêm juntos,
 # então o valor é conferido na API
 - tapOn: 'Marcar Pagar a conta de luz'
