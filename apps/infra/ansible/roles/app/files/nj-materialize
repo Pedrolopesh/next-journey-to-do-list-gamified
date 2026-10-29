@@ -1,17 +1,91 @@
 #!/bin/bash
-# Runs inside the nj-secrets@<env> unit (root): copies the credentials decrypted by systemd into a
-# tmpfs with the right owner (db = uid 999, API = uid 10001). Gone after a reboot or when the unit stops.
+# Runs inside the nj-secrets@<env> unit (root): puts the secrets of an environment in a tmpfs with the
+# right owner (db = uid 999, API = uid 10001). Gone after a reboot or when the unit stops.
+#
+# Source of the values (NJ_SECRETS_SOURCE):
+#   creds    credentials decrypted by systemd (default)
+#   openbao  read from the vault with the AppRole of the environment
+# NJ_SECRETS_FALLBACK=yes uses the local credentials when the vault cannot be read (transition only).
 set -euo pipefail
 env="${1:?usage: nj-materialize <dev|prd>}"
-src="${CREDENTIALS_DIRECTORY:?must run inside the unit}"
-dst="/run/nj-${env}/secrets"
-install -d -m 0711 "/run/nj-${env}"
+source_kind="${NJ_SECRETS_SOURCE:-creds}"
+fallback="${NJ_SECRETS_FALLBACK:-no}"
+run_dir="${NJ_RUN_DIR:-/run}"
+conf_dir="${NJ_CONF_DIR:-/etc/nextjourney}"
+vault="${NJ_VAULT_ADDR:-https://127.0.0.1:8200}"
+cacert="${NJ_VAULT_CACERT:-/etc/openbao/tls/openbao.crt}"
+dst="${run_dir}/nj-${env}/secrets"
+names=(postgres_password database_url jwt_access_secret resend_api_key)
+
+install -d -m 0711 "${run_dir}/nj-${env}"
 install -d -m 0755 "$dst"
 umask 077
-put() { # put <name> <uid>
-  install -m 0400 -o "$2" -g "$2" "${src}/$1" "${dst}/$1"
+
+put() { # put <name> <file with the value>
+  local owner=10001
+  [ "$1" = postgres_password ] && owner=999
+  if [ -n "${NJ_NO_CHOWN:-}" ]; then
+    install -m 0400 "$2" "${dst}/$1"
+  else
+    install -m 0400 -o "$owner" -g "$owner" "$2" "${dst}/$1"
+  fi
 }
-put postgres_password 999
-put database_url 10001
-put jwt_access_secret 10001
-put resend_api_key 10001
+
+from_creds() {
+  local src="${CREDENTIALS_DIRECTORY:?must run inside the unit}" n
+  for n in "${names[@]}"; do put "$n" "${src}/${n}"; done
+}
+
+# Every check is explicit (|| return 1): errexit does not apply inside a function used in an if.
+from_vault() {
+  local stage role_id secret_id token code n i
+  stage=$(mktemp -d "${run_dir}/nj-${env}/.stage.XXXXXX") || return 1
+
+  for i in $(seq 1 15); do # wait for the listener, not for the unseal
+    code=$(curl -sS --cacert "$cacert" -o /dev/null -w '%{http_code}' "${vault}/v1/sys/health" 2>/dev/null) && break
+    sleep 2
+  done
+  if [ "${code:-}" != 200 ] && [ "${code:-}" != 429 ] && [ "${code:-}" != 472 ] && [ "${code:-}" != 473 ]; then
+    echo "vault is not open (health ${code:-unreachable})" >&2
+    rm -rf "$stage"
+    return 1
+  fi
+
+  role_id=$(cat "${conf_dir}/creds/${env}/openbao_role_id") || { rm -rf "$stage"; return 1; }
+  secret_id=$(systemd-creds decrypt --name=openbao_secret_id "${conf_dir}/creds/${env}/openbao_secret_id.cred" -) \
+    || { rm -rf "$stage"; return 1; }
+  token=$(printf '%s\n%s\n' "$role_id" "$secret_id" \
+    | python3 -c 'import json,sys; r,s=sys.stdin.read().split(); print(json.dumps({"role_id":r,"secret_id":s}))' \
+    | curl -fsS --cacert "$cacert" -X POST -H 'Content-Type: application/json' --data @- "${vault}/v1/auth/approle/login" \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin)["auth"]["client_token"])') \
+    || { echo "vault login failed" >&2; rm -rf "$stage"; return 1; }
+  unset secret_id
+
+  for n in "${names[@]}"; do
+    printf 'header = "X-Vault-Token: %s"\n' "$token" \
+      | curl -fsS --cacert "$cacert" -K - "${vault}/v1/kv/data/nextjourney/${env}/${n}" \
+      | python3 -c 'import json,sys; sys.stdout.write(json.load(sys.stdin)["data"]["data"]["value"])' >"${stage}/${n}" \
+      || { echo "could not read ${n}" >&2; rm -rf "$stage"; return 1; }
+  done
+  printf 'header = "X-Vault-Token: %s"\n' "$token" \
+    | curl -sS --cacert "$cacert" -K - -X POST "${vault}/v1/auth/token/revoke-self" >/dev/null 2>&1 || true
+
+  for n in "${names[@]}"; do put "$n" "${stage}/${n}" || { rm -rf "$stage"; return 1; }; done
+  rm -rf "$stage"
+}
+
+case "$source_kind" in
+  creds) from_creds ;;
+  openbao)
+    if from_vault; then
+      echo "secrets of ${env} read from the vault"
+    elif [ "$fallback" = yes ]; then
+      echo "WARNING: vault unavailable, using the local credentials of ${env}" >&2
+      from_creds
+    else
+      echo "vault unavailable and no fallback: ${env} stays without secrets" >&2
+      exit 1
+    fi
+    ;;
+  *) echo "NJ_SECRETS_SOURCE must be creds or openbao" >&2; exit 2 ;;
+esac

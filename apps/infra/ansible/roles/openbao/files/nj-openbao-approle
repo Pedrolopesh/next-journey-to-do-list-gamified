@@ -1,0 +1,20 @@
+#!/bin/bash
+# Prepares the vault login of one environment on this host: the role id (not a secret) and the secret id,
+# encrypted with systemd-creds. Never prints a value. The token comes from the environment (BAO_TOKEN).
+# Creates once; use --rotate to issue a new secret id.
+# Usage: BAO_TOKEN=... nj-openbao-approle <dev|prd> [--rotate]
+set -euo pipefail
+env="${1:?usage: nj-openbao-approle <dev|prd> [--rotate]}"
+: "${BAO_TOKEN:?BAO_TOKEN must be set}"
+bao() { /usr/local/sbin/nj-bao "$@"; }
+dir="/etc/nextjourney/creds/${env}"
+install -d -m 0700 "$dir"
+umask 077
+
+bao read -field=role_id "auth/approle/role/nj-${env}/role-id" | tr -d '\n' >"${dir}/openbao_role_id"
+
+if [ ! -e "${dir}/openbao_secret_id.cred" ] || [ "${2:-}" = "--rotate" ]; then
+  bao write -f -field=secret_id "auth/approle/role/nj-${env}/secret-id" | tr -d '\n' \
+    | systemd-creds encrypt --name=openbao_secret_id - "${dir}/openbao_secret_id.cred"
+  echo "created: secret id for ${env}"
+fi

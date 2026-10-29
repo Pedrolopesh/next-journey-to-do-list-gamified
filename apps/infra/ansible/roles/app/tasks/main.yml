@@ -75,6 +75,17 @@
   loop: ['nj@.service', 'nj-secrets@.service']
   notify: Reload systemd
 
+- name: Source of the secrets of each environment
+  ansible.builtin.copy:
+    content: |
+      NJ_SECRETS_SOURCE={{ app_secrets_source[item] }}
+      NJ_SECRETS_FALLBACK={{ app_secrets_fallback }}
+    dest: '{{ app_conf_dir }}/secrets-{{ item }}.conf'
+    mode: '0644'
+    owner: root
+    group: root
+  loop: '{{ app_envs.keys() | list }}'
+
 - name: Apply units now
   ansible.builtin.meta: flush_handlers
 
