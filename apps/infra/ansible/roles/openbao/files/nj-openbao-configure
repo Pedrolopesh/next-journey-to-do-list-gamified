@@ -1,0 +1,24 @@
+#!/bin/bash
+# Applies the vault configuration (KV engine, policies, login methods, one AppRole per
+# environment). Safe to run again. The token comes from the environment (BAO_TOKEN), never from arguments.
+# Usage: BAO_TOKEN=... nj-openbao-configure
+set -euo pipefail
+: "${BAO_TOKEN:?BAO_TOKEN must be set}"
+bao() { /usr/local/sbin/nj-bao "$@"; }
+dir=/etc/openbao/policies
+
+bao secrets list | grep -q '^kv/' || bao secrets enable -path=kv -version=2 kv
+
+for p in nj-dev nj-prd nj-admin; do
+  bao policy write "$p" - <"${dir}/${p}.hcl" >/dev/null
+done
+
+bao auth list | grep -q '^approle/' || bao auth enable approle
+bao auth list | grep -q '^userpass/' || bao auth enable userpass
+
+# Short-lived tokens; the secret id is long-lived and lives encrypted on the host
+for env in dev prd; do
+  bao write "auth/approle/role/nj-${env}" token_policies="nj-${env}" token_ttl=2m token_max_ttl=5m \
+    secret_id_ttl=0 secret_id_num_uses=0 token_num_uses=0 >/dev/null
+done
+echo "configured"

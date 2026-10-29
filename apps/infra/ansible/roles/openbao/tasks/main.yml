@@ -1,0 +1,154 @@
+---
+- name: Configuration directory
+  ansible.builtin.file:
+    path: '{{ openbao_conf_dir }}'
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: TLS directory
+  ansible.builtin.file:
+    path: '{{ openbao_conf_dir }}/tls'
+    state: directory
+    mode: '0750'
+    owner: root
+    group: '{{ openbao_gid }}'
+
+- name: Data and log directories (owned by the container user)
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    mode: '0700'
+    owner: '{{ openbao_uid }}'
+    group: '{{ openbao_gid }}'
+  loop:
+    - '{{ openbao_data_dir }}'
+    - '{{ openbao_log_dir }}'
+
+- name: Self-signed certificate for the loopback listener
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - req
+      - -x509
+      - -newkey
+      - ec
+      - -pkeyopt
+      - ec_paramgen_curve:prime256v1
+      - -nodes
+      - -days
+      - '{{ openbao_tls_days }}'
+      - -subj
+      - /CN=openbao
+      - -addext
+      - subjectAltName=IP:127.0.0.1,DNS:localhost
+      - -keyout
+      - '{{ openbao_conf_dir }}/tls/openbao.key'
+      - -out
+      - '{{ openbao_conf_dir }}/tls/openbao.crt'
+    creates: '{{ openbao_conf_dir }}/tls/openbao.crt'
+  notify: Restart OpenBao
+
+- name: Certificate and key permissions
+  ansible.builtin.file:
+    path: '{{ openbao_conf_dir }}/tls/{{ item.name }}'
+    mode: '{{ item.mode }}'
+    owner: '{{ openbao_uid }}'
+    group: '{{ openbao_gid }}'
+  loop:
+    - { name: openbao.key, mode: '0400' }
+    - { name: openbao.crt, mode: '0444' }
+
+- name: Is the pinned image already on the host
+  ansible.builtin.command: 'docker image inspect {{ openbao_image }}@{{ openbao_image_digest }}'
+  register: openbao_image_present
+  changed_when: false
+  failed_when: false
+
+- name: Verify the image signature before pulling it
+  ansible.builtin.command:
+    argv:
+      - cosign
+      - verify
+      - '{{ openbao_image }}@{{ openbao_image_digest }}'
+      - --certificate-oidc-issuer
+      - https://token.actions.githubusercontent.com
+      - --certificate-identity-regexp
+      - '^https://github.com/openbao/openbao/\.github/workflows/.+@refs/tags/v{{ openbao_version | regex_replace("\.", "\.") }}$'
+  changed_when: false
+  when: openbao_image_present.rc != 0
+
+- name: Pull the verified image
+  ansible.builtin.command: 'docker pull {{ openbao_image }}@{{ openbao_image_digest }}'
+  changed_when: true
+  when: openbao_image_present.rc != 0
+
+- name: Server configuration
+  ansible.builtin.template:
+    src: config.hcl.j2
+    dest: '{{ openbao_conf_dir }}/config.hcl'
+    mode: '0644'
+    owner: root
+    group: root
+  notify: Restart OpenBao
+
+- name: Service unit
+  ansible.builtin.template:
+    src: openbao.service.j2
+    dest: /etc/systemd/system/openbao.service
+    mode: '0644'
+    owner: root
+    group: root
+  notify: Restart OpenBao
+
+- name: Audit log rotation
+  ansible.builtin.template:
+    src: logrotate.j2
+    dest: /etc/logrotate.d/openbao
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Policies directory
+  ansible.builtin.copy:
+    src: policies/
+    dest: '{{ openbao_conf_dir }}/policies/'
+    mode: '0644'
+    owner: root
+    group: root
+    directory_mode: '0755'
+
+- name: Client wrapper and vault scripts
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '/usr/local/sbin/{{ item }}'
+    mode: '0755'
+    owner: root
+    group: root
+  loop:
+    - nj-bao
+    - nj-openbao-configure
+    - nj-openbao-import
+    - nj-unseal
+
+- name: Apply pending changes before the service is started
+  ansible.builtin.meta: flush_handlers
+
+- name: OpenBao enabled and running (it starts sealed)
+  ansible.builtin.systemd:
+    name: openbao.service
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Wait for the listener (200 open, 503 sealed, 501 not initialized)
+  ansible.builtin.uri:
+    url: 'https://127.0.0.1:{{ openbao_listen_port }}/v1/sys/health'
+    validate_certs: false
+    status_code: [200, 429, 472, 473, 501, 503]
+  register: openbao_health
+  retries: 15
+  delay: 2
+  until: openbao_health.status is defined and openbao_health.status in [200, 429, 472, 473, 501, 503]
+  changed_when: false

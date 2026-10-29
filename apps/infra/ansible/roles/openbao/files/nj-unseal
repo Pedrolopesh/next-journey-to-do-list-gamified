@@ -1,0 +1,31 @@
+#!/bin/bash
+# Opens the vault. Asks for key shares (hidden) until it is unsealed; a share never goes in an argument:
+# it travels on standard input to the loopback API.
+# Usage (from your machine): ssh -t <host> sudo nj-unseal
+# For scripts: printf '%s\n' "$share" | sudo nj-unseal --stdin   (one share per call)
+set -euo pipefail
+api="https://127.0.0.1:8200/v1/sys"
+cacert="/etc/openbao/tls/openbao.crt"
+
+sealed() {
+  curl -fsS --cacert "$cacert" "${api}/seal-status" \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin).get("sealed", True))'
+}
+
+send_share() { # the share is read from stdin
+  python3 -c 'import json,sys; print(json.dumps({"key": sys.stdin.read().strip()}))' \
+    | curl -fsS --cacert "$cacert" -X PUT -H 'Content-Type: application/json' --data @- "${api}/unseal" >/dev/null
+}
+
+if [ "${1:-}" = "--stdin" ]; then
+  send_share
+  exit 0
+fi
+
+while [ "$(sealed)" != "False" ]; do
+  read -rsp "Key share: " share
+  echo
+  printf '%s\n' "$share" | send_share || echo "share rejected" >&2
+  unset share
+done
+echo "vault open"

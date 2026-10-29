@@ -8,6 +8,8 @@
       tags: [app]
     - role: release
       tags: [release]
+    - role: openbao
+      tags: [openbao]
     - role: edge
       tags: [edge]
     - role: verify

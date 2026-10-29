@@ -1,0 +1,25 @@
+# Managed by Ansible. Single-node vault with integrated storage; TLS on the loopback listener.
+ui            = false
+log_level     = "info"
+api_addr      = "https://127.0.0.1:{{ openbao_listen_port }}"
+cluster_addr  = "https://127.0.0.1:8201"
+
+storage "raft" {
+  path    = "/openbao/file"
+  node_id = "nj-1"
+}
+
+listener "tcp" {
+  address       = "0.0.0.0:{{ openbao_listen_port }}"
+  tls_cert_file = "/openbao/tls/openbao.crt"
+  tls_key_file  = "/openbao/tls/openbao.key"
+}
+
+# Audit log: every request and response, with secret values hashed. Declared here because this
+# version does not allow enabling audit devices through the API.
+audit "file" "audit-log" {
+  description = "Audit log on the host (rotated by logrotate)."
+  options {
+    file_path = "/openbao/logs/audit.log"
+  }
+}

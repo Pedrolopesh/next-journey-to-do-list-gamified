@@ -1,0 +1,12 @@
+# Managed by Ansible. The audit log never holds secret values (they are hashed).
+{{ openbao_log_dir }}/audit.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    postrotate
+        /usr/bin/docker kill --signal=SIGHUP nj-openbao >/dev/null 2>&1 || true
+    endscript
+}

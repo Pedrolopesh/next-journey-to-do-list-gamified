@@ -41,3 +41,4 @@ Dados de infraestrutura (endereços, portas, nomes de servidor) **nunca** entram
 | [0012](./0012-automatic-rollback-for-access-changes.md) | Automatic rollback for access changes | Aceita |
 | [0013](./0013-deploy-user-with-passwordless-sudo.md) | `deploy` user with passwordless sudo | Aceita |
 | [0014](./0014-signed-images-verified-on-the-host.md) | Signed images, verified on the host before release | Aceita |
+| [0015](./0015-openbao-as-the-secrets-store.md) | OpenBao as the secrets store, opened manually | Aceita |

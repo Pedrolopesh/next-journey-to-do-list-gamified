@@ -1,0 +1,10 @@
+#!/bin/bash
+# Runs the bao client inside the vault container, against the loopback listener.
+# Pass a token through the environment (BAO_TOKEN), never as an argument.
+# Usage: nj-bao <bao arguments>
+set -euo pipefail
+flags=(-i)
+[ -t 0 ] && [ -t 1 ] && flags=(-it)
+exec /usr/bin/docker exec "${flags[@]}" \
+  -e BAO_ADDR=https://127.0.0.1:8200 -e BAO_CACERT=/openbao/tls/openbao.crt \
+  -e BAO_TOKEN nj-openbao bao "$@"

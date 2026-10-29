@@ -1,0 +1,17 @@
+---
+# OpenBao release, pinned by digest. The signature (GitHub workflow identity at the release tag) is
+# checked before the image is pulled, the same rule used for the application images.
+openbao_version: '2.6.5'
+openbao_image: ghcr.io/openbao/openbao
+openbao_image_digest: 'sha256:09f1eaaee351c329d75a5a89654d6e1ad4792998650c3cbf0c3513a76d9d9b6e'
+# Identity of the container user (uid:gid inside the image)
+openbao_uid: 100
+openbao_gid: 1000
+openbao_conf_dir: /etc/openbao
+openbao_data_dir: /var/lib/openbao
+openbao_log_dir: /var/log/openbao
+# Loopback only: nothing reaches the vault from the network, only the host and SSH sessions
+openbao_listen_port: 8200
+openbao_memory_limit: 512m
+# Validity of the self-signed certificate used on the loopback listener
+openbao_tls_days: 1095
