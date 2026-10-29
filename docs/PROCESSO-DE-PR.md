@@ -5,11 +5,11 @@ Objetivo: nenhum PR sobe com erro que uma máquina acharia, e todo PR é fácil 
 ## 1. Antes de abrir o PR (local)
 
 1. `git pull origin main` e uma branch `<tipo>/<slug>`.
-2. Commits: Conventional Commits em minúscula, **sem corpo** e **sem atribuição a IA** (conferido por `commitlint`).
+2. Commits: Conventional Commits **em inglês** e em minúscula, **sem corpo** e **sem atribuição a IA** (conferido por `commitlint`).
 3. Mudança de comportamento, contrato ou regra de jogo: proposta no OpenSpec (`/opsx:propose`) antes do código.
 4. `pnpm run verify` (ver abaixo). Só segue com tudo verde.
 5. `/code-review` na branch. Corrija tudo que for relevante; o que ficar pendente vai para o `HANDOFF.md` com motivo, e para a seção "Riscos e pendências" do PR.
-6. Descrição no padrão do `.github/PULL_REQUEST_TEMPLATE.md`.
+6. Descrição no padrão do `.github/PULL_REQUEST_TEMPLATE.md`, **em inglês** (veja a seção 5).
 
 ## 2. O que `pnpm run verify` confere
 
@@ -52,6 +52,31 @@ Percorra o checklist do `AGENTS.md` para o que mudou:
 ## 5. Abrir e mesclar
 
 - Só com autorização do Pedro (por PR, ou por pedido explícito no chat para um lote). Sem `git push` antes disso.
-- Descrição curta e declarativa, no padrão do template. Sem rodapé de ferramenta nem co-autor.
+- Título e descrição **em inglês**, curtos e declarativos. Os cinco títulos de seção do template ficam em português (`## O que muda`, `## Por quê`, `## Como foi verificado`, `## Riscos e pendências`, `## Segurança`), porque a CI confere esses títulos; o conteúdo de cada seção vai em inglês. A lista de caixas do template pode virar frases curtas (padrão dos PRs da infra). Diga também o que não foi verificado.
+- Sem rodapé de ferramenta, sem co-autor e sem menção a IA ou sessão, no título, no corpo e nos commits. A CI bloqueia as formas comuns no título e no corpo do PR e o `commitlint` nos commits; o idioma (inglês) não é conferido por máquina, é regra de revisão.
+
+Exemplo de descrição (conteúdo em inglês, títulos em português):
+
+```md
+## O que muda
+
+- The release workflow builds `@nextjourney/contracts` before the smoke tests.
+
+## Por quê
+
+The smoke step failed with `Cannot find module .../contracts/dist/index.js`.
+
+## Como foi verificado
+
+- Reproduced from the run log; not yet exercised on a real release.
+
+## Riscos e pendências
+
+- Nenhum.
+
+## Segurança
+
+- No permission, secret or access change.
+```
 - Merge por squash, com título `tipo: assunto (#N)` e **corpo vazio** (`gh pr merge --squash --body ""`), depois de CI verde.
 - Depois do merge: atualizar a `main` local e apagar a branch.
