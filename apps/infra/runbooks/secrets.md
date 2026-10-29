@@ -49,3 +49,7 @@ To go back to the local credentials, set the source to `creds` in that file (or 
 - after a reboot (`nj-boot-check.service`): one report with the state of the vault, both environments, nginx, certificates and disk.
 
 Set or replace the webhook with `printf '%s' "<url>" | sudo nj-notify --set-webhook`. Measured on the real host: the sealed alert arrived 19 s after sealing and the reopened notice 29 s after opening, with both APIs answering throughout.
+
+## Loopback certificate
+
+The listener uses a self-signed certificate valid for three years (`openbao_tls_days`). To renew it, delete `/etc/openbao/tls/openbao.crt` and `openbao.key` and run the `openbao` role again; the vault restarts sealed, so open it afterwards.
