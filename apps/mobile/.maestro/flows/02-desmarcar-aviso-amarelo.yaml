@@ -10,11 +10,16 @@ appId: br.com.wetechhub.app.dev
       CAMPO: 'Título'
 - inputText: 'Beber água'
 - hideKeyboard
-- tapOn: 'Criar item'
+- runFlow: ../subflows/criar-item.yaml
+# espera o formulário fechar (o item pode estar abaixo da dobra e o modal pode não vir)
 - extendedWaitUntil:
-    visible: 'Conquista desbloqueada!|Marcar Beber água'
+    notVisible: 'Criar item'
     timeout: 15000
 - runFlow: ../subflows/fechar-conquista.yaml
+- runFlow:
+    file: ../subflows/ver-item.yaml
+    env:
+      ITEM: 'Marcar Beber água'
 - tapOn: 'Marcar Beber água'
 - extendedWaitUntil:
     visible: 'Conquista desbloqueada!|Desmarcar Beber água'
