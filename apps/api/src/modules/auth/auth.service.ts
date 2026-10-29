@@ -121,7 +121,7 @@ export class AuthService {
     const passwordOk = await argon2.verify(hash, input.password).catch(() => false);
     if (!pending) throw invalidVerificationCode();
 
-    // Confirma e semeia os exemplos juntos: se algo falhar, a conta segue pendente e o código segue válido
+    // Confirm and seed together: if anything fails, the account stays pending and the code stays valid
     const now = this.clock.now();
     const confirmed = await this.prisma.$transaction(async (tx) => {
       if (!(await this.verification.consume(pending.id, input.code, passwordOk, tx))) return false;
@@ -289,7 +289,6 @@ export class AuthService {
         }
         const { termsVersion } = input;
         const now = this.clock.now();
-        // A conta já nasce confirmada: cria o usuário e os exemplos juntos
         user = await this.prisma.$transaction(async (tx) => {
           const created = await tx.user.create({
             data: {
@@ -357,7 +356,7 @@ export class AuthService {
       await this.prisma.authIdentity.create({ data });
       return this.prisma.user.findUniqueOrThrow({ where: { id: existing.id } });
     }
-    // A conta passa a valer agora (antes estava pendente): confirma e semeia os exemplos juntos
+    // The account was pending and becomes valid here: confirm and seed together
     return this.prisma.$transaction(async (tx) => {
       await tx.authIdentity.create({ data });
       const user = await tx.user.update({

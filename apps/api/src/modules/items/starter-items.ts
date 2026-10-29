@@ -3,14 +3,14 @@ import type { Difficulty, ItemType } from '@nextjourney/contracts';
 export type StarterItem = {
   type: ItemType;
   title: string;
-  /** Nome de uma categoria padrão; sem ela, usa a primeira categoria da conta. */
+  /** Name of a default category; falls back to the account's first category. */
   category: string;
   difficulty: Difficulty;
 };
 
 /**
- * Itens de exemplo comuns à maioria das pessoas, criados uma vez quando a conta passa a valer.
- * São dados de conteúdo em português (o app só tem português); os diários valem todos os dias.
+ * Starter items common to most people, created once when the account becomes valid.
+ * The titles are Portuguese product content (the app only has Portuguese); dailies run every day.
  */
 export const STARTER_ITEMS: readonly StarterItem[] = [
   { type: 'daily', title: 'Beber 2 litros de água', category: 'Saúde', difficulty: 'easy' },

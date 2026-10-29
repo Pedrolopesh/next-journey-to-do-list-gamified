@@ -1,4 +1,4 @@
-/** Categorias padrão criadas com a conta (RF-23), com cores do design system. */
+/** Default categories created with the account (RF-23), with design system colors. */
 export const DEFAULT_CATEGORIES = [
   { name: 'Trabalho', color: '#7c3aed' },
   { name: 'Saúde', color: '#10b981' },

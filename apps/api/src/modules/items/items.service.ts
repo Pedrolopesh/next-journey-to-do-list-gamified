@@ -159,7 +159,6 @@ export class ItemsService {
           createdOn: hoje,
         },
       });
-      // Item criado pelo usuário conta; os exemplos do servidor entram por `StarterItemsService`
       await tx.userStats.update({ where: { userId }, data: { itemsCreated: { increment: 1 } } });
       await this.achievements.evaluate(tx, { userId, timezone: user.timezone, now, hoje });
       return created;

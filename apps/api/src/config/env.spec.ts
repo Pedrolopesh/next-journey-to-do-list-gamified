@@ -74,7 +74,7 @@ describe('variáveis opcionais vazias', () => {
 });
 
 describe('SEED_STARTER_ITEMS', () => {
-  it('ligada por padrão e desligável', () => {
+  it('is on by default and can be turned off', () => {
     expect(loadEnv(base).SEED_STARTER_ITEMS).toBe(true);
     expect(loadEnv({ ...base, SEED_STARTER_ITEMS: 'false' }).SEED_STARTER_ITEMS).toBe(false);
     expect(() => loadEnv({ ...base, SEED_STARTER_ITEMS: 'talvez' })).toThrow(/SEED_STARTER_ITEMS/);

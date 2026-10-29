@@ -16,7 +16,7 @@ import {
 
 const TOTAL = STARTER_ITEMS.length;
 
-describe('itens de exemplo criados pelo servidor', () => {
+describe('starter items created by the server', () => {
   let ctx: TestContext;
   const verifier = new FakeVerifier();
   beforeAll(async () => {
@@ -40,7 +40,7 @@ describe('itens de exemplo criados pelo servidor', () => {
       .send({ idToken: 'ok', termsVersion: '2026-10-01', timezone: 'America/Sao_Paulo' });
   };
 
-  it('a confirmação do e-mail cria os exemplos, marcados como exemplo, na categoria padrão', async () => {
+  it('email confirmation creates the starter items, marked as examples, in the default category', async () => {
     const auth = await registerUser(ctx, uniqueEmail(), { story: false });
     const items = await itemsOf(auth.user.id);
     expect(items).toHaveLength(TOTAL);
@@ -49,7 +49,6 @@ describe('itens de exemplo criados pelo servidor', () => {
     const water = items.find((item) => item.title === 'Beber 2 litros de água');
     expect(categories.find((c) => c.id === water?.categoryId)?.name).toBe('Saúde');
     expect(water?.scheduleDays).toEqual([0, 1, 2, 3, 4, 5, 6]);
-    // Dia local do fuso do perfil (America/Sao_Paulo), não o de UTC
     expect(water?.createdOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     const list = await ctx
       .http()
@@ -61,7 +60,7 @@ describe('itens de exemplo criados pelo servidor', () => {
     );
   });
 
-  it('exemplo não conta como item criado nem libera conquista de criação', async () => {
+  it('starter items do not count as created and unlock no creation achievement', async () => {
     const auth = await registerUser(ctx);
     const stats = await ctx.prisma.userStats.findUniqueOrThrow({ where: { userId: auth.user.id } });
     expect(stats.itemsCreated).toBe(0);
@@ -69,7 +68,7 @@ describe('itens de exemplo criados pelo servidor', () => {
     expect(unlocked).toEqual([]);
   });
 
-  it('o primeiro check num exemplo libera só as conquistas por check', async () => {
+  it('the first check on a starter item unlocks only the check achievements', async () => {
     const auth = await registerUser(ctx);
     const habit = await ctx.prisma.item.findFirstOrThrow({
       where: { userId: auth.user.id, type: 'habit' },
@@ -82,7 +81,7 @@ describe('itens de exemplo criados pelo servidor', () => {
     expect(slugs).not.toContain('primeiro-habito');
   });
 
-  it('login social cria a conta já com os exemplos; o segundo acesso não duplica', async () => {
+  it('social login creates the account with the starter items and a second sign-in does not duplicate', async () => {
     const email = uniqueEmail('social');
     const first = await social(email).expect(200);
     expect(await itemsOf(first.body.user.id)).toHaveLength(TOTAL);
@@ -90,14 +89,14 @@ describe('itens de exemplo criados pelo servidor', () => {
     expect(await itemsOf(first.body.user.id)).toHaveLength(TOTAL);
   });
 
-  it('vínculo social a uma conta pendente a confirma e cria os exemplos uma única vez', async () => {
+  it('linking a social login to a pending account confirms it and seeds once', async () => {
     const email = uniqueEmail();
     await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
     const res = await social(email).expect(200);
     expect(await itemsOf(res.body.user.id)).toHaveLength(TOTAL);
   });
 
-  it('semear de novo na mesma conta não duplica os exemplos', async () => {
+  it('seeding the same account again does not duplicate the starter items', async () => {
     const auth = await registerUser(ctx, uniqueEmail(), { story: false });
     const service = ctx.app.get(StarterItemsService);
     const created = await ctx.prisma.$transaction((tx) =>
@@ -107,7 +106,7 @@ describe('itens de exemplo criados pelo servidor', () => {
     expect(await itemsOf(auth.user.id)).toHaveLength(TOTAL);
   });
 
-  it('os exemplos voltam na ordem do catálogo', async () => {
+  it('the starter items come back in catalog order', async () => {
     const auth = await registerUser(ctx, uniqueEmail(), { story: false });
     const list = await ctx
       .http()
@@ -120,40 +119,40 @@ describe('itens de exemplo criados pelo servidor', () => {
     );
   });
 
-  it('login por senha e vínculo social a conta existente não criam exemplos', async () => {
+  it('password login and linking to an already confirmed account do not seed', async () => {
     const email = uniqueEmail();
     const auth = await registerUser(ctx, email, { story: false });
     await ctx.prisma.item.deleteMany({ where: { userId: auth.user.id } });
     await ctx
       .http()
       .post('/v1/auth/login')
-      .send({ email, password: PASSWORD }) // scan-allow: senha falsa de teste
+      .send({ email, password: PASSWORD }) // scan-allow: fake test password
       .expect(200);
     await social(email).expect(200);
     expect(await itemsOf(auth.user.id)).toHaveLength(0);
   });
 
-  it('código errado não semeia e a conta segue pendente', async () => {
+  it('a wrong code seeds nothing and the account stays pending', async () => {
     const email = uniqueEmail();
     await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
     await ctx
       .http()
       .post('/v1/auth/verify-email')
-      .send({ email, code: '000000', password: PASSWORD }) // scan-allow: senha falsa de teste
+      .send({ email, code: '000000', password: PASSWORD }) // scan-allow: fake test password
       .expect(400);
     const user = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
     expect(user.emailVerifiedAt).toBeNull();
     expect(await itemsOf(user.id)).toHaveLength(0);
   });
 
-  it('falha ao criar os exemplos: a conta segue pendente e o mesmo código ainda vale', async () => {
+  it('a seeding failure keeps the account pending and the same code valid', async () => {
     const email = uniqueEmail();
     await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
     const code = ctx.mailer.lastVerificationCode(email) ?? '';
-    const body = { email, code, password: PASSWORD }; // scan-allow: senha falsa de teste
+    const body = { email, code, password: PASSWORD }; // scan-allow: fake test password
     const spy = vi
       .spyOn(ctx.app.get(StarterItemsService), 'seed')
-      .mockRejectedValueOnce(new Error('falha simulada'));
+      .mockRejectedValueOnce(new Error('simulated failure'));
     await ctx.http().post('/v1/auth/verify-email').send(body).expect(500);
     spy.mockRestore();
     const pending = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
@@ -165,7 +164,7 @@ describe('itens de exemplo criados pelo servidor', () => {
   });
 });
 
-describe('itens de exemplo com a opção desligada', () => {
+describe('starter items with the option off', () => {
   let ctx: TestContext;
   beforeAll(async () => {
     ctx = await createTestApp({ seedStarterItems: false });
@@ -174,7 +173,7 @@ describe('itens de exemplo com a opção desligada', () => {
     await ctx.app.close();
   });
 
-  it('a conta é confirmada sem nenhum exemplo', async () => {
+  it('the account is confirmed with no starter items', async () => {
     const auth = await registerUser(ctx, uniqueEmail(), { story: false });
     expect(await ctx.prisma.item.count({ where: { userId: auth.user.id } })).toBe(0);
   });

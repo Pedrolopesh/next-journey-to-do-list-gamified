@@ -52,9 +52,9 @@ export class EmailVerificationService {
    * e a quinta errada invalida o código. Nunca diz se o motivo foi expiração, tentativas ou erro.
    * A senha errada não prova nada e não gasta tentativas: assim quem só sabe o e-mail da vítima não
    * consegue invalidar o código dela. A tentativa é reservada num UPDATE condicional, então
-   * requisições paralelas não passam do limite. Com `tx`, a marca de "usado" entra na transação de
-   * quem chama: se ela desfizer (por exemplo, falha ao criar os itens de exemplo), o código segue
-   * válido. As tentativas ficam fora da transação de propósito, para valer mesmo quando ela desfaz.
+   * requisições paralelas não passam do limite. With `tx`, the "used" mark joins the caller's
+   * transaction, so if it rolls back (for example, seeding fails) the code stays valid. Attempts
+   * stay outside the transaction on purpose, so they count even when it rolls back.
    */
   async consume(
     userId: string,

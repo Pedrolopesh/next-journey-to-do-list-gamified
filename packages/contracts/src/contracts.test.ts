@@ -215,8 +215,8 @@ describe('fase 5: categorias, perfil e histórias', () => {
   });
 });
 
-describe('criar item', () => {
-  it('não aceita mais marcar o item como exemplo: o servidor cria os exemplos', () => {
+describe('create item', () => {
+  it('no longer accepts marking an item as an example: the server creates them', () => {
     const parsed = createItemRequestSchema.parse({
       type: 'habit',
       title: 'Beber água',

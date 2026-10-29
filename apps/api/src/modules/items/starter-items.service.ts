@@ -7,7 +7,7 @@ import { STARTER_ITEMS } from './starter-items.js';
 
 const EVERY_DAY = [0, 1, 2, 3, 4, 5, 6];
 
-/** Itens de exemplo de uma conta nova: criados pelo servidor, na transação que a faz valer. */
+/** Starter items of a new account, created by the server in the transaction that makes it valid. */
 @Injectable()
 export class StarterItemsService {
   private readonly logger = new Logger(StarterItemsService.name);
@@ -15,15 +15,15 @@ export class StarterItemsService {
   constructor(@Inject(ENV) private readonly env: Env) {}
 
   /**
-   * Cria os exemplos da conta, ligados às categorias dela. Exemplo não conta como item criado pelo
-   * usuário (`isExample`, sem mexer em `items_created`) e não avalia conquistas. Devolve quantos criou.
+   * Creates the starter items, linked to the account's categories. They are marked `isExample`, so
+   * `items_created` is untouched and no achievement is evaluated. Returns how many were created.
    */
   async seed(
     tx: Prisma.TransactionClient,
     input: { userId: string; timezone: string; now: Date },
   ): Promise<number> {
     if (!this.env.SEED_STARTER_ITEMS) return 0;
-    // Só a conta que ainda não tem itens: chamar de novo (ou para quem já usa o app) não duplica
+    // Only for an account with no items yet, so calling it again never duplicates
     if ((await tx.item.count({ where: { userId: input.userId } })) > 0) return 0;
     const categories = await tx.category.findMany({
       where: { userId: input.userId, deletedAt: null },
@@ -44,7 +44,7 @@ export class StarterItemsService {
         scheduleDays: item.type === 'daily' ? EVERY_DAY : [],
         createdOn,
         isExample: true,
-        // Mesma transação, mesmo `now()` do banco: o milissegundo a mais mantém a ordem do catálogo
+        // One transaction means one database `now()`; the extra millisecond keeps the catalog order
         createdAt: new Date(input.now.getTime() + index),
       })),
     });

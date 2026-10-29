@@ -42,7 +42,7 @@ const envSchema = z
       .enum(['true', 'false'])
       .default('false')
       .transform((value) => value === 'true'),
-    /** Cria os itens de exemplo quando a conta passa a valer. Os e2e da API que assumem conta sem itens a desligam. */
+    /** Create the starter items when an account becomes valid. Off in the API e2e suite. */
     SEED_STARTER_ITEMS: z
       .enum(['true', 'false'])
       .default('true')

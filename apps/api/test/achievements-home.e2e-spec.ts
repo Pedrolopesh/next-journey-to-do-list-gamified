@@ -122,10 +122,10 @@ describe('conquistas e home', () => {
     expect(await pendingSlugs(auth)).toEqual([]);
   });
 
-  it('itens de exemplo do servidor não contam como criação do usuário', async () => {
+  it('server starter items do not count as created by the user', async () => {
     reset();
     const auth = await registerUser(ctx);
-    // o servidor cria os exemplos direto no banco, marcados como exemplo (sem passar pela rota)
+    // the server inserts starter items straight into the database, marked as examples
     const categoryId = await firstCategoryId(ctx, auth.user.id);
     const base = {
       userId: auth.user.id,
