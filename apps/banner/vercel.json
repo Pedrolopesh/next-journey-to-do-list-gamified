@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm run build:lab",
+  "buildCommand": "pnpm exec turbo run build --filter=@nextjourney/banner^... && pnpm run build:lab",
   "outputDirectory": "dist-lab",
   "rewrites": [{ "source": "/", "destination": "/lab.html" }]
 }
