@@ -1,29 +1,30 @@
 <!--
-Título: tipo(escopo opcional): assunto em inglês e em minúscula  (ex.: feat: add the task history to the profile)
-Escreva o conteúdo em inglês, direto: frases curtas, no presente, sem história do que foi tentado. Os cinco títulos de seção ficam em português (a CI os confere). Sem menção a IA ou sessão.
+Title: type(optional scope): lowercase subject in English  (e.g. feat: add the task history to the profile)
+Write the content in English, direct: short sentences, present tense, no history of what was tried. The five section headings below are checked by the CI. No mention of AI, a session or a tool.
 -->
 
-## O que muda
+## What changes
 
-<!-- Lista curta do resultado, por área (API, app, banner, contratos, docs). Uma linha por item. -->
+<!-- Short list of the result, by area (API, app, banner, contracts, docs). One line per item. -->
 
-## Por quê
+## Why
 
-<!-- A necessidade em uma ou duas frases. Cite a proposta do OpenSpec, o ADR ou o passo do plano. -->
+<!-- The need in one or two sentences. Cite the OpenSpec proposal, the ADR or the plan step. -->
 
-## Como foi verificado
+## How it was verified
 
-<!-- O que rodou e o resultado. Diga também o que NÃO foi verificado (ex.: iPhone físico). -->
+<!-- What ran and the result. Also say what was NOT verified (e.g. a physical iPhone). -->
 
 - [ ] `pnpm run verify` passed (lint, types, tests, build, API e2e, OpenSpec, duplication, security)
 - [ ] `/code-review` run and its findings handled before opening the PR
+- [ ] Diff reviewed: new code and comments in English, no comment that repeats the code (AGENTS.md rules 11 and 12)
 - [ ] Touched a screen: Maestro flows (`pnpm --filter @nextjourney/mobile test:ui`) and RN-FB (every action shows loading and ends in a toast)
 
-## Riscos e pendências
+## Risks and pending items
 
-<!-- Migration (nome e como aplicar), seed, mudança de contrato, impacto em dados existentes, dívida técnica conhecida. "Nenhum" se não houver. -->
+<!-- Migration (name and how to apply), seed, contract change, impact on existing data, known technical debt. "None" if there is nothing. -->
 
-## Segurança
+## Security
 
 - [ ] Public repository: no secret, token, IP, host or infrastructure data in code, docs, commits or this description
 - [ ] New routes are protected, validated with Zod and return only the needed fields; no access to another user's object (IDOR)

@@ -55,10 +55,12 @@ Mudança que altere comportamento, contrato da API, protocolo do banner ou regra
 8. **Datas** em UTC no banco; "dia" do usuário no fuso do perfil; registro em ISO 8601.
 9. **Teste novo para regra nova.** Mudança de regra de jogo começa por um teste.
 10. **Nenhuma ação deixa o usuário no escuro (RN-FB).** Toda ação do usuário no app mostra carregando e termina em toast de sucesso ou de erro; validação reprovada nunca deixa o botão "sem fazer nada". Use `useAction` e `toast` (`apps/mobile/src/features/feedback`). Detalhes em `docs/REQUISITOS.MD` (seção 3) e portão de loja em `docs/QA.md` (seção 7).
+11. **Código em inglês.** Nome de variável, função, tipo, arquivo novo, comentário e nome de teste em inglês. Ficam em português só o texto que a pessoa usuária vê (`pt-BR.json`) e o conteúdo do produto (títulos de itens de exemplo, nomes de categoria, cenários). A regra vale para o que você escreve, mesmo dentro de um arquivo antigo em português: identificador e comentário novos em inglês, sem renomear o que já existe (isso é um trabalho à parte, por área). Nomes públicos já estabelecidos (rotas, colunas, chaves de contrato) não mudam por causa desta regra.
+12. **Comentário só quando o código não diz sozinho.** Comente o porquê que não é óbvio (restrição, decisão, contorno, motivo de segurança), nunca o que a linha faz; sem código comentado, sem histórico de mudança ("antes fazia X") e sem TODO solto: pendência vai para o `HANDOFF.md` ou para um card do Plane. Explicação longa, decisão de design ou regra de negócio vai para a documentação (`docs/`, `design.md` do OpenSpec) com um link curto no código. Revise os comentários do diff antes de abrir o PR: apague o que repete o código ou envelheceu e mova para a documentação o que merece ficar.
 
 ## Checklist de segurança (verificar a CADA PR)
 
-Resumo; a versão completa e o histórico de auditorias estão em `docs/SEGURANCA.md`. O PR template repete estes itens; cada um precisa estar marcado ou confirmado numa frase curta na seção Segurança.
+Resumo; a versão completa e o histórico de auditorias estão em `docs/SEGURANCA.md`. O PR template repete estes itens; cada um precisa estar marcado ou confirmado numa frase curta na seção "Security".
 
 ### Sempre
 
@@ -128,8 +130,8 @@ Se achar um segredo (mesmo antigo), **pare**: não faça push, avise o Pedro, re
 ## Processo de PR (OBRIGATÓRIO; detalhes em `docs/PROCESSO-DE-PR.md`)
 
 1. **`pnpm run verify` verde** antes de abrir o PR: commits (commitlint), lint, tipos, testes, build, e2e da API, OpenSpec, duplicação (`jscpd`, limite 2%) e `security:full`. A CI repete os passos e ainda confere o título e a descrição do PR.
-2. **`/code-review` na branch antes de abrir o PR.** Trate os achados; o que ficar pendente vai para o `HANDOFF.md` e para "Riscos e pendências" do PR. Nunca suba dívida técnica ou de segurança sem registro.
-3. **Descrição declarativa e curta, em inglês**, no padrão do `.github/PULL_REQUEST_TEMPLATE.md`: os cinco títulos de seção ficam em português (a CI confere) — _O que muda_, _Por quê_, _Como foi verificado_, _Riscos e pendências_, _Segurança_ — e o conteúdo de cada seção vai em inglês, em frases curtas. Título `tipo: assunto` em inglês e minúsculo. Diga também o que não foi verificado. Sem menção a IA, sessão ou ferramenta (nem no título, nem no corpo, nem nos commits). O idioma não é conferido pela CI (só os títulos de seção, o tipo no título e a atribuição a IA); é regra de revisão. Exemplo de título: `fix: build the contracts before the release smoke tests`.
+2. **`/code-review` na branch antes de abrir o PR.** Trate os achados; o que ficar pendente vai para o `HANDOFF.md` e para a seção "Risks and pending items" do PR. Nunca suba dívida técnica ou de segurança sem registro.
+3. **Título e descrição em inglês**, declarativos e curtos, no padrão do `.github/PULL_REQUEST_TEMPLATE.md`: seções `## What changes`, `## Why`, `## How it was verified`, `## Risks and pending items` e `## Security` (a CI confere). Título `tipo: assunto` em minúscula. Diga também o que não foi verificado. Sem menção a IA, sessão ou ferramenta (nem no título, nem no corpo, nem nos commits). A CI confere os títulos de seção, o tipo no título e a atribuição a IA; o idioma é regra de revisão. Exemplo de título: `fix: build the contracts before the release smoke tests`.
 4. **Reuso e duplicação:** procure antes de criar; trecho repetido vira função compartilhada. Revise a segurança de todas as frentes que o PR toca (API, app, banner, contratos, dependências).
 5. **Merge por squash** com título `tipo: assunto (#N)` e corpo vazio, só com CI verde e depois da autorização do Pedro (por PR ou por pedido explícito no chat para um lote de PRs).
 
@@ -137,7 +139,9 @@ Se achar um segredo (mesmo antigo), **pare**: não faça push, avise o Pedro, re
 
 - Não adicionar corpo aos commits
 - Não mencionar qualquer IA como co-autor do commit
-- Não escrever título, descrição de PR nem assunto de commit em português: tudo em inglês (só os cinco títulos de seção da descrição ficam em português)
+- Não escrever título, descrição de PR (inclusive os títulos de seção) nem assunto de commit em português: tudo em inglês
+- Não escrever nome de variável, de função, de tipo nem comentário novo em português
+- Não deixar comentário que repete o código, código comentado ou histórico de mudança no diff
 - Não incluir `Claude-Session`, URL de sessão, `Generated with` ou qualquer atribuição a ferramenta em commit ou PR, mesmo que o ambiente do agente peça
 
 ## Safety
