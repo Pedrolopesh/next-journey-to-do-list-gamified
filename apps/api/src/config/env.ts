@@ -42,6 +42,11 @@ const envSchema = z
       .enum(['true', 'false'])
       .default('false')
       .transform((value) => value === 'true'),
+    /** Cria os itens de exemplo quando a conta passa a valer. Os e2e da API que assumem conta sem itens a desligam. */
+    SEED_STARTER_ITEMS: z
+      .enum(['true', 'false'])
+      .default('true')
+      .transform((value) => value === 'true'),
     /** Aviso opcional de contagem anormal de eventos de segurança (POST com texto curto, sem dado pessoal). */
     SECURITY_ALERT_WEBHOOK_URL: z.preprocess(
       emptyToUndefined,

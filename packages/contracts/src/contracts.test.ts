@@ -214,3 +214,16 @@ describe('fase 5: categorias, perfil e histórias', () => {
     }
   });
 });
+
+describe('criar item', () => {
+  it('não aceita mais marcar o item como exemplo: o servidor cria os exemplos', () => {
+    const parsed = createItemRequestSchema.parse({
+      type: 'habit',
+      title: 'Beber água',
+      categoryId: '11111111-1111-4111-8111-111111111111',
+      difficulty: 'easy',
+      example: true,
+    });
+    expect('example' in parsed).toBe(false);
+  });
+});

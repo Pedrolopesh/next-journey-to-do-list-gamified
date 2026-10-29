@@ -100,7 +100,9 @@ A página "Conquistas v2" do laboratório (seção "Ritmo") compara as regras de
 
 ## Itens de exemplo e conquistas (2026-10-19)
 
-Os ~100 itens de exemplo que o app cria não contam como criação do usuário (coluna `items.is_example`, migration `20261019180000_item_de_exemplo`). Contas antigas têm exemplos já criados **sem a marca**: ao publicar, marcar à mão (ou aceitar que já tenham as conquistas de criação). Conta de teste local do Pedro já corrigida.
+Os itens de exemplo não contam como criação do usuário (coluna `items.is_example`, migration `20261019180000_item_de_exemplo`). Contas antigas têm exemplos já criados **sem a marca**: ao publicar, marcar à mão (ou aceitar que já tenham as conquistas de criação). Conta de teste local do Pedro já corrigida.
+
+**Exemplos no servidor (OpenSpec `exemplos-no-servidor`):** desde essa mudança o servidor cria os 30 exemplos (`apps/api/src/modules/items/starter-items.ts`) na confirmação do e-mail e na criação da conta por login social, na mesma transação, com `is_example = true`; o app não cria mais nada nem guarda marca no aparelho, e o contrato de criação não aceita `example`. Opção `SEED_STARTER_ITEMS` (ligada por padrão; os e2e a desligam). Os textos dos exemplos moram no servidor, em português: é conteúdo gravado no banco, uma exceção à regra de texto só via i18n; com outro idioma o cadastro precisará enviar o idioma. **Ordem de publicação:** API primeiro, depois o app. Contas existentes não são reabastecidas; um app antigo com conta nova encontra itens e não recria. Testes de interface: o `ui-tests.mjs` confirma o e-mail direto no banco e por isso não recebe exemplos.
 
 ## Testes de interface (Maestro), 2026-10-19
 

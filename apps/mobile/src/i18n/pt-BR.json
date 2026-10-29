@@ -474,45 +474,6 @@
     "changeStoryDesc": "Escolha por qual aventura seguir",
     "changeScenarioDesc": "Altere o fundo e a hora do dia"
   },
-  "examples": {
-    "added": "Adicionamos alguns itens de exemplo. Edite ou apague quando quiser.",
-    "daily": {
-      "water": "Beber 2 litros de água",
-      "exercise": "Fazer exercício físico",
-      "read": "Ler por 20 minutos",
-      "planDay": "Planejar o dia",
-      "makeBed": "Arrumar a cama",
-      "brushTeeth": "Escovar os dentes",
-      "breakfast": "Tomar café da manhã",
-      "walk": "Caminhar por 20 minutos",
-      "vitamins": "Tomar as vitaminas",
-      "sleepEarly": "Dormir antes das 23h",
-      "meditate": "Meditar por 10 minutos",
-      "journal": "Escrever no diário",
-      "tidyRoom": "Organizar o quarto",
-      "dishes": "Lavar a louça",
-      "cookMeal": "Cozinhar uma refeição",
-      "study": "Estudar por 1 hora",
-      "language": "Praticar um idioma",
-      "checkEmails": "Responder e-mails",
-      "focusBlock": "Bloco de foco sem distrações",
-      "reviewGoals": "Revisar as metas do dia"
-    },
-    "todo": {
-      "bill": "Pagar a conta de luz",
-      "doctor": "Marcar consulta médica",
-      "report": "Enviar o relatório da semana",
-      "shopping": "Fazer a lista de compras",
-      "exam": "Estudar para a prova"
-    },
-    "habit": {
-      "glass": "Beber um copo de água",
-      "stretch": "Alongar o corpo",
-      "breathe": "Respirar fundo por 1 minuto",
-      "rest": "Descansar os olhos da tela",
-      "gratitude": "Agradecer por algo"
-    }
-  },
   "progress": {
     "label": "Progresso da história",
     "chapter": "Capítulo {{number}}: {{title}}",

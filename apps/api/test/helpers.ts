@@ -63,8 +63,10 @@ export class FakeMailer extends Mailer {
 }
 
 export async function createTestApp(
-  overrides: { verifier?: IdTokenVerifier } = {},
+  overrides: { verifier?: IdTokenVerifier; seedStarterItems?: boolean } = {},
 ): Promise<TestContext> {
+  // Os e2e assumem conta sem itens: a semeadura fica desligada, e só os testes dela a ligam
+  process.env.SEED_STARTER_ITEMS = overrides.seedStarterItems ? 'true' : 'false';
   const clock = new TestClock(new Date(NOON_09));
   const mailer = new FakeMailer();
   let builder = Test.createTestingModule({ imports: [AppModule] })

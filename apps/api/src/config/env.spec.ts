@@ -72,3 +72,11 @@ describe('variáveis opcionais vazias', () => {
     expect(env.JWT_PREVIOUS_KEY_ID).toBeUndefined();
   });
 });
+
+describe('SEED_STARTER_ITEMS', () => {
+  it('ligada por padrão e desligável', () => {
+    expect(loadEnv(base).SEED_STARTER_ITEMS).toBe(true);
+    expect(loadEnv({ ...base, SEED_STARTER_ITEMS: 'false' }).SEED_STARTER_ITEMS).toBe(false);
+    expect(() => loadEnv({ ...base, SEED_STARTER_ITEMS: 'talvez' })).toThrow(/SEED_STARTER_ITEMS/);
+  });
+});

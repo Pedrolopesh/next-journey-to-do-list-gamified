@@ -3,6 +3,7 @@ import { createHash, randomInt, timingSafeEqual } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 
 import { Clock } from '../../common/clock.js';
+import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Mailer } from './mailer.js';
 
@@ -51,9 +52,16 @@ export class EmailVerificationService {
    * e a quinta errada invalida o código. Nunca diz se o motivo foi expiração, tentativas ou erro.
    * A senha errada não prova nada e não gasta tentativas: assim quem só sabe o e-mail da vítima não
    * consegue invalidar o código dela. A tentativa é reservada num UPDATE condicional, então
-   * requisições paralelas não passam do limite.
+   * requisições paralelas não passam do limite. Com `tx`, a marca de "usado" entra na transação de
+   * quem chama: se ela desfizer (por exemplo, falha ao criar os itens de exemplo), o código segue
+   * válido. As tentativas ficam fora da transação de propósito, para valer mesmo quando ela desfaz.
    */
-  async consume(userId: string, code: string, passwordOk: boolean): Promise<boolean> {
+  async consume(
+    userId: string,
+    code: string,
+    passwordOk: boolean,
+    tx?: Prisma.TransactionClient,
+  ): Promise<boolean> {
     if (!passwordOk) return false;
     const now = this.clock.now();
     const current = await this.prisma.emailVerification.findFirst({
@@ -70,7 +78,7 @@ export class EmailVerificationService {
 
     if (sameHash(current.codeHash, hashCode(userId, code))) {
       // Uso único mesmo sob duas confirmações simultâneas
-      const claimed = await this.prisma.emailVerification.updateMany({
+      const claimed = await (tx ?? this.prisma).emailVerification.updateMany({
         where: { id: current.id, usedAt: null },
         data: { usedAt: now },
       });

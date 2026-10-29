@@ -135,7 +135,7 @@ model Item {
   streakCurrent Int        @default(0) @map("streak_current")
   streakBest    Int        @default(0) @map("streak_best")
   position      Int        @default(0)
-  /// Item de exemplo criado pelo app para quem ainda não tem itens: não conta como criação do usuário
+  /// Item de exemplo criado pelo servidor quando a conta passa a valer: não conta como criação do usuário
   isExample     Boolean    @default(false) @map("is_example")
   createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz
   /// Exclusão lógica: mantém o histórico de EXP

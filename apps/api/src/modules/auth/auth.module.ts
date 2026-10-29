@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 
 import { JwtAuthGuard } from '../../common/jwt-auth.guard.js';
 import { ENV, type Env } from '../../config/env.js';
+import { ItemsModule } from '../items/items.module.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { AuthCleanupService } from './auth-cleanup.service.js';
@@ -17,6 +18,7 @@ import { TokensService } from './tokens.service.js';
 
 @Module({
   imports: [
+    ItemsModule,
     JwtModule.registerAsync({
       global: true,
       inject: [ENV],
