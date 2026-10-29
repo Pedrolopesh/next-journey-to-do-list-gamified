@@ -2,7 +2,7 @@ import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from 'ax
 import { AxiosError } from 'axios';
 import { describe, expect, it, vi } from 'vitest';
 
-import { createHttpClient } from './http';
+import { createHttpClient, rateLimitWait } from './http';
 
 const USER = {
   id: '3f1f4c2e-5a7b-4f3e-9c1d-2b8a6d4e7f10',
@@ -121,5 +121,71 @@ describe('cliente http com refresh automático', () => {
     const { client } = setup(server);
     await client.post('/auth/login', {}).catch(() => undefined);
     expect(server.calls[0]?.auth).toBeUndefined();
+  });
+});
+
+describe('limite de requisições (429)', () => {
+  const limited = (config: InternalAxiosRequestConfig) =>
+    new AxiosError('x', '429', config, undefined, {
+      ...respond(config, 429, '<html>429</html>'),
+      headers: { 'retry-after': '0.001' },
+    });
+
+  const clientWith = (adapter: AxiosAdapter) =>
+    createHttpClient({
+      baseURL: 'http://api.test',
+      adapter,
+      tokens: {
+        getAccess: () => 'a',
+        getRefresh: () => 'r',
+        onRefreshed: vi.fn(),
+        onSessionExpired: vi.fn(),
+      },
+    });
+
+  it('repete a chamada depois da espera e entrega o resultado', async () => {
+    let calls = 0;
+    const client = clientWith((config) =>
+      ++calls < 2 ? Promise.reject(limited(config)) : Promise.resolve(respond(config, 200, 'ok')),
+    );
+    expect((await client.get('/items')).data).toBe('ok');
+    expect(calls).toBe(2);
+  });
+
+  it('desiste depois de 2 repetições e devolve o 429', async () => {
+    let calls = 0;
+    const client = clientWith((config) => {
+      calls++;
+      return Promise.reject(limited(config));
+    });
+    await expect(client.get('/items')).rejects.toMatchObject({ response: { status: 429 } });
+    expect(calls).toBe(3);
+  });
+
+  it('não repete o 429 da própria API (JSON com código)', async () => {
+    let calls = 0;
+    const client = clientWith((config) => {
+      calls++;
+      return Promise.reject(
+        new AxiosError(
+          'x',
+          '429',
+          config,
+          undefined,
+          respond(config, 429, { code: 'RATE_LIMITED' }),
+        ),
+      );
+    });
+    await expect(client.post('/items', {})).rejects.toMatchObject({ response: { status: 429 } });
+    expect(calls).toBe(1);
+  });
+
+  it('usa o Retry-After (segundos ou data) e desiste se passar do teto', () => {
+    expect(rateLimitWait('2', 1)).toBe(2000);
+    expect(rateLimitWait('999', 1)).toBeNull();
+    expect(rateLimitWait(undefined, 2)).toBe(1000);
+    const now = Date.parse('2026-10-21T07:00:00Z');
+    expect(rateLimitWait('Wed, 21 Oct 2026 07:00:03 GMT', 1, now)).toBe(3000);
+    expect(rateLimitWait('Wed, 21 Oct 2026 07:28:00 GMT', 1, now)).toBeNull();
   });
 });

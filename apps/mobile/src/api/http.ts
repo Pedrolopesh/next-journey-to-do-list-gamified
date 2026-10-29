@@ -31,11 +31,35 @@ type Options = {
   adapter?: AxiosAdapter;
 };
 
-type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean };
+type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean; _rateRetries?: number };
 
 const AUTH_PATHS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'];
 const isAuthPath = (url: string | undefined): boolean =>
   AUTH_PATHS.some((path) => url?.includes(path));
+
+/**
+ * 429 em texto/HTML vem do proxy, antes de a API processar a chamada: repetir é seguro, até para
+ * POST. O 429 da própria API (JSON com `code`) não se repete, para não gastar mais do limite.
+ */
+const MAX_RATE_RETRIES = 2;
+const MAX_RATE_WAIT_MS = 5_000;
+
+/** Espera do 429: `Retry-After` (segundos ou data) ou 0,5 s, 1 s... Passou do teto: null, desiste. */
+export function rateLimitWait(
+  retryAfter: unknown,
+  attempt: number,
+  now = Date.now(),
+): number | null {
+  const header = typeof retryAfter === 'string' ? retryAfter : '';
+  const seconds = Number(header);
+  let wait = 500 * attempt;
+  if (header && Number.isFinite(seconds) && seconds > 0) wait = seconds * 1000;
+  else if (header && Number.isNaN(seconds)) {
+    const date = Date.parse(header);
+    if (!Number.isNaN(date)) wait = Math.max(date - now, 0);
+  }
+  return wait > MAX_RATE_WAIT_MS ? null : wait;
+}
 
 export type RefreshedTokens = AuthTokens;
 
@@ -136,6 +160,21 @@ export function createHttpClient({ baseURL, tokens, adapter, log }: Options): Ax
     async (error: unknown) => {
       if (!isAxiosError(error)) throw error;
       const original = error.config as RetriableConfig | undefined;
+      if (
+        error.response?.status === 429 &&
+        typeof error.response.data === 'string' &&
+        original &&
+        !original.signal?.aborted
+      ) {
+        const attempt = (original._rateRetries ?? 0) + 1;
+        const headers = error.response.headers as Record<string, unknown> | undefined;
+        const wait = rateLimitWait(headers?.['retry-after'], attempt);
+        if (attempt > MAX_RATE_RETRIES || wait === null) throw error;
+        original._rateRetries = attempt;
+        await new Promise((resolve) => setTimeout(resolve, wait));
+        if (original.signal?.aborted) throw error;
+        return client.request(original);
+      }
       if (
         error.response?.status !== 401 ||
         !original ||

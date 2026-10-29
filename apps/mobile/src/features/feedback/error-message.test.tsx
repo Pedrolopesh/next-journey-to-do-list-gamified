@@ -21,6 +21,17 @@ describe('describeError', () => {
     );
   });
 
+  it('429 do proxy, em HTML e sem código da API, também vira a mensagem de limite', () => {
+    const proxy = new AxiosError('x', 'ERR_BAD_REQUEST', undefined, undefined, {
+      status: 429,
+      data: '<html>429 Too Many Requests</html>',
+      statusText: '',
+      headers: {},
+      config: { headers: {} } as never,
+    });
+    expect(describeError(proxy, t)).toBe('t:auth.rateLimited');
+  });
+
   it('código conhecido da tela vence o genérico; desconhecido cai no genérico', () => {
     expect(describeError(apiError(401, 'UNAUTHORIZED'), t, { UNAUTHORIZED: 'senha' })).toBe(
       'senha',
