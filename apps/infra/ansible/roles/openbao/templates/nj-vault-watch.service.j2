@@ -1,0 +1,8 @@
+# Managed by Ansible. Checks the vault state and alerts.
+[Unit]
+Description=Vault watch
+After=openbao.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/nj-vault-watch watch

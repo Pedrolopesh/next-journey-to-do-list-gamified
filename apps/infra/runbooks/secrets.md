@@ -39,3 +39,13 @@ Each environment has `secrets-<env>.conf` on the host:
 - `NJ_SECRETS_FALLBACK=yes` uses the local credentials when the vault cannot be read. Meant for the transition only.
 
 To go back to the local credentials, set the source to `creds` in that file (or the `app_secrets_source` variable) and run `systemctl restart nj-secrets@<env>`.
+
+## Alerts
+
+`nj-vault-watch.timer` runs every 30 seconds and posts to the alerts channel through a webhook that is stored encrypted on the host (it must work while the vault is sealed, so it does not live in the vault):
+
+- vault sealed: a critical alert at once, repeated every 15 minutes while it stays sealed;
+- vault opened: a notice, and the environments that were waiting are started;
+- after a reboot (`nj-boot-check.service`): one report with the state of the vault, both environments, nginx, certificates and disk.
+
+Set or replace the webhook with `printf '%s' "<url>" | sudo nj-notify --set-webhook`. Measured on the real host: the sealed alert arrived 19 s after sealing and the reopened notice 29 s after opening, with both APIs answering throughout.

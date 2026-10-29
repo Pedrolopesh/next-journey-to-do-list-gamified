@@ -134,6 +134,21 @@
     - nj-openbao-import
     - nj-openbao-approle
     - nj-unseal
+    - nj-notify
+    - nj-vault-watch
+
+- name: Alert and report units
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/etc/systemd/system/{{ item }}'
+    mode: '0644'
+    owner: root
+    group: root
+  loop:
+    - nj-vault-watch.service
+    - nj-vault-watch.timer
+    - nj-boot-check.service
+  notify: Reload systemd units
 
 - name: Apply pending changes before the service is started
   ansible.builtin.meta: flush_handlers
@@ -160,3 +175,18 @@
   ansible.builtin.debug:
     msg: 'OpenBao is sealed. Open it with: sudo nj-unseal (3 key shares). Environments that restart now cannot read the vault.'
   when: openbao_health.status == 503
+
+- name: Vault watch timer and report after reboot enabled
+  ansible.builtin.systemd:
+    name: '{{ item }}'
+    enabled: true
+    state: started
+    daemon_reload: true
+  loop:
+    - nj-vault-watch.timer
+
+- name: Report after reboot enabled (runs at the next boot)
+  ansible.builtin.systemd:
+    name: nj-boot-check.service
+    enabled: true
+    daemon_reload: true
