@@ -84,6 +84,14 @@ Tudo isto já está na `main`. Detalhes de cada regra em `docs/SEGURANCA.md`, `d
 7. **Ainda não verificado em aparelho real:** tela do código de confirmação, exclusão de conta com Google/Apple (o ID token precisa ter até 5 min), lista de aparelhos (nome do aparelho), folha de compartilhar da exportação de dados, e o Maestro destes fluxos.
 8. **Em aberto (cards no Plane):** nonce no login social (o SDK do Google instalado não expõe), Universal/App Links (precisa de domínio), backup com teste de restauração, TLS/firewall e segredos em produção.
 
+## App apontando para os ambientes (dev e produção)
+
+- A URL da API vem de `EXPO_PUBLIC_API_URL`. Em desenvolvimento, sem ela, o app usa o servidor local. No build de produção (`APP_VARIANT=production`) ela é obrigatória e precisa ser `https`, senão o app não inicia (`apps/mobile/src/api/api-url.ts`).
+- `apps/mobile/eas.json` tem os perfis `development` e `production`, ligados aos ambientes de mesmo nome do EAS. As URLs **não** ficam no repositório (público): definir `EXPO_PUBLIC_API_URL` (e os client ids do Google) nas variáveis de cada ambiente do EAS.
+- Falta fora do código: criar o projeto no EAS e cadastrar essas variáveis; fazer o primeiro build de cada perfil.
+- Os testes de interface (Maestro) continuam só contra a API local: o script recusa URL que não seja local, porque cria conta de teste.
+- Pendências do `/code-review`: (1) build de produção sem `EXPO_PUBLIC_API_URL` válida fecha o app ao abrir, sem mensagem (a falha acontece ao importar `client.ts`); é de propósito, mas vale uma tela de erro de configuração. (2) Não existe perfil `preview` no `eas.json` para testar a configuração de produção em build interno antes da loja. (3) Os fluxos Maestro só foram validados no Android; no iOS só o 00 passou, numa cópia adaptada.
+
 ## Ritmo das conquistas (aprovado e na `main`, 2026-10-19)
 
 A página "Conquistas v2" do laboratório (seção "Ritmo") compara as regras de hoje com uma proposta mais espaçada (simulação de 30 dias). **Já está no app (#33).** O que foi feito: (1) um modal por ação, com o resto pendente nas ações seguintes (servidor devolve só uma na resposta do check; o app mostra uma pendente por vez); (2) novos limites e nomes (por exemplo "Chama de 5 dias"), em `achievement-catalog.ts` e `progression/domain/achievements.ts`, com migration que renomeia os slugs que mudam de nome só no texto (os slugs ficam); (3) OpenSpec `conquistas-ritmo`; (4) retroativo sem reabrir modais (quem já tem a conquista continua com ela).

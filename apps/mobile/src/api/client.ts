@@ -1,16 +1,21 @@
 import { authResponseSchema } from '@nextjourney/contracts';
 import axios, { isAxiosError } from 'axios';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 import { useSessionStore } from '@/auth/session-store';
 import { log } from '@/logging';
 
+import { resolveApiUrl } from './api-url';
 import { deviceName } from './device-name';
 import { createHttpClient } from './http';
 
-// Emulador Android enxerga o localhost do computador em 10.0.2.2
-const DEFAULT_URL = Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
-const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_URL).replace(/\/$/, '');
+const API_URL = resolveApiUrl({
+  configured: process.env.EXPO_PUBLIC_API_URL,
+  // Bundle de release (__DEV__ falso) conta como produção mesmo se a variante do manifesto faltar
+  isProduction: !__DEV__ || Constants.expoConfig?.extra?.appVariant === 'production',
+  platform: Platform.OS,
+});
 export const baseURL = `${API_URL}/v1`;
 log.info('app.api', { baseURL });
 
