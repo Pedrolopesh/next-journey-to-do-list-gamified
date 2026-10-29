@@ -246,7 +246,7 @@ function shield(env: SceneEnv, x: number, y: number): void {
     rect(env, x + k, y - Math.round(k * 0.7), 1, 1, '#dbe2ee');
   }
   rect(env, x - 9, y - 12, 19, 24, OUT);
-  rect(env, x - 8, y - 11, 17, 21, 'blue');
+  rect(env, x - 8, y - 11, 17, 21, '#2f5fb0');
   rect(env, x - 8, y - 11, 8, 21, '#2a55a0');
   rect(env, x - 1, y - 11, 3, 21, GOLD);
   rect(env, x - 8, y - 3, 17, 3, GOLD);
@@ -284,7 +284,7 @@ function table(env: SceneEnv, x: number, y: number, w: number): void {
   rect(env, x, y - 21, w, 2, '#ffffff');
   for (let i = 2; i < w - 2; i += 4) rect(env, x + i, y - 12, 2, 3, '#d9c9a0');
   rect(env, x, y - 15, w, 1, '#a31f2a');
-  const goods = ['#e63946', '#ffc93c', '#9a6a34', 'teal', '#ff7a2e'];
+  const goods = ['#e63946', '#ffc93c', '#9a6a34', '#2a9d8f', '#ff7a2e'];
   for (let i = 0; i * 17 + 14 < w; i++) {
     const px = x + 8 + i * 17;
     rect(env, px, y - 25, 9, 4, OUT);
@@ -304,7 +304,7 @@ function shelf(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 19, y - 66, 38, 67, OUT);
   rect(env, x - 18, y - 65, 36, 65, wood);
   rect(env, x - 16, y - 63, 32, 61, '#2a1a0c');
-  const colors = ['#a31f2a', 'blue', 'teal', '#e2b02e', '#7a3fa0', '#d9d2c0', '#e07b39'];
+  const colors = ['#a31f2a', '#2f5fb0', '#2a9d8f', '#e2b02e', '#7a3fa0', '#d9d2c0', '#e07b39'];
   for (let row = 0; row < 4; row++) {
     const by = y - 62 + row * 15;
     rect(env, x - 16, by + 13, 32, 2, wood);
@@ -379,7 +379,7 @@ function vase(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 5, y - 16, 11, 17, OUT);
   rect(env, x - 4, y - 15, 9, 15, '#f2e6cc');
   rect(env, x - 4, y - 15, 3, 15, '#ffffff');
-  rect(env, x - 4, y - 9, 9, 2, 'blue');
+  rect(env, x - 4, y - 9, 9, 2, '#2f5fb0');
   const blooms: [number, number, string][] = [
     [-5, -26, '#e63946'],
     [0, -30, '#ffc93c'],

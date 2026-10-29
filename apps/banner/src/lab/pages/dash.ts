@@ -3,10 +3,10 @@ import './dash.css';
 
 import { ACHIEVEMENT_CATALOG, ACHIEVEMENT_TIERS } from '@nextjourney/contracts';
 
-import type { Catalog } from '../../qg/compose';
 import { SCENES } from '../../qg/scenes';
 import { h, panel } from '../dom';
 import type { LabPage } from '../page';
+import { loadLabData } from './inventario';
 import { type InventoryItem, PAGE_RULES } from './inventario-regras';
 import { PLANNED, STATUS_LABEL } from './pets-montarias-dados';
 
@@ -47,10 +47,7 @@ export const dashPage: LabPage = {
   id: 'dash',
   label: 'Dash',
   async mount(host) {
-    const [items, catalog] = await Promise.all([
-      fetch('/lab/inventario-lpc.json').then((r) => r.json() as Promise<InventoryItem[]>),
-      fetch('/lab/catalog.json').then((r) => r.json() as Promise<Catalog>),
-    ]);
+    const [items, catalog] = await loadLabData();
 
     const perPage = INVENTORY_PAGES.map(([id, label]) => {
       const mine = items.filter(PAGE_RULES[id] as (item: InventoryItem) => boolean);

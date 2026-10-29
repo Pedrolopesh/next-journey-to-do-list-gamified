@@ -180,6 +180,8 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     const def = SCENES.find((scene) => scene.id === state.sceneId) ?? SCENES[0];
     const anim = currentAnim();
     const walks = state.journey && def?.journey !== undefined;
+    // Os extras (guardas, magos, nobres) vêm da cena e do nível, que já estão na chave: o visual deles só
+    // muda trocando de cena ou nível. Mudar `extra.selection` sem isso deixaria camadas velhas.
     const key = `${state.sceneId}|${state.level}|${walks ? 'j' : 'q'}|${selectionKey(state.selection, anim)}`;
     if (key === resolvedKey) return resolving;
     resolvedKey = key;
@@ -188,7 +190,11 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
       const nextExtras = await Promise.all(
         (def ? extrasOf(def, state.level, walks) : []).map(async (extra, index) => ({
           index,
-          layers: await resolveLayers({ ...state.selection, ...extra.selection }, extra.anim),
+          // Chapéu e braços do herói não passam para os extras: cada extra declara os seus
+          layers: await resolveLayers(
+            { ...state.selection, hat: null, arms: null, ...extra.selection },
+            extra.anim,
+          ),
         })),
       );
       // Só aplica se o estado não mudou de novo enquanto carregava

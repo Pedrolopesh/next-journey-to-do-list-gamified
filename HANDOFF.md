@@ -123,7 +123,7 @@ App criado no Play Console com o pacote `br.com.wetechhub.app` (imutável), grá
 
 ## O que falta (em ordem sugerida)
 
-1. **Estudo de roupas, chapéus, trajes e acessórios do personagem (primeiro do backlog; as conquistas v2 já estão no app).** Hoje o catálogo LPC do app só tem camisas, calças e sapatos; as roupas de recompensa foram retiradas com a mudança `conquistas-v2` (eram de teste). Estudar para a sequência: (a) o que o pacote LPC traz (chapéus, capacetes, capas, trajes completos, armas, escudos, cachecol e bandana) e a licença/crédito de cada arte; (b) importar a arte e ligar ao `compose` do banner, onde acessórios hoje são ignorados (`selectionFromLayers`); (c) como o jogador ganha cada peça (conquista de classe alta, nível, capítulo ou moedas) e se uma peça "completa" bloqueia as camadas de baixo; (d) tela de personagem com peças bloqueadas e desbloqueadas; (e) cuidado com desempenho (mais camadas por quadro) e com o custo de arte no pacote do app. Conhecido: a tabela `user_cosmetics` e a rota `GET /me/cosmetics` continuam; a trava `COSMETIC_LOCKED` foi retirada com as recompensas de teste e volta junto com as peças novas.
+1. **Estudo de roupas, chapéus, trajes e acessórios do personagem (primeiro do backlog; as conquistas v2 já estão no app).** Hoje o catálogo LPC do app só tem camisas, calças e sapatos; as roupas de recompensa foram retiradas com a mudança `conquistas-v2` (eram de teste). Estudar para a sequência: (a) o que o pacote LPC traz (chapéus, capacetes, capas, trajes completos, armas, escudos, cachecol e bandana) e a licença/crédito de cada arte; (b) importar a arte e ligar ao `compose` do banner, onde só `hat` (chapéu da lua e viseira, no castelo) e `arms` (armadura) estão ligados; o resto dos acessórios continua ignorado (`selectionFromLayers`); (c) como o jogador ganha cada peça (conquista de classe alta, nível, capítulo ou moedas) e se uma peça "completa" bloqueia as camadas de baixo; (d) tela de personagem com peças bloqueadas e desbloqueadas; (e) cuidado com desempenho (mais camadas por quadro) e com o custo de arte no pacote do app. Conhecido: a tabela `user_cosmetics` e a rota `GET /me/cosmetics` continuam; a trava `COSMETIC_LOCKED` foi retirada com as recompensas de teste e volta junto com as peças novas.
 
 2. **Refinar as jornadas com o Pedro** (praia, cidade, zumbi, castelo, floresta e inferno já rolam; cada uma tem `journey(env)` na sua cena). Falta conferir manhã, tarde e noite de cada uma dentro do app e o portal em cada cenário.
 3. Remover a cena Mapa em CSS (`apps/banner/src/scene`) quando a jornada cobrir todos os cenários; as abas já usam a jornada.
@@ -154,3 +154,11 @@ App criado no Play Console com o pacote `br.com.wetechhub.app` (imutável), grá
 - Mudanças OpenSpec antigas inválidas (`banner-cena-qg`, `banner-jornada`, `historias-por-cenario`); a CI valida só as alteradas.
 - Duplicação: formulários de login e cadastro; `appId` repetido nos fluxos do Maestro.
 - Fluxos do Maestro só no Android, fora da CI; app não verificado no iPhone físico.
+
+## Laboratório novo: pendências do `/code-review`
+
+- `lab/catalog.json` ganhou à mão as peças do chapéu da lua, da viseira e da armadura (e três créditos); `scripts/import-lpc.mjs` não as conhece. Rodar o importador de novo apaga essas peças e os guardas/magos do castelo perdem chapéu e armadura sem erro. Ensinar o importador antes de rodar de novo.
+- `scripts/inventario-lpc.py` (Python, Pillow) repete a lista de licenças permitidas do `import-lpc.mjs`. Unificar no importador em Node.
+- A armadura de braços só tem `idle` e `walk`; um cavaleiro com `run` ou outra animação quebraria o carregamento das camadas (`Promise.all`). Tolerar camada ausente ou registrar no catálogo as animações de cada peça.
+- A etiqueta "no jogo" do inventário compara pelo nome da peça; os 4 chapéus da lua têm o mesmo nome. Casar por id ou caminho.
+- `Selection` ganha um campo por espaço (`hat`, `arms`); para capa, luvas etc. vale uma lista genérica de ids de peças.

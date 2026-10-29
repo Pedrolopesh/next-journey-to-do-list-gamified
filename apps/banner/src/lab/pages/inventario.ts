@@ -6,6 +6,21 @@ import { type InventoryItem, PAGE_RULES } from './inventario-regras';
 
 export type { InventoryItem };
 
+let labData: Promise<[InventoryItem[], Catalog]> | undefined;
+
+/** Inventário e catálogo do laboratório, baixados uma única vez e compartilhados entre as páginas. */
+export function loadLabData(): Promise<[InventoryItem[], Catalog]> {
+  labData ??= Promise.all([
+    fetch('/lab/inventario-lpc.json').then((r) => r.json() as Promise<InventoryItem[]>),
+    fetch('/lab/catalog.json').then((r) => r.json() as Promise<Catalog>),
+  ]).catch((error: unknown) => {
+    // Falhou: a próxima página tenta de novo em vez de guardar o erro
+    labData = undefined;
+    throw error;
+  });
+  return labData;
+}
+
 /** Nome de cada pasta do gerador, para os títulos das seções. */
 const GROUP_NAMES: Record<string, string> = {
   '': 'Geral',
@@ -144,10 +159,7 @@ export function inventoryPage(options: InventoryPageOptions) {
     label: options.label,
     ...(options.section ? { section: options.section } : {}),
     async mount(host: HTMLElement): Promise<void> {
-      const [all, catalog] = await Promise.all([
-        fetch('/lab/inventario-lpc.json').then((r) => r.json() as Promise<InventoryItem[]>),
-        fetch('/lab/catalog.json').then((r) => r.json() as Promise<Catalog>),
-      ]);
+      const [all, catalog] = await loadLabData();
       const inGame = new Set(catalog.parts.map((part) => part.name));
       const items = all.filter(PAGE_RULES[options.rule] as (item: InventoryItem) => boolean);
       const free = items.filter((item) => item.free);
