@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useCategories, useCreateItem, useItems, useMe } from '@/api/queries';
+import { createItem } from '@/api/endpoints';
+import { refreshGameData, showNextPending, useCategories, useItems, useMe } from '@/api/queries';
 import { describeError } from '@/features/feedback/error-message';
 import { toast } from '@/features/feedback/toast-store';
 
@@ -21,7 +23,7 @@ export function useStarterExamples(): void {
   const dailies = useItems('daily');
   const todos = useItems('todo');
   const habits = useItems('habit');
-  const create = useCreateItem();
+  const queryClient = useQueryClient();
   const started = useRef(false);
 
   const userId = me.data?.user.id;
@@ -39,7 +41,20 @@ export function useStarterExamples(): void {
         const requests = buildExampleRequests(categoryList, (type, name) =>
           t(`examples.${type}.${name}`),
         );
-        for (const request of requests) await create.mutateAsync(request);
+        // Direto na API e uma única atualização no fim (a mesma de `useCreateItem`): recarregar tudo
+        // a cada item estourava o limite de requisições do servidor (~7 consultas por exemplo).
+        let created = 0;
+        try {
+          for (const request of requests) {
+            await createItem(request);
+            created++;
+          }
+        } finally {
+          if (created > 0) {
+            refreshGameData(queryClient);
+            void showNextPending(queryClient);
+          }
+        }
         if (requests.length > 0) {
           await AsyncStorage.setItem(key, '1');
           toast.success(t('examples.added'));
@@ -49,5 +64,5 @@ export function useStarterExamples(): void {
         toast.error(describeError(error, t));
       }
     })();
-  }, [userId, empty, categoryList, create, t]);
+  }, [userId, empty, categoryList, queryClient, t]);
 }
