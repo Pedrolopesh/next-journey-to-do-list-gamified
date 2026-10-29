@@ -57,8 +57,10 @@
     owner: '{{ openbao_uid }}'
     group: '{{ openbao_gid }}'
   loop:
-    - { name: openbao.key, mode: '0400' }
-    - { name: openbao.crt, mode: '0444' }
+    - name: openbao.key
+      mode: '0400'
+    - name: openbao.crt
+      mode: '0444'
 
 - name: Is the pinned image already on the host
   ansible.builtin.command: 'docker image inspect {{ openbao_image }}@{{ openbao_image_digest }}'
