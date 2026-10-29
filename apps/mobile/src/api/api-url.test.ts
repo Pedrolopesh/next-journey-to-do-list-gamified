@@ -32,5 +32,9 @@ describe('resolveApiUrl', () => {
     expect(() => resolveApiUrl({ ...prod, configured: '' })).toThrow(/https/);
     expect(() => resolveApiUrl({ ...prod, configured: 'http://api.exemplo.com' })).toThrow(/https/);
     expect(() => resolveApiUrl({ ...prod, configured: 'http://localhost:3000' })).toThrow(/https/);
+    expect(() => resolveApiUrl({ ...prod, configured: 'https://' })).toThrow(/https/);
+    expect(resolveApiUrl({ ...prod, configured: 'HTTPS://api.exemplo.com' })).toBe(
+      'HTTPS://api.exemplo.com',
+    );
   });
 });

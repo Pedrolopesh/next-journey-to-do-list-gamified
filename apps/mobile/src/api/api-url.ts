@@ -9,6 +9,8 @@ type Options = {
 // Emulador Android enxerga o localhost do computador em 10.0.2.2
 const LOCAL_ANDROID = 'http://10.0.2.2:3000';
 const LOCAL_DEFAULT = 'http://localhost:3000';
+// https com host (esquema sem diferenciar maiúscula); "https://" sozinho não vale
+const HTTPS_WITH_HOST = /^https:\/\/[^\s/?#]+/i;
 
 /**
  * Escolhe a URL base da API. Em desenvolvimento cai no servidor local quando nada foi configurado.
@@ -18,7 +20,7 @@ const LOCAL_DEFAULT = 'http://localhost:3000';
 export function resolveApiUrl({ configured, isProduction, platform }: Options): string {
   const value = configured?.trim();
   if (isProduction) {
-    if (!value || !value.startsWith('https://')) {
+    if (!value || !HTTPS_WITH_HOST.test(value)) {
       throw new Error('EXPO_PUBLIC_API_URL precisa ser uma URL https no build de produção');
     }
     return value.replace(/\/+$/, '');

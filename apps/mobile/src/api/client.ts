@@ -12,7 +12,8 @@ import { createHttpClient } from './http';
 
 const API_URL = resolveApiUrl({
   configured: process.env.EXPO_PUBLIC_API_URL,
-  isProduction: Constants.expoConfig?.extra?.appVariant === 'production',
+  // Bundle de release (__DEV__ falso) conta como produção mesmo se a variante do manifesto faltar
+  isProduction: !__DEV__ || Constants.expoConfig?.extra?.appVariant === 'production',
   platform: Platform.OS,
 });
 export const baseURL = `${API_URL}/v1`;

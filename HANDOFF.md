@@ -90,6 +90,7 @@ Tudo isto já está na `main`. Detalhes de cada regra em `docs/SEGURANCA.md`, `d
 - `apps/mobile/eas.json` tem os perfis `development` e `production`, ligados aos ambientes de mesmo nome do EAS. As URLs **não** ficam no repositório (público): definir `EXPO_PUBLIC_API_URL` (e os client ids do Google) nas variáveis de cada ambiente do EAS.
 - Falta fora do código: criar o projeto no EAS e cadastrar essas variáveis; fazer o primeiro build de cada perfil.
 - Os testes de interface (Maestro) continuam só contra a API local: o script recusa URL que não seja local, porque cria conta de teste.
+- Pendências do `/code-review`: (1) build de produção sem `EXPO_PUBLIC_API_URL` válida fecha o app ao abrir, sem mensagem (a falha acontece ao importar `client.ts`); é de propósito, mas vale uma tela de erro de configuração. (2) Não existe perfil `preview` no `eas.json` para testar a configuração de produção em build interno antes da loja. (3) Os fluxos Maestro só foram validados no Android; no iOS só o 00 passou, numa cópia adaptada.
 
 ## Ritmo das conquistas (aprovado e na `main`, 2026-10-19)
 
