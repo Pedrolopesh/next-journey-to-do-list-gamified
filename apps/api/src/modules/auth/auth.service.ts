@@ -16,6 +16,8 @@ import { AppError } from '../../common/app-error.js';
 import { Clock } from '../../common/clock.js';
 import { ENV, type Env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { DEFAULT_CATEGORIES } from '../categories/default-categories.js';
+import { StarterItemsService } from '../items/starter-items.service.js';
 import { SecurityEvents } from '../security/security-events.service.js';
 import { cleanDeviceName } from './device-name.js';
 import { EmailVerificationService } from './email-verification.service.js';
@@ -23,15 +25,6 @@ import { IdTokenVerifier, type SocialProvider } from './id-token-verifier.js';
 import { Mailer } from './mailer.js';
 import { LIMITS, RateLimitService } from './rate-limit.service.js';
 import { TokensService } from './tokens.service.js';
-
-/** Categorias padrão criadas no cadastro (RF-23), com cores do design system. */
-const DEFAULT_CATEGORIES = [
-  { name: 'Trabalho', color: '#7c3aed' },
-  { name: 'Saúde', color: '#10b981' },
-  { name: 'Estudo', color: '#3b82f6' },
-  { name: 'Freela', color: '#f59e0b' },
-  { name: 'Pessoal', color: '#ef4444' },
-] as const;
 
 const invalidVerificationCode = (): AppError =>
   new AppError(400, ERROR_CODES.INVALID_VERIFICATION_CODE, 'Código inválido ou expirado');
@@ -57,6 +50,7 @@ export class AuthService {
     @Inject(EmailVerificationService) private readonly verification: EmailVerificationService,
     @Inject(RateLimitService) private readonly rateLimit: RateLimitService,
     @Inject(SecurityEvents) private readonly events: SecurityEvents,
+    @Inject(StarterItemsService) private readonly starterItems: StarterItemsService,
   ) {}
 
   /**
@@ -127,13 +121,15 @@ export class AuthService {
     const passwordOk = await argon2.verify(hash, input.password).catch(() => false);
     if (!pending) throw invalidVerificationCode();
 
-    if (!(await this.verification.consume(pending.id, input.code, passwordOk))) {
-      throw invalidVerificationCode();
-    }
-    await this.prisma.user.update({
-      where: { id: pending.id },
-      data: { emailVerifiedAt: this.clock.now() },
+    // Confirm and seed together: if anything fails, the account stays pending and the code stays valid
+    const now = this.clock.now();
+    const confirmed = await this.prisma.$transaction(async (tx) => {
+      if (!(await this.verification.consume(pending.id, input.code, passwordOk, tx))) return false;
+      await tx.user.update({ where: { id: pending.id }, data: { emailVerifiedAt: now } });
+      await this.starterItems.seed(tx, { userId: pending.id, timezone: pending.timezone, now });
+      return true;
     });
+    if (!confirmed) throw invalidVerificationCode();
     return {
       tokens: await this.tokens.issue(pending.id, undefined, cleanDeviceName(deviceName)),
       user: {
@@ -291,21 +287,30 @@ export class AuthService {
             'É preciso aceitar os Termos e a Política de Privacidade',
           );
         }
-        user = await this.prisma.user.create({
-          data: {
-            email,
-            passwordHash: null,
-            name: identity.name?.trim() || email.split('@')[0] || 'Aventureiro',
-            timezone: input.timezone ?? 'UTC',
-            termsAcceptedAt: this.clock.now(),
-            termsVersion: input.termsVersion,
-            emailVerifiedAt: this.clock.now(),
-            stats: { create: {} },
-            categories: {
-              create: DEFAULT_CATEGORIES.map((category, position) => ({ ...category, position })),
+        const { termsVersion } = input;
+        const now = this.clock.now();
+        user = await this.prisma.$transaction(async (tx) => {
+          const created = await tx.user.create({
+            data: {
+              email,
+              passwordHash: null,
+              name: identity.name?.trim() || email.split('@')[0] || 'Aventureiro',
+              timezone: input.timezone ?? 'UTC',
+              termsAcceptedAt: now,
+              termsVersion,
+              emailVerifiedAt: now,
+              stats: { create: {} },
+              categories: {
+                create: DEFAULT_CATEGORIES.map((category, position) => ({
+                  ...category,
+                  position,
+                })),
+              },
+              identities: { create: { provider, providerUserId: identity.subject } },
             },
-            identities: { create: { provider, providerUserId: identity.subject } },
-          },
+          });
+          await this.starterItems.seed(tx, { userId: created.id, timezone: created.timezone, now });
+          return created;
         });
       }
     }
@@ -346,29 +351,29 @@ export class AuthService {
     providerUserId: string,
   ) {
     const now = this.clock.now();
-    const identity = this.prisma.authIdentity.create({
-      data: { userId: existing.id, provider, providerUserId },
-    });
+    const data = { userId: existing.id, provider, providerUserId };
     if (existing.emailVerifiedAt) {
-      await identity;
+      await this.prisma.authIdentity.create({ data });
       return this.prisma.user.findUniqueOrThrow({ where: { id: existing.id } });
     }
-    const [, user] = await this.prisma.$transaction([
-      identity,
-      this.prisma.user.update({
+    // The account was pending and becomes valid here: confirm and seed together
+    return this.prisma.$transaction(async (tx) => {
+      await tx.authIdentity.create({ data });
+      const user = await tx.user.update({
         where: { id: existing.id },
         data: { emailVerifiedAt: now, passwordHash: null },
-      }),
-      this.prisma.emailVerification.updateMany({
+      });
+      await tx.emailVerification.updateMany({
         where: { userId: existing.id, usedAt: null },
         data: { usedAt: now },
-      }),
-      this.prisma.refreshToken.updateMany({
+      });
+      await tx.refreshToken.updateMany({
         where: { userId: existing.id, revokedAt: null },
         data: { revokedAt: now },
-      }),
-    ]);
-    return user;
+      });
+      await this.starterItems.seed(tx, { userId: existing.id, timezone: user.timezone, now });
+      return user;
+    });
   }
 
   private getDummyHash(): Promise<string> {

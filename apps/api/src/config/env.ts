@@ -42,6 +42,11 @@ const envSchema = z
       .enum(['true', 'false'])
       .default('false')
       .transform((value) => value === 'true'),
+    /** Create the starter items when an account becomes valid. Off in the API e2e suite. */
+    SEED_STARTER_ITEMS: z
+      .enum(['true', 'false'])
+      .default('true')
+      .transform((value) => value === 'true'),
     /** Aviso opcional de contagem anormal de eventos de segurança (POST com texto curto, sem dado pessoal). */
     SECURITY_ALERT_WEBHOOK_URL: z.preprocess(
       emptyToUndefined,

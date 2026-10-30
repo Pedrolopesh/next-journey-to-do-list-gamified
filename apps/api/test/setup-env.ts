@@ -9,3 +9,4 @@ process.env.THROTTLE_LIMIT = '100000';
 process.env.THROTTLE_AUTH_LIMIT = '100000';
 // O piso de tempo das rotas de conta só é testado em test/constant-time.e2e-spec
 process.env.AUTH_MIN_RESPONSE_MS = '0';
+process.env.SEED_STARTER_ITEMS = 'false';

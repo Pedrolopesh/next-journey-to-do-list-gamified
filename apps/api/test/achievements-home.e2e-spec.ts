@@ -122,15 +122,45 @@ describe('conquistas e home', () => {
     expect(await pendingSlugs(auth)).toEqual([]);
   });
 
-  it('itens de exemplo do app não contam como criação do usuário', async () => {
+  it('server starter items do not count as created by the user', async () => {
     reset();
     const auth = await registerUser(ctx);
-    const daily = { type: 'daily', scheduleDays: [0, 1, 2, 3, 4, 5, 6], example: true };
-    // o app cria ~100 exemplos para quem ainda não tem itens
-    for (let i = 0; i < 12; i += 1) await createItem(ctx, auth, daily);
-    for (let i = 0; i < 6; i += 1) await createItem(ctx, auth, { type: 'todo', example: true });
-    const habit = await createItem(ctx, auth, { type: 'habit', example: true, notes: 'dica' });
-    for (let i = 0; i < 6; i += 1) await createItem(ctx, auth, { type: 'habit', example: true });
+    // the server inserts starter items straight into the database, marked as examples
+    const categoryId = await firstCategoryId(ctx, auth.user.id);
+    const base = {
+      userId: auth.user.id,
+      categoryId,
+      difficulty: 'medium' as const,
+      createdOn: '2026-10-09',
+    };
+    await ctx.prisma.item.createMany({
+      data: [
+        ...Array.from({ length: 12 }, (_, i) => ({
+          ...base,
+          type: 'daily' as const,
+          title: `Diário ${i}`,
+          scheduleDays: [0, 1, 2, 3, 4, 5, 6],
+          isExample: true,
+        })),
+        ...Array.from({ length: 6 }, (_, i) => ({
+          ...base,
+          type: 'todo' as const,
+          title: `Tarefa ${i}`,
+          isExample: true,
+        })),
+        ...Array.from({ length: 7 }, (_, i) => ({
+          ...base,
+          type: 'habit' as const,
+          title: `Hábito ${i}`,
+          notes: i === 0 ? 'dica' : null,
+          isExample: true,
+        })),
+      ],
+    });
+    const habit = await ctx.prisma.item.findFirstOrThrow({
+      where: { userId: auth.user.id, type: 'habit' },
+      orderBy: { title: 'asc' },
+    });
     const stats = await ctx.prisma.userStats.findUniqueOrThrow({ where: { userId: auth.user.id } });
     expect(stats.itemsCreated).toBe(0);
     expect(await pendingSlugs(auth)).toEqual([]); // nada de "primeiro diário", "Organizado"...
