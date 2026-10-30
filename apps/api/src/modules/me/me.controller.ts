@@ -28,13 +28,13 @@ import { GameConfigService } from '../progression/game-config.service.js';
 import { NO_STORY, toPlayerState } from '../progression/player-state.js';
 import { StoriesService } from '../stories/stories.service.js';
 
-/** Lê a aparência salva; dado antigo ou inválido vira "sem look" em vez de quebrar o /me. */
+/** Reads the saved look; old or invalid data becomes "no look" instead of breaking /me. */
 function lookOf(value: unknown): { look?: LpcLook } {
   const parsed = lpcLookSchema.safeParse(value);
   return parsed.success ? { look: parsed.data } : {};
 }
 
-/** O visual mudou quando pele, cabelo, roupa, acessório ou a aparência detalhada são diferentes. */
+/** The look changed when skin, hair, clothes, accessory or detailed appearance differ. */
 function visualChanged(
   before: { skin: string; hair: string; outfit: string; accessory: string | null; look: unknown },
   after: Character,
@@ -59,7 +59,7 @@ export class MeController {
     @Inject(AchievementsService) private readonly achievements: AchievementsService,
   ) {}
 
-  /** Perfil e estado de jogo do usuário autenticado (sem hash de senha nem dados de terceiros). */
+  /** Profile and game state of the authenticated user (no password hash or third-party data). */
   @Get()
   async me(@CurrentUserId() userId: string): Promise<MeResponse> {
     const user = await this.prisma.user.findFirst({
@@ -134,7 +134,7 @@ export class MeController {
     };
   }
 
-  /** Fuso do perfil, tutorial visto e horário do lembrete. */
+  /** Profile time zone, tutorial seen and reminder time. */
   @Patch()
   async patch(
     @CurrentUserId() userId: string,
@@ -151,13 +151,13 @@ export class MeController {
     return this.me(userId);
   }
 
-  /** Exporta os dados da própria conta (LGPD, direito de acesso): JSON só com campos permitidos. */
+  /** Exports the account's own data (LGPD, right of access): JSON with allowed fields only. */
   @Get('export')
   export(@CurrentUserId() userId: string): Promise<DataExport> {
     return this.dataExport.export(userId);
   }
 
-  /** Exclui a conta: anonimiza agora e apaga de vez depois do prazo de retenção. */
+  /** Deletes the account: anonymizes now and deletes for good after the retention period. */
   @Delete()
   @HttpCode(204)
   async deleteAccount(
@@ -167,7 +167,10 @@ export class MeController {
     await this.account.requestDeletion(userId, body);
   }
 
-  /** Cria ou edita o personagem. Mudar o visual de um personagem existente conta para conquistas. */
+  /**
+   * Creates or edits the character. Changing the look of an existing character counts for
+   * achievements.
+   */
   @Put('character')
   async putCharacter(
     @CurrentUserId() userId: string,
@@ -195,7 +198,7 @@ export class MeController {
     return body;
   }
 
-  /** Fato do aparelho que o servidor não observa (ex.: lembrete diário ativado). */
+  /** A device fact the server does not observe (e.g. daily reminder turned on). */
   @Post('events')
   @HttpCode(204)
   async event(
@@ -205,7 +208,7 @@ export class MeController {
     await this.achievements.registerEvent(userId, body);
   }
 
-  /** Cosméticos liberados por conquistas. */
+  /** Cosmetics unlocked by achievements. */
   @Get('cosmetics')
   async cosmetics(@CurrentUserId() userId: string): Promise<{ cosmetics: string[] }> {
     const rows = await this.prisma.userCosmetic.findMany({

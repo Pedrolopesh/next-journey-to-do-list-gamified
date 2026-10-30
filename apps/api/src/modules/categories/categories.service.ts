@@ -63,7 +63,7 @@ export class CategoriesService {
     return toDto(row);
   }
 
-  /** Excluir uma categoria com itens ativos exige a categoria de destino (`moveTo`). */
+  /** Deleting a category with active items requires a destination category (`moveTo`). */
   async remove(userId: string, id: string, moveTo: string | undefined): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
       const category = await tx.category.findFirst({ where: { id, userId, deletedAt: null } });

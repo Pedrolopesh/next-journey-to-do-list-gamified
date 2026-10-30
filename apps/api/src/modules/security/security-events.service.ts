@@ -4,7 +4,9 @@ import { Logger } from 'nestjs-pino';
 import { Clock } from '../../common/clock.js';
 import { ENV, type Env } from '../../config/env.js';
 
-/** Eventos de segurança com nome fixo. Nunca carregam e-mail, senha, token nem corpo de requisição. */
+/**
+ * Security events with a fixed name. They never carry an email, password, token or request body.
+ */
 export type SecurityEventType =
   | 'login_failed'
   | 'rate_limited'
@@ -17,13 +19,16 @@ export type SecurityEventType =
 
 type Context = {
   userId?: string;
-  /** IP de quem fez o pedido; vai para o log mascarado (IPv4 sem o último número). */
+  /** IP of the requester; it goes to the log masked (IPv4 without the last number). */
   ip?: string;
-  /** Só texto curto e fixo (ex.: o nome da regra de limite), nunca dado da pessoa. */
+  /** Only short, fixed text (e.g. the name of the limit rule), never personal data. */
   scope?: string;
 };
 
-/** Contagem anormal por tipo: passou de `limit` eventos em `windowMs`, dispara o alerta (uma vez por janela). */
+/**
+ * Abnormal count per type: more than `limit` events in `windowMs` triggers the alert (once per
+ * window).
+ */
 const ALERTS: Partial<Record<SecurityEventType, { limit: number; windowMs: number }>> = {
   login_failed: { limit: 30, windowMs: 5 * 60_000 },
   rate_limited: { limit: 100, windowMs: 5 * 60_000 },
@@ -32,7 +37,9 @@ const ALERTS: Partial<Record<SecurityEventType, { limit: number; windowMs: numbe
   password_reset_requested: { limit: 30, windowMs: 10 * 60_000 },
 };
 
-/** Mascara o IP para o log: IPv4 perde o último número e IPv6 fica só com os dois primeiros grupos. */
+/**
+ * Masks the IP for the log: IPv4 loses the last number and IPv6 keeps only the first two groups.
+ */
 export function maskIp(ip: string | undefined): string | undefined {
   if (!ip) return undefined;
   const v4 = /^(?:::ffff:)?(\d{1,3}\.\d{1,3}\.\d{1,3})\.\d{1,3}$/.exec(ip);
@@ -42,10 +49,10 @@ export function maskIp(ip: string | undefined): string | undefined {
 }
 
 /**
- * Registro de eventos de segurança: uma linha estruturada por evento no log da API (campo `security`),
- * contagem em janela deslizante por tipo e alerta quando passa do limite. O alerta sai no log em nível
- * `error` com `alert: true` e, se `SECURITY_ALERT_WEBHOOK_URL` estiver definido, num POST com texto curto
- * (tipo, quantidade, janela), sem nenhum dado pessoal. A contagem é por instância.
+ * Security event log: one structured line per event in the API log (`security` field), a sliding-
+ * window count per type and an alert when it passes the limit. The alert is logged at `error` level
+ * with `alert: true` and, if `SECURITY_ALERT_WEBHOOK_URL` is set, sent as a POST with short text
+ * (type, count, window) and no personal data. The count is per instance.
  */
 @Injectable()
 export class SecurityEvents {
@@ -91,7 +98,7 @@ export class SecurityEvents {
     this.notify(`Next Journey: ${recent.length} eventos "${type}" em ${minutes} min`);
   }
 
-  /** Aviso opcional por webhook (URL definida por quem opera). Falha não afeta a API. */
+  /** Optional webhook notice (URL set by whoever operates). A failure does not affect the API. */
   private notify(text: string): void {
     const url = this.env.SECURITY_ALERT_WEBHOOK_URL;
     if (!url) return;

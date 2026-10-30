@@ -30,7 +30,7 @@ export class AchievementsController {
     return this.achievements.list(userId, user.timezone, now, diaLocal(now, user.timezone));
   }
 
-  /** O app mostrou o modal destas conquistas: confirma só as do próprio usuário. */
+  /** The app showed the modal for these achievements: confirms only the user's own. */
   @Post('ack')
   @HttpCode(204)
   async ack(

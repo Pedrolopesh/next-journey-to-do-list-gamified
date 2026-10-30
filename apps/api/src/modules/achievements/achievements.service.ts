@@ -29,15 +29,15 @@ type EvaluateInput = {
   timezone: string;
   now: Date;
   hoje: LocalDate;
-  /** Presente só quando a avaliação vem de um check (as de horário dependem dele). */
+  /** Present only when the evaluation comes from a check (the time-based ones depend on it). */
   fromCheck?: boolean;
-  /** Retroativo: já nasce como avisada, sem abrir modal. */
+  /** Retroactive: born already notified, without opening a modal. */
   silent?: boolean;
 };
 
-/** Janela dos diários: cobre a Chama de 30 dias e os dias perfeitos recentes. */
+/** Window of the dailies: covers the 30-day flame and the recent perfect days. */
 const DAILY_WINDOW_DAYS = 90;
-/** Limite de voltas das conquistas de coleção (uma libera a outra). */
+/** Round limit for the collection achievements (one unlocks the other). */
 const MAX_PASSES = 4;
 
 @Injectable()
@@ -47,7 +47,7 @@ export class AchievementsService {
     @Inject(Clock) private readonly clock: Clock,
   ) {}
 
-  /** Monta o contexto dos critérios a partir do banco (dentro da transação da ação). */
+  /** Builds the criteria context from the database (inside the action's transaction). */
   async context(
     tx: Prisma.TransactionClient,
     input: EvaluateInput,
@@ -172,12 +172,12 @@ export class AchievementsService {
   }
 
   /**
-   * Avalia as conquistas na transação da ação (check, item, categoria, personagem ou evento). Cada
-   * uma é liberada uma só vez (a chave primária impede duplicar). As de coleção entram na volta
-   * seguinte, quando as outras já estão gravadas.
+   * Evaluates the achievements in the action's transaction (check, item, category, character or
+   * event). Each one is unlocked only once (the primary key prevents duplicates). The collection
+   * ones enter on the next round, when the others are already stored.
    *
-   * Um modal por ação: tudo que foi liberado fica pendente (`notifiedAt` nulo), mas a resposta traz
-   * só a pendente mais antiga. As outras aparecem, uma por vez, nas ações seguintes.
+   * One modal per action: everything unlocked stays pending (`notifiedAt` null), but the response
+   * carries only the oldest pending one. The others show up, one at a time, on the following actions.
    */
   async evaluate(
     tx: Prisma.TransactionClient,
@@ -208,11 +208,12 @@ export class AchievementsService {
         if (entry) created.push({ slug, name: entry.name, tier: entry.tier, glyph: entry.glyph });
       }
     }
-    // Silencioso (retroativo): devolve o que liberou, já avisado. Normal: só a pendente mais antiga.
+    // Silent (retroactive): returns what it unlocked, already notified. Normal: only the oldest
+    // pending one.
     return input.silent ? created : this.nextToShow(tx, input.userId);
   }
 
-  /** A conquista pendente mais antiga (empate: ordem do catálogo), em lista de zero ou um item. */
+  /** The oldest pending achievement (tie: catalog order), as a list of zero or one item. */
   private async nextToShow(
     tx: Prisma.TransactionClient,
     userId: string,
@@ -222,7 +223,7 @@ export class AchievementsService {
       select: { achievementSlug: true, unlockedAt: true },
     });
     const order = new Map(ACHIEVEMENT_CATALOG.map((a, index) => [a.slug as string, index]));
-    // Pendente cujo slug saiu do catálogo não pode travar a fila das válidas
+    // A pending achievement whose slug left the catalog must not block the queue of the valid ones.
     pending.splice(0, pending.length, ...pending.filter((row) => order.has(row.achievementSlug)));
     pending.sort(
       (a, b) =>
@@ -236,7 +237,7 @@ export class AchievementsService {
       : [];
   }
 
-  /** Avaliação fora de um check (criar item, categoria, trocar visual, evento do app). */
+  /** Evaluation outside a check (create item or category, change look, app event). */
   async evaluateFor(userId: string, silent = false): Promise<AchievementUnlocked[]> {
     const user = await this.prisma.user.findFirst({
       where: { id: userId, deletedAt: null },
@@ -255,7 +256,10 @@ export class AchievementsService {
     );
   }
 
-  /** Retroativo: libera, já como avisadas, o que cada usuário já cumpria. Devolve quantas liberou. */
+  /**
+   * Retroactive: unlocks, already notified, what each user already met. Returns how many it
+   * unlocked.
+   */
   async backfillAll(): Promise<number> {
     const users = await this.prisma.user.findMany({
       where: { deletedAt: null },
@@ -266,7 +270,10 @@ export class AchievementsService {
     return total;
   }
 
-  /** Fato do aparelho que o servidor não observa sozinho (marca única) e a avaliação seguinte. */
+  /**
+   * A device fact the server cannot observe on its own (single mark) and the evaluation that
+   * follows.
+   */
   async registerEvent(userId: string, event: AppEvent): Promise<AchievementUnlocked[]> {
     if (event.type === 'reminder_enabled') {
       await this.prisma.userStats.updateMany({
@@ -277,7 +284,7 @@ export class AchievementsService {
     return this.evaluateFor(userId);
   }
 
-  /** Confirma o aviso (modal) só das conquistas do próprio usuário que ainda estão pendentes. */
+  /** Confirms the notice (modal) only for the user's own achievements that are still pending. */
   async ack(userId: string, slugs: string[]): Promise<void> {
     await this.prisma.userAchievement.updateMany({
       where: { userId, achievementSlug: { in: slugs }, notifiedAt: null },
@@ -285,7 +292,9 @@ export class AchievementsService {
     });
   }
 
-  /** Catálogo com progresso e estado para o usuário (RF-32). Surpresa bloqueada não mostra o texto. */
+  /**
+   * Catalog with progress and state for the user (RF-32). A locked surprise does not show its text.
+   */
   async list(userId: string, timezone: string, now: Date, hoje: LocalDate): Promise<Achievement[]> {
     const { ctx, rows } = await this.prisma.$transaction(async (tx) => {
       const found = await tx.userAchievement.findMany({ where: { userId } });

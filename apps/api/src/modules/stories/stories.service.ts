@@ -16,7 +16,6 @@ export class StoriesService {
     @Inject(GameConfigService) private readonly gameConfig: GameConfigService,
   ) {}
 
-  /** História ativa do usuário com o progresso dela (ou nulo se ainda não escolheu). */
   async active(tx: Prisma.TransactionClient, userId: string): Promise<ActiveStory | null> {
     const progress = await tx.storyProgress.findFirst({
       where: { userId, isActive: true },
@@ -27,7 +26,7 @@ export class StoriesService {
     return { story, progress: rest };
   }
 
-  /** Catálogo (RF-12) já com o que o usuário concluiu em cada história. */
+  /** Catalog (RF-12) with what the user finished in each story. */
   async list(userId: string): Promise<StorySummary[]> {
     const [stories, progress, completions] = await Promise.all([
       this.prisma.story.findMany({
@@ -57,7 +56,7 @@ export class StoriesService {
     }));
   }
 
-  /** Escolhe ou troca a história ativa. O progresso de cada história fica salvo (RF-30). */
+  /** Picks or switches the active story. The progress of each story stays saved (RF-30). */
   async activate(userId: string, slug: string): Promise<StorySummary> {
     const story = await this.prisma.story.findUnique({ where: { slug } });
     if (!story) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'História não encontrada');
@@ -80,9 +79,9 @@ export class StoriesService {
   }
 
   /**
-   * Minha história (RF-29). Sem `slug`, a história ativa; com `slug`, qualquer história do catálogo.
-   * O texto só aparece nos capítulos já concluídos; o progresso (EXP do nível) só no capítulo atual
-   * da história ativa.
+   * My story (RF-29). Without `slug`, the active story; with `slug`, any story in the catalog. The
+   * text only shows in the finished chapters; the progress (EXP of the level) only in the current
+   * chapter of the active story.
    */
   async timeline(userId: string, slug?: string): Promise<Timeline> {
     const active = await this.active(this.prisma, userId);

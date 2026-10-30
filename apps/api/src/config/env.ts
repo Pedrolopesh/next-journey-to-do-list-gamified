@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-/** Variável opcional deixada vazia (`CHAVE=` no .env) vale como ausente. */
+/** An optional variable left empty (`KEY=` in .env) counts as absent. */
 const emptyToUndefined = (value: unknown): unknown => (value === '' ? undefined : value);
 
-/** Variáveis de ambiente. A API não sobe se faltar ou estiver inválida alguma delas. */
+/** Environment variables. The API does not start if any is missing or invalid. */
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -14,10 +14,16 @@ const envSchema = z
       .default('info'),
     DATABASE_URL: z.string().min(1),
     JWT_ACCESS_SECRET: z.string().min(32, 'precisa ter pelo menos 32 caracteres'),
-    /** Emissor e audiência do token de acesso: o token de outro serviço ou ambiente não vale aqui. */
+    /**
+     * Issuer and audience of the access token: a token from another service or environment is not
+     * valid here.
+     */
     JWT_ISSUER: z.string().min(1).default('nextjourney-api'),
     JWT_AUDIENCE: z.string().min(1).default('nextjourney-app'),
-    /** Identificador (kid) da chave atual. Na troca do segredo, a anterior segue valendo até o fim do token. */
+    /**
+     * Identifier (kid) of the current key. While the secret is being changed, the previous one
+     * stays valid until its token ends.
+     */
     JWT_KEY_ID: z.string().min(1).default('k1'),
     JWT_ACCESS_SECRET_PREVIOUS: z.preprocess(
       emptyToUndefined,
@@ -26,18 +32,19 @@ const envSchema = z
     JWT_PREVIOUS_KEY_ID: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
     ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
-    // E-mail transacional (Resend). Sem chave, nada é enviado (desenvolvimento).
+    // Transactional email (Resend). Without a key, nothing is sent (development).
     RESEND_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
     MAIL_FROM: z.string().default('Next Journey <no-reply@example.com>'),
-    /** Link que abre o app na tela de nova senha (deep link). */
+    /** Link that opens the app on the new password screen (deep link). */
     PASSWORD_RESET_URL: z.string().default('nextjourney://reset-password'),
     PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().default(30),
-    // Login social: client ids públicos (não são segredos). Vazios = recurso indisponível.
+    // Social login: public client ids (not secrets). Empty means the feature is unavailable.
     GOOGLE_CLIENT_IDS: z.string().default(''),
     APPLE_CLIENT_ID: z.string().default(''),
-    // Origens web permitidas (CORS), separadas por vírgula. Vazio = CORS desligado (o app nativo não precisa).
+    // Allowed web origins (CORS), comma separated. Empty means CORS off (the native app does not
+    // need it).
     CORS_ORIGINS: z.string().default(''),
-    /** Ligue atrás de proxy reverso (nginx) para o rate limit enxergar o IP real. */
+    /** Turn on behind a reverse proxy (nginx) so the rate limit sees the real IP. */
     TRUST_PROXY: z
       .enum(['true', 'false'])
       .default('false')
@@ -47,7 +54,10 @@ const envSchema = z
       .enum(['true', 'false'])
       .default('true')
       .transform((value) => value === 'true'),
-    /** Aviso opcional de contagem anormal de eventos de segurança (POST com texto curto, sem dado pessoal). */
+    /**
+     * Optional alert on an abnormal count of security events (POST with short text, no personal
+     * data).
+     */
     SECURITY_ALERT_WEBHOOK_URL: z.preprocess(
       emptyToUndefined,
       z
@@ -55,12 +65,15 @@ const envSchema = z
         .refine((value) => value.startsWith('https://'), 'precisa ser https')
         .optional(),
     ),
-    /** Requisições por minuto por IP, no geral e nas rotas de autenticação. */
+    /** Requests per minute per IP, overall and on the authentication routes. */
     THROTTLE_LIMIT: z.coerce.number().int().positive().default(120),
     THROTTLE_AUTH_LIMIT: z.coerce.number().int().positive().default(10),
-    /** Tempo mínimo (ms) de resposta das rotas de conta que respondem igual com e-mail existente ou não. */
+    /**
+     * Minimum response time (ms) of the account routes that answer the same whether the email
+     * exists or not.
+     */
     AUTH_MIN_RESPONSE_MS: z.coerce.number().int().min(0).max(5000).default(250),
-    /** Dias até a remoção definitiva dos dados de uma conta excluída. */
+    /** Days until the final removal of the data of a deleted account. */
     ACCOUNT_PURGE_DAYS: z.coerce.number().int().positive().default(30),
   })
   .refine((env) => Boolean(env.JWT_ACCESS_SECRET_PREVIOUS) === Boolean(env.JWT_PREVIOUS_KEY_ID), {
@@ -84,7 +97,7 @@ export type Env = z.infer<typeof envSchema>;
 
 export const ENV = Symbol('ENV');
 
-/** Valida o ambiente. A mensagem de erro lista só os NOMES das variáveis, nunca os valores. */
+/** Validates the environment. The error message lists only the variable NAMES, never the values. */
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const result = envSchema.safeParse(source);
   if (!result.success) {

@@ -12,18 +12,23 @@ import { IdTokenVerifier } from '../auth/id-token-verifier.js';
 import { RateLimitService } from '../auth/rate-limit.service.js';
 import { SecurityEvents } from '../security/security-events.service.js';
 
-/** Tentativas de prova por conta: 5 a cada 15 minutos. */
+/** Proof attempts per account: 5 every 15 minutes. */
 const REAUTH_LIMIT = { limit: 5, windowMs: 15 * 60_000 };
-/** O ID token do provedor precisa ter sido emitido há no máximo 5 minutos (a dona está presente agora). */
+/**
+ * The provider's ID token must have been issued at most 5 minutes ago (the owner is present now).
+ */
 const REAUTH_MAX_TOKEN_AGE_MS = 5 * 60_000;
 const reauthFailed = (): AppError =>
   new AppError(403, ERROR_CODES.REAUTH_FAILED, 'Não foi possível confirmar sua identidade');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-/** Dias até apagar a conta cujo e-mail nunca foi confirmado. */
+/** Days until an account whose email was never confirmed is deleted. */
 const UNVERIFIED_ACCOUNT_DAYS = 7;
 
-/** Exclusão de conta (RF de privacidade): anonimiza na hora e apaga de vez depois do prazo. */
+/**
+ * Account deletion (privacy requirement): anonymizes right away and deletes for good after the
+ * retention period.
+ */
 @Injectable()
 export class AccountService {
   constructor(
@@ -37,8 +42,8 @@ export class AccountService {
   ) {}
 
   /**
-   * Remove tudo que identifica a pessoa e encerra as sessões. O e-mail original é liberado
-   * (a pessoa pode se cadastrar de novo); o restante dos dados some no expurgo.
+   * Removes everything that identifies the person and ends the sessions. The original email is
+   * released (the person can sign up again); the rest of the data disappears in the purge.
    */
   async requestDeletion(userId: string, proof: DeleteAccountRequest): Promise<void> {
     const user = await this.prisma.user.findFirst({
@@ -79,9 +84,9 @@ export class AccountService {
   }
 
   /**
-   * Segunda prova antes de apagar: a senha atual (conta com senha) ou um ID token novo do provedor cuja
-   * identidade está ligada à conta (conta só social). Conta cada tentativa; qualquer falha dá o mesmo
-   * erro 403 (nunca 401, para o app não tratar como sessão encerrada).
+   * Second proof before deleting: the current password (password account) or a fresh provider ID
+   * token whose identity is linked to the account (social-only account). Counts every attempt; any
+   * failure gives the same 403 (never 401, so the app does not treat it as an ended session).
    */
   private async confirmOwner(
     user: { id: string; passwordHash: string | null },
@@ -98,7 +103,8 @@ export class AccountService {
     if (!('idToken' in proof)) throw reauthFailed();
     const identity = await this.verifier.verify(proof.provider, proof.idToken).catch(() => null);
     if (!identity) throw reauthFailed();
-    // Token antigo (vazado ou repetido) não prova presença agora. Sem `iat` o provedor não deu como saber: recusa
+    // An old token (leaked or replayed) does not prove presence now. Without `iat` the provider
+    // gave no way to know: refuse.
     const age =
       identity.issuedAt === undefined
         ? Infinity
@@ -114,11 +120,14 @@ export class AccountService {
     await this.rateLimit.reset('delete-account', user.id);
   }
 
-  /** Apaga de vez as contas excluídas há mais de ACCOUNT_PURGE_DAYS (cascata nas tabelas filhas). */
+  /**
+   * Deletes for good the accounts removed more than ACCOUNT_PURGE_DAYS ago (cascades to child
+   * tables).
+   */
   async purgeExpired(): Promise<number> {
     const limit = new Date(this.clock.now().getTime() - this.env.ACCOUNT_PURGE_DAYS * DAY_MS);
     const result = await this.prisma.user.deleteMany({ where: { deletedAt: { lt: limit } } });
-    // Cadastro por senha que nunca confirmou o e-mail (os códigos saem em cascata)
+    // Password sign-up that never confirmed its email (the codes go in cascade).
     const pendingLimit = new Date(this.clock.now().getTime() - UNVERIFIED_ACCOUNT_DAYS * DAY_MS);
     const pending = await this.prisma.user.deleteMany({
       where: { emailVerifiedAt: null, identities: { none: {} }, createdAt: { lt: pendingLimit } },

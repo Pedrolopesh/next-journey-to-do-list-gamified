@@ -12,7 +12,7 @@ export class HealthController {
     @Inject(PrismaService) private readonly prisma: PrismaService,
   ) {}
 
-  /** Estado da API e do banco. Pública e sem dados sensíveis. */
+  /** State of the API and the database. Public and with no sensitive data. */
   @Public()
   @Get()
   @HealthCheck()

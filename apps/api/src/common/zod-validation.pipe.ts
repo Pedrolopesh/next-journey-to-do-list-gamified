@@ -4,7 +4,10 @@ import type { z } from 'zod';
 
 import { AppError } from './app-error.js';
 
-/** Valida a entrada com o schema do contrato. O erro nunca devolve o valor recebido (senhas). */
+/**
+ * Validates the input with the contract schema. The error never returns the received value
+ * (passwords).
+ */
 export class ZodValidationPipe<T extends z.ZodType> implements PipeTransform<unknown, z.infer<T>> {
   constructor(private readonly schema: T) {}
 
