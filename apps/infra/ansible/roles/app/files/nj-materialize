@@ -13,6 +13,7 @@ fallback="${NJ_SECRETS_FALLBACK:-no}"
 run_dir="${NJ_RUN_DIR:-/run}"
 conf_dir="${NJ_CONF_DIR:-/etc/nextjourney}"
 vault="${NJ_VAULT_ADDR:-https://127.0.0.1:8200}"
+limits=(--connect-timeout 5 --max-time 15)
 cacert="${NJ_VAULT_CACERT:-/etc/openbao/tls/openbao.crt}"
 dst="${run_dir}/nj-${env}/secrets"
 names=(postgres_password database_url jwt_access_secret resend_api_key)
@@ -42,7 +43,7 @@ from_vault() {
   stage=$(mktemp -d "${run_dir}/nj-${env}/.stage.XXXXXX") || return 1
 
   for i in $(seq 1 15); do # wait for the listener, not for the unseal
-    code=$(curl -sS --cacert "$cacert" -o /dev/null -w '%{http_code}' "${vault}/v1/sys/health" 2>/dev/null) && break
+    code=$(curl -sS "${limits[@]}" --cacert "$cacert" -o /dev/null -w '%{http_code}' "${vault}/v1/sys/health" 2>/dev/null) && break
     sleep 2
   done
   if [ "${code:-}" != 200 ] && [ "${code:-}" != 429 ] && [ "${code:-}" != 472 ] && [ "${code:-}" != 473 ]; then
@@ -56,19 +57,19 @@ from_vault() {
     || { rm -rf "$stage"; return 1; }
   token=$(printf '%s\n%s\n' "$role_id" "$secret_id" \
     | python3 -c 'import json,sys; r,s=sys.stdin.read().split(); print(json.dumps({"role_id":r,"secret_id":s}))' \
-    | curl -fsS --cacert "$cacert" -X POST -H 'Content-Type: application/json' --data @- "${vault}/v1/auth/approle/login" \
+    | curl -fsS "${limits[@]}" --cacert "$cacert" -X POST -H 'Content-Type: application/json' --data @- "${vault}/v1/auth/approle/login" \
     | python3 -c 'import json,sys; print(json.load(sys.stdin)["auth"]["client_token"])') \
     || { echo "vault login failed" >&2; rm -rf "$stage"; return 1; }
   unset secret_id
 
   for n in "${names[@]}"; do
     printf 'header = "X-Vault-Token: %s"\n' "$token" \
-      | curl -fsS --cacert "$cacert" -K - "${vault}/v1/kv/data/nextjourney/${env}/${n}" \
+      | curl -fsS "${limits[@]}" --cacert "$cacert" -K - "${vault}/v1/kv/data/nextjourney/${env}/${n}" \
       | python3 -c 'import json,sys; sys.stdout.write(json.load(sys.stdin)["data"]["data"]["value"])' >"${stage}/${n}" \
       || { echo "could not read ${n}" >&2; rm -rf "$stage"; return 1; }
   done
   printf 'header = "X-Vault-Token: %s"\n' "$token" \
-    | curl -sS --cacert "$cacert" -K - -X POST "${vault}/v1/auth/token/revoke-self" >/dev/null 2>&1 || true
+    | curl -sS "${limits[@]}" --cacert "$cacert" -K - -X POST "${vault}/v1/auth/token/revoke-self" >/dev/null 2>&1 || true
 
   for n in "${names[@]}"; do put "$n" "${stage}/${n}" || { rm -rf "$stage"; return 1; }; done
   rm -rf "$stage"
