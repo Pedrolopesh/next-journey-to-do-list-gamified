@@ -55,7 +55,7 @@ S
 @test "files are readable only by their owner" {
   NJ_SECRETS_SOURCE=openbao run "$SCRIPT" dev
   [ "$status" -eq 0 ]
-  for n in $NAMES; do [ "$(stat -f '%Lp' "${OUT}/${n}" 2>/dev/null || stat -c '%a' "${OUT}/${n}")" = 400 ]; done
+  for n in $NAMES; do [ "$(stat -c '%a' "${OUT}/${n}" 2>/dev/null || stat -f '%Lp' "${OUT}/${n}")" = 400 ]; done
 }
 
 @test "a sealed vault with the fallback on uses the local credentials" {
