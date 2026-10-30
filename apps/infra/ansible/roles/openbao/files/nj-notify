@@ -1,0 +1,40 @@
+#!/bin/bash
+# Posts a message to the alerts channel. The webhook URL is a secret: it lives encrypted on the host and
+# is handed to curl on standard input, never as an argument.
+# Exit status: 0 when delivered, 1 when it was not (callers decide whether to retry).
+# Usage: nj-notify <critical|warning|ok> <message>
+#        printf '%s' "<webhook url>" | nj-notify --set-webhook
+set -uo pipefail
+cred="${NJ_ALERTS_CRED:-/etc/nextjourney/alerts/discord_webhook.cred}"
+tmp_dir="${NJ_TMP_DIR:-/run}"
+
+if [ "${1:-}" = "--set-webhook" ]; then
+  install -d -m 0700 "$(dirname "$cred")"
+  umask 077
+  systemd-creds encrypt --name=discord_webhook - "$cred"
+  exit
+fi
+
+level="${1:?usage: nj-notify <critical|warning|ok> <message>}"
+msg="${2:?usage: nj-notify <critical|warning|ok> <message>}"
+case "$level" in
+  critical) tag="CRITICAL" ;;
+  warning) tag="WARNING" ;;
+  ok) tag="OK" ;;
+  *) echo "level must be critical, warning or ok" >&2; exit 2 ;;
+esac
+
+if [ ! -r "$cred" ]; then
+  echo "no webhook configured; message not sent: [${tag}] ${msg}" >&2
+  exit 1
+fi
+url=$(systemd-creds decrypt --name=discord_webhook "$cred" -) || { echo "cannot read the webhook" >&2; exit 1; }
+body=$(mktemp "${tmp_dir}/nj-notify.XXXXXX")
+trap 'rm -f "$body"' EXIT
+python3 -c 'import json,sys; print(json.dumps({"username": "Vault", "content": sys.argv[1]}))' "[${tag}] ${msg}" >"$body"
+code=$(printf 'url = "%s"\ndata = "@%s"\nheader = "Content-Type: application/json"\n' "$url" "$body" \
+  | curl -sS --max-time 10 -K - -o /dev/null -w '%{http_code}') || code=000
+case "$code" in
+  2*) echo "alert delivered" ;;
+  *) echo "alert NOT delivered (HTTP ${code})" >&2; exit 1 ;;
+esac

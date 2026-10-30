@@ -1,5 +1,5 @@
 # Managed by Ansible. Single-node vault with integrated storage; TLS on the loopback listener.
-ui            = false
+ui            = {{ openbao_ui | ternary('true', 'false') }}
 log_level     = "info"
 api_addr      = "https://127.0.0.1:{{ openbao_listen_port }}"
 cluster_addr  = "https://127.0.0.1:8201"

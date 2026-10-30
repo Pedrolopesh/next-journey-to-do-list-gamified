@@ -1,0 +1,13 @@
+# Managed by Ansible. After a reboot, reports the state of the host (and the sealed vault) to the alerts channel.
+[Unit]
+Description=Report after reboot
+After=openbao.service docker.service nginx.service nj@dev.service nj@prd.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/nj-vault-watch boot
+TimeoutStartSec=10min
+
+[Install]
+WantedBy=multi-user.target
