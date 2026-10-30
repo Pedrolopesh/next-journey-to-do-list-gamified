@@ -12,9 +12,8 @@ import { SecurityEvents } from '../security/security-events.service.js';
 const MINUTE_MS = 60_000;
 
 /**
- * Per-account limit rules. The per-IP limit stays in the Throttler. Every route has two levels: one
- * per email + IP (an abuser only locks themselves) and a higher ceiling per email against an attack
- * from many IPs, without letting a stranger easily lock someone else's account.
+ * Per-account attempt limits, in two levels. Values and reasons:
+ * docs/api/autenticacao-e-sessoes.md.
  */
 export const LIMITS = {
   login: {
@@ -44,9 +43,7 @@ export type LimitRules = { perEmailAndIp: Rule; perEmail: Rule };
 type Rule = { limit: number; windowMs: number };
 
 /**
- * Attempt limit per email, stored in Postgres (shared across instances and survives deploys). The
- * count only depends on the typed email, whether or not the account exists, so the excess answers
- * the same (429) in both cases. The key is a hash: no email or IP is stored.
+ * Attempt counter per email stored in Postgres. Rules: docs/api/autenticacao-e-sessoes.md.
  */
 @Injectable()
 export class RateLimitService {

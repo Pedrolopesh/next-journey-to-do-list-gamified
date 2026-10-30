@@ -7,7 +7,7 @@ Código em `apps/api/src/modules/auth`. As decisões e os motivos estão no [ADR
 1. `POST /v1/auth/register` cria o usuário **pendente** (com as categorias padrão) e envia um código por e-mail. Responde sempre `202 { status: "verification_sent" }`, sem sessão, e **igual** para e-mail novo, pendente ou já confirmado (sem enumeração de contas).
    - Cadastro pendente repetido: o último vence; só quem confirma com o código e a senha ativa entra.
    - E-mail já confirmado: sai um aviso por e-mail, sem código.
-2. O código tem 6 dígitos, vale 15 minutos e é de **uso único**. Só o hash (`sha256(userId:código)`) fica no banco. Cinco tentativas erradas invalidam o código. Senha errada na confirmação não gasta tentativas (quem só sabe o e-mail da vítima não consegue invalidar o código dela). O reenvio respeita um intervalo mínimo de 60 segundos.
+2. O código tem 6 dígitos, vale 15 minutos e é de **uso único**. Só o hash (`sha256(userId:código)`) fica no banco. Cinco tentativas erradas invalidam o código. Senha errada na confirmação não gasta tentativas (quem só sabe o e-mail da vítima não consegue invalidar o código dela). Cada tentativa é reservada por um `UPDATE` condicional, então requisições paralelas não passam do limite de 5: não troque por ler e depois gravar. O reenvio respeita um intervalo mínimo de 60 segundos.
 3. `POST /v1/auth/verify-email` (`{ email, code, password }`) confirma a conta e devolve a sessão. Numa **única transação**: marca o código como usado, grava `emailVerifiedAt` e cria os itens de exemplo. Se algo falhar, a conta segue pendente e o mesmo código segue válido. Toda falha responde igual e gasta o mesmo tempo (usa um hash fictício de senha).
 
 ## Login e senha

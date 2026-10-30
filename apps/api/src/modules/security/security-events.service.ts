@@ -49,10 +49,8 @@ export function maskIp(ip: string | undefined): string | undefined {
 }
 
 /**
- * Security event log: one structured line per event in the API log (`security` field), a sliding-
- * window count per type and an alert when it passes the limit. The alert is logged at `error` level
- * with `alert: true` and, if `SECURITY_ALERT_WEBHOOK_URL` is set, sent as a POST with short text
- * (type, count, window) and no personal data. The count is per instance.
+ * Security event log with sliding-window alerts. Rules and thresholds:
+ * docs/api/operacao-e-seguranca.md.
  */
 @Injectable()
 export class SecurityEvents {

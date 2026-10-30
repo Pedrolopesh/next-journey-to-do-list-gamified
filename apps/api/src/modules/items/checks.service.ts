@@ -30,9 +30,8 @@ export class ChecksService {
   ) {}
 
   /**
-   * Checks an item. A single transaction: validates, stores the check, updates EXP/level/coins, the
-   * active story chapter, the daily streak and the achievements. The app's `checkId` (UUID) makes
-   * the call idempotent: repeating it returns the same result without duplicating EXP.
+   * Checks an item in a single transaction, idempotent by `checkId`. Rules:
+   * docs/api/itens-e-checks.md.
    */
   async check(userId: string, itemId: string, checkId: string): Promise<CheckResult> {
     const now = this.clock.now();
@@ -67,9 +66,8 @@ export class ChecksService {
         ? { chapter: active.progress.chapter, completed: active.progress.completed }
         : NO_STORY;
 
-      // Item unchecked and checked again: earns the coins, but the EXP counts only once. A to-do
-      // counts once in a lifetime (unchecking on another day does not release the EXP again); a
-      // daily and a habit, once per day (the next day is a real new check).
+      // EXP counts once but the coins are still earned: a to-do once in a lifetime, a daily or
+      // habit once per day. Rules: docs/api/itens-e-checks.md.
       const expJaGanho =
         (await tx.itemCheck.count({
           where: {
@@ -185,8 +183,7 @@ export class ChecksService {
   }
 
   /**
-   * Unchecks a check, on any day and chapter. EXP, level and chapter stay as they are: only the
-   * coins decrease (the current chapter's loss, never below zero).
+   * Unchecks a check; only the coins decrease. Rules: docs/api/progressao-e-jogo.md.
    */
   async undo(userId: string, itemId: string, checkId: string): Promise<CheckResult> {
     const now = this.clock.now();

@@ -34,9 +34,8 @@ const unauthorized = (): AppError =>
   new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Sessão inválida ou expirada');
 
 /**
- * Access token: short JWT (HS256). Refresh token: random `<id>.<secret>`; only the secret's sha256
- * is stored. Every refresh rotates the token; reusing an already used one revokes the whole family
- * (a sign of a stolen token).
+ * Access and refresh tokens, with rotation and reuse detection (reusing a rotated token revokes the
+ * whole family). Rules: docs/api/autenticacao-e-sessoes.md.
  */
 @Injectable()
 export class TokensService {
@@ -102,10 +101,8 @@ export class TokensService {
   }
 
   /**
-   * Checks the access token: HS256 signature, validity, issuer and audience. The header `kid` picks
-   * the key (the current one or the previous one during a secret change); an unknown `kid` uses the
-   * current one and is refused if the signature does not match. Returns the user id (and the
-   * session id, when the token has one) or throws.
+   * Checks the access token (signature, validity, issuer, audience, `kid`). Rules:
+   * docs/api/autenticacao-e-sessoes.md.
    */
   async verifyAccessToken(token: string): Promise<{ userId: string; sessionId?: string }> {
     const payload = await this.jwt.verifyAsync<{ sub?: string; sid?: string }>(token, {

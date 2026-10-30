@@ -16,9 +16,8 @@ function agendadoEm(diario: Pick<Diario, 'scheduleDays'>, dia: LocalDate): boole
 }
 
 /**
- * A daily is overdue when the last scheduled day before today ended without a check.
- * Only counts days from creation. Checking today (even an overdue one) clears the overdue state.
- * Takes `hoje` as an argument (never reads the clock).
+ * A daily is overdue when its last scheduled day before today ended without a check. Takes `hoje`
+ * as an argument and never reads the clock. Rules: docs/api/progressao-e-jogo.md.
  */
 export function estaAtrasado(diario: Diario, hoje: LocalDate): boolean {
   for (let i = 1; i <= 7; i += 1) {
@@ -37,10 +36,8 @@ export type HistoricoDiario = Pick<Diario, 'scheduleDays' | 'createdOn'> & {
 };
 
 /**
- * Streak: consecutive days with a check, going back from today.
- * A scheduled day without a check (other than today) breaks the streak; unscheduled days do not.
- * Today without a check yet does not break it (the day is not over).
- * Checking an overdue daily today restarts at 1.
+ * Streak of consecutive days with a check. Checking an overdue daily today restarts it at 1. Rules:
+ * docs/api/progressao-e-jogo.md.
  */
 export function calcularStreak(historico: HistoricoDiario, hoje: LocalDate): number {
   const marcados = new Set(historico.diasMarcados);

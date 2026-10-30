@@ -184,9 +184,9 @@ export type DiarioDaChama = {
 const MAX_LOOKBACK_DAYS = 90;
 
 /**
- * Consecutive days on which EVERY scheduled daily was done on the day itself (going back from today).
- * A day with no scheduled daily is neutral: it neither counts nor breaks. An incomplete today does not
- * break yet (the day is not over); an incomplete earlier day does.
+ * Consecutive days on which every scheduled daily was done. A day with no scheduled daily is
+ * neutral; an incomplete today does not break it yet, an incomplete earlier day does. Rules:
+ * docs/api/progressao-e-jogo.md.
  */
 export function diasSeguidosCompletos(diarios: readonly DiarioDaChama[], hoje: LocalDate): number {
   const marcados = diarios.map((d) => new Set(d.diasMarcados));
@@ -205,9 +205,9 @@ export function diasSeguidosCompletos(diarios: readonly DiarioDaChama[], hoje: L
 }
 
 /**
- * Days, within the last `janela` days, on which the user had 3 or more scheduled dailies and did
- * them all. Only that window is evaluated because the retroactive lookback is capped, so older
- * days never count.
+ * Days, within the last `janela` days, with 3 or more scheduled dailies all done. Only that window
+ * is evaluated because the retroactive lookback is capped: do not widen `janela` beyond it. Rules:
+ * docs/api/progressao-e-jogo.md.
  */
 export function diasPerfeitos(
   diarios: readonly DiarioDaChama[],

@@ -15,9 +15,7 @@ export const VERIFICATION_RESEND_INTERVAL_MS = 60_000;
 type Recipient = { id: string; email: string };
 
 /**
- * 6-digit code that proves ownership of the email. Only its hash is stored; it is valid for 15
- * minutes, once, and locks after 5 wrong attempts. The email is sent without the response waiting
- * for it.
+ * 6-digit code that proves ownership of the email. Rules: docs/api/autenticacao-e-sessoes.md.
  */
 @Injectable()
 export class EmailVerificationService {
@@ -52,14 +50,10 @@ export class EmailVerificationService {
   }
 
   /**
-   * Consumes the code: right and within its validity returns true (single use); wrong counts an
-   * attempt and the fifth wrong one invalidates the code. It never says whether the reason was
-   * expiry, attempts or a wrong code. A wrong password proves nothing and does not spend attempts,
-   * so someone who only knows the victim's email cannot invalidate their code. The attempt is
-   * reserved in a conditional UPDATE, so parallel requests cannot exceed the limit. With `tx`, the
-   * "used" mark joins the caller's transaction: if it rolls back (for example, seeding fails) the
-   * code stays valid. Attempts stay outside the transaction on purpose, so they count even when it
-   * rolls back.
+   * Consumes the code (single use, 5 attempts). A wrong password does not spend attempts, and each
+   * attempt is reserved by a conditional UPDATE so parallel requests cannot exceed the limit. With
+   * `tx`, the "used" mark joins the caller's transaction, so a rollback keeps the code valid;
+   * attempts stay outside it on purpose. Rules: docs/api/autenticacao-e-sessoes.md.
    */
   async consume(
     userId: string,
@@ -97,9 +91,8 @@ export class EmailVerificationService {
   }
 
   /**
-   * Records the send, respecting the minimum interval. With `withCode`, generates and stores a new
-   * code and returns it; without it, returns `true` when sending is allowed. False or null means do
-   * not send now.
+   * Records the send, respecting the minimum interval; with `withCode` it also stores and returns a
+   * new code.
    */
   private async reserve(userId: string, withCode: true): Promise<string | null>;
   private async reserve(userId: string, withCode: false): Promise<boolean>;
