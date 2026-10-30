@@ -1,0 +1,29 @@
+# Managed by Ansible. OpenBao (secrets store), published only on the loopback interface.
+# IPC_LOCK stays so the vault can lock its memory out of swap; that capability is a file capability
+# of the binary, so no-new-privileges is not set on this container (every other restriction is).
+[Unit]
+Description=OpenBao (secrets store)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Restart=on-failure
+RestartSec=5
+ExecStartPre=-/usr/bin/docker rm -f nj-openbao
+ExecStart=/usr/bin/docker run --rm --name nj-openbao \
+  --user {{ openbao_uid }}:{{ openbao_gid }} --entrypoint bao \
+  --read-only --tmpfs /tmp:size=16m \
+  --cap-drop ALL --cap-add IPC_LOCK --ulimit memlock=-1:-1 \
+  --memory {{ openbao_memory_limit }} --memory-swappiness 0 --pids-limit 256 \
+  -p 127.0.0.1:{{ openbao_listen_port }}:{{ openbao_listen_port }} \
+  -v {{ openbao_conf_dir }}/config.hcl:/openbao/config/config.hcl:ro \
+  -v {{ openbao_conf_dir }}/tls:/openbao/tls:ro \
+  -v {{ openbao_data_dir }}:/openbao/file \
+  -v {{ openbao_log_dir }}:/openbao/logs \
+  {{ openbao_image }}@{{ openbao_image_digest }} \
+  server -config=/openbao/config/config.hcl
+ExecStop=/usr/bin/docker stop -t 30 nj-openbao
+
+[Install]
+WantedBy=multi-user.target

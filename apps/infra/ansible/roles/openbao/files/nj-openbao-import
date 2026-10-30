@@ -1,0 +1,19 @@
+#!/bin/bash
+# Copies the current secrets of one environment from the encrypted credentials into the vault, with the
+# SAME values (the database password and the JWT secret must not change), then compares hashes.
+# Never prints a value. The token comes from the environment (BAO_TOKEN).
+# Usage: BAO_TOKEN=... nj-openbao-import <dev|prd>
+set -euo pipefail
+env="${1:?usage: nj-openbao-import <dev|prd>}"
+: "${BAO_TOKEN:?BAO_TOKEN must be set}"
+bao() { /usr/local/sbin/nj-bao "$@"; }
+dir="/etc/nextjourney/creds/${env}"
+
+for name in postgres_password database_url jwt_access_secret resend_api_key; do
+  path="kv/nextjourney/${env}/${name}"
+  want=$(systemd-creds decrypt --name="$name" "${dir}/${name}.cred" - | sha256sum | cut -d' ' -f1)
+  systemd-creds decrypt --name="$name" "${dir}/${name}.cred" - | bao kv put "$path" value=- >/dev/null
+  # JSON keeps the stored value byte for byte (the CLI field output adds a newline)
+  got=$(bao kv get -format=json "$path" | python3 -c 'import json,sys; sys.stdout.write(json.load(sys.stdin)["data"]["data"]["value"])' | sha256sum | cut -d' ' -f1)
+  if [ "$want" = "$got" ]; then echo "ok: ${env}/${name}"; else echo "DIFFERENT: ${env}/${name}" >&2; exit 1; fi
+done
