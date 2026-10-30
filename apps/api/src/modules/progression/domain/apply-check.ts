@@ -12,15 +12,15 @@ export type CheckInput = {
   checkId: string;
   type: ItemType;
   difficulty: Difficulty;
-  /** Dia local do usuário no momento do check (já calculado com diaLocal). */
+  /** User's local day at check time (already computed with `diaLocal`). */
   localDate: LocalDate;
-  /** Este item já rendeu EXP hoje (check desmarcado e marcado de novo): rende só as moedas. */
+  /** This item already earned EXP today (unchecked and checked again): it earns only the coins. */
   expJaGanho?: boolean;
 };
 
 /**
- * Registro do que um check fez, guardado em item_checks. É a entrada de desfazerCheck e
- * permite reverter exatamente aquele check.
+ * Record of what a check did, stored in item_checks. It is the input of `desfazerCheck` and lets
+ * that exact check be reverted.
  */
 export type CheckRecord = {
   checkId: string;
@@ -28,23 +28,23 @@ export type CheckRecord = {
   exp: number;
   coins: number;
   countsForChapter: boolean;
-  /** Capítulo em que o check contou (nulo se a história já estava concluída). */
+  /** Chapter the check counted in (null if the story was already finished). */
   chapterAtCheck: number | null;
-  /** O check subiu de nível e, com isso, concluiu capítulo(s) da história ativa. */
+  /** The check raised the level and so finished chapter(s) of the active story. */
   closedChapter: boolean;
 };
 
 export type CheckSummary = {
   expGanho: number;
   moedasGanhas: number;
-  /** Bônus de subida de nível, à parte das moedas do check. */
+  /** Level-up bonus, separate from the check's coins. */
   bonusMoedas: number;
   subiuDeNivel: boolean;
   niveisGanhos: number;
   nivel: number;
   capituloConcluido: boolean;
   historiaConcluida: boolean;
-  /** Capítulos concluídos por este check, em ordem (um por nível ganho, até o fim da história). */
+  /** Chapters finished by this check, in order (one per level gained, until the story ends). */
   capitulosConcluidos: number[];
   progressoCapitulo: { capitulo: number; expNoNivel: number; expParaProximo: number };
 };
@@ -56,13 +56,13 @@ export type ApplyCheckResult = {
 };
 
 /**
- * Aplica um check ao estado do jogador. Função pura: recebe dados, devolve dados.
+ * Applies a check to the player's state. Pure function: takes data, returns data.
  *
- * - EXP e moedas vêm da dificuldade (config). Hábito não tem limite diário.
- * - O EXP que sobra ao subir de nível é carregado; um check pode subir mais de um nível.
- * - Cada nível ganho rende o bônus de moedas.
- * - Cada nível ganho conclui um capítulo da história ativa, até a história terminar. O progresso do
- *   capítulo é a EXP dentro do nível.
+ * - EXP and coins come from the difficulty (config). A habit has no daily limit.
+ * - The EXP left over when leveling up is carried over; one check can raise more than one level.
+ * - Every level gained earns the coin bonus.
+ * - Every level gained finishes a chapter of the active story, until the story ends. The chapter
+ *   progress is the EXP inside the level.
  */
 export function aplicarCheck(
   state: PlayerState,
@@ -72,7 +72,6 @@ export function aplicarCheck(
   const exp = input.expJaGanho ? 0 : config.expByDifficulty[input.difficulty];
   const coins = config.coinsByDifficulty[input.difficulty];
 
-  // Nível e EXP
   let level = state.level;
   let expInLevel = state.expInLevel + exp;
   let niveisGanhos = 0;
@@ -83,7 +82,7 @@ export function aplicarCheck(
   }
   const bonusMoedas = niveisGanhos * config.levelUpBonusCoins;
 
-  // Capítulo: cada nível ganho conclui um capítulo da história ativa
+  // Chapter: every level gained finishes one chapter of the active story, until the story ends
   let story = state.story;
   let countsForChapter = false;
   let chapterAtCheck: number | null = null;

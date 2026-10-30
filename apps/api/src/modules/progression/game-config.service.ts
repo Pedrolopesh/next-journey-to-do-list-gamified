@@ -6,7 +6,10 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 
 const CONFIG_KEY = 'game';
 
-/** Lê o game_config do banco (ajustável sem publicar o app); sem registro, usa o valor inicial. */
+/**
+ * Reads game_config from the database (adjustable without publishing the app); with no row, uses
+ * the initial value.
+ */
 @Injectable()
 export class GameConfigService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}

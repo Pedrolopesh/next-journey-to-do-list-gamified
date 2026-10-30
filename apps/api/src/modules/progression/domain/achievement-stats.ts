@@ -4,7 +4,7 @@ import { addDays } from './dates.js';
 
 export type TipoDeItem = 'daily' | 'todo' | 'habit';
 
-/** Um check ativo (não desfeito) com o que importa do item dele. */
+/** An active (not undone) check with what matters from its item. */
 export type CheckRow = {
   checkedOn: LocalDate;
   itemId: string;
@@ -20,15 +20,16 @@ export type CheckStats = {
   bestDayRun: number;
   hadComeback: boolean;
   maxChecksInDay: number;
+  /** Active (not undone) checks by item type. */
   checksByType: { daily: number; todo: number; habit: number };
-  /** Dias distintos com check de diário. */
+  /** Distinct days with a daily check. */
   dailyDays: number;
   habitDays: number;
   bestHabitRun: number;
   maxHabitsInDay: number;
-  /** Dias com check em 3 ou mais categorias / em 5 ou mais categorias. */
+  /** Days with a check in 3 or more categories / in 5 or more categories. */
   balancedDays: { three: number; five: number };
-  /** Dias com check de diário, tarefa e hábito juntos. */
+  /** Days with a daily, a to-do and a habit checked together. */
   podiumDays: number;
   todosDone: number;
   todosOnTime: number;
@@ -42,7 +43,7 @@ function diffDias(a: LocalDate, b: LocalDate): number {
   return Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / DAY_MS);
 }
 
-/** Maior sequência de dias consecutivos numa lista de dias (sem repetição e em qualquer ordem). */
+/** Longest run of consecutive days in a list of days (no repeats, any order). */
 export function maiorSequencia(days: readonly LocalDate[]): number {
   const sorted = [...new Set(days)].sort();
   let best = 0;
@@ -56,7 +57,7 @@ export function maiorSequencia(days: readonly LocalDate[]): number {
   return best;
 }
 
-/** Estatísticas dos checks ativos: tudo que as conquistas de constância, hábito e tarefa pedem. */
+/** Stats of the active checks: everything the consistency, habit and to-do achievements ask for. */
 export function estatisticasDeChecks(rows: readonly CheckRow[]): CheckStats {
   const days = [...new Set(rows.map((r) => r.checkedOn))].sort();
 
@@ -117,7 +118,7 @@ export function estatisticasDeChecks(rows: readonly CheckRow[]): CheckStats {
   };
 }
 
-/** O que aconteceu no dia local de hoje: quantas tarefas foram concluídas. */
+/** What happened on today's local day: how many to-dos were completed. */
 export function resumoDeHoje(rows: readonly CheckRow[], hoje: LocalDate): { todosToday: number } {
   const hojeRows = rows.filter((r) => r.checkedOn === hoje);
   return {

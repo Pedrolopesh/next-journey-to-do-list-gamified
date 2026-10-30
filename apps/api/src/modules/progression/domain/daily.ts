@@ -3,10 +3,9 @@ import type { LocalDate } from '@nextjourney/contracts';
 import { addDays, diaDaSemana } from './dates.js';
 
 export type Diario = {
-  /** Dias agendados, de 0 (domingo) a 6 (sábado). "Todo dia" = os 7 dias. */
+  /** Scheduled days, from 0 (Sunday) to 6 (Saturday). "Every day" means all 7. */
   scheduleDays: readonly number[];
   createdOn: LocalDate;
-  /** Último dia local em que o diário foi marcado. */
   lastCheckedOn: LocalDate | null;
 };
 
@@ -17,9 +16,9 @@ function agendadoEm(diario: Pick<Diario, 'scheduleDays'>, dia: LocalDate): boole
 }
 
 /**
- * Um diário está atrasado quando o último dia agendado antes de hoje terminou sem check.
- * Só conta dias a partir da criação. Marcar hoje (mesmo um atrasado) tira o atraso.
- * Recebe `hoje` como argumento (nunca lê o relógio).
+ * A daily is overdue when the last scheduled day before today ended without a check.
+ * Only counts days from creation. Checking today (even an overdue one) clears the overdue state.
+ * Takes `hoje` as an argument (never reads the clock).
  */
 export function estaAtrasado(diario: Diario, hoje: LocalDate): boolean {
   for (let i = 1; i <= 7; i += 1) {
@@ -33,14 +32,15 @@ export function estaAtrasado(diario: Diario, hoje: LocalDate): boolean {
 }
 
 export type HistoricoDiario = Pick<Diario, 'scheduleDays' | 'createdOn'> & {
-  /** Dias locais em que houve check ativo (não desfeito). */
+  /** Local days with an active (not undone) check. */
   diasMarcados: readonly LocalDate[];
 };
 
 /**
- * Sequência: dias seguidos com check, voltando a partir de hoje.
- * Dia agendado sem check (que não seja hoje) quebra a sequência; dias não agendados não quebram.
- * Hoje ainda sem check não quebra (o dia não terminou). Marcar um atrasado hoje reinicia em 1.
+ * Streak: consecutive days with a check, going back from today.
+ * A scheduled day without a check (other than today) breaks the streak; unscheduled days do not.
+ * Today without a check yet does not break it (the day is not over).
+ * Checking an overdue daily today restarts at 1.
  */
 export function calcularStreak(historico: HistoricoDiario, hoje: LocalDate): number {
   const marcados = new Set(historico.diasMarcados);
