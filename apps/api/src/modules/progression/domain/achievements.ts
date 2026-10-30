@@ -196,7 +196,7 @@ export function diasSeguidosCompletos(diarios: readonly DiarioDaChama[], hoje: L
     const agendados = diarios
       .map((d, index) => ({ d, index }))
       .filter(({ d }) => d.createdOn <= dia && d.scheduleDays.includes(diaDaSemana(dia)));
-    if (agendados.length === 0) continue; // neutro
+    if (agendados.length === 0) continue;
     const completo = agendados.every(({ index }) => marcados[index]?.has(dia) ?? false);
     if (completo) streak += 1;
     else if (i > 0) break;

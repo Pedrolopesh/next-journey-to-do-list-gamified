@@ -208,7 +208,7 @@ export class AuthService {
     await this.rateLimit.hitBoth('forgot-password', email, ip, LIMITS.forgotPassword);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     if (!user) {
-      await this.getDummyHash(); // gasta um tempo parecido
+      await this.getDummyHash(); // spends a similar amount of time
       return;
     }
     this.events.record('password_reset_requested', { userId: user.id, ip });

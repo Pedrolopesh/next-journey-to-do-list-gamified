@@ -53,7 +53,7 @@ export class ItemsController {
     return this.items.list(userId, query.type, query.date);
   }
 
-  /** Histórico de tarefas concluídas. Declarada antes de `:id` para não ser lida como id. */
+  /** Task history. Declared before `:id` so it is not read as an id. */
   @Get('history')
   history(
     @CurrentUserId() userId: string,

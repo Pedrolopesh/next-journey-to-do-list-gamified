@@ -12,7 +12,7 @@ try {
 }
 
 async function bootstrap(): Promise<void> {
-  const env = loadEnv(); // falha na hora se faltar variável
+  const env = loadEnv(); // fails right away if a variable is missing
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   setupApp(app, { swagger: env.NODE_ENV !== 'production' });
   app.enableShutdownHooks();
