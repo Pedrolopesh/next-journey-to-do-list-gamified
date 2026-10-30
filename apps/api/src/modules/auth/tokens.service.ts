@@ -13,7 +13,10 @@ import { SecurityEvents } from '../security/security-events.service.js';
 
 const sha256 = (value: string): string => createHash('sha256').update(value).digest('hex');
 
-/** Lê o `kid` do cabeçalho do JWT sem confiar nele: só escolhe qual chave tentar; a assinatura decide. */
+/**
+ * Reads the JWT header `kid` without trusting it: it only picks which key to try; the signature
+ * decides.
+ */
 function readKeyId(token: string): string | undefined {
   try {
     const header = JSON.parse(
@@ -31,9 +34,9 @@ const unauthorized = (): AppError =>
   new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Sessão inválida ou expirada');
 
 /**
- * Access token: JWT curto (HS256). Refresh token: `<id>.<segredo>` aleatório; só o sha256 do
- * segredo fica no banco. A cada refresh o token é rotacionado; o reuso de um token já usado
- * revoga a família inteira (sinal de token roubado).
+ * Access token: short JWT (HS256). Refresh token: random `<id>.<secret>`; only the secret's sha256
+ * is stored. Every refresh rotates the token; reusing an already used one revokes the whole family
+ * (a sign of a stolen token).
  */
 @Injectable()
 export class TokensService {
@@ -45,7 +48,7 @@ export class TokensService {
     @Inject(SecurityEvents) private readonly events: SecurityEvents,
   ) {}
 
-  /** Cria um par de tokens. Sem `familyId`, abre uma família nova (login). */
+  /** Creates a token pair. Without `familyId`, opens a new family (login). */
   async issue(
     userId: string,
     familyId: string = randomUUID(),
@@ -55,7 +58,7 @@ export class TokensService {
     return { ...(await this.signAccessToken(userId, familyId)), refreshToken };
   }
 
-  /** Grava o refresh token novo (na transação `db`, quando a rotação precisa ser atômica). */
+  /** Stores the new refresh token (inside transaction `db` when rotation must be atomic). */
   private async createRefreshToken(
     db: Pick<Prisma.TransactionClient, 'refreshToken'>,
     userId: string,
@@ -78,7 +81,10 @@ export class TokensService {
     return `${id}.${secret}`;
   }
 
-  /** O `sid` (id da sessão = família do refresh token) deixa a API saber qual é a sessão atual. */
+  /**
+   * The `sid` (session id = refresh token family) lets the API know which session is the current
+   * one.
+   */
   private async signAccessToken(
     userId: string,
     familyId: string,
@@ -96,9 +102,10 @@ export class TokensService {
   }
 
   /**
-   * Confere o token de acesso: assinatura HS256, validade, emissor e audiência. O `kid` do cabeçalho
-   * escolhe a chave (a atual ou a anterior durante a troca do segredo); `kid` desconhecido usa a atual
-   * e, se a assinatura não bater, é recusado. Devolve o id do usuário (e da sessão, quando o token tem) ou lança erro.
+   * Checks the access token: HS256 signature, validity, issuer and audience. The header `kid` picks
+   * the key (the current one or the previous one during a secret change); an unknown `kid` uses the
+   * current one and is refused if the signature does not match. Returns the user id (and the
+   * session id, when the token has one) or throws.
    */
   async verifyAccessToken(token: string): Promise<{ userId: string; sessionId?: string }> {
     const payload = await this.jwt.verifyAsync<{ sub?: string; sid?: string }>(token, {
@@ -124,7 +131,7 @@ export class TokensService {
     return this.env.JWT_ACCESS_SECRET;
   }
 
-  /** Troca um refresh token válido por um par novo (rotação). */
+  /** Swaps a valid refresh token for a new pair (rotation). */
   async rotate(refreshToken: string): Promise<{ userId: string; tokens: AuthTokens }> {
     const [id, secret] = refreshToken.split('.');
     if (!id || !secret || !/^[0-9a-f-]{36}$/.test(id)) throw unauthorized();
@@ -139,15 +146,16 @@ export class TokensService {
     }
 
     if (stored.revokedAt) {
-      // Reuso de token já rotacionado: derruba a sessão inteira
+      // Reuse of an already rotated token: ends the whole session.
       this.events.record('refresh_reuse_detected', { userId: stored.userId });
       await this.revokeFamily(stored.familyId);
       throw unauthorized();
     }
     if (stored.expiresAt <= this.clock.now()) throw unauthorized();
 
-    // Revogar o antigo e criar o novo é uma operação só: o UPDATE condicional (revokedAt nulo e ainda
-    // válido) deixa passar apenas UMA de várias requisições simultâneas com o mesmo token
+    // Revoking the old token and creating the new one is a single operation: the conditional UPDATE
+    // (revokedAt null and still valid) lets only ONE of several simultaneous requests with the same
+    // token through.
     const now = this.clock.now();
     const access = await this.signAccessToken(stored.userId, stored.familyId);
     let next: string | null;
@@ -161,13 +169,14 @@ export class TokensService {
         return this.createRefreshToken(tx, stored.userId, stored.familyId, stored.deviceName);
       });
     } catch (error) {
-      // Conflito de transação sob concorrência: nega (falha fechada). Outro erro (banco fora) segue como
-      // 5xx, senão o app trataria uma falha temporária como sessão encerrada e deslogaria a pessoa
+      // Transaction conflict under concurrency: deny (fail closed). Any other error (database down)
+      // stays a 5xx, otherwise the app would treat a temporary failure as an ended session and sign
+      // the person out.
       if ((error as { code?: unknown }).code === 'P2034') throw unauthorized();
       throw error;
     }
     if (!next) {
-      // Perdeu a corrida: o mesmo token foi usado duas vezes, tratado como reuso (token possivelmente roubado)
+      // Lost the race: the same token was used twice, treated as reuse (possibly stolen token).
       this.events.record('refresh_reuse_detected', { userId: stored.userId });
       await this.revokeFamily(stored.familyId);
       throw unauthorized();
@@ -178,7 +187,7 @@ export class TokensService {
     };
   }
 
-  /** Logout: revoga a família do refresh token informado. Silencioso se o token for inválido. */
+  /** Logout: revokes the family of the given refresh token. Silent if the token is invalid. */
   async revoke(refreshToken: string): Promise<void> {
     const [id] = refreshToken.split('.');
     if (!id || !/^[0-9a-f-]{36}$/.test(id)) return;

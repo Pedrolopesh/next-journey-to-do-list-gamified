@@ -12,9 +12,9 @@ import { SecurityEvents } from '../security/security-events.service.js';
 const MINUTE_MS = 60_000;
 
 /**
- * Regras de limite por conta. O limite por IP continua no Throttler. Toda rota tem dois níveis: um por
- * e-mail + IP (quem abusa trava só a si mesmo) e um teto por e-mail, mais alto, contra ataque vindo de
- * vários IPs sem deixar um desconhecido trancar a conta de outra pessoa com facilidade.
+ * Per-account limit rules. The per-IP limit stays in the Throttler. Every route has two levels: one
+ * per email + IP (an abuser only locks themselves) and a higher ceiling per email against an attack
+ * from many IPs, without letting a stranger easily lock someone else's account.
  */
 export const LIMITS = {
   login: {
@@ -44,9 +44,9 @@ export type LimitRules = { perEmailAndIp: Rule; perEmail: Rule };
 type Rule = { limit: number; windowMs: number };
 
 /**
- * Limite de tentativas por e-mail, guardado no Postgres (vale entre instâncias e sobrevive a deploy).
- * A contagem depende só do e-mail digitado, exista a conta ou não, então o excesso responde igual
- * (429) nos dois casos. A chave é um hash: nenhum e-mail ou IP fica no banco.
+ * Attempt limit per email, stored in Postgres (shared across instances and survives deploys). The
+ * count only depends on the typed email, whether or not the account exists, so the excess answers
+ * the same (429) in both cases. The key is a hash: no email or IP is stored.
  */
 @Injectable()
 export class RateLimitService {
@@ -56,7 +56,7 @@ export class RateLimitService {
     @Inject(SecurityEvents) private readonly events: SecurityEvents,
   ) {}
 
-  /** Conta uma tentativa e recusa (429) quando passou do limite da janela. */
+  /** Counts an attempt and refuses (429) once the window limit is exceeded. */
   async hit(scope: string, subject: string, rule: Rule): Promise<void> {
     const now = this.clock.now();
     const windowStart = new Date(now.getTime() - rule.windowMs);
@@ -85,7 +85,6 @@ export class RateLimitService {
     }
   }
 
-  /** Conta a tentativa nos dois níveis (e-mail + IP e só e-mail), em paralelo. */
   async hitBoth(scope: string, email: string, ip: string, rules: LimitRules): Promise<void> {
     await Promise.all([
       this.hit(`${scope}:email`, email, rules.perEmail),
@@ -93,7 +92,6 @@ export class RateLimitService {
     ]);
   }
 
-  /** Zera o contador (ex.: login certo apaga as senhas erradas daquele e-mail + IP). */
   async reset(scope: string, subject: string): Promise<void> {
     await this.prisma.rateLimit.deleteMany({ where: { key: hashKey(scope, subject) } });
   }

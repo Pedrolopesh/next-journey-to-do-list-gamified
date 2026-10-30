@@ -7,8 +7,9 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { UNKNOWN_DEVICE } from './device-name.js';
 
 /**
- * Sessões da conta. Uma sessão é uma família de refresh tokens (um aparelho): a rotação troca o token mas
- * mantém a família, então a lista mostra um item por aparelho. Tudo filtra por dono: id de outra pessoa é 404.
+ * The account's sessions. A session is a family of refresh tokens (one device): rotation swaps the
+ * token but keeps the family, so the list shows one item per device. Everything filters by owner:
+ * another person's id is a 404.
  */
 @Injectable()
 export class SessionsService {
@@ -39,15 +40,18 @@ export class SessionsService {
     }));
   }
 
-  /** Encerra uma sessão da própria conta (repetir é seguro); se for a atual, equivale ao logout. */
+  /**
+   * Ends a session of the account itself (safe to repeat); if it is the current one, it acts as
+   * logout.
+   */
   async revoke(userId: string, sessionId: string): Promise<void> {
     const result = await this.prisma.refreshToken.updateMany({
       where: { userId, familyId: sessionId, revokedAt: null },
       data: { revokedAt: this.clock.now() },
     });
     if (result.count > 0) return;
-    // Já estava encerrada (toque repetido, resposta perdida): continua sendo sucesso. Só é 404 quando a
-    // sessão nem é desta conta
+    // Already ended (repeated tap, lost response): still a success. It is only a 404 when the
+    // session is not even from this account.
     const own = await this.prisma.refreshToken.findFirst({
       where: { userId, familyId: sessionId },
       select: { id: true },
@@ -55,7 +59,6 @@ export class SessionsService {
     if (!own) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Sessão não encontrada');
   }
 
-  /** Encerra todas as sessões da conta, inclusive a atual. */
   async revokeAll(userId: string): Promise<void> {
     await this.prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null },

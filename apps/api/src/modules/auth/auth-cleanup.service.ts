@@ -23,14 +23,14 @@ type ExpiringTable = {
   deleteMany(args: { where: { id: { in: string[] } } }): Promise<{ count: number }>;
 };
 
-/** Dias que o registro expirado ainda fica antes de sumir (tempo para investigar abuso recente). */
+/** Days an expired record stays before deletion, so recent abuse can be investigated. */
 export const EXPIRED_GRACE_DAYS = 7;
 
 /**
- * Limpeza diária das tabelas que só crescem: refresh tokens, links de redefinição de senha e códigos de
- * confirmação de e-mail. Só apaga o que EXPIROU há mais de 7 dias: um refresh token revogado mas ainda
- * dentro da validade fica, porque é ele que denuncia o reuso de um token roubado. Idempotente, então
- * duas instâncias rodando juntas não atrapalham.
+ * Daily cleanup of the tables that only grow: refresh tokens, password reset links and email
+ * confirmation codes. It only deletes what EXPIRED more than 7 days ago: a revoked refresh token
+ * that is still within its validity stays, because it is what exposes the reuse of a stolen token.
+ * Idempotent, so two instances running together do no harm.
  */
 @Injectable()
 export class AuthCleanupService {
@@ -50,7 +50,7 @@ export class AuthCleanupService {
     };
   }
 
-  /** Contadores do limite de tentativas: a janela mais longa é de 1 hora, então 1 dia já é folga. */
+  /** Rate limit counters: the longest window is 1 hour, so 1 day is plenty. */
   private async purgeRateLimits(): Promise<number> {
     const limit = new Date(this.clock.now().getTime() - DAY_MS);
     let total = 0;
@@ -69,7 +69,7 @@ export class AuthCleanupService {
     }
   }
 
-  /** Apaga em lotes: uma tabela grande não vira um DELETE único longo, com travas e logs pesados. */
+  /** Deletes in batches so a big table never becomes one long DELETE with heavy locks and logs. */
   private async purgeInBatches(table: ExpiringTable, limit: Date): Promise<number> {
     let total = 0;
     for (;;) {
@@ -93,7 +93,7 @@ export class AuthCleanupService {
       const counts = await this.purgeExpired();
       this.logger.log(counts, 'tokens, links e códigos expirados removidos');
     } catch (error) {
-      // A rotina roda de novo amanhã. Só a classe e o código do erro vão para o log (nunca a mensagem)
+      // The job runs again tomorrow. Only the error class and code are logged, never the message.
       const code = (error as { code?: unknown }).code;
       this.logger.error(
         {

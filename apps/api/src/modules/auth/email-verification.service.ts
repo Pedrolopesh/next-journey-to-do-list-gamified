@@ -7,7 +7,7 @@ import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Mailer } from './mailer.js';
 
-/** Validade do código, tentativas erradas aceitas por código e intervalo mínimo entre e-mails. */
+/** Code validity, wrong attempts allowed per code and minimum interval between emails. */
 export const VERIFICATION_TTL_MS = 15 * 60_000;
 export const VERIFICATION_MAX_ATTEMPTS = 5;
 export const VERIFICATION_RESEND_INTERVAL_MS = 60_000;
@@ -15,8 +15,9 @@ export const VERIFICATION_RESEND_INTERVAL_MS = 60_000;
 type Recipient = { id: string; email: string };
 
 /**
- * Código de 6 dígitos que prova a posse do e-mail. Só o hash fica no banco; vale 15 minutos, uma vez,
- * e trava depois de 5 tentativas erradas. O e-mail sai sem a resposta esperar por ele.
+ * 6-digit code that proves ownership of the email. Only its hash is stored; it is valid for 15
+ * minutes, once, and locks after 5 wrong attempts. The email is sent without the response waiting
+ * for it.
  */
 @Injectable()
 export class EmailVerificationService {
@@ -26,7 +27,7 @@ export class EmailVerificationService {
     @Inject(Mailer) private readonly mailer: Mailer,
   ) {}
 
-  /** Gera um código novo e envia, a menos que o último e-mail tenha menos de 60 segundos. */
+  /** Generates a new code and sends it, unless the last email was sent less than 60 seconds ago. */
   async sendCode(user: Recipient): Promise<void> {
     const code = await this.reserve(user.id, true);
     if (!code) return;
@@ -37,7 +38,10 @@ export class EmailVerificationService {
     });
   }
 
-  /** Aviso (sem código) para quem tenta cadastrar um e-mail que já tem conta confirmada. */
+  /**
+   * Notice (no code) for someone who tries to sign up with an email that already has a confirmed
+   * account.
+   */
   async sendNotice(user: Recipient): Promise<void> {
     if (!(await this.reserve(user.id, false))) return;
     this.mailer.sendInBackground({
@@ -48,13 +52,14 @@ export class EmailVerificationService {
   }
 
   /**
-   * Consome o código: certo e dentro da validade devolve true (uso único); errado conta uma tentativa
-   * e a quinta errada invalida o código. Nunca diz se o motivo foi expiração, tentativas ou erro.
-   * A senha errada não prova nada e não gasta tentativas: assim quem só sabe o e-mail da vítima não
-   * consegue invalidar o código dela. A tentativa é reservada num UPDATE condicional, então
-   * requisições paralelas não passam do limite. With `tx`, the "used" mark joins the caller's
-   * transaction, so if it rolls back (for example, seeding fails) the code stays valid. Attempts
-   * stay outside the transaction on purpose, so they count even when it rolls back.
+   * Consumes the code: right and within its validity returns true (single use); wrong counts an
+   * attempt and the fifth wrong one invalidates the code. It never says whether the reason was
+   * expiry, attempts or a wrong code. A wrong password proves nothing and does not spend attempts,
+   * so someone who only knows the victim's email cannot invalidate their code. The attempt is
+   * reserved in a conditional UPDATE, so parallel requests cannot exceed the limit. With `tx`, the
+   * "used" mark joins the caller's transaction: if it rolls back (for example, seeding fails) the
+   * code stays valid. Attempts stay outside the transaction on purpose, so they count even when it
+   * rolls back.
    */
   async consume(
     userId: string,
@@ -77,7 +82,7 @@ export class EmailVerificationService {
     if (attempt.count !== 1) return false;
 
     if (sameHash(current.codeHash, hashCode(userId, code))) {
-      // Uso único mesmo sob duas confirmações simultâneas
+      // Single use even under two simultaneous confirmations.
       const claimed = await (tx ?? this.prisma).emailVerification.updateMany({
         where: { id: current.id, usedAt: null },
         data: { usedAt: now },
@@ -92,15 +97,16 @@ export class EmailVerificationService {
   }
 
   /**
-   * Registra o envio respeitando o intervalo mínimo. Com `withCode`, gera e guarda um código novo e o
-   * devolve; sem ele, devolve `true` quando o envio é permitido. Falso/nulo = não enviar agora.
+   * Records the send, respecting the minimum interval. With `withCode`, generates and stores a new
+   * code and returns it; without it, returns `true` when sending is allowed. False or null means do
+   * not send now.
    */
   private async reserve(userId: string, withCode: true): Promise<string | null>;
   private async reserve(userId: string, withCode: false): Promise<boolean>;
   private async reserve(userId: string, withCode: boolean): Promise<string | boolean | null> {
     const now = this.clock.now();
     const earliest = new Date(now.getTime() - VERIFICATION_RESEND_INTERVAL_MS);
-    // Um UPDATE condicional reserva o envio: duas chamadas simultâneas não mandam dois e-mails
+    // A conditional UPDATE reserves the send: two simultaneous calls never send two emails.
     const slot = await this.prisma.user.updateMany({
       where: {
         id: userId,
@@ -115,7 +121,8 @@ export class EmailVerificationService {
     try {
       await this.storeCode(userId, code, now);
     } catch (error) {
-      // Falhou antes de existir código: devolve o intervalo, senão a pessoa fica um minuto sem poder pedir de novo
+      // Failed before a code existed: give the interval back, or the person cannot ask again for a
+      // minute.
       await this.prisma.user
         .update({ where: { id: userId }, data: { verificationMailSentAt: null } })
         .catch(() => undefined);
