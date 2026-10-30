@@ -9,16 +9,16 @@ import { ENV, type Env } from '../../config/env.js';
 export type SocialProvider = 'google' | 'apple';
 
 export type VerifiedIdentity = {
-  /** Identificador estável do usuário no provedor (claim `sub`). */
+  /** Stable user id at the provider (the `sub` claim). */
   subject: string;
   email: string | null;
   emailVerified: boolean;
   name: string | null;
-  /** Quando o provedor emitiu o token (claim `iat`, em segundos). Ausente = desconhecido. */
+  /** When the provider issued the token (`iat` claim, in seconds). Absent means unknown. */
   issuedAt?: number;
 };
 
-/** Valida o ID token do provedor NO SERVIDOR. Trocável nos testes (sem rede). */
+/** Validates the provider's ID token ON THE SERVER. Swappable in tests (no network). */
 export abstract class IdTokenVerifier {
   abstract verify(provider: SocialProvider, idToken: string): Promise<VerifiedIdentity>;
 }
@@ -41,7 +41,7 @@ export class RemoteIdTokenVerifier extends IdTokenVerifier {
         : await this.verifyApple(idToken);
     } catch (error) {
       if (error instanceof AppError) throw error;
-      // Token inválido, expirado ou de outra audiência: nunca detalhar o motivo
+      // Invalid, expired or wrong-audience token: never say why.
       throw new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Login social inválido');
     }
   }

@@ -37,7 +37,7 @@ const invalidCredentials = (): AppError =>
 
 @Injectable()
 export class AuthService {
-  /** Hash de uma senha qualquer, para gastar o mesmo tempo quando o e-mail não existe. */
+  /** Hash of any password, to spend the same time when the email does not exist. */
   private dummyHash: Promise<string> | undefined;
 
   constructor(
@@ -54,8 +54,9 @@ export class AuthService {
   ) {}
 
   /**
-   * Cadastro por senha: nunca devolve sessão. Responde igual para e-mail novo, pendente ou já
-   * confirmado (sem enumeração); o código só chega ao e-mail e a conta só vale depois de confirmar.
+   * Password sign-up: never returns a session. Answers the same for a new, pending or already
+   * confirmed email (no enumeration); the code only reaches the email and the account only counts
+   * once confirmed.
    */
   async register(input: RegisterRequest, ip: string): Promise<RegisterResponse> {
     const email = input.email.trim().toLowerCase();
@@ -79,7 +80,8 @@ export class AuthService {
       if (existing.emailVerifiedAt) {
         await this.verification.sendNotice(existing);
       } else {
-        // Cadastro ainda pendente: o último cadastro vence; só quem confirma com o código e a senha ativa
+        // Sign-up still pending: the last sign-up wins; only whoever confirms with the code and the
+        // active password gets in.
         await this.prisma.user.update({ where: { id: existing.id }, data: profile });
         await this.verification.sendCode(existing);
       }
@@ -100,13 +102,17 @@ export class AuthService {
       });
       await this.verification.sendCode(user);
     } catch (error) {
-      // Dois cadastros simultâneos do mesmo e-mail: o outro venceu a corrida, a resposta é a mesma
+      // Two simultaneous sign-ups with the same email: the other one won the race, the answer is
+      // the same.
       if (!isUniqueViolation(error)) throw error;
     }
     return response;
   }
 
-  /** Confirma o e-mail com o código (e a senha do cadastro) e só então entrega a sessão. */
+  /**
+   * Confirms the email with the code (and the sign-up password) and only then hands out the
+   * session.
+   */
   async verifyEmail(
     input: VerifyEmailRequest,
     ip: string,
@@ -116,7 +122,7 @@ export class AuthService {
     await this.rateLimit.hitBoth('verify-email', email, ip, LIMITS.verifyEmail);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     const pending = user && !user.emailVerifiedAt && user.passwordHash ? user : null;
-    // Mesmo custo e mesma resposta para qualquer falha (sem enumeração)
+    // Same cost and same answer for any failure (no enumeration).
     const hash = pending?.passwordHash ?? (await this.getDummyHash());
     const passwordOk = await argon2.verify(hash, input.password).catch(() => false);
     if (!pending) throw invalidVerificationCode();
@@ -141,7 +147,10 @@ export class AuthService {
     };
   }
 
-  /** Reenvio do código: responde sempre igual; só envia para conta pendente e fora do intervalo mínimo. */
+  /**
+   * Resends the code: always answers the same; only sends to a pending account outside the minimum
+   * interval.
+   */
   async resendVerification(emailInput: string, ip: string): Promise<void> {
     const email = emailInput.trim().toLowerCase();
     await this.rateLimit.hitBoth('resend-verification', email, ip, LIMITS.resendVerification);
@@ -151,11 +160,11 @@ export class AuthService {
 
   async login(input: LoginRequest, ip: string, deviceName?: string): Promise<AuthResponse> {
     const email = input.email.trim().toLowerCase();
-    // Conta a tentativa ANTES de conferir a senha: tentativas paralelas também contam
+    // Count the attempt BEFORE checking the password: parallel attempts count too.
     await this.rateLimit.hitBoth('login', email, ip, LIMITS.login);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
 
-    // Mesma resposta e mesmo custo para e-mail inexistente e senha errada (sem enumeração)
+    // Same answer and same cost for an unknown email and a wrong password (no enumeration).
     const hash = user?.passwordHash ?? (await this.getDummyHash());
     const valid = await argon2.verify(hash, input.password).catch(() => false);
     if (!user || !valid) {
@@ -164,7 +173,8 @@ export class AuthService {
     }
     await this.rateLimit.reset('login:email-ip', `${email}|${ip}`);
     if (!user.emailVerifiedAt) {
-      // Só quem sabe a senha chega aqui: o aviso não revela a conta a terceiros
+      // Only someone who knows the password gets here: the notice does not reveal the account to
+      // third parties.
       await this.verification.sendCode(user).catch(() => undefined);
       throw new AppError(403, ERROR_CODES.EMAIL_NOT_VERIFIED, 'Confirme seu e-mail para entrar');
     }
@@ -190,8 +200,8 @@ export class AuthService {
   }
 
   /**
-   * "Esqueci a senha": responde SEMPRE igual, exista ou não o e-mail (sem enumeração). O link tem o
-   * segredo de uso único, válido por 30 minutos; só o sha256 dele fica no banco.
+   * "Forgot password": ALWAYS answers the same, whether or not the email exists (no enumeration).
+   * The link carries a single-use secret valid for 30 minutes; only its sha256 is stored.
    */
   async forgotPassword(emailInput: string, ip: string): Promise<void> {
     const email = emailInput.trim().toLowerCase();
@@ -205,7 +215,6 @@ export class AuthService {
     const secret = randomBytes(32).toString('base64url');
     const now = this.clock.now();
     await this.prisma.$transaction([
-      // Só o link mais recente vale
       this.prisma.passwordReset.updateMany({
         where: { userId: user.id, usedAt: null },
         data: { usedAt: now },
@@ -218,7 +227,7 @@ export class AuthService {
         },
       }),
     ]);
-    // Sem esperar o envio: o tempo da resposta não pode depender do provedor de e-mail
+    // Do not wait for the send: the response time must not depend on the email provider.
     this.mailer.sendInBackground({
       to: user.email,
       subject: 'Recuperação de senha do Next Journey',
@@ -226,7 +235,7 @@ export class AuthService {
     });
   }
 
-  /** Troca a senha com o link de uso único e derruba todas as sessões abertas. */
+  /** Sets a new password with the single-use link and ends every open session. */
   async resetPassword(token: string, newPassword: string): Promise<void> {
     const tokenHash = createHash('sha256').update(token).digest('hex');
     const reset = await this.prisma.passwordReset.findUnique({ where: { tokenHash } });
@@ -247,8 +256,9 @@ export class AuthService {
   }
 
   /**
-   * Login social: o app manda só o ID token; a API o valida com o provedor. Vincula ao mesmo usuário
-   * quando o e-mail verificado coincide; cria a conta no primeiro acesso (exige o aceite dos termos).
+   * Social login: the app sends only the ID token and the API validates it with the provider. Links
+   * to the same user when the verified email matches; creates the account on the first sign-in
+   * (requires accepting the terms).
    */
   async socialLogin(
     provider: SocialProvider,
@@ -268,7 +278,8 @@ export class AuthService {
       if (!email) {
         throw new AppError(400, 'EMAIL_REQUIRED', 'O provedor não informou um e-mail');
       }
-      // Sem e-mail verificado pelo provedor não há como provar a posse: nunca cria nem vincula
+      // Without an email verified by the provider, ownership cannot be proven: never create or
+      // link.
       if (!identity.emailVerified) {
         throw new AppError(
           400,
@@ -322,9 +333,10 @@ export class AuthService {
   }
 
   /**
-   * Liga o login social a uma conta que já existe com o mesmo e-mail (verificado pelo provedor). Se a
-   * conta por senha nunca confirmou o e-mail, quem a criou não provou ser dono dele: a conta é
-   * confirmada, a senha antiga some e as sessões e códigos abertos deixam de valer.
+   * Links the social login to an account that already has the same email (verified by the
+   * provider). If the password account never confirmed its email, whoever created it did not prove
+   * ownership: the account is confirmed, the old password disappears and open sessions and codes
+   * stop working.
    */
   private async linkIdentity(
     existing: { id: string; emailVerifiedAt: Date | null },
@@ -335,7 +347,8 @@ export class AuthService {
       return await this.linkIdentityOnce(existing, provider, providerUserId);
     } catch (error) {
       if (!isUniqueViolation(error)) throw error;
-      // Duas entradas simultâneas: a outra já ligou a identidade. Se foi a esta conta, segue normal
+      // Two simultaneous sign-ins: the other one already linked the identity. If it was to this
+      // account, carry on.
       const linked = await this.prisma.authIdentity.findUnique({
         where: { provider_providerUserId: { provider, providerUserId } },
         include: { user: true },

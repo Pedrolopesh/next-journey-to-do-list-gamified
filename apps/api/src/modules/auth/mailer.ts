@@ -3,11 +3,14 @@ import { Logger } from 'nestjs-pino';
 
 import { ENV, type Env } from '../../config/env.js';
 
-/** Envio de e-mail transacional. Trocável nos testes por um fake que captura a mensagem. */
+/** Sends transactional email. Swappable in tests by a fake that captures the message. */
 export abstract class Mailer {
   abstract send(message: { to: string; subject: string; text: string }): Promise<void>;
 
-  /** Envio sem esperar: a resposta da rota não depende do provedor. Falha não vaza para quem pediu. */
+  /**
+   * Sends without waiting: the route response does not depend on the provider. A failure never
+   * reaches the requester.
+   */
   sendInBackground(message: { to: string; subject: string; text: string }): void {
     void Promise.resolve()
       .then(() => this.send(message))
@@ -15,7 +18,7 @@ export abstract class Mailer {
   }
 }
 
-/** Resend (https://resend.com). Sem RESEND_API_KEY nada é enviado (desenvolvimento). */
+/** Resend (https://resend.com). Without RESEND_API_KEY nothing is sent (development). */
 @Injectable()
 export class ResendMailer extends Mailer {
   constructor(
@@ -27,8 +30,8 @@ export class ResendMailer extends Mailer {
 
   async send(message: { to: string; subject: string; text: string }): Promise<void> {
     if (!this.env.RESEND_API_KEY) {
-      // Nunca loga o destinatário. O texto (com código ou link) só aparece em desenvolvimento sem chave
-      // do Resend, onde nenhum e-mail sai de qualquer forma
+      // Never logs the recipient. The text (with code or link) only shows in development without a
+      // Resend key, where no email goes out anyway.
       if (this.env.NODE_ENV === 'development') {
         this.logger.warn(
           `RESEND_API_KEY ausente: e-mail não enviado (desenvolvimento)\n${message.text}`,
@@ -55,7 +58,7 @@ export class ResendMailer extends Mailer {
         signal: AbortSignal.timeout(10_000),
       });
     } catch (error) {
-      // Só a classe do erro (rede, tempo esgotado): nunca destinatário nem conteúdo
+      // Only the error class (network, timeout): never the recipient or the content.
       this.logger.error(
         { error: error instanceof Error ? error.name : 'desconhecido' },
         'Falha de rede ao enviar e-mail pelo Resend',

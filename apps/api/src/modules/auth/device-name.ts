@@ -1,9 +1,9 @@
-/** Nome mostrado quando o app não informa um nome de aparelho válido. */
+/** Shown when the app does not send a valid device name. */
 export const UNKNOWN_DEVICE = 'Aparelho desconhecido';
 
 const MAX_LENGTH = 80;
 
-/** Cabeçalho HTTP não carrega acento de forma confiável: o app envia o nome codificado (URL-encode). */
+/** HTTP headers do not carry accents reliably: the app sends the name URL-encoded. */
 function decode(raw: string): string {
   try {
     return decodeURIComponent(raw);
@@ -12,15 +12,16 @@ function decode(raw: string): string {
   }
 }
 
-/** Caractere de controle (0x00 a 0x1f e 0x7f), conferido por código em vez de expressão regular. */
+/** Control character (0x00 to 0x1f and 0x7f), checked in code instead of a regular expression. */
 const isControl = (char: string): boolean => {
   const code = char.charCodeAt(0);
   return code < 0x20 || code === 0x7f;
 };
 
 /**
- * Limpa o nome do aparelho vindo do cliente (cabeçalho X-Device-Name): decodifica, tira caracteres de
- * controle, junta espaços e limita o tamanho. É dado do cliente: só vira texto na tela, nunca é interpretado.
+ * Cleans the device name the client sends in the X-Device-Name header: decodes it, strips control
+ * characters, collapses spaces and limits the length. It is client data: it only becomes text on
+ * screen and is never interpreted.
  */
 export function cleanDeviceName(raw: string | undefined): string | null {
   if (!raw) return null;
@@ -29,6 +30,6 @@ export function cleanDeviceName(raw: string | undefined): string | null {
     .join('')
     .replace(/\s+/g, ' ')
     .trim();
-  // Corta por caractere (não por unidade UTF-16), para não partir um emoji ao meio
+  // Cut by character, not by UTF-16 unit, so an emoji is never split in half.
   return clean ? [...clean].slice(0, MAX_LENGTH).join('') : null;
 }

@@ -29,7 +29,7 @@ import { AuthService } from './auth.service.js';
 export class AuthController {
   constructor(@Inject(AuthService) private readonly auth: AuthService) {}
 
-  /** Sempre 202, sem sessão: a pessoa confirma o e-mail com o código antes de entrar. */
+  /** Always 202 and no session: the person confirms the email with the code before signing in. */
   @Public()
   @ConstantTime()
   @Post('register')
@@ -52,7 +52,7 @@ export class AuthController {
     return this.auth.verifyEmail(body, ip, deviceName);
   }
 
-  /** Sempre 202, exista ou não a conta. */
+  /** Always 202, whether or not the account exists. */
   @Public()
   @ConstantTime()
   @Post('resend-verification')
@@ -93,7 +93,7 @@ export class AuthController {
     await this.auth.logout(body.refreshToken);
   }
 
-  /** Sempre 202, exista ou não o e-mail. */
+  /** Always 202, whether or not the email exists. */
   @Public()
   @ConstantTime()
   @Post('forgot-password')

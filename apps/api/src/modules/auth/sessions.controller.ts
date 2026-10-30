@@ -6,7 +6,6 @@ import { CurrentSessionId, CurrentUserId } from '../../common/current-user.decor
 import { ZodValidationPipe } from '../../common/zod-validation.pipe.js';
 import { SessionsService } from './sessions.service.js';
 
-/** Sessões da própria conta (aparelhos): listar, encerrar uma e encerrar todas. */
 @Controller('me/sessions')
 export class SessionsController {
   constructor(@Inject(SessionsService) private readonly sessions: SessionsService) {}
