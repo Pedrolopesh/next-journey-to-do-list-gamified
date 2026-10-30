@@ -6,23 +6,23 @@ import { Logger } from 'nestjs-pino';
 
 import { ENV, type Env } from './config/env.js';
 
-/** Configuração comum à API real e aos testes e2e. */
+/** Setup shared by the real API and the e2e tests. */
 export function setupApp(app: INestApplication, options: { swagger: boolean }): void {
   app.useLogger(app.get(Logger));
   const env = app.get<Env>(ENV);
 
-  // Atrás de proxy reverso, confia no primeiro salto para o rate limit ver o IP real
+  // Behind a reverse proxy, trusts the first hop so the rate limit sees the real IP.
   if (env.TRUST_PROXY) (app as NestExpressApplication).set('trust proxy', 1);
 
-  // A página do Swagger usa scripts inline, então a CSP só relaxa quando ele está ligado
+  // The Swagger page uses inline scripts, so the CSP only relaxes when it is on.
   app.use(helmet(options.swagger ? { contentSecurityPolicy: false } : {}));
 
-  // CORS restrito a uma lista explícita; sem lista, nenhuma origem web é aceita
+  // CORS restricted to an explicit list; with no list, no web origin is accepted.
   const origins = env.CORS_ORIGINS.split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
   if (origins.length > 0) app.enableCors({ origin: origins, credentials: false });
-  // Versionamento /v1; o health fica na raiz
+  // Versioning: /v1, with health at the root
   app.setGlobalPrefix('v1', { exclude: ['health'] });
 
   if (options.swagger) {

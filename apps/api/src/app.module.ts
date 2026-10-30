@@ -28,7 +28,8 @@ const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
     CoreModule,
     PrismaModule,
     ScheduleModule.forRoot(),
-    // Dois limites por IP/minuto: geral e, só nas rotas de autenticação, um mais rígido
+    // Two per-IP, per-minute limits: a general one and, only on the authentication routes, a
+    // stricter one.
     ThrottlerModule.forRootAsync({
       inject: [ENV],
       useFactory: (env: Env) => ({
@@ -48,7 +49,8 @@ const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
       useFactory: (env: Env) => ({
         pinoHttp: {
           level: env.LOG_LEVEL,
-          // requestId: usa o x-request-id válido que vier ou gera um UUID; volta no header
+          // requestId: uses a valid incoming x-request-id or generates a UUID; it goes back in the
+          // header.
           genReqId: (req, res) => {
             const header = req.headers['x-request-id'];
             const id =
@@ -56,7 +58,7 @@ const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
             res.setHeader('x-request-id', id);
             return id;
           },
-          // Só metadados: corpo de requisição nunca é logado
+          // Metadata only: the request body is never logged.
           serializers: {
             req: (req: { id: string; method: string; url: string }) => ({
               id: req.id,
@@ -66,7 +68,7 @@ const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
             res: (res: { statusCode: number }) => ({ statusCode: res.statusCode }),
           },
           customProps: (req) => ({ userId: (req as { user?: { id: string } }).user?.id }),
-          // Defesa em profundidade: mesmo que algo seja logado por engano, estes campos somem
+          // Defense in depth: even if something is logged by mistake, these fields disappear.
           redact: {
             paths: [
               'req.headers.authorization',

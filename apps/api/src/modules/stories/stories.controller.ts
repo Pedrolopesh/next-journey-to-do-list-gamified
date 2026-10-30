@@ -32,7 +32,7 @@ export class StoriesController {
     return this.stories.timeline(userId);
   }
 
-  /** Capítulos de qualquer história do catálogo (o texto só nos já concluídos). */
+  /** Chapters of any story in the catalog (the text only for the finished ones). */
   @Get('stories/:slug/timeline')
   timelineOf(@CurrentUserId() userId: string, @Param('slug') slug: string): Promise<Timeline> {
     return this.stories.timeline(userId, slug);

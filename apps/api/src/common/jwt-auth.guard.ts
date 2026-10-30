@@ -13,9 +13,9 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export type AuthenticatedRequest = Request & { user: { id: string; sessionId?: string } };
 
 /**
- * Guard global: valida o JWT de acesso (algoritmo fixo HS256) em toda rota não pública e confere que a
- * conta ainda existe (busca por chave primária, sem cache): conta excluída perde o acesso na hora, sem
- * esperar os 15 minutos do token.
+ * Global guard: validates the access JWT (fixed HS256 algorithm) on every non-public route and
+ * checks that the account still exists (primary key lookup, no cache): a deleted account loses
+ * access at once, without waiting for the token's 15 minutes.
  */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -41,10 +41,11 @@ export class JwtAuthGuard implements CanActivate {
     let sessionId: string | undefined;
     try {
       const verified = await this.tokens.verifyAccessToken(token);
-      // O id é um UUID: qualquer outra coisa nem chega ao banco (que rejeitaria com erro 500)
+      // The id is a UUID: anything else never reaches the database (which would reject it with a
+      // 500).
       if (!UUID.test(verified.userId)) throw new Error('sub inválido');
       userId = verified.userId;
-      // O id da sessão também é um UUID (e vai para a consulta abaixo)
+      // The session id is also a UUID (and goes into the query below).
       if (verified.sessionId !== undefined && !UUID.test(verified.sessionId)) {
         throw new Error('sid inválido');
       }
@@ -53,11 +54,12 @@ export class JwtAuthGuard implements CanActivate {
       throw new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Não autenticado');
     }
 
-    // Erro de banco aqui NÃO vira 401 (nega o acesso com erro 500): uma falha temporária não pode
-    // deslogar o app, que trata 401 como sessão encerrada
+    // A database error here does NOT become a 401 (it denies access with a 500): a temporary
+    // failure must not sign the app out, since it treats 401 as an ended session.
     const user = await this.prisma.user.findFirst({
-      // Com `sid`, a sessão precisa continuar ativa: encerrar um aparelho (ou trocar a senha, ou sair) derruba
-      // o token de acesso na hora, na mesma consulta. Token antigo sem `sid` só confere a conta.
+      // With `sid`, the session must still be active: ending a device (or changing the password, or
+      // signing out) drops the access token at once, in the same query. An old token without `sid`
+      // only checks the account.
       where: {
         id: userId,
         deletedAt: null,

@@ -4,7 +4,7 @@ import { AppModule } from './app.module.js';
 import { loadEnv } from './config/env.js';
 import { setupApp } from './setup-app.js';
 
-// Carrega o .env em desenvolvimento (em produção as variáveis vêm do ambiente)
+// Loads .env in development (in production the variables come from the environment).
 try {
   process.loadEnvFile('.env');
 } catch {

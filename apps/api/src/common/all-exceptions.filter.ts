@@ -21,7 +21,7 @@ const STATUS_TO_CODE: Record<number, string> = {
 
 type RequestWithId = Request & { id?: string | number };
 
-/** Padroniza toda resposta de erro em { code, message, requestId }. 5xx nunca vaza detalhes. */
+/** Standardizes every error response as { code, message, requestId }. A 5xx never leaks details. */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(private readonly logger: Logger) {}
@@ -55,7 +55,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ...(requestId ? { requestId } : {}),
       };
     } else {
-      // Erro inesperado: registra com stack (sem corpo da requisição) e responde genérico
+      // Unexpected error: logs with the stack (without the request body) and answers generically.
       this.logger.error({ err: exception, requestId }, 'Erro não tratado');
     }
 

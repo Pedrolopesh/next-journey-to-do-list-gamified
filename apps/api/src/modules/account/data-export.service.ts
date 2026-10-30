@@ -7,16 +7,16 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { RateLimitService } from '../auth/rate-limit.service.js';
 import { SecurityEvents } from '../security/security-events.service.js';
 
-/** Exportações por conta: 3 por hora. */
+/** Exports per account: 3 per hour. */
 const EXPORT_LIMIT = { limit: 3, windowMs: 60 * 60_000 };
 
 const iso = (date: Date): string => date.toISOString();
 const isoOrNull = (date: Date | null): string | null => (date ? date.toISOString() : null);
 
 /**
- * Exportação dos dados da própria conta (LGPD, direito de acesso). Cada tabela entra por lista de campos
- * permitidos (`select` explícito): nunca o model inteiro e nunca hash de senha, token, código ou id no provedor.
- * Tudo filtra pelo `userId` do token.
+ * Export of the account's own data (LGPD, right of access). Each table goes through an allowlist of
+ * fields (explicit `select`): never the whole model and never a password hash, token, code or
+ * provider id. Everything filters by the token's `userId`.
  */
 @Injectable()
 export class DataExportService {

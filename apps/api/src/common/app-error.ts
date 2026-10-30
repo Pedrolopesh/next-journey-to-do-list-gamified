@@ -1,6 +1,6 @@
 import { HttpException } from '@nestjs/common';
 
-/** Erro de regra de negócio com código estável (o app decide a mensagem pelo `code`). */
+/** Business rule error with a stable code (the app picks the message by `code`). */
 export class AppError extends HttpException {
   constructor(
     status: number,

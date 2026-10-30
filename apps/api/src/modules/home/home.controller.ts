@@ -19,7 +19,7 @@ export class HomeController {
     @Inject(GameConfigService) private readonly gameConfig: GameConfigService,
   ) {}
 
-  /** Um endpoint agregado para a Home não fazer 5 chamadas (RF-35). */
+  /** One aggregated endpoint so the Home does not make 5 calls (RF-35). */
   @Get()
   async home(@CurrentUserId() userId: string): Promise<HomeResponse> {
     const user = await this.prisma.user.findFirstOrThrow({
@@ -38,7 +38,7 @@ export class HomeController {
     ]);
 
     const pendingDailies = dailies.filter((item) => !item.doneToday);
-    // Tarefa "para hoje": com prazo até o fim do dia local de hoje (inclui as atrasadas)
+    // To-do "for today": due by the end of today's local day (includes the overdue ones).
     const dueToday = todos.filter(
       (item): item is Item & { dueAt: string } =>
         item.dueAt !== null && diaLocal(item.dueAt, user.timezone) <= hoje,
