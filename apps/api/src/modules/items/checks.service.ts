@@ -30,15 +30,15 @@ export class ChecksService {
   ) {}
 
   /**
-   * Marca um item. Uma única transação: valida, grava o check, atualiza EXP/nível/moedas, o
-   * capítulo da história ativa, a sequência do diário e as conquistas. O checkId (UUID do app)
-   * torna a chamada idempotente: repetir devolve o mesmo resultado sem duplicar EXP.
+   * Checks an item. A single transaction: validates, stores the check, updates EXP/level/coins, the
+   * active story chapter, the daily streak and the achievements. The app's `checkId` (UUID) makes
+   * the call idempotent: repeating it returns the same result without duplicating EXP.
    */
   async check(userId: string, itemId: string, checkId: string): Promise<CheckResult> {
     const now = this.clock.now();
     return this.prisma.$transaction(async (tx) => {
-      // Serializa checks do mesmo usuário. Uma chamada concorrente com o mesmo checkId espera aqui
-      // e, ao entrar, já enxerga o check gravado pela primeira.
+      // Serializes checks of the same user. A concurrent call with the same checkId waits here and,
+      // once inside, already sees the check stored by the first.
       const user = await this.lockedUser(tx, userId);
 
       const existing = await tx.itemCheck.findUnique({ where: { id: checkId } });
@@ -67,9 +67,9 @@ export class ChecksService {
         ? { chapter: active.progress.chapter, completed: active.progress.completed }
         : NO_STORY;
 
-      // Item desmarcado e marcado de novo: rende as moedas, mas o EXP vale uma vez só. Tarefa vale
-      // uma vez na vida (desmarcar em outro dia não libera o EXP de novo); diário e hábito, uma
-      // vez por dia (o dia seguinte é outro check de verdade).
+      // Item unchecked and checked again: earns the coins, but the EXP counts only once. A to-do
+      // counts once in a lifetime (unchecking on another day does not release the EXP again); a
+      // daily and a habit, once per day (the next day is a real new check).
       const expJaGanho =
         (await tx.itemCheck.count({
           where: {
@@ -87,7 +87,8 @@ export class ChecksService {
       );
       const { summary, record } = applied;
 
-      // Capítulos concluídos (um por nível ganho): grava as conclusões e devolve o modal do último (RF-28)
+      // Finished chapters (one per level gained): stores the completions and returns the modal for
+      // the last one (RF-28).
       let completedChapter: CheckResult['completedChapter'] = null;
       if (active && summary.capitulosConcluidos.length > 0) {
         const chapters = await tx.chapter.findMany({
@@ -123,7 +124,7 @@ export class ChecksService {
         });
       }
 
-      // Registro do check primeiro: as conquistas (ex.: equilíbrio, chama) enxergam este check
+      // Store the check first: the achievements (e.g. balance, flame) see this check.
       const resultBase: Omit<CheckResult, 'achievementsUnlocked'> = {
         expGained: summary.expGanho,
         coinsGained: summary.moedasGanhas + summary.bonusMoedas,
@@ -177,15 +178,15 @@ export class ChecksService {
         fromCheck: true,
       });
       const result: CheckResult = { ...resultBase, achievementsUnlocked };
-      // Repetir o checkId devolve exatamente este resultado (com as conquistas desta vez)
+      // Repeating the checkId returns exactly this result (with the achievements this time).
       await tx.itemCheck.update({ where: { id: checkId }, data: { result } });
       return result;
     });
   }
 
   /**
-   * Desmarca um check, em qualquer dia e capítulo. O EXP, o nível e o capítulo ficam como estão:
-   * só as moedas diminuem (perda do capítulo atual, nunca abaixo de zero).
+   * Unchecks a check, on any day and chapter. EXP, level and chapter stay as they are: only the
+   * coins decrease (the current chapter's loss, never below zero).
    */
   async undo(userId: string, itemId: string, checkId: string): Promise<CheckResult> {
     const now = this.clock.now();
@@ -207,7 +208,7 @@ export class ChecksService {
         );
       }
 
-      // A perda de moedas é a do capítulo em que o jogador está agora
+      // The coin loss is that of the chapter the player is in now.
       const active = await this.stories.active(tx, userId);
       const storyProgress = active
         ? { chapter: active.progress.chapter, completed: active.progress.completed }
@@ -222,7 +223,7 @@ export class ChecksService {
       await tx.itemCheck.update({ where: { id: checkId }, data: { revertedAt: now } });
 
       if (item.type === 'daily') {
-        // Qualquer dia vale: recalcula pelo que restou de checks ativos
+        // Any day works: recompute from the active checks that remain.
         const rest = await tx.itemCheck.findMany({
           where: { itemId, revertedAt: null },
           select: { checkedOn: true },
@@ -256,7 +257,7 @@ export class ChecksService {
     });
   }
 
-  /** Usuário ativo com a linha de estatísticas travada: serializa as ações de EXP do mesmo usuário. */
+  /** Active user with the stats row locked: serializes the EXP actions of the same user. */
   private async lockedUser(
     tx: Prisma.TransactionClient,
     userId: string,

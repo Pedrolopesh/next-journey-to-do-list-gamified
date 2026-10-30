@@ -21,7 +21,7 @@ import {
   estaAtrasado,
 } from '../progression/domain/index.js';
 
-/** Segunda-feira da semana de uma data local (a semana vai de segunda a domingo). */
+/** Monday of the week of a local date (the week runs Monday to Sunday). */
 function inicioDaSemana(date: string): string {
   const dow = diaDaSemana(date);
   return addDays(date, dow === 0 ? -6 : 1 - dow);
@@ -35,7 +35,7 @@ export class ItemsService {
     @Inject(AchievementsService) private readonly achievements: AchievementsService,
   ) {}
 
-  /** Lista os itens do usuário já com o estado do dia (feito, atrasado, sequência, contadores). */
+  /** Lists the user's items with the state of the day (done, overdue, streak, counters). */
   async list(
     userId: string,
     type: ItemType | undefined,
@@ -55,7 +55,7 @@ export class ItemsService {
         userId,
         deletedAt: null,
         ...(type ? { type } : {}),
-        // tarefa marcada sai da lista e vai para o histórico
+        // a checked to-do leaves the list and goes to the history
         OR: [{ type: { not: 'todo' } }, { completedAt: null }],
       },
       orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
@@ -73,7 +73,7 @@ export class ItemsService {
       const list = daysByItem.get(check.itemId) ?? [];
       list.push(check.checkedOn);
       daysByItem.set(check.itemId, list);
-      if (check.checkedOn === hoje) lastToday.set(check.itemId, check.id); // o mais recente vence
+      if (check.checkedOn === hoje) lastToday.set(check.itemId, check.id); // the latest wins
     }
 
     const now = this.clock.now();
@@ -83,8 +83,8 @@ export class ItemsService {
   }
 
   /**
-   * Histórico: tarefas concluídas (que saíram da lista), da mais recente para a mais antiga.
-   * Só do próprio usuário; paginado por `before` (instante de conclusão).
+   * History: completed to-dos (they left the list), newest first. Only the user's own; paginated by
+   * `before` (completion instant).
    */
   async history(
     userId: string,
@@ -136,7 +136,7 @@ export class ItemsService {
     });
     if (!user) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Usuário não encontrado');
 
-    // O usuário só pode usar as próprias categorias (IDOR)
+    // The user can only use their own categories (IDOR).
     const category = await this.prisma.category.findFirst({
       where: { id: input.categoryId, userId, deletedAt: null },
       select: { id: true },
@@ -166,7 +166,9 @@ export class ItemsService {
     return this.toDto(item, [], hoje, inicioDaSemana(hoje), this.clock.now());
   }
 
-  /** Edita um item. O tipo não muda; frequência só em diário e prazo só em tarefa. */
+  /**
+   * Edits an item. The type never changes; frequency only for dailies and due date only for to-dos.
+   */
   async update(userId: string, itemId: string, input: UpdateItemRequest): Promise<ItemDto> {
     const item = await this.prisma.item.findFirst({
       where: { id: itemId, userId, deletedAt: null },
@@ -218,7 +220,7 @@ export class ItemsService {
     );
   }
 
-  /** Exclusão lógica: o histórico de EXP é mantido (RF-16). */
+  /** Soft delete: the EXP history is kept (RF-16). */
   async remove(userId: string, itemId: string): Promise<void> {
     const result = await this.prisma.item.updateMany({
       where: { id: itemId, userId, deletedAt: null },
