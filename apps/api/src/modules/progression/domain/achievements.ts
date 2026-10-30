@@ -4,33 +4,33 @@ import { addDays, diaDaSemana } from './dates.js';
 
 export type { AchievementSlug };
 
-/** Tudo que os critérios das conquistas precisam saber. Montado pelo serviço; os critérios são puros. */
+/** Everything the achievement criteria need. Built by the service; the criteria are pure. */
 export type AchievementContext = {
   totalChecks: number;
   level: number;
   itemsCreated: number;
   coins: number;
-  /** Capítulos já concluídos, somando todas as histórias. */
+  /** Chapters already finished, across all stories. */
   chaptersCompleted: number;
   storiesCompleted: number;
-  /** Hora local (0 a 23) do check em processamento; nulo quando a avaliação não vem de um check. */
+  /** Local hour (0-23) of the check being processed; null outside a check. */
   checkHour: number | null;
-  /** Tarefas concluídas hoje. */
+  /** To-dos completed today. */
   todosToday: number;
-  /** Dias seguidos completos (ver diasSeguidosCompletos). */
+  /** Consecutive complete days (see `diasSeguidosCompletos`). */
   fullDaysStreak: number;
-  /** Dias recentes em que todos os diários agendados (3 ou mais) foram feitos. */
+  /** Recent days on which every scheduled daily (3 or more) was done. */
   perfectDays: number;
-  /** Itens criados por tipo (inclui os excluídos). */
+  /** Items created by type (includes deleted ones). */
   created: { daily: number; todo: number; habit: number };
-  /** Checks ativos por tipo de item. */
+  /** Active (not undone) checks by item type. */
   checksByType: { daily: number; todo: number; habit: number };
   todosDone: number;
   todosOnTime: number;
   todosLate: number;
   hardTodosDone: number;
   openTodos: number;
-  /** Itens ativos agora (exclui excluídos e tarefas concluídas). */
+  /** Items active now (excludes deleted ones and completed to-dos). */
   activeItems: number;
   itemsWithNotes: number;
   distinctDays: number;
@@ -41,14 +41,14 @@ export type AchievementContext = {
   habitDays: number;
   bestHabitRun: number;
   maxHabitsInDay: number;
-  /** Dias com check em 3+ categorias e em 5+ categorias. */
+  /** Days with a check in 3+ categories and in 5+ categories. */
   balancedDays: { three: number; five: number };
-  /** Dias com diário, tarefa e hábito marcados juntos. */
+  /** Days with a daily, a to-do and a habit checked together. */
   podiumDays: number;
   lookChanges: number;
   categoriesCreated: number;
   reminderEnabled: boolean;
-  /** Conquistas já desbloqueadas (para as de coleção). */
+  /** Achievements already unlocked (for the collection ones). */
   unlocked: ReadonlySet<string>;
 };
 
@@ -62,27 +62,27 @@ type Rule = {
   progress?: (ctx: AchievementContext) => Progress;
 };
 
-/** Critério numérico: atende ao chegar no alvo e mostra o progresso (limitado ao alvo). */
+/** Numeric criterion: met on reaching the target; shows progress (capped at the target). */
 const atLeast = (get: (ctx: AchievementContext) => number, target: number): Rule => ({
   met: (ctx) => get(ctx) >= target,
   progress: (ctx) => ({ current: Math.min(get(ctx), target), target }),
 });
 
-/** Critério de evento: sem progresso numérico. */
+/** Event criterion: no numeric progress. */
 const when = (met: (ctx: AchievementContext) => boolean): Rule => ({ met });
 
 const trailSlugs = (trail: string): string[] =>
   ACHIEVEMENT_CATALOG.filter((a) => a.trail === trail).map((a) => a.slug);
 const trails = [...new Set(ACHIEVEMENT_CATALOG.map((a) => a.trail))];
-/** A coleção das surpresas não conta a si mesma. */
+/** The surprise collection does not count itself. */
 const surprises = ACHIEVEMENT_CATALOG.filter((a) => 'secret' in a && a.slug !== 'cofre-aberto').map(
   (a) => a.slug,
 );
 const unlockedCount = (ctx: AchievementContext): number => ctx.unlocked.size;
 
-/** Critério de cada conquista, pelo slug do catálogo (`@nextjourney/contracts`). */
+/** Criterion of each achievement, by catalog slug (`@nextjourney/contracts`). */
 const RULES: Record<AchievementSlug, Rule> = {
-  // Primeiros passos
+  // First steps
   'primeiro-passo': when((c) => c.totalChecks >= 1),
   'diario-inaugural': when((c) => c.created.daily >= 1),
   'primeira-tarefa': when((c) => c.created.todo >= 1),
@@ -95,7 +95,7 @@ const RULES: Record<AchievementSlug, Rule> = {
   'hora-marcada': when((c) => c.reminderEnabled),
   'pena-leve': atLeast((c) => c.itemsWithNotes, 10),
   'guarda-roupa': atLeast((c) => c.lookChanges, 10),
-  // Diários
+  // Dailies
   'rotina-em-marcha': atLeast((c) => c.checksByType.daily, 30),
   'rotina-firme': atLeast((c) => c.checksByType.daily, 60),
   'rotina-de-ferro': atLeast((c) => c.checksByType.daily, 250),
@@ -105,7 +105,7 @@ const RULES: Record<AchievementSlug, Rule> = {
   'chama-7-dias': atLeast((c) => c.fullDaysStreak, FULL_DAYS_FOR_FLAME),
   'chama-14-dias': atLeast((c) => c.fullDaysStreak, 21),
   'chama-30-dias': atLeast((c) => c.fullDaysStreak, 45),
-  // Tarefas
+  // To-dos
   'pe-na-lista': atLeast((c) => c.todosDone, 12),
   executor: atLeast((c) => c.todosDone, 50),
   imparavel: atLeast((c) => c.todosDone, 200),
@@ -114,7 +114,7 @@ const RULES: Record<AchievementSlug, Rule> = {
   'no-prazo': atLeast((c) => c.todosOnTime, 15),
   resgate: when((c) => c.todosLate >= 1),
   'peso-pesado': atLeast((c) => c.hardTodosDone, 15),
-  // Hábitos
+  // Habits
   semente: atLeast((c) => c.habitDays, 14),
   raiz: atLeast((c) => c.habitDays, 60),
   arvore: atLeast((c) => c.habitDays, 180),
@@ -124,7 +124,7 @@ const RULES: Record<AchievementSlug, Rule> = {
   'habito-de-30': atLeast((c) => c.bestHabitRun, 45),
   'habito-de-100': atLeast((c) => c.bestHabitRun, 100),
   'dia-de-foco': atLeast((c) => c.maxHabitsInDay, 6),
-  // Organização e constância
+  // Organization and consistency
   organizado: atLeast((c) => c.itemsCreated, ITEMS_FOR_ORGANIZED),
   planejador: atLeast((c) => c.itemsCreated, 40),
   'arquiteto-da-rotina': atLeast((c) => c.itemsCreated, 100),
@@ -141,7 +141,7 @@ const RULES: Record<AchievementSlug, Rule> = {
   'bolsa-cheia': atLeast((c) => c.activeItems, 20),
   'dia-brilhante': atLeast((c) => c.maxChecksInDay, 15),
   'diamante-bruto': atLeast((c) => c.distinctDays, 200),
-  // Jornada
+  // Journey
   aprendiz: atLeast((c) => c.level, 5),
   veterano: atLeast((c) => c.level, 8),
   mestre: atLeast((c) => c.level, 12),
@@ -153,7 +153,8 @@ const RULES: Record<AchievementSlug, Rule> = {
   cofrinho: atLeast((c) => c.coins, 200),
   tesouro: atLeast((c) => c.coins, 800),
   fortuna: atLeast((c) => c.coins, 3000),
-  // Marcos e coleções (dependem das demais; o serviço repete a avaliação até estabilizar)
+  // Milestones and collections (they depend on the others; the service repeats the evaluation until
+  // it settles)
   'colecionador-de-medalhas': atLeast(unlockedCount, 14),
   'cacador-de-trofeus': atLeast(unlockedCount, 35),
   'primeiro-lugar': atLeast(unlockedCount, 50),
@@ -161,12 +162,12 @@ const RULES: Record<AchievementSlug, Rule> = {
   'cofre-aberto': when((c) => surprises.every((slug) => c.unlocked.has(slug))),
 };
 
-/** Todas as conquistas cujo critério está satisfeito agora. Quem decide o que é novo é o chamador. */
+/** Every achievement whose criterion is met now. The caller decides what is new. */
 export function conquistasAtendidas(ctx: AchievementContext): AchievementSlug[] {
   return ACHIEVEMENT_CATALOG.filter((a) => RULES[a.slug].met(ctx)).map((a) => a.slug);
 }
 
-/** Progresso numérico para a galeria (nulo quando o critério é um evento). */
+/** Numeric progress for the gallery (null when the criterion is an event). */
 export function progressoDaConquista(
   slug: AchievementSlug,
   ctx: AchievementContext,
@@ -177,16 +178,15 @@ export function progressoDaConquista(
 export type DiarioDaChama = {
   scheduleDays: readonly number[];
   createdOn: LocalDate;
-  /** Dias locais com check ativo neste diário. */
   diasMarcados: readonly LocalDate[];
 };
 
 const MAX_LOOKBACK_DAYS = 90;
 
 /**
- * Dias seguidos em que TODO diário agendado foi concluído no próprio dia (voltando a partir de hoje).
- * Dia sem nenhum diário agendado é neutro: não conta e não quebra. Hoje incompleto ainda não
- * quebra (o dia não terminou); um dia anterior incompleto quebra.
+ * Consecutive days on which EVERY scheduled daily was done on the day itself (going back from today).
+ * A day with no scheduled daily is neutral: it neither counts nor breaks. An incomplete today does not
+ * break yet (the day is not over); an incomplete earlier day does.
  */
 export function diasSeguidosCompletos(diarios: readonly DiarioDaChama[], hoje: LocalDate): number {
   const marcados = diarios.map((d) => new Set(d.diasMarcados));
@@ -205,8 +205,9 @@ export function diasSeguidosCompletos(diarios: readonly DiarioDaChama[], hoje: L
 }
 
 /**
- * Dias, entre os últimos `janela`, em que o usuário tinha 3 ou mais diários agendados e fez todos.
- * Quem usa o app há mais tempo só enxerga a janela (limite do retroativo).
+ * Days, within the last `janela` days, on which the user had 3 or more scheduled dailies and did
+ * them all. Only that window is evaluated because the retroactive lookback is capped, so older
+ * days never count.
  */
 export function diasPerfeitos(
   diarios: readonly DiarioDaChama[],

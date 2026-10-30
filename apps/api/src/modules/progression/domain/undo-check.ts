@@ -3,19 +3,19 @@ import type { GameConfig, PlayerState } from '@nextjourney/contracts';
 import { moedasPerdidasAoDesmarcar } from './levels.js';
 
 export type UndoSummary = {
-  /** Moedas tiradas do saldo (nunca deixa o saldo negativo). */
+  /** Coins taken from the balance (never lets it go negative). */
   moedasPerdidas: number;
 };
 
 export type UndoResult = { state: PlayerState; summary: UndoSummary };
 
 /**
- * Desmarca um check. Função pura.
+ * Unchecks a check. Pure function.
  *
- * - Vale em qualquer dia e em qualquer capítulo.
- * - O EXP, o nível e o capítulo nunca voltam: só as moedas diminuem.
- * - A perda é a do capítulo atual (3, 5, 10, 15, 20), limitada ao saldo.
- * - O bônus de moedas por nível não é revertido.
+ * - Works on any day and in any chapter.
+ * - EXP, level and chapter never go back: only the coins decrease.
+ * - The loss is that of the current chapter (3, 5, 10, 15, 20), capped at the balance.
+ * - The coin bonus per level is not reverted.
  */
 export function desfazerCheck(
   state: PlayerState,

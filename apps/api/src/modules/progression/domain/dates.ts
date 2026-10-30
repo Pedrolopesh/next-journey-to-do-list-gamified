@@ -1,9 +1,10 @@
 import type { LocalDate } from '@nextjourney/contracts';
 
 /**
- * Datas locais (AAAA-MM-DD) sem relógio implícito: tudo recebe a data como argumento.
- * A aritmética usa UTC só como calendário; não há fuso envolvido aqui.
+ * Local dates (YYYY-MM-DD) with no implicit clock: everything receives the date as an argument. The
+ * arithmetic uses UTC only as a calendar; no time zone is involved here.
  */
+
 function toUtcDate(date: LocalDate): Date {
   return new Date(`${date}T00:00:00Z`);
 }
@@ -18,14 +19,15 @@ export function addDays(date: LocalDate, days: number): LocalDate {
   return toLocalDate(result);
 }
 
-/** 0 = domingo ... 6 = sábado. */
+/** 0 = Sunday ... 6 = Saturday. */
 export function diaDaSemana(date: LocalDate): number {
   return toUtcDate(date).getUTCDay();
 }
 
 /**
- * Dia local do usuário para um instante, no fuso IANA do perfil (virada às 00:00 nesse fuso).
- * Recebe o instante como argumento: nunca lê o relógio. Lança RangeError se o fuso for inválido.
+ * User's local day for an instant, in the profile's IANA time zone (the day turns at 00:00 in that
+ * zone). Takes the instant as an argument: never reads the clock. Throws RangeError if the time
+ * zone is invalid.
  */
 export function diaLocal(instante: Date | number | string, timezone: string): LocalDate {
   const date = instante instanceof Date ? instante : new Date(instante);
@@ -38,7 +40,7 @@ export function diaLocal(instante: Date | number | string, timezone: string): Lo
   }).format(date);
 }
 
-/** Hora local (0 a 23) de um instante no fuso do usuário. Recebe o instante como argumento. */
+/** Local hour (0 to 23) of an instant in the user's time zone. Takes the instant as an argument. */
 export function horaLocal(instante: Date | number | string, timezone: string): number {
   const date = instante instanceof Date ? instante : new Date(instante);
   if (Number.isNaN(date.getTime())) throw new RangeError('Instante inválido');
