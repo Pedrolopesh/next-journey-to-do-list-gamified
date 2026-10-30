@@ -64,3 +64,24 @@ ssh -N -L 8200:127.0.0.1:8200 <admin-user>@<host>
 ```
 
 Until then, administration is done with `nj-bao` over SSH. Turn the interface off with `openbao_ui: false`.
+
+## Measured times (real host)
+
+| Event                                                                                                   | Time                               |
+| ------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Switching one environment to the vault (`systemctl restart nj-secrets@<env>`, which restarts its stack) | 15 to 17 s of downtime             |
+| Reboot with the vault sealed: SSH back / critical alert delivered                                       | 26 s / 19 s after boot             |
+| Vault opened with three shares until `dev` and `prd` answer again                                       | 68 s (the watcher runs every 30 s) |
+| Reboot command until both environments are back, including opening the vault                            | about 2 min                        |
+| Rotating a secret (write in the vault, restart the environment)                                         | 16 s                               |
+
+With `NJ_SECRETS_FALLBACK=no` the environments stay down after a reboot until the vault is opened. That is the intended state once the setup is accepted.
+
+## Rotating a secret
+
+```
+printf %s '<new value>' | BAO_TOKEN=<admin token> nj-bao kv put kv/nextjourney/<env>/<name> value=-
+sudo systemctl restart nj-secrets@<env>
+```
+
+Send the value with `printf %s`, never with `echo` or a here-document: a trailing newline becomes part of the secret (and of a password). Rotating the JWT secret invalidates access tokens at once; sessions renew through the refresh token. The previous version stays in the vault history (`kv rollback`).
