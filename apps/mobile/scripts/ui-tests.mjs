@@ -1,7 +1,8 @@
 // Testes de interface do app (Maestro) contra a API local.
 //
 // 1) cria uma conta de teste NOVA na API (e-mail e senha aleatórios, só na memória deste processo);
-// 2) cria um item para a conta não receber os 100 itens de exemplo;
+// 2) cria um item inicial (os fluxos esperam "Item inicial"): a conta é confirmada direto no banco,
+//    sem `verifyEmail`, então não recebe os itens de exemplo do servidor;
 // 3) roda os fluxos de `.maestro/` no aparelho/emulador aberto, passando a conta por variável.
 //    UI_FLOW=.maestro/flows/00-entrar-e-onboarding.yaml,.maestro/flows/01-criar-e-marcar-tarefa.yaml
 //    roda só esses fluxos, em ordem (o primeiro precisa ser o de entrada, que loga na conta nova).

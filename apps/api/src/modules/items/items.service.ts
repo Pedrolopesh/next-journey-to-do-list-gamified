@@ -157,13 +157,9 @@ export class ItemsService {
           scheduleDays: input.type === 'daily' ? input.scheduleDays : [],
           dueAt: input.type === 'todo' && input.dueAt ? new Date(input.dueAt) : null,
           createdOn: hoje,
-          isExample: input.example === true,
         },
       });
-      // Exemplo do app não conta como item criado pelo usuário
-      if (input.example !== true) {
-        await tx.userStats.update({ where: { userId }, data: { itemsCreated: { increment: 1 } } });
-      }
+      await tx.userStats.update({ where: { userId }, data: { itemsCreated: { increment: 1 } } });
       await this.achievements.evaluate(tx, { userId, timezone: user.timezone, now, hoje });
       return created;
     });

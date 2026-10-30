@@ -88,12 +88,12 @@ jobs:
         run: |
           fail=0
           if ! printf '%s' "$PR_TITLE" | grep -E -q '^(feat|fix|chore|docs|refactor|perf|test|ci)(\([a-z0-9-]+\))?: [a-z0-9]'; then
-            echo "Título fora do padrão: tipo(escopo opcional): assunto em minúscula"; fail=1
+            echo "Title does not match: type(optional scope): lowercase subject"; fail=1
           fi
-          for secao in "## O que muda" "## Por quê" "## Como foi verificado" "## Riscos e pendências" "## Segurança"; do
-            printf '%s' "$PR_BODY" | grep -q "^$secao" || { echo "Falta a seção: $secao"; fail=1; }
+          for section in "## What changes" "## Why" "## How it was verified" "## Risks and pending items" "## Security"; do
+            printf '%s' "$PR_BODY" | grep -q "^$section[[:space:]]*$" || { echo "Missing section: $section"; fail=1; }
           done
           if printf '%s\n%s' "$PR_TITLE" "$PR_BODY" | grep -i -E -q 'co-authored-by:|generated with|claude-session:|claude\.ai/code/session'; then
-            echo "O título e a descrição não podem citar ferramenta de IA nem co-autor"; fail=1
+            echo "The title and description must not mention an AI tool or a co-author"; fail=1
           fi
           [ "$fail" -eq 0 ]
