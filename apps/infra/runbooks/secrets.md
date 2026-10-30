@@ -53,3 +53,14 @@ Set or replace the webhook with `printf '%s' "<url>" | sudo nj-notify --set-webh
 ## Loopback certificate
 
 The listener uses a self-signed certificate valid for three years (`openbao_tls_days`). To renew it, delete `/etc/openbao/tls/openbao.crt` and `openbao.key` and run the `openbao` role again; the vault restarts sealed, so open it afterwards.
+
+## Web interface
+
+The vault serves its web interface on the loopback listener only. Reach it through an SSH tunnel and sign in with the administrator user (method: Username, with the `nj-admin` policy):
+
+```
+ssh -N -L 8200:127.0.0.1:8200 <admin-user>@<host>
+# then open https://127.0.0.1:8200/ui/ (the certificate is self-signed)
+```
+
+Turn it off with `openbao_ui: false` and run the `openbao` role (the vault restarts sealed).
