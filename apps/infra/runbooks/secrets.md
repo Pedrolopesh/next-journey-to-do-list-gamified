@@ -44,8 +44,8 @@ To go back to the local credentials, set the source to `creds` in that file (or 
 
 `nj-vault-watch.timer` runs every 30 seconds and posts to the alerts channel through a webhook that is stored encrypted on the host (it must work while the vault is sealed, so it does not live in the vault):
 
-- vault sealed: a critical alert at once, repeated every 15 minutes while it stays sealed;
-- vault opened: a notice, and the environments that were waiting are started;
+- vault sealed: a critical alert at once, repeated every 15 minutes while it stays sealed. An alert that could not be delivered is not counted as sent and is tried again on the next run;
+- vault opened: a notice, and the environments that were waiting are started, retrying every 30 seconds until they are up (a warning is sent at most every 15 minutes while one does not come up);
 - after a reboot (`nj-boot-check.service`): one report with the state of the vault, both environments, nginx, certificates and disk.
 
 Set or replace the webhook with `printf '%s' "<url>" | sudo nj-notify --set-webhook`. Measured on the real host: the sealed alert arrived 19 s after sealing and the reopened notice 29 s after opening, with both APIs answering throughout.

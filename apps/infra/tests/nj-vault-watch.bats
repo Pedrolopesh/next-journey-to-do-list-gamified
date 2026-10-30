@@ -17,7 +17,7 @@ setup() {
   mkdir -p "$STUBS"
   # Every alert is recorded instead of sent
   export NJ_NOTIFY="${STUBS}/notify"
-  printf '#!/bin/bash\necho "notify $1 $2" >>"$CALLS"\n' >"$NJ_NOTIFY"
+  printf '#!/bin/bash\necho "notify $1 $2" >>"$CALLS"\nexit "${FAKE_NOTIFY_RC:-0}"\n' >"$NJ_NOTIFY"
   # FAKE_HEALTH: vault health code (000 = unreachable); FAKE_DOWN: environments whose /health fails
   cat >"${STUBS}/curl" <<'S'
 #!/bin/bash
@@ -58,7 +58,7 @@ S
 
 @test "the sealed alert is repeated after the reminder interval" {
   FAKE_HEALTH=503 "$WATCH" watch
-  echo 1 >"${NJ_STATE_DIR}/last_alert"
+  echo 1 >"${NJ_STATE_DIR}/last_sealed"
   FAKE_HEALTH=503 "$WATCH" watch
   [ "$(grep -c '^notify critical' "$CALLS")" -eq 2 ]
 }
@@ -107,6 +107,47 @@ S
 @test "after a reboot an unhealthy environment is reported" {
   FAKE_HEALTH=200 FAKE_DOWN="dev" run "$WATCH" boot
   grep -q '^notify warning .*dev not healthy' "$CALLS"
+}
+
+@test "sealing again right after opening raises a new alert" {
+  FAKE_HEALTH=503 "$WATCH" watch
+  FAKE_HEALTH=200 "$WATCH" watch
+  FAKE_HEALTH=503 "$WATCH" watch
+  [ "$(grep -c '^notify critical' "$CALLS")" -eq 2 ]
+}
+
+@test "an environment that failed to start is retried on the next run" {
+  FAKE_HEALTH=503 "$WATCH" watch
+  : >"$CALLS"
+  FAKE_HEALTH=200 FAKE_INACTIVE="prd" FAKE_DOWN="prd" "$WATCH" watch
+  grep -q '^notify warning .*prd' "$CALLS"
+  : >"$CALLS"
+  FAKE_HEALTH=200 FAKE_INACTIVE="prd" "$WATCH" watch
+  grep -q '^start nj@prd.service' "$CALLS"
+  grep -q '^notify ok Vault opened. Environments started: prd' "$CALLS"
+  : >"$CALLS"
+  FAKE_HEALTH=200 FAKE_INACTIVE="prd" "$WATCH" watch
+  [ ! -s "$CALLS" ]
+}
+
+@test "an environment is not started again when the vault never closed" {
+  FAKE_HEALTH=200 FAKE_INACTIVE="dev" "$WATCH" watch
+  [ ! -s "$CALLS" ]
+}
+
+@test "a sealed alert that could not be delivered is tried again on the next run" {
+  FAKE_NOTIFY_RC=1 FAKE_HEALTH=503 "$WATCH" watch
+  FAKE_NOTIFY_RC=0 FAKE_HEALTH=503 "$WATCH" watch
+  [ "$(grep -c '^notify critical' "$CALLS")" -eq 2 ]
+}
+
+@test "a vault that goes unreachable between sealed and open still starts the environments" {
+  FAKE_HEALTH=503 "$WATCH" watch
+  FAKE_HEALTH=000 "$WATCH" watch
+  : >"$CALLS"
+  FAKE_HEALTH=200 FAKE_INACTIVE="dev prd" "$WATCH" watch
+  grep -q '^start nj@dev.service' "$CALLS"
+  grep -q '^start nj@prd.service' "$CALLS"
 }
 
 @test "an unknown mode is rejected" {

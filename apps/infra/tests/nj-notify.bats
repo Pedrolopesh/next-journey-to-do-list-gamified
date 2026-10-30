@@ -21,9 +21,9 @@ S
   export BATS_TEST_TMPDIR
 }
 
-@test "without a webhook it does not fail and sends nothing" {
+@test "without a webhook it reports failure and sends nothing" {
   run "$NOTIFY" critical "Vault sealed"
-  [ "$status" -eq 0 ]
+  [ "$status" -eq 1 ]
   [ ! -e "${BATS_TEST_TMPDIR}/body" ]
 }
 
@@ -49,7 +49,7 @@ S
 @test "a rejected webhook is reported as not delivered" {
   : >"$NJ_ALERTS_CRED"
   FAKE_CODE=404 run "$NOTIFY" ok "hello"
-  [ "$status" -eq 0 ]
+  [ "$status" -eq 1 ]
   [[ "$output" == *"NOT delivered (HTTP 404)"* ]]
 }
 

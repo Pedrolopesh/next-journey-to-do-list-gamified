@@ -1,7 +1,7 @@
 #!/bin/bash
 # Watches the vault and tells the admin about it.
-#   watch (every 30 s, by timer): alerts when the vault is sealed (again every NJ_REMIND_SECONDS), and when
-#         it is opened it starts the environments that were waiting and reports it.
+#   watch (every 30 s, by timer): alerts when the vault is sealed (again every NJ_REMIND_SECONDS), and once it is
+#         open again it starts the environments that were waiting, retrying every run until they are up.
 #   boot  (once, after a reboot): waits for the vault, then reports the state of the whole host.
 set -uo pipefail
 mode="${1:-watch}"
@@ -13,6 +13,7 @@ notify="${NJ_NOTIFY:-/usr/local/sbin/nj-notify}"
 remind="${NJ_REMIND_SECONDS:-900}"
 envs=(dev prd)
 install -d -m 0700 "$state_dir"
+pending="${state_dir}/pending_start" # set while the vault is not open: environments may need starting
 
 vault_state() {
   local code
@@ -34,16 +35,24 @@ env_healthy() {
   [ -n "$port" ] && curl -fsS --max-time 5 -o /dev/null "http://127.0.0.1:${port}/health" 2>/dev/null
 }
 
-sealed_alert() { # rate limited: once, then every $remind seconds
-  local now last_alert
+due() { # due <name> [force]: true when the last successful alert of that kind is older than the interval
+  local last now
+  [ "${2:-}" = force ] && return 0
   now=$(date +%s)
-  last_alert=$(cat "${state_dir}/last_alert" 2>/dev/null || echo 0)
-  if [ "$1" = force ] || [ $((now - last_alert)) -ge "$remind" ]; then
-    "$notify" critical "Vault is SEALED. Environments cannot restart until it is opened. Open it with: ssh -t <admin-user>@<host> sudo nj-unseal (3 key shares)."
-    echo "$now" >"${state_dir}/last_alert"
-  fi
+  last=$(cat "${state_dir}/last_${1}" 2>/dev/null || echo 0)
+  [ $((now - last)) -ge "$remind" ]
 }
 
+send() { # send <name> <level> <message>: the time is only recorded when the message was delivered
+  "$notify" "$2" "$3" && date +%s >"${state_dir}/last_${1}"
+}
+
+sealed_alert() {
+  due sealed "${1:-}" || return 0
+  send sealed critical "Vault is SEALED. Open it from an admin machine: ssh -t to the host and run: sudo nj-unseal (3 key shares). Environments that restart while it is sealed cannot read their secrets."
+}
+
+# Starts the enabled environments that are not running. Returns 0 when all of them are up.
 start_waiting_environments() {
   local env started=() failed=()
   for env in "${envs[@]}"; do
@@ -52,12 +61,16 @@ start_waiting_environments() {
     if systemctl start "nj@${env}.service" 2>/dev/null && env_healthy "$env"; then started+=("$env"); else failed+=("$env"); fi
   done
   if [ "${#failed[@]}" -gt 0 ]; then
-    "$notify" warning "Vault opened, but these environments did not come up: ${failed[*]}. Check the nj@ units."
-  elif [ "${#started[@]}" -gt 0 ]; then
+    due started_warn && send started_warn warning "Vault opened, but these environments did not come up: ${failed[*]}. Retrying. Check the nj@ units."
+    return 1
+  fi
+  rm -f "${state_dir}/last_started_warn"
+  if [ "${#started[@]}" -gt 0 ]; then
     "$notify" ok "Vault opened. Environments started: ${started[*]}."
   else
     "$notify" ok "Vault opened. Environments were already running."
   fi
+  return 0
 }
 
 do_watch() {
@@ -65,9 +78,18 @@ do_watch() {
   state=$(vault_state)
   last=$(cat "${state_dir}/last" 2>/dev/null || echo unknown)
   case "$state" in
-    sealed) sealed_alert "" ;;
-    open) [ "$last" = sealed ] && start_waiting_environments ;;
-    *) [ "$last" != "$state" ] && "$notify" warning "Vault is ${state}." ;;
+    sealed)
+      touch "$pending"
+      sealed_alert
+      ;;
+    open)
+      rm -f "${state_dir}/last_sealed" # a new sealing raises a new alert right away
+      if [ -e "$pending" ] && start_waiting_environments; then rm -f "$pending"; fi
+      ;;
+    *)
+      touch "$pending"
+      [ "$last" != "$state" ] && "$notify" warning "Vault is ${state}."
+      ;;
   esac
   echo "$state" >"${state_dir}/last"
   return 0
@@ -82,10 +104,11 @@ do_boot() {
   done
   echo "$state" >"${state_dir}/last"
   if [ "$state" = sealed ]; then
+    touch "$pending"
     sealed_alert force
     return 0
   fi
-  [ "$state" = open ] || problems+=("vault ${state}")
+  [ "$state" = open ] || { problems+=("vault ${state}"); touch "$pending"; }
   for env in "${envs[@]}"; do
     systemctl is-enabled --quiet "nj@${env}.service" 2>/dev/null || continue
     env_healthy "$env" || problems+=("${env} not healthy")
