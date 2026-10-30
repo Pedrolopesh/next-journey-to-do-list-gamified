@@ -56,11 +56,11 @@ The listener uses a self-signed certificate valid for three years (`openbao_tls_
 
 ## Web interface
 
-The vault serves its web interface on the loopback listener only. Reach it through an SSH tunnel and sign in with the administrator user (method: Username, with the `nj-admin` policy):
+The vault serves its web interface on the loopback listener only (`openbao_ui`). It is not reachable from outside: SSH port forwarding is disabled on the host by design, so a plain tunnel is refused. To use it, allow a single local forward to the vault port for the administration account (`AllowTcpForwarding local` with `PermitOpen 127.0.0.1:8200` in a `Match User` block of the `ssh` role, applied with the access guard), then:
 
 ```
 ssh -N -L 8200:127.0.0.1:8200 <admin-user>@<host>
-# then open https://127.0.0.1:8200/ui/ (the certificate is self-signed)
+# open https://127.0.0.1:8200/ui/ (the certificate is self-signed) and sign in with the administrator user
 ```
 
-Turn it off with `openbao_ui: false` and run the `openbao` role (the vault restarts sealed).
+Until then, administration is done with `nj-bao` over SSH. Turn the interface off with `openbao_ui: false`.
