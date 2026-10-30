@@ -16,9 +16,11 @@ Paste a key share when asked (nothing is echoed). It stops by itself once the th
 
 1. `nj-bao operator init -key-shares=5 -key-threshold=3`: store each share in a different place. No place may hold three of them.
 2. Open the vault with three shares.
-3. `BAO_TOKEN=<root token> nj-openbao-configure`: KV engine, policies, login methods and one AppRole per environment.
+3. `nj-openbao-configure`: KV engine, policies, login methods and one AppRole per environment.
 4. Create a named administrator with the `nj-admin` policy, check that it can log in and write, then revoke the root token (`nj-bao token revoke -self`).
-5. `BAO_TOKEN=<admin token> nj-openbao-import <dev|prd>`: copies the current secrets with the same values and compares hashes.
+5. `nj-openbao-import <dev|prd>`: copies the current secrets with the same values and compares hashes.
+
+Steps 3 to 5 need a token. Open a root shell (`sudo -i`), then `read -rs BAO_TOKEN; export BAO_TOKEN` so the token is neither in the history nor in the process list (`sudo` drops variables set on its command line), and leave the shell when done.
 
 The audit log is declared in the server configuration (this version does not enable it through the API) and is rotated daily.
 

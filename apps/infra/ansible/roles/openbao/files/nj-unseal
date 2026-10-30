@@ -7,14 +7,15 @@ set -euo pipefail
 api="https://127.0.0.1:8200/v1/sys"
 cacert="/etc/openbao/tls/openbao.crt"
 
-sealed() {
-  curl -fsS --cacert "$cacert" "${api}/seal-status" \
-    | python3 -c 'import json,sys; print(json.load(sys.stdin).get("sealed", True))'
+# Prints True, False or uninitialized; fails when the vault cannot be reached.
+seal_state() {
+  curl -fsS --max-time 5 --cacert "$cacert" "${api}/seal-status" \
+    | python3 -c 'import json,sys; d=json.load(sys.stdin); print("uninitialized" if not d.get("initialized") else d.get("sealed"))'
 }
 
 send_share() { # the share is read from stdin
   python3 -c 'import json,sys; print(json.dumps({"key": sys.stdin.read().strip()}))' \
-    | curl -fsS --cacert "$cacert" -X PUT -H 'Content-Type: application/json' --data @- "${api}/unseal" >/dev/null
+    | curl -fsS --max-time 10 --cacert "$cacert" -X PUT -H 'Content-Type: application/json' --data @- "${api}/unseal" >/dev/null
 }
 
 if [ "${1:-}" = "--stdin" ]; then
@@ -22,7 +23,10 @@ if [ "${1:-}" = "--stdin" ]; then
   exit 0
 fi
 
-while [ "$(sealed)" != "False" ]; do
+while true; do
+  state=$(seal_state) || { echo "cannot reach the vault (is the openbao service running?)" >&2; exit 1; }
+  [ "$state" = uninitialized ] && { echo "the vault is not initialized" >&2; exit 1; }
+  [ "$state" = False ] && break
   read -rsp "Key share: " share
   echo
   printf '%s\n' "$share" | send_share || echo "share rejected" >&2

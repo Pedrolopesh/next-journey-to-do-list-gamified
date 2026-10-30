@@ -154,3 +154,8 @@
   delay: 2
   until: openbao_health.status is defined and openbao_health.status in [200, 429, 472, 473, 501, 503]
   changed_when: false
+
+- name: Warn when the vault is sealed (a restart seals it)
+  ansible.builtin.debug:
+    msg: 'OpenBao is sealed. Open it with: sudo nj-unseal (3 key shares). Environments that restart now cannot read the vault.'
+  when: openbao_health.status == 503
