@@ -29,3 +29,13 @@ The audit log is declared in the server configuration (this version does not ena
 - Never print a value. Scripts compare hashes.
 - The database password does not change when importing: the database was created with it.
 - Losing the key shares means losing the vault data. Keep a Raft snapshot in the backup and the shares offline.
+
+## Where the secrets come from
+
+Each environment has `secrets-<env>.conf` on the host:
+
+- `NJ_SECRETS_SOURCE=creds` (default) reads the local encrypted credentials.
+- `NJ_SECRETS_SOURCE=openbao` reads from the vault with the AppRole of the environment (`nj-openbao-approle <env>` prepares its login once).
+- `NJ_SECRETS_FALLBACK=yes` uses the local credentials when the vault cannot be read. Meant for the transition only.
+
+To go back to the local credentials, set the source to `creds` in that file (or the `app_secrets_source` variable) and run `systemctl restart nj-secrets@<env>`.

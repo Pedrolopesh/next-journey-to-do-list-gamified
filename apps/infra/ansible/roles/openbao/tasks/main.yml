@@ -132,6 +132,7 @@
     - nj-bao
     - nj-openbao-configure
     - nj-openbao-import
+    - nj-openbao-approle
     - nj-unseal
 
 - name: Apply pending changes before the service is started

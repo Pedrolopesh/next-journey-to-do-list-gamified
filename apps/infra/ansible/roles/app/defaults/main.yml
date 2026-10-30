@@ -10,3 +10,9 @@ app_dir: /opt/nextjourney
 app_conf_dir: /etc/nextjourney
 # Sender of transactional emails (the domain must be verified at the email provider)
 app_mail_from: 'Next Journey <no-reply@example.com>'
+# Where each environment reads its secrets from: creds (local encrypted credentials) or openbao.
+# The fallback uses the local credentials when the vault cannot be read; turn it off after acceptance.
+app_secrets_source:
+  dev: creds
+  prd: creds
+app_secrets_fallback: 'yes'
