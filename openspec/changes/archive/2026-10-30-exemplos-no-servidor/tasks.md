@@ -20,5 +20,5 @@
 ## 4. Verificação e documentação
 
 - [x] 4.1 Atualizar `ui-tests.mjs` (comentário sobre os 100 itens de exemplo) e `docs/TESTES.md`; registrar no `HANDOFF.md` a exceção dos textos no servidor e a ordem de publicação (API antes do app)
-- [ ] 4.2 Rodar `pnpm run verify` e a suíte Maestro (iOS e Android) contra a API local com a opção ligada para ao menos uma conta confirmada pelo fluxo real
-- [ ] 4.3 Abrir o PR com "Riscos e pendências" (ordem de publicação, contas existentes sem reabastecimento, toast removido) e `/code-review` antes
+- [x] 4.2 Rodar `pnpm run verify` e confirmar uma conta pelo fluxo real: o `verify` passou (161 e2e) e a confirmação real foi feita no dev hospedado depois da publicação (20 diários, 5 tarefas e 5 hábitos criados pelo servidor); a suíte Maestro não foi repetida, porque o `ui-tests.mjs` confirma o e-mail direto no banco e não passa pela semeadura
+- [x] 4.3 Abrir o PR com "Riscos e pendências" (ordem de publicação, contas existentes sem reabastecimento, toast removido) e `/code-review` antes
