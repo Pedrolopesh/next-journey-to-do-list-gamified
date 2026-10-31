@@ -35,14 +35,15 @@ export function Group({ label, children }: { label: string; children: ReactNode 
 type LookProps = { look: LpcLook; onChange: (look: LpcLook) => void };
 
 /** Ready-made looks as cards (character image and name) plus "Sortear aparência". */
-export function ReadyLooks({ look, onChange }: LookProps) {
+/** `title` replaces the default heading (the edit screen is not a "quick start"). */
+export function ReadyLooks({ look, onChange, title }: LookProps & { title?: string }) {
   const { t } = useTranslation();
   const selectedId = PRESETS.find(
     (preset) => JSON.stringify(preset.look) === JSON.stringify(look),
   )?.id;
   return (
     <View style={styles.sectionGap}>
-      <Text style={styles.heading}>{t('character.quickStart')}</Text>
+      <Text style={styles.heading}>{title ?? t('character.quickStart')}</Text>
       <Text style={styles.label}>{t('character.presets')}</Text>
       {/* Vertical room for the glow of the selected card */}
       <ScrollView

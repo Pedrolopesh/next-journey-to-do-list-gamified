@@ -84,7 +84,7 @@ export function CharacterForm({
 
   return (
     <View style={styles.container}>
-      <ReadyLooks look={look} onChange={applyLook} />
+      <ReadyLooks look={look} onChange={applyLook} title={t('character.editTitle')} />
       <LookDetails look={look} onChange={applyLook} />
       <ClassPicker value={characterClass} onChange={setCharacterClass} />
       <TextField label={t('character.name')} value={name} onChangeText={setName} maxLength={40} />

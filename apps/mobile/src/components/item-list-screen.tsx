@@ -91,7 +91,9 @@ export function ItemListScreen({
   const sections = useMemo(() => {
     const sorted = sortItems(items.data ?? []);
     const visible = filter ? sorted.filter((item) => item.categoryId === filter) : sorted;
-    if (!groupByCategory) return [{ key: 'all', title: '', data: visible }];
+    // No section at all when empty, or the SectionList never shows the empty state
+    if (!groupByCategory)
+      return visible.length > 0 ? [{ key: 'all', title: '', data: visible }] : [];
     const byCategory = new Map<string, Item[]>();
     for (const item of visible)
       byCategory.set(item.categoryId, [...(byCategory.get(item.categoryId) ?? []), item]);

@@ -136,7 +136,7 @@
   },
   "dailies": {
     "title": "Diários",
-    "empty": "Seus diários aparecem aqui",
+    "empty": "Nenhum diário por aqui",
     "emptyHint": "Diários são tarefas de rotina: você marca uma vez por dia, nos dias que escolher. Toque no + para criar o primeiro."
   },
   "todos": {
@@ -150,7 +150,7 @@
   },
   "habits": {
     "title": "Hábitos",
-    "empty": "Seus hábitos aparecem aqui",
+    "empty": "Nenhum hábito por aqui",
     "emptyHint": "Hábitos podem ser marcados quantas vezes você quiser no dia. Toque no + para criar o primeiro."
   },
   "home": {
@@ -376,7 +376,8 @@
       "necromancer": "Necromante"
     },
     "nameTitle": "Qual é o nome do seu personagem?",
-    "nameText": "É assim que ele vai aparecer na sua jornada. Pode mudar depois no Perfil."
+    "nameText": "É assim que ele vai aparecer na sua jornada. Pode mudar depois no Perfil.",
+    "editTitle": "Editando o personagem"
   },
   "story": {
     "saved": "História escolhida!",
