@@ -47,6 +47,18 @@ describe('login sem senha por código de e-mail', () => {
     expect(me.body.user.goal).toBeNull();
   });
 
+  it('a exportação lista o e-mail como forma de entrar da conta sem senha', async () => {
+    const email = uniqueEmail();
+    await start(email).expect(202);
+    const auth = await confirm(email, code(email)).expect(200);
+    const exported = await ctx
+      .http()
+      .get('/v1/me/export')
+      .set('Authorization', bearer(auth.body))
+      .expect(200);
+    expect(exported.body.account.signInMethods).toEqual(['email']);
+  });
+
   it('conta já confirmada entra de novo pelo código, sem recriar itens', async () => {
     const email = uniqueEmail();
     await start(email).expect(202);

@@ -162,7 +162,11 @@ export class DataExportService {
         emailVerifiedAt: isoOrNull(user.emailVerifiedAt),
         signInMethods: [
           ...(user.passwordHash ? (['password'] as const) : []),
-          ...(user.emailVerifiedAt ? (['email'] as const) : []),
+          // Accounts created by email code have no other way in (every confirmed account can also
+          // use the code, but only these are listed here)
+          ...(user.emailVerifiedAt && !user.passwordHash && user.identities.length === 0
+            ? (['email'] as const)
+            : []),
           ...user.identities.map((identity) => identity.provider),
         ],
       },
