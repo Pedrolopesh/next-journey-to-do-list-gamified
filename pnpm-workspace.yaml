@@ -60,3 +60,6 @@ overrides:
   qs: '>=6.16.1'
   # Expo CLI validates its own config with Zod 3; the fixed release is on the 4.x line
   '@expo/cli>zod': '>=4.6.6'
+  # Fixes for high-severity advisories in transitive dependencies (Expo tooling and HTTP client)
+  node-forge: '>=1.4.1'
+  follow-redirects: '>=1.16.2'
