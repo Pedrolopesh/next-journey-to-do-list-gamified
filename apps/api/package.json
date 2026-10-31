@@ -23,12 +23,12 @@
     "generate": "prisma generate"
   },
   "dependencies": {
-    "@nestjs/common": "^12.2.0",
-    "@nestjs/core": "^12.2.0",
+    "@nestjs/common": "^12.3.2",
+    "@nestjs/core": "^12.3.2",
     "@nestjs/jwt": "^12.0.3",
-    "@nestjs/platform-express": "^12.2.0",
+    "@nestjs/platform-express": "^12.3.2",
     "@nestjs/schedule": "^12.0.2",
-    "@nestjs/swagger": "^12.0.4",
+    "@nestjs/swagger": "^12.0.5",
     "@nestjs/terminus": "^12.1.0",
     "@nestjs/throttler": "^6.7.1",
     "@nextjourney/contracts": "workspace:*",
@@ -47,9 +47,9 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@nestjs/cli": "^12.0.10",
-    "@nestjs/schematics": "^12.0.10",
-    "@nestjs/testing": "^12.2.0",
+    "@nestjs/cli": "^12.0.11",
+    "@nestjs/schematics": "^12.0.12",
+    "@nestjs/testing": "^12.3.2",
     "@nextjourney/eslint-config": "workspace:*",
     "@nextjourney/tsconfig": "workspace:*",
     "@swc/core": "^1.16.20",
