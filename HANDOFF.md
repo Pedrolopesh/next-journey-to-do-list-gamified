@@ -26,6 +26,7 @@ Pendências deste trabalho:
 - **Classes do personagem** (8, provisórias, sem arte própria) e **textos dos modais das histórias** (exemplos).
 - **Aceite dos Termos no e-mail**: a conta criada por e-mail guarda a versão enviada pelo app (`termsVersion`), sem tela de aceite própria além do texto da Boas-vindas.
 - **Remover os endpoints de senha** (`register`, `login`, `forgot-password`, `reset-password`) e a tabela `password_resets`: mudança própria, quando as versões antigas do app saírem de uso.
+- **Voltar no onboarding** permite refazer o personagem depois de criado; a troca de visual conta para as conquistas como a edição no Perfil (aceito, não há ganho além do que o Perfil já permite).
 - **Responsividade:** espaçamentos e tamanhos de fonte passam a acompanhar a largura da tela (`apps/mobile/src/theme/scale.ts`, tokens `fontSize` e `space`); conferir telas densas em celulares pequenos e tablets.
 
 ## O que existe hoje (tudo na `main`)

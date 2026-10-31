@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { VERIFICATION_RESEND_INTERVAL_MS } from '../src/modules/auth/email-verification.service.js';
-import { bearer, createTestApp, type TestContext, uniqueEmail } from './helpers.js';
+import { bearer, createTestApp, registerBody, type TestContext, uniqueEmail } from './helpers.js';
 
 const WRONG = '000000';
 
@@ -83,6 +83,25 @@ describe('login sem senha por código de e-mail', () => {
     expect(unknown.body.message).toBe(wrong.body.message);
     await confirm(email, otp).expect(200);
     await confirm(email, otp).expect(400);
+  });
+
+  it('a senha de um cadastro pendente alheio não sobrevive à confirmação do dono do e-mail', async () => {
+    const email = uniqueEmail();
+    // Someone else registers the victim's email with a password they know (legacy endpoint)
+    await ctx
+      .http()
+      .post('/v1/auth/register')
+      .send(registerBody(email, 'Atacante#1234'))
+      .expect(202); // scan-allow: senha falsa
+    later(VERIFICATION_RESEND_INTERVAL_MS + 1000);
+    // The owner signs in with the code that reaches their mailbox
+    await start(email).expect(202);
+    await confirm(email, code(email)).expect(200);
+    await ctx
+      .http()
+      .post('/v1/auth/login')
+      .send({ email, password: 'Atacante#1234' }) // scan-allow: senha falsa
+      .expect(401);
   });
 
   it('a resposta do pedido é igual para e-mail novo e já confirmado', async () => {

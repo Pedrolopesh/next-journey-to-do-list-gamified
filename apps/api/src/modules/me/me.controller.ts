@@ -198,7 +198,8 @@ export class MeController {
     const { look, characterClass, ...rest } = body;
     const data = {
       ...rest,
-      characterClass: characterClass ?? null,
+      // Omitted by an older client: keep what is stored
+      ...(characterClass !== undefined ? { characterClass } : {}),
       accessory: body.accessory ?? null,
       look: look ?? Prisma.JsonNull,
     };

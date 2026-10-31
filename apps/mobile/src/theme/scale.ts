@@ -16,6 +16,9 @@ const factor = (width: number): number =>
 export const scale = (value: number, width: number = Dimensions.get('window').width): number =>
   PixelRatio.roundToNearestPixel(value * factor(width));
 
+// The tokens are computed once at start: the app is locked to portrait (app.config.ts), so the
+// window width does not change while it runs.
+
 /** Type scale (sizes used by the design, scaled to the screen). Use `fontSize[14]`, not `14`. */
 export const fontSize = {
   11: scale(11),

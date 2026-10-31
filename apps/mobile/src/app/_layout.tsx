@@ -15,6 +15,7 @@ import { ProgressionModalHost } from '@/components/progression-modal-host';
 import { ToastHost } from '@/components/toast-host';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { useCheckSync } from '@/features/offline/use-check-sync';
+import { useCharacterDraft } from '@/features/onboarding/character-draft';
 import { useOnboardingFlow } from '@/features/onboarding/flow-store';
 import { isOnboardingComplete } from '@/features/onboarding/next-step';
 import { syncDailyReminder } from '@/features/settings/reminder';
@@ -161,6 +162,9 @@ export default function RootLayout() {
     if (status === 'signedOut') {
       queryClient.clear();
       useFeedbackStore.getState().clear();
+      // Nothing of an interrupted onboarding may leak into the next sign-in
+      useOnboardingFlow.getState().setFinishing(false);
+      useCharacterDraft.getState().reset();
     }
   }, [status, queryClient]);
 

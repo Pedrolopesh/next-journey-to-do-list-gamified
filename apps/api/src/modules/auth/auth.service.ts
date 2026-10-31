@@ -218,7 +218,12 @@ export class AuthService {
     const confirmed = await this.prisma.$transaction(async (tx) => {
       if (!(await this.verification.consume(user.id, input.code, true, tx))) return false;
       if (!user.emailVerifiedAt) {
-        await tx.user.update({ where: { id: user.id }, data: { emailVerifiedAt: now } });
+        // A password set while the account was pending (legacy sign-up by someone who does not own
+        // the mailbox) must not survive the owner's first confirmation.
+        await tx.user.update({
+          where: { id: user.id },
+          data: { emailVerifiedAt: now, passwordHash: null },
+        });
         await this.starterItems.seed(tx, { userId: user.id, timezone: user.timezone, now });
       }
       return true;

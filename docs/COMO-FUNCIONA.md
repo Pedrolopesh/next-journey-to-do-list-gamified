@@ -58,7 +58,7 @@ Nome dos pacotes: escopo `@nextjourney/*` (ex.: `@nextjourney/contracts`). Um pa
         └──────── todos importam schemas Zod de packages/contracts ────────┘
 ```
 
-- **App ↔ API:** REST sob `/v1`, com JWT de acesso (15 min) e refresh token rotativo (30 dias). Login Google e Apple acontece no aparelho; só o ID token vai para a API, que o valida.
+- **App ↔ API:** REST sob `/v1`, com JWT de acesso (15 min) e refresh token rotativo (365 dias, renovado a cada uso). Login Google e Apple acontece no aparelho; só o ID token vai para a API, que o valida.
 - **App ↔ banner:** o banner é um único `banner.html` embutido no app (gerado pelo Vite com `vite-plugin-singlefile`) e carregado em um WebView. O app envia mensagens (`INIT`, `ITEM_CHECKED`, `CHAPTER_COMPLETED`, `SET_CHARACTER`, `SET_TIME_OF_DAY`, `PAUSE`/`RESUME`) e o banner responde com `READY`, `CHAPTER_TRANSITION_DONE` e `ERROR`. Toda mensagem é validada com Zod nos dois lados.
 - **Contratos:** `packages/contracts` é a única fonte dos formatos de dados. Se um schema muda, o typecheck dos três apps quebra no mesmo PR.
 

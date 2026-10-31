@@ -28,8 +28,9 @@ import { colors, fontSize, space } from '@/theme';
 class Cancelled extends Error {}
 
 /**
- * Exclusão de conta com reautenticação: a senha atual (conta com senha), o código recebido por
- * e-mail ou um novo login com o Google/Apple (conta sem senha). Só depois disso a API apaga a conta.
+ * Account deletion with re-authentication: the current password (account with a password), the
+ * code received by email or a fresh sign-in with Google/Apple (account without a password). Only
+ * then does the API delete the account.
  */
 export default function DeleteAccountScreen() {
   const { t } = useTranslation();

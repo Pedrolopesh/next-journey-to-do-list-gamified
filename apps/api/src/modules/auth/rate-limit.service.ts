@@ -33,8 +33,8 @@ export const LIMITS = {
     perEmail: { limit: 15, windowMs: 60 * MINUTE_MS },
   },
   emailStart: {
-    perEmailAndIp: { limit: 5, windowMs: 60 * MINUTE_MS },
-    perEmail: { limit: 15, windowMs: 60 * MINUTE_MS },
+    perEmailAndIp: { limit: 10, windowMs: 60 * MINUTE_MS },
+    perEmail: { limit: 30, windowMs: 60 * MINUTE_MS },
   },
   verifyEmail: {
     perEmailAndIp: { limit: 10, windowMs: 15 * MINUTE_MS },

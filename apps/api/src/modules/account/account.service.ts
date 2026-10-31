@@ -142,7 +142,7 @@ export class AccountService {
   async purgeExpired(): Promise<number> {
     const limit = new Date(this.clock.now().getTime() - this.env.ACCOUNT_PURGE_DAYS * DAY_MS);
     const result = await this.prisma.user.deleteMany({ where: { deletedAt: { lt: limit } } });
-    // Password sign-up that never confirmed its email (the codes go in cascade).
+    // Sign-up that never confirmed its email, by password or by code (the codes go in cascade).
     const pendingLimit = new Date(this.clock.now().getTime() - UNVERIFIED_ACCOUNT_DAYS * DAY_MS);
     const pending = await this.prisma.user.deleteMany({
       where: { emailVerifiedAt: null, identities: { none: {} }, createdAt: { lt: pendingLimit } },

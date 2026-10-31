@@ -54,7 +54,7 @@ export const emailStartRequestSchema = z.object({
   /** Used only when the email has no account yet (the code confirms it). */
   timezone: timezoneSchema.optional(),
   /** Version of the Terms shown on the welcome screen; stored on the new account. */
-  termsVersion: z.string().min(1).optional(),
+  termsVersion: z.string().min(1).max(32).optional(),
 });
 export type EmailStartRequest = z.infer<typeof emailStartRequestSchema>;
 

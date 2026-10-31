@@ -430,7 +430,7 @@
     "about": "{{name}} versão {{version}}",
     "deleteWithCode": "Enviaremos um código de 6 dígitos para o seu e-mail para confirmar que a conta é sua.",
     "deleteSendCode": "Enviar código",
-    "deleteCodeSent": "Enviamos um código para o seu e-mail."
+    "deleteCodeSent": "Pedido enviado. Se o código não chegar, aguarde 1 minuto e peça de novo."
   },
   "sessions": {
     "title": "Aparelhos conectados",

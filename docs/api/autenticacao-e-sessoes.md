@@ -6,8 +6,8 @@ Código em `apps/api/src/modules/auth`. As decisões e os motivos estão no [ADR
 
 É a forma de entrar do app. Dois passos, sem cadastro separado:
 
-1. `POST /v1/auth/email/start` (`{ email, timezone?, termsVersion? }`) responde sempre `202`, sem corpo, exista a conta ou não. E-mail novo cria uma conta **pendente sem senha** (nome provisório tirado da parte antes do `@`); todo e-mail recebe um código de 6 dígitos, respeitando o intervalo de 60 s entre envios. Limite: 5 por e-mail e IP por hora e 15 por e-mail por hora.
-2. `POST /v1/auth/email/confirm` (`{ email, code }`) troca o código pela sessão. O código segue as mesmas regras de baixo (15 minutos, uso único, 5 tentativas). A primeira confirmação marca `emailVerifiedAt` e cria os itens de exemplo, na mesma transação que consome o código; as seguintes só devolvem a sessão. Toda falha (código errado, expirado, usado ou e-mail sem conta) responde `400 INVALID_VERIFICATION_CODE`, igual.
+1. `POST /v1/auth/email/start` (`{ email, timezone?, termsVersion? }`) responde sempre `202`, sem corpo, exista a conta ou não. E-mail novo cria uma conta **pendente sem senha** (nome provisório tirado da parte antes do `@`); todo e-mail recebe um código de 6 dígitos, respeitando o intervalo de 60 s entre envios. Limite: 10 por e-mail e IP por hora e 30 por e-mail por hora (o app deixa reenviar a cada 60 s).
+2. `POST /v1/auth/email/confirm` (`{ email, code }`) troca o código pela sessão. O código segue as mesmas regras de baixo (15 minutos, uso único, 5 tentativas). A primeira confirmação marca `emailVerifiedAt`, **apaga qualquer senha gravada enquanto a conta estava pendente** (impede que quem cadastrou o e-mail alheio pelo endpoint legado entre depois) e cria os itens de exemplo, na mesma transação que consome o código; as seguintes só devolvem a sessão. Toda falha (código errado, expirado, usado ou e-mail sem conta) responde `400 INVALID_VERIFICATION_CODE`, igual.
 
 Quem já tinha conta com senha entra pelo mesmo caminho: o código prova a posse do e-mail. Os endpoints de senha abaixo continuam na API só para versões antigas do app; o app novo não os usa.
 

@@ -12,7 +12,7 @@ O app precisa manter o usuário logado com segurança, em um repositório públi
 
 - **Senha:** argon2id. Login com e-mail inexistente gasta o mesmo tempo e devolve a mesma resposta que senha errada (sem enumeração).
 - **Access token:** JWT HS256 de 15 minutos, algoritmo fixado na verificação (`alg: none` e troca de algoritmo são recusados). Segredo de pelo menos 32 caracteres, vindo do ambiente e validado ao subir.
-- **Refresh token:** `<id>.<segredo>` aleatório; só o sha256 do segredo fica no banco, comparado em tempo constante. Validade de 30 dias.
+- **Refresh token:** `<id>.<segredo>` aleatório; só o sha256 do segredo fica no banco, comparado em tempo constante. Validade de 365 dias, renovada a cada rotação (a sessão só termina com "Sair", exclusão, revogação ou reúso detectado; decisão de 2026-10-31).
 - **Rotação com detecção de roubo:** cada refresh invalida o token usado e emite outro na mesma família. Reusar um token já usado **revoga a família inteira**.
 - **No aparelho:** só o refresh token é guardado, no SecureStore (Keychain/Keystore). O access token fica só na memória. O usuário não é salvo: vem da resposta do refresh.
 - **Cliente HTTP:** num 401 renova **uma vez** e refaz a chamada; requisições concorrentes compartilham a mesma renovação (fila). Se a renovação falha, a sessão acaba.
