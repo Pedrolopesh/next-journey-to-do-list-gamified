@@ -1,48 +1,37 @@
-# Passa pelas telas de onboarding que estiverem abertas (tutorial, personagem e história). Seguro
-# para chamar a qualquer momento: cada etapa só roda se a tela estiver visível.
+# Passa pelas telas de onboarding que estiverem abertas (introdução, meta, personagem, história e
+# perguntas finais). Seguro para chamar a qualquer momento: cada etapa só roda se a tela estiver
+# visível.
 appId: br.com.wetechhub.app.dev
 ---
 - runFlow: fechar-conquista.yaml
+# Introdução: "Pular" leva à meta
 - runFlow:
     when:
-      visible: 'Pular'
+      visible: 'Crie seu herói|Marque, ganhe, evolua|Você escolhe a jornada'
     commands:
       - tapOn: 'Pular'
 - runFlow: fechar-conquista.yaml
 - runFlow:
     when:
+      visible: 'O que você quer mudar.*'
+    commands:
+      - tapOn: 'Parar de procrastinar'
+      - tapOn: 'Continuar'
+# Looks prontos: "Pular" segue para o nome
+- runFlow:
+    when:
       visible: 'Comece rápido'
     commands:
-      - runFlow:
-          when:
-            platform: Android
-          commands:
-            - scrollUntilVisible:
-                element: 'Nome do personagem'
-      # iOS: scrollUntilVisible não acha o rótulo do campo; rola a tela duas vezes
-      - runFlow:
-          when:
-            platform: iOS
-          commands:
-            - scroll
-            - scroll
+      - tapOn: 'Pular'
+- runFlow:
+    when:
+      visible: 'Qual é o nome do seu personagem?'
+    commands:
       - runFlow:
           file: tocar-campo.yaml
           env:
             CAMPO: 'Nome do personagem'
       - inputText: 'Testadora'
-      - hideKeyboard
-      - runFlow:
-          when:
-            platform: Android
-          commands:
-            - scrollUntilVisible:
-                element: 'Criar personagem'
-      - runFlow:
-          when:
-            platform: iOS
-          commands:
-            - scroll
       - tapOn: 'Criar personagem'
 - runFlow:
     when:
@@ -50,3 +39,18 @@ appId: br.com.wetechhub.app.dev
     commands:
       - tapOn: 'Praia.*'
       - tapOn: 'Começar esta história'
+- runFlow:
+    when:
+      visible: 'Quer receber lembretes?'
+    commands:
+      - tapOn: 'Agora não'
+- runFlow:
+    when:
+      visible: 'Qual é a sua idade?'
+    commands:
+      - tapOn: 'Pular'
+- runFlow:
+    when:
+      visible: 'Como devemos nos referir a você?'
+    commands:
+      - tapOn: 'Pular'

@@ -1,23 +1,20 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useHome, useMe } from '@/api/queries';
 import { ActionButton } from '@/components/action-button';
-import { QgControls } from '@/components/qg-controls';
 import { StatCard } from '@/components/stat-card';
 import { ErrorState, SkeletonList } from '@/components/states';
 import { StoryProgressCard } from '@/components/story-progress-card';
 import { TabScreen } from '@/components/tab-screen';
-import { colors, space } from '@/theme';
+import { colors, fontSize, space } from '@/theme';
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const home = useHome();
   const { data: me } = useMe();
-  const [showEnvironment, setShowEnvironment] = useState(false);
 
   return (
     <TabScreen
@@ -84,6 +81,9 @@ export default function HomeScreen() {
           </>
         )}
 
+        <Text style={styles.section} accessibilityRole="header">
+          {t('home.hqTitle')}
+        </Text>
         <View style={styles.qgActions}>
           <ActionButton
             art="character"
@@ -98,19 +98,10 @@ export default function HomeScreen() {
             title={t('qg.changeStory')}
             description={t('qg.changeStoryDesc')}
             onPress={() => {
-              router.push('/story/timeline');
-            }}
-          />
-          <ActionButton
-            art="scenery"
-            title={showEnvironment ? t('qg.closeScenario') : t('qg.changeScenario')}
-            description={t('qg.changeScenarioDesc')}
-            onPress={() => {
-              setShowEnvironment((open) => !open);
+              router.push('/story/change');
             }}
           />
         </View>
-        {showEnvironment ? <QgControls /> : null}
       </ScrollView>
     </TabScreen>
   );
@@ -118,7 +109,13 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   content: { gap: space[12], paddingBottom: space[40] },
-  greeting: { color: colors.text.primary, fontSize: 20, fontWeight: '600' },
+  greeting: { color: colors.text.primary, fontSize: fontSize[20], fontWeight: '600' },
+  section: {
+    color: colors.text.secondary,
+    fontSize: fontSize[13],
+    fontWeight: '600',
+    marginTop: space[8],
+  },
   qgActions: { gap: space[8] },
   counters: { flexDirection: 'row', flexWrap: 'wrap', gap: space[8] },
 });

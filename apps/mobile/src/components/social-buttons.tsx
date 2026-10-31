@@ -13,17 +13,15 @@ import {
   googleEnabled,
   isAppleAvailable,
 } from '@/features/auth/social-id-token';
+import { TERMS_VERSION } from '@/features/auth/terms';
 import { toast } from '@/features/feedback/toast-store';
-import { colors, space } from '@/theme';
-
-/** Termos aceitos no primeiro acesso por login social (LGPD). Sobe quando os textos mudarem. */
-const TERMS_VERSION = '2026-10-01';
+import { colors, fontSize, space } from '@/theme';
 
 /**
  * Login com Google e com Apple. O aparelho obtém o ID token e só ele vai para a API, que valida no
  * servidor. Os botões só aparecem quando o recurso está configurado/disponível.
  */
-export function SocialButtons() {
+export function SocialButtons({ showDivider = true }: { showDivider?: boolean }) {
   const { t } = useTranslation();
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [busy, setBusy] = useState<'google' | 'apple' | null>(null);
@@ -85,7 +83,7 @@ export function SocialButtons() {
   if (!googleEnabled && !appleAvailable) return null;
   return (
     <View style={styles.container}>
-      <Text style={styles.or}>{t('auth.or')}</Text>
+      {showDivider ? <Text style={styles.or}>{t('auth.or')}</Text> : null}
       {googleEnabled ? (
         <Button
           label={t('auth.continueGoogle')}
@@ -113,6 +111,6 @@ export function SocialButtons() {
 
 const styles = StyleSheet.create({
   container: { gap: space[8] },
-  or: { color: colors.text.muted, fontSize: 12, textAlign: 'center' },
-  error: { color: colors.status.danger, fontSize: 13 },
+  or: { color: colors.text.muted, fontSize: fontSize[12], textAlign: 'center' },
+  error: { color: colors.status.danger, fontSize: fontSize[13] },
 });

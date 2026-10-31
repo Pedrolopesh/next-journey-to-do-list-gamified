@@ -11,7 +11,7 @@ import { Button } from '@/components/button';
 import { ScreenFrame } from '@/components/screen-frame';
 import { describeError } from '@/features/feedback/error-message';
 import { useAction } from '@/features/feedback/use-action';
-import { colors, radius, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 /** Data e hora curtas, no idioma do aparelho. */
 const when = (iso: string): string =>
@@ -118,7 +118,7 @@ export default function SessionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  hint: { color: colors.text.secondary, fontSize: 13 },
+  hint: { color: colors.text.secondary, fontSize: fontSize[13] },
   card: {
     gap: space[4],
     padding: space[12],
@@ -127,6 +127,6 @@ const styles = StyleSheet.create({
     borderColor: colors.border.strong,
     backgroundColor: colors.bg.surface,
   },
-  name: { color: colors.text.primary, fontSize: 15, fontWeight: '600' },
-  meta: { color: colors.text.muted, fontSize: 12 },
+  name: { color: colors.text.primary, fontSize: fontSize[15], fontWeight: '600' },
+  meta: { color: colors.text.muted, fontSize: fontSize[12] },
 });

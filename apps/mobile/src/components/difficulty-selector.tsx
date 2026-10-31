@@ -3,7 +3,7 @@ import { IconStarFilled } from '@tabler/icons-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, rgba, size, softGlow, space } from '@/theme';
+import { colors, fontSize, radius, rgba, size, softGlow, space } from '@/theme';
 
 const OPTIONS: { value: Difficulty; stars: number; color: string }[] = [
   { value: 'easy', stars: 1, color: colors.status.success },
@@ -82,6 +82,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.surface,
   },
   stars: { flexDirection: 'row', gap: space[4] },
-  text: { color: colors.text.secondary, fontSize: 14, fontWeight: '500' },
+  text: { color: colors.text.secondary, fontSize: fontSize[14], fontWeight: '500' },
   textSelected: { color: colors.text.onPrimary, fontWeight: '700' },
 });

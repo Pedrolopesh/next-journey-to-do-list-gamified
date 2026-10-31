@@ -8,7 +8,7 @@ import { AchievementCard } from '@/components/achievement-card';
 import { AchievementSheet } from '@/components/achievement-sheet';
 import { ScreenFrame } from '@/components/screen-frame';
 import { ErrorState, SkeletonList } from '@/components/states';
-import { colors, space } from '@/theme';
+import { colors, fontSize, space } from '@/theme';
 
 /** Galeria de conquistas em pixel art com critério, progresso e estado (RF-32); toque abre os detalhes. */
 export default function AchievementsScreen() {
@@ -68,8 +68,8 @@ export default function AchievementsScreen() {
 const styles = StyleSheet.create({
   sections: { gap: space[24] },
   section: { gap: space[8] },
-  trail: { color: colors.text.primary, fontSize: 18, fontWeight: '700' },
-  count: { color: colors.text.secondary, fontSize: 14, fontWeight: '600' },
-  goal: { color: colors.text.secondary, fontSize: 13 },
+  trail: { color: colors.text.primary, fontSize: fontSize[18], fontWeight: '700' },
+  count: { color: colors.text.secondary, fontSize: fontSize[14], fontWeight: '600' },
+  goal: { color: colors.text.secondary, fontSize: fontSize[13] },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space[8] },
 });

@@ -18,7 +18,7 @@ import { TextField } from '@/components/text-field';
 import { toast } from '@/features/feedback/toast-store';
 import { dueDateFor, type DuePreset, endOfDayIso } from '@/features/items/due-presets';
 import { deviceToday } from '@/features/items/local-date';
-import { colors, radius, size, space } from '@/theme';
+import { colors, fontSize, radius, size, space } from '@/theme';
 
 const WEEK_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.surface,
   },
   group: { gap: space[8] },
-  label: { color: colors.text.secondary, fontSize: 13, fontWeight: '500' },
+  label: { color: colors.text.secondary, fontSize: fontSize[13], fontWeight: '500' },
   days: { flexDirection: 'row', flexWrap: 'wrap', gap: space[4] },
-  error: { color: colors.status.danger, fontSize: 13 },
+  error: { color: colors.status.danger, fontSize: fontSize[13] },
 });

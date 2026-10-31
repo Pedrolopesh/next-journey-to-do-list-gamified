@@ -27,7 +27,7 @@ import { useJourneyStore } from '@/features/qg/journey-store';
 import { DEFAULT_STORY_SCENARIO, isStoryScenario } from '@/features/qg/options';
 import { useQgPrefs } from '@/features/qg/qg-store';
 import { useTimeOfDay } from '@/features/qg/use-time-of-day';
-import { colors, radius, size, space } from '@/theme';
+import { colors, fontSize, radius, size, space } from '@/theme';
 
 const CHECK_STEP = 0.2;
 
@@ -67,7 +67,7 @@ export function TabScreen({
   const ownRef = useRef<BannerViewHandle>(null);
   const banner = bannerRef ?? ownRef;
   const { data: me } = useMe();
-  const { scenario, timeMode } = useQgPrefs();
+  const { timeMode } = useQgPrefs();
   // A jornada usa o cenário da história ativa (história = cenário)
   const storySlug = me?.story?.slug;
   const storyScenario = isStoryScenario(storySlug) ? storySlug : DEFAULT_STORY_SCENARIO;
@@ -103,7 +103,8 @@ export function TabScreen({
           ? {
               scene: 'qg',
               character: characterLayers(me?.character ?? null),
-              sceneKey: scenario,
+              // The HQ scenery is the one of the active story (the manual choice is gone)
+              sceneKey: storyScenario,
               progress: chapterProgress(me),
               timeOfDay: qgTime,
             }
@@ -115,7 +116,7 @@ export function TabScreen({
               timeOfDay: qgTime,
             },
     }),
-    [me, scene, scenario, storyScenario, qgTime, shownLevel],
+    [me, scene, storyScenario, qgTime, shownLevel],
   );
 
   const handleBannerMessage = useCallback(
@@ -203,7 +204,7 @@ const styles = StyleSheet.create({
   body: { flex: 1, padding: space.screenMargin, gap: space[8] },
   bannerLabel: {
     color: colors.text.secondary,
-    fontSize: 12,
+    fontSize: fontSize[12],
     fontWeight: '700',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
   },
   bannerCaption: {
     color: colors.text.muted,
-    fontSize: 12,
+    fontSize: fontSize[12],
     textAlign: 'center',
     paddingHorizontal: space.screenMargin,
     paddingTop: space[8],
@@ -230,14 +231,14 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text.primary,
-    fontSize: 22,
+    fontSize: fontSize[22],
     fontWeight: '600',
     textAlign: 'center',
     marginTop: space[24],
   },
-  subtitle: { color: colors.text.secondary, fontSize: 14, textAlign: 'center' },
+  subtitle: { color: colors.text.secondary, fontSize: fontSize[14], textAlign: 'center' },
   debug: { width: '100%', gap: space[8], marginTop: space[24] },
-  debugText: { color: colors.text.muted, fontSize: 12, textAlign: 'center' },
+  debugText: { color: colors.text.muted, fontSize: fontSize[12], textAlign: 'center' },
   button: {
     minHeight: size.touchTarget,
     alignItems: 'center',
@@ -246,5 +247,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand.primary,
   },
   buttonSecondary: { backgroundColor: colors.bg.raised },
-  buttonText: { color: colors.text.onPrimary, fontSize: 14, fontWeight: '600' },
+  buttonText: { color: colors.text.onPrimary, fontSize: fontSize[14], fontWeight: '600' },
 });

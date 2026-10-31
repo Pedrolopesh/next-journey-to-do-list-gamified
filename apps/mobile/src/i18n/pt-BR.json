@@ -164,7 +164,8 @@
     "today": "Para hoje",
     "todayEmpty": "Nada pendente para hoje",
     "coins": "Moedas",
-    "chapterOf": "Capítulo {{number}} de {{total}}"
+    "chapterOf": "Capítulo {{number}} de {{total}}",
+    "hqTitle": "Seu QG"
   },
   "itemForm": {
     "created": "Item criado!",
@@ -243,16 +244,16 @@
     "start": "Começar",
     "progress": "Passo {{current}} de {{total}}",
     "slide1": {
-      "title": "Marque, evolua",
-      "text": "Cada diário, tarefa ou hábito que você marca rende EXP e moedas."
+      "title": "Crie seu herói",
+      "text": "Escolha o visual, o nome e o cenário. É ele quem vive a sua história."
     },
     "slide2": {
-      "title": "Sua história avança",
-      "text": "Seu personagem anda por uma história em capítulos conforme você conclui itens."
+      "title": "Marque, ganhe, evolua",
+      "text": "Cada diário, tarefa ou hábito que você conclui rende EXP e moedas."
     },
     "slide3": {
-      "title": "Sem pressão",
-      "text": "Sem penalidades: o objetivo é criar o hábito, um passo de cada vez."
+      "title": "Você escolhe a jornada",
+      "text": "Seu herói avança capítulo a capítulo. Quanto mais você avança, mais descobre."
     }
   },
   "character": {
@@ -287,8 +288,8 @@
       "accessory-bandana": "Bandana",
       "weapon-silver-sword": "Espada de prata",
       "accessory-shield": "Escudo",
-      "male": "Masculino",
-      "female": "Feminino",
+      "male": "Opção 1",
+      "female": "Opção 2",
       "amber": "Âmbar",
       "olive": "Oliva",
       "taupe": "Acinzentada",
@@ -358,13 +359,44 @@
       "explorer": "Explorador",
       "student": "Estudante",
       "legend": "Lenda"
-    }
+    },
+    "customizeCta": "Customize o seu personagem",
+    "skipPresets": "Pular",
+    "continue": "Continuar",
+    "classTitle": "Sua classe",
+    "classHint": "Escolha como o seu herói se apresenta.",
+    "classes": {
+      "mage": "Mago",
+      "knight": "Cavaleiro",
+      "archer": "Arqueiro",
+      "rogue": "Ladino",
+      "goblin": "Goblin",
+      "slime": "Slime",
+      "druid": "Druida",
+      "necromancer": "Necromante"
+    },
+    "nameTitle": "Qual é o nome do seu personagem?",
+    "nameText": "É assim que ele vai aparecer na sua jornada. Pode mudar depois no Perfil."
   },
   "story": {
     "saved": "História escolhida!",
     "chooseTitle": "Escolha sua história",
     "confirm": "Começar esta história",
-    "saveFailed": "Não foi possível escolher a história."
+    "saveFailed": "Não foi possível escolher a história.",
+    "info": "Sobre a história {{name}}",
+    "close": "Fechar",
+    "chooseSubtitle": "Cada história tem o seu cenário e os seus capítulos.",
+    "about": {
+      "beach": "Um herói chega a uma praia desconhecida. Cada passo seu é um capítulo.",
+      "rooftop": "Entre prédios e luzes, a cidade guarda segredos para quem não desiste.",
+      "zombie": "O mundo acabou, mas a sua base ainda está de pé. Resistir é a missão.",
+      "castle": "Portões antigos, juramentos e uma jornada rumo ao coração do castelo.",
+      "paradise": "Uma floresta viva e calma esconde trilhas que só quem persiste encontra.",
+      "hell": "Calor, fogo e provas duras. Só o hábito mantém o herói de pé."
+    },
+    "changeTitle": "Mudar história",
+    "changeSubtitle": "O cenário do seu QG muda junto com a história.",
+    "changeConfirm": "Escolher esta história"
   },
   "settings": {
     "timezone": "Fuso horário",
@@ -395,7 +427,10 @@
     "deleteWithApple": "Confirmar com Apple e excluir",
     "reauthFailed": "Não foi possível confirmar sua identidade. Confira e tente de novo.",
     "reauthCancelled": "Confirmação cancelada. Sua conta não foi excluída.",
-    "about": "{{name}} versão {{version}}"
+    "about": "{{name}} versão {{version}}",
+    "deleteWithCode": "Enviaremos um código de 6 dígitos para o seu e-mail para confirmar que a conta é sua.",
+    "deleteSendCode": "Enviar código",
+    "deleteCodeSent": "Enviamos um código para o seu e-mail."
   },
   "sessions": {
     "title": "Aparelhos conectados",
@@ -468,11 +503,8 @@
     "sceneCaption": "Aqui é o cenário onde o seu personagem descansa e se prepara para a longa jornada que está prestes a começar.",
     "changeCharacter": "Mudar personagem",
     "changeStory": "Mudar história principal",
-    "changeScenario": "Mudar cenário do QG",
-    "closeScenario": "Fechar cenário do QG",
     "changeCharacterDesc": "Troque o visual do seu herói",
-    "changeStoryDesc": "Escolha por qual aventura seguir",
-    "changeScenarioDesc": "Altere o fundo e a hora do dia"
+    "changeStoryDesc": "Escolha por qual aventura seguir"
   },
   "progress": {
     "label": "Progresso da história",
@@ -492,5 +524,86 @@
     "more": "Carregar mais",
     "load": "Não foi possível carregar o histórico.",
     "noCategory": "Sem categoria"
+  },
+  "entry": {
+    "tagline": "Entre para guardar o seu progresso.",
+    "continueEmail": "Entrar com e-mail",
+    "legal": {
+      "before": "Ao continuar, você concorda com os ",
+      "terms": "Termos de Uso",
+      "middle": " e a ",
+      "privacy": "Política de Privacidade",
+      "after": "."
+    },
+    "email": {
+      "title": "Seu e-mail",
+      "intro": "Enviaremos um código de 6 dígitos para você entrar.",
+      "label": "E-mail",
+      "placeholder": "voce@exemplo.com",
+      "send": "Enviar código",
+      "invalid": "Informe um e-mail válido.",
+      "sent": "Enviamos um código para o seu e-mail."
+    },
+    "code": {
+      "title": "Digite o código",
+      "intro": "Enviamos um código de 6 dígitos para {{email}}. Ele vale por 15 minutos.",
+      "confirm": "Confirmar",
+      "resend": "Reenviar código",
+      "resendIn": "Reenviar código em {{seconds}}s",
+      "otherEmail": "Usar outro e-mail",
+      "invalid": "Código inválido ou expirado. Peça um novo.",
+      "incomplete": "Digite os 6 dígitos do código.",
+      "resent": "Enviamos um novo código.",
+      "boxLabel": "Dígito {{index}} do código"
+    }
+  },
+  "onboarding": {
+    "continue": "Continuar",
+    "skip": "Pular",
+    "pickOne": "Escolha uma opção para continuar.",
+    "saveFailed": "Não foi possível salvar. Tente de novo.",
+    "goal": {
+      "title": "O que você quer mudar na sua vida?",
+      "subtitle": "Escolha a meta que mais combina com você.",
+      "options": {
+        "procrastination": "Parar de procrastinar",
+        "fitness": "Ficar em melhor forma",
+        "discipline": "Forjar minha disciplina",
+        "wellbeing": "Me sentir melhor todo dia",
+        "projects": "Levar meus projetos adiante",
+        "fun": "Progredir me divertindo",
+        "learning": "Aprender coisas novas"
+      }
+    },
+    "reminders": {
+      "title": "Quer receber lembretes?",
+      "text": "Avisamos na hora certa para você não esquecer a sua jornada. Um herói nunca perde a missão do dia.",
+      "turnOn": "Ligar notificações",
+      "notNow": "Agora não",
+      "enabled": "Lembretes ligados.",
+      "denied": "Sem permissão do sistema. Você pode ligar depois em Configurações."
+    },
+    "age": {
+      "title": "Qual é a sua idade?",
+      "subtitle": "Isso ajuda a montar um plano que combina com você.",
+      "options": {
+        "under18": "Menos de 18",
+        "18-24": "18–24",
+        "25-34": "25–34",
+        "35-44": "35–44",
+        "45-54": "45–54",
+        "55-64": "55–64",
+        "65plus": "65 ou mais"
+      }
+    },
+    "gender": {
+      "title": "Como devemos nos referir a você?",
+      "subtitle": "Escolha a opção que preferir.",
+      "options": {
+        "male": "Masculino",
+        "female": "Feminino",
+        "other": "Outro"
+      }
+    }
   }
 }

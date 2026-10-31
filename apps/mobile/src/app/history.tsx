@@ -10,7 +10,7 @@ import { DifficultyIcon } from '@/components/difficulty-icon';
 import { ScreenFrame } from '@/components/screen-frame';
 import { EmptyState, ErrorState, SkeletonList } from '@/components/states';
 import { toast } from '@/features/feedback/toast-store';
-import { colors, radius, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 /** Histórico: as tarefas concluídas, que saíram da lista de tarefas, da mais recente para a mais antiga. */
 export default function HistoryScreen() {
@@ -122,7 +122,7 @@ export default function HistoryScreen() {
 
 const styles = StyleSheet.create({
   list: { paddingBottom: space[40], flexGrow: 1 },
-  hint: { color: colors.text.muted, fontSize: 12, marginBottom: space[12] },
+  hint: { color: colors.text.muted, fontSize: fontSize[12], marginBottom: space[12] },
   separator: { height: space[8] },
   row: {
     flexDirection: 'row',
@@ -135,6 +135,6 @@ const styles = StyleSheet.create({
     padding: space[12],
   },
   info: { flex: 1, gap: space[4] },
-  title: { color: colors.text.primary, fontSize: 15, fontWeight: '600' },
-  meta: { color: colors.text.secondary, fontSize: 12 },
+  title: { color: colors.text.primary, fontSize: fontSize[15], fontWeight: '600' },
+  meta: { color: colors.text.secondary, fontSize: fontSize[12] },
 });

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { tierColor } from '@/features/achievements/tier';
-import { colors, radius, softGlowOutline, space } from '@/theme';
+import { colors, fontSize, radius, softGlowOutline, space } from '@/theme';
 
 import { Insignia } from './pixel-art';
 
@@ -58,7 +58,12 @@ const styles = StyleSheet.create({
   locked: { borderColor: colors.border.subtle },
   dimmed: { opacity: 0.45 },
   pressed: { transform: [{ scale: 0.98 }] },
-  name: { color: colors.text.primary, fontSize: 14, fontWeight: '600', textAlign: 'center' },
-  done: { color: colors.text.primary, fontSize: 12, fontWeight: '600' },
-  status: { color: colors.text.secondary, fontSize: 12 },
+  name: {
+    color: colors.text.primary,
+    fontSize: fontSize[14],
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  done: { color: colors.text.primary, fontSize: fontSize[12], fontWeight: '600' },
+  status: { color: colors.text.secondary, fontSize: fontSize[12] },
 });

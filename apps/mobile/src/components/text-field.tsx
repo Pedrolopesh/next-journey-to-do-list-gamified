@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, TextInput, type TextInputProps, View } from 'react-native';
 
-import { colors, radius, size, space } from '@/theme';
+import { colors, fontSize, radius, size, space } from '@/theme';
 
 type Props = Omit<TextInputProps, 'style'> & {
   label: string;
@@ -52,7 +52,7 @@ export function TextField({ label, error, secret = false, ...input }: Props) {
 
 const styles = StyleSheet.create({
   wrapper: { gap: space[4] },
-  label: { color: colors.text.secondary, fontSize: 13, fontWeight: '500' },
+  label: { color: colors.text.secondary, fontSize: fontSize[13], fontWeight: '500' },
   field: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -63,8 +63,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   fieldError: { borderColor: colors.status.danger },
-  input: { flex: 1, color: colors.text.primary, fontSize: 15, paddingHorizontal: space[12] },
+  input: {
+    flex: 1,
+    color: colors.text.primary,
+    fontSize: fontSize[15],
+    paddingHorizontal: space[12],
+  },
   toggle: { minHeight: size.touchTarget, justifyContent: 'center', paddingHorizontal: space[12] },
-  toggleText: { color: colors.brand.primaryLight, fontSize: 13 },
-  error: { color: colors.status.danger, fontSize: 12 },
+  toggleText: { color: colors.brand.primaryLight, fontSize: fontSize[13] },
+  error: { color: colors.status.danger, fontSize: fontSize[12] },
 });

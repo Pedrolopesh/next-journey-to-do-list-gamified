@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, size, space } from '@/theme';
+import { colors, fontSize, size, space } from '@/theme';
 
 type Props = { title: string; children: ReactNode; scroll?: boolean; canGoBack?: boolean };
 
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text.primary,
-    fontSize: 20,
+    fontSize: fontSize[20],
     fontWeight: '600',
     flex: 1,
     paddingLeft: space[8],

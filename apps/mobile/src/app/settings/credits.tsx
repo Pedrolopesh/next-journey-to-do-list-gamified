@@ -3,7 +3,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ScreenFrame } from '@/components/screen-frame';
 import { CREDITS } from '@/features/credits/credits';
-import { colors, radius, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 /** Créditos de arte e licenças (Fase 6). A lista vive em features/credits e no CREDITS.md. */
 export default function CreditsScreen() {
@@ -33,7 +33,7 @@ export default function CreditsScreen() {
 }
 
 const styles = StyleSheet.create({
-  intro: { color: colors.text.secondary, fontSize: 13 },
+  intro: { color: colors.text.secondary, fontSize: fontSize[13] },
   card: {
     gap: space[4],
     backgroundColor: colors.bg.surface,
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border.subtle,
     padding: space[16],
   },
-  asset: { color: colors.text.primary, fontSize: 14, fontWeight: '600' },
-  meta: { color: colors.text.secondary, fontSize: 12 },
-  link: { color: colors.brand.primaryLight, fontSize: 12 },
+  asset: { color: colors.text.primary, fontSize: fontSize[14], fontWeight: '600' },
+  meta: { color: colors.text.secondary, fontSize: fontSize[12] },
+  link: { color: colors.brand.primaryLight, fontSize: fontSize[12] },
 });

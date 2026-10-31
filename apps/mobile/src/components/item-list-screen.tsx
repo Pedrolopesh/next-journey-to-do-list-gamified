@@ -27,7 +27,7 @@ import { StoryProgressCard } from '@/components/story-progress-card';
 import { TabScreen } from '@/components/tab-screen';
 import { useCheckFlow } from '@/features/check/use-check-flow';
 import { lastUndoableCheck, useFeedbackStore } from '@/features/feedback/feedback-store';
-import { colors, space } from '@/theme';
+import { colors, fontSize, space } from '@/theme';
 
 type Props = {
   type: ItemType;
@@ -258,11 +258,16 @@ const styles = StyleSheet.create({
   header: { gap: space[8] },
   // colado ao banner: a tela tem margem de 16 em volta, o resumo ocupa a largura toda
   mini: { position: 'absolute', top: 0, left: 0, right: 0 },
-  heading: { color: colors.text.primary, fontSize: 20, fontWeight: '600', marginTop: space[8] },
-  error: { color: colors.status.danger, fontSize: 13 },
+  heading: {
+    color: colors.text.primary,
+    fontSize: fontSize[20],
+    fontWeight: '600',
+    marginTop: space[8],
+  },
+  error: { color: colors.status.danger, fontSize: fontSize[13] },
   section: {
     color: colors.text.secondary,
-    fontSize: 13,
+    fontSize: fontSize[13],
     fontWeight: '600',
     marginTop: space[12],
     marginBottom: space[8],
@@ -270,5 +275,5 @@ const styles = StyleSheet.create({
   list: { paddingVertical: space[12], paddingBottom: 96, flexGrow: 1 },
   separator: { height: space[8] },
   notice: { paddingVertical: space[16], paddingHorizontal: space[8] },
-  noticeText: { color: colors.text.muted, fontSize: 12, textAlign: 'center' },
+  noticeText: { color: colors.text.muted, fontSize: fontSize[12], textAlign: 'center' },
 });

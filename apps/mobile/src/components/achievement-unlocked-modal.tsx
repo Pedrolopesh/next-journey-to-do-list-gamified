@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path, Polygon } from 'react-native-svg';
 
-import { colors, mix, radius, rgba, space } from '@/theme';
+import { colors, fontSize, mix, radius, rgba, space } from '@/theme';
 
 import { Button } from './button';
 import { Insignia } from './pixel-art';
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   headline: {
     position: 'absolute',
     bottom: 58,
-    fontSize: 22,
+    fontSize: fontSize[22],
     fontWeight: '800',
     textAlign: 'center',
   },
@@ -171,11 +171,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   body: { paddingHorizontal: space[20], paddingBottom: space[24], gap: space[8] },
-  name: { color: colors.text.primary, fontSize: 20, fontWeight: '700', textAlign: 'center' },
-  description: { color: colors.text.secondary, fontSize: 14, textAlign: 'center' },
+  name: {
+    color: colors.text.primary,
+    fontSize: fontSize[20],
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  description: { color: colors.text.secondary, fontSize: fontSize[14], textAlign: 'center' },
   hint: {
     color: colors.text.muted,
-    fontSize: 13,
+    fontSize: fontSize[13],
     textAlign: 'center',
     marginTop: space[4],
     marginBottom: space[8],

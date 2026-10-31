@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors, radius, size, softGlow, softGlowOutline } from '@/theme';
+import { colors, fontSize, radius, size, softGlow, softGlowOutline } from '@/theme';
 
 type Props = {
   label: string;
@@ -82,6 +82,6 @@ const styles = StyleSheet.create({
   danger: { backgroundColor: colors.status.danger },
   pressed: { transform: [{ scale: 0.98 }] },
   disabled: { opacity: 0.45 },
-  label: { color: colors.text.onPrimary, fontSize: 15, fontWeight: '600' },
+  label: { color: colors.text.onPrimary, fontSize: fontSize[15], fontWeight: '600' },
   ghostLabel: { color: colors.brand.primaryLight },
 });

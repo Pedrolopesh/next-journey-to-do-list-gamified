@@ -1,14 +1,18 @@
 // Espaçamento, raio e tamanhos do design system. Fonte: docs/FIGMA-INTERA.md.
+// Espaçamento e ícones acompanham a largura da tela (ver `scale.ts`); o alvo de toque nunca fica
+// abaixo de 44 pt (regra de acessibilidade).
+import { scale } from './scale';
+
 export const space = {
-  4: 4,
-  8: 8,
-  12: 12,
-  16: 16,
-  20: 20,
-  24: 24,
-  32: 32,
-  40: 40,
-  screenMargin: 16,
+  4: scale(4),
+  8: scale(8),
+  12: scale(12),
+  16: scale(16),
+  20: scale(20),
+  24: scale(24),
+  32: scale(32),
+  40: scale(40),
+  screenMargin: scale(16),
 } as const;
 
 export const radius = {
@@ -21,7 +25,7 @@ export const radius = {
 } as const;
 
 export const size = {
-  touchTarget: 44,
+  touchTarget: Math.max(44, scale(44)),
   navBarHeight: 84,
-  iconSize: 24,
+  iconSize: scale(24),
 } as const;

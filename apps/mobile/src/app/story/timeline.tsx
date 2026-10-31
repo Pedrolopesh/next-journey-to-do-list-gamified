@@ -12,7 +12,7 @@ import { Button } from '@/components/button';
 import { ErrorState, SkeletonList } from '@/components/states';
 import { TabScreen } from '@/components/tab-screen';
 import { useAction } from '@/features/feedback/use-action';
-import { colors, radius, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 /**
  * Minha história (RF-29): o banner da jornada em cima, as histórias (uma por cenário) para escolher
@@ -197,7 +197,7 @@ export default function TimelineScreen() {
 
 const styles = StyleSheet.create({
   content: { gap: space[12], paddingBottom: space[40] },
-  heading: { color: colors.text.primary, fontSize: 16, fontWeight: '600' },
+  heading: { color: colors.text.primary, fontSize: fontSize[16], fontWeight: '600' },
   cards: { gap: space[8], paddingRight: space[16] },
   storyCard: {
     width: 150,
@@ -208,11 +208,11 @@ const styles = StyleSheet.create({
     padding: space[12],
   },
   storyCardSelected: { borderWidth: 2 },
-  storyName: { fontSize: 15, fontWeight: '700' },
-  storyMeta: { color: colors.text.secondary, fontSize: 12 },
-  badge: { color: colors.status.success, fontSize: 11, fontWeight: '700' },
+  storyName: { fontSize: fontSize[15], fontWeight: '700' },
+  storyMeta: { color: colors.text.secondary, fontSize: fontSize[12] },
+  badge: { color: colors.status.success, fontSize: fontSize[11], fontWeight: '700' },
   summary: { gap: space[8] },
-  description: { color: colors.text.secondary, fontSize: 13 },
+  description: { color: colors.text.secondary, fontSize: fontSize[13] },
   chapter: {
     gap: space[8],
     backgroundColor: colors.bg.surface,
@@ -233,10 +233,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.sunken,
   },
   badgeDone: { backgroundColor: colors.status.success },
-  badgeNumber: { color: colors.brand.primaryLight, fontSize: 14, fontWeight: '700' },
+  badgeNumber: { color: colors.brand.primaryLight, fontSize: fontSize[14], fontWeight: '700' },
   titleBox: { flex: 1 },
-  chapterNumber: { color: colors.text.muted, fontSize: 11, fontWeight: '600' },
-  chapterTitle: { color: colors.text.primary, fontSize: 15, fontWeight: '600' },
+  chapterNumber: { color: colors.text.muted, fontSize: fontSize[11], fontWeight: '600' },
+  chapterTitle: { color: colors.text.primary, fontSize: fontSize[15], fontWeight: '600' },
   progress: { gap: space[4] },
   bar: {
     height: 8,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   fill: { height: '100%', backgroundColor: colors.brand.primary, borderRadius: radius.pill },
-  condition: { color: colors.brand.primaryLight, fontSize: 12 },
-  text: { color: colors.text.secondary, fontSize: 13 },
-  hint: { color: colors.text.muted, fontSize: 12 },
+  condition: { color: colors.brand.primaryLight, fontSize: fontSize[12] },
+  text: { color: colors.text.secondary, fontSize: fontSize[13] },
+  hint: { color: colors.text.muted, fontSize: fontSize[12] },
 });

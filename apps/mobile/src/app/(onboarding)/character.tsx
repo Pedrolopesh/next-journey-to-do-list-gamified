@@ -1,74 +1,41 @@
-import type { Character, CharacterLayers } from '@nextjourney/contracts';
-import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { putCharacter } from '@/api/endpoints';
-import { toApiError } from '@/api/errors';
-import { queryKeys, showNextPending } from '@/api/queries';
-import { CharacterForm } from '@/components/character-form';
+import { Button } from '@/components/button';
 import { CharacterPreview } from '@/components/character-preview';
-import { toast } from '@/features/feedback/toast-store';
-import { DEFAULT_LOOK, legacyHair, legacySkin } from '@/features/qg/options';
-import { colors, space } from '@/theme';
+import { ReadyLooks } from '@/components/character-sections';
+import { OnboardingScreen } from '@/components/onboarding-screen';
+import { layersOfLook, useCharacterDraft } from '@/features/onboarding/character-draft';
 
-const START_LAYERS = {
-  skin: legacySkin(DEFAULT_LOOK.skin),
-  hair: legacyHair(DEFAULT_LOOK.hair),
-  outfit: 'tunic-purple',
-  look: DEFAULT_LOOK,
-};
-
-/** Criação do personagem (RF-11) com a prévia animada no banner. */
+/** Character creation, step 1: ready-made looks with a fixed preview. */
 export default function CharacterScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const queryClient = useQueryClient();
-  const [layers, setLayers] = useState<CharacterLayers>(START_LAYERS);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const save = async (character: Character): Promise<void> => {
-    setSaving(true);
-    setError(null);
-    try {
-      await putCharacter(character);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
-      void showNextPending(queryClient);
-      const me = queryClient.getQueryData<{ onboarding: { hasStory: boolean } }>(queryKeys.me);
-      toast.success(t('character.saved'));
-      if (!me?.onboarding.hasStory) router.replace('/story');
-    } catch (cause) {
-      const message = toApiError(cause)?.message ?? t('character.saveFailed');
-      setError(message);
-      toast.error(message);
-    } finally {
-      setSaving(false);
-    }
-  };
+  const look = useCharacterDraft((state) => state.look);
+  const setLook = useCharacterDraft((state) => state.setLook);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <CharacterPreview layers={layers} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <CharacterForm
-          initial={null}
-          submitLabel={t('character.create')}
-          submitting={saving}
-          error={error}
-          onSubmit={(character) => void save(character)}
-          onPreview={setLayers}
-        />
-      </ScrollView>
-    </View>
+    <OnboardingScreen
+      preview={<CharacterPreview layers={layersOfLook(look)} />}
+      footer={
+        <>
+          <Button
+            label={t('character.customizeCta')}
+            onPress={() => {
+              router.push('/customize');
+            }}
+          />
+          <Button
+            label={t('character.skipPresets')}
+            variant="ghost"
+            onPress={() => {
+              router.push('/name');
+            }}
+          />
+        </>
+      }
+    >
+      <ReadyLooks look={look} onChange={setLook} />
+    </OnboardingScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg.base },
-  content: { padding: space.screenMargin, paddingBottom: space[40] },
-});

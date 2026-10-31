@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
-import { colors } from '@/theme';
+import { colors, fontSize } from '@/theme';
 
 import bannerAsset from '../../assets/banner/banner.html';
 import { shouldPlay } from './playback';
@@ -227,5 +227,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.bg.sunken,
   },
-  fallbackText: { color: colors.text.secondary, fontSize: 13 },
+  fallbackText: { color: colors.text.secondary, fontSize: fontSize[13] },
 });

@@ -119,7 +119,7 @@ describe('cliente http com refresh automático', () => {
   it('o token não é enviado às rotas de auth', async () => {
     const server = fakeServer();
     const { client } = setup(server);
-    await client.post('/auth/login', {}).catch(() => undefined);
+    await client.post('/auth/email/start', {}).catch(() => undefined);
     expect(server.calls[0]?.auth).toBeUndefined();
   });
 });

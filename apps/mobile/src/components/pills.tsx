@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
-import { colors, radius, size, softGlow, space } from '@/theme';
+import { colors, fontSize, radius, size, softGlow, space } from '@/theme';
 
 type Option<T extends string> = { value: T; label: string; color?: string; disabled?: boolean };
 
@@ -89,6 +89,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   disabled: { opacity: 0.4 },
-  text: { color: colors.text.secondary, fontSize: 13, fontWeight: '500' },
+  text: { color: colors.text.secondary, fontSize: fontSize[13], fontWeight: '500' },
   textSelected: { color: colors.text.onPrimary, fontWeight: '600' },
 });

@@ -33,7 +33,7 @@ type Options = {
 
 type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean; _rateRetries?: number };
 
-const AUTH_PATHS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'];
+const AUTH_PATHS = ['/auth/email/', '/auth/refresh', '/auth/logout'];
 const isAuthPath = (url: string | undefined): boolean =>
   AUTH_PATHS.some((path) => url?.includes(path));
 

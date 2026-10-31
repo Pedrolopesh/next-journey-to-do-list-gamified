@@ -1,6 +1,7 @@
 // Testes de interface do app (Maestro) contra a API local.
 //
-// 1) cria uma conta de teste NOVA na API (e-mail e senha aleatórios, só na memória deste processo);
+// 1) cria uma conta de teste NOVA na API (e-mail, senha e código aleatórios, só na memória deste
+//    processo; a senha serve só para as conferências por API, o app entra pelo código);
 // 2) cria um item inicial (os fluxos esperam "Item inicial"): a conta é confirmada direto no banco,
 //    sem `verifyEmail`, então não recebe os itens de exemplo do servidor;
 // 3) roda os fluxos de `.maestro/` no aparelho/emulador aberto, passando a conta por variável.
@@ -10,7 +11,7 @@
 // Pré-requisitos: API no ar (E2E_API_URL, padrão http://localhost:3010), Metro rodando, o app de
 // desenvolvimento instalado no emulador/simulador, e o Maestro (docs/TESTES.md).
 import { spawnSync } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomInt } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -69,7 +70,15 @@ await call('/items', {
     difficulty: 'easy',
   }),
 });
-process.stdout.write('conta de teste criada (e-mail e senha só nesta execução)\n');
+// O app entra por código de e-mail: grava um código conhecido (o envio do app não o troca)
+const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+const setCode = spawnSync(
+  'pnpm',
+  ['--filter', '@nextjourney/api', 'exec', 'tsx', 'prisma/set-test-code.ts', email, code],
+  { stdio: 'inherit' },
+);
+if (setCode.status !== 0) throw new Error('não foi possível gravar o código da conta de teste');
+process.stdout.write('conta de teste criada (e-mail, senha e código só nesta execução)\n');
 
 const local = join(homedir(), '.maestro', 'bin', 'maestro');
 const maestro = process.env.MAESTRO_BIN ?? (existsSync(local) ? local : 'maestro');
@@ -85,6 +94,8 @@ const run = spawnSync(
     `MAESTRO_EMAIL=${email}`,
     '-e',
     `MAESTRO_PASSWORD=${password}`,
+    '-e',
+    `MAESTRO_CODE=${code}`,
     '-e',
     `MAESTRO_API_URL=${api}`,
     ...process.argv.slice(2),

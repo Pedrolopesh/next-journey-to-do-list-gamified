@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Animated, StyleSheet, Text } from 'react-native';
 
-import { colors, radius, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 type Props = { message: string | null; onHidden: () => void };
 
@@ -42,5 +42,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: space[16],
     paddingVertical: space[8],
   },
-  text: { color: colors.bg.base, fontSize: 14, fontWeight: '700' },
+  text: { color: colors.bg.base, fontSize: fontSize[14], fontWeight: '700' },
 });
