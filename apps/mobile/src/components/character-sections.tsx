@@ -68,7 +68,7 @@ export function ReadyLooks({ look, onChange, title }: LookProps & { title?: stri
               <Image
                 source={LOOK_IMAGES[preset.id]}
                 style={styles.cardImage}
-                resizeMode="cover"
+                resizeMode="contain"
                 accessibilityIgnoresInvertColors
               />
               <Text style={styles.cardName}>{name}</Text>
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   cardSelected: { borderWidth: 2, borderColor: colors.brand.primaryLight },
-  cardImage: { width: '100%', height: 90 },
+  cardImage: { width: '100%', height: 130, marginTop: space[8] },
   cardName: {
     color: colors.text.primary,
     fontSize: fontSize[13],

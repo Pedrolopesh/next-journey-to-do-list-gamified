@@ -10,11 +10,11 @@ export const STORY_IMAGES: Record<string, ImageSourcePropType> = {
   hell: require('../../../assets/onboarding/scene-hell.png') as ImageSourcePropType,
 };
 
-/** Character art of each ready-made look (preset id → image). */
+/** Character-only art of each ready-made look (preset id → transparent image). */
 export const LOOK_IMAGES: Record<string, ImageSourcePropType> = {
-  adventurer: require('../../../assets/onboarding/preview-adventurer.png') as ImageSourcePropType,
-  warrior: require('../../../assets/onboarding/preview-warrior.png') as ImageSourcePropType,
-  explorer: require('../../../assets/onboarding/preview-explorer.png') as ImageSourcePropType,
-  student: require('../../../assets/onboarding/preview-student.png') as ImageSourcePropType,
-  legend: require('../../../assets/onboarding/preview-legend.png') as ImageSourcePropType,
+  adventurer: require('../../../assets/onboarding/look-adventurer.png') as ImageSourcePropType,
+  warrior: require('../../../assets/onboarding/look-warrior.png') as ImageSourcePropType,
+  explorer: require('../../../assets/onboarding/look-explorer.png') as ImageSourcePropType,
+  student: require('../../../assets/onboarding/look-student.png') as ImageSourcePropType,
+  legend: require('../../../assets/onboarding/look-legend.png') as ImageSourcePropType,
 };
