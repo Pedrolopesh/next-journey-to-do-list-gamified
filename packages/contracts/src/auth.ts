@@ -48,6 +48,22 @@ export type VerifyEmailRequest = z.infer<typeof verifyEmailRequestSchema>;
 export const resendVerificationRequestSchema = z.object({ email: z.email() });
 export type ResendVerificationRequest = z.infer<typeof resendVerificationRequestSchema>;
 
+/** Passwordless entry: asks for a code (always 202) and trades it for a session. */
+export const emailStartRequestSchema = z.object({
+  email: z.email(),
+  /** Used only when the email has no account yet (the code confirms it). */
+  timezone: timezoneSchema.optional(),
+  /** Version of the Terms shown on the welcome screen; stored on the new account. */
+  termsVersion: z.string().min(1).optional(),
+});
+export type EmailStartRequest = z.infer<typeof emailStartRequestSchema>;
+
+export const emailConfirmRequestSchema = z.object({
+  email: z.email(),
+  code: z.string().regex(/^\d{6}$/),
+});
+export type EmailConfirmRequest = z.infer<typeof emailConfirmRequestSchema>;
+
 export const loginRequestSchema = z.object({
   email: z.email(),
   password: z.string().min(1).max(128),
@@ -66,9 +82,10 @@ export const socialLoginRequestSchema = z.object({
 });
 export type SocialLoginRequest = z.infer<typeof socialLoginRequestSchema>;
 
-/** DELETE /me: prova de que quem pede é a dona da conta (senha atual ou ID token novo do provedor). */
+/** DELETE /me: prova de que quem pede é a dona da conta (senha, código por e-mail ou ID token novo do provedor). */
 export const deleteAccountRequestSchema = z.union([
   z.object({ password: z.string().min(1).max(128) }),
+  z.object({ emailCode: z.string().regex(/^\d{6}$/) }),
   z.object({ provider: z.enum(['google', 'apple']), idToken: z.string().min(1) }),
 ]);
 export type DeleteAccountRequest = z.infer<typeof deleteAccountRequestSchema>;

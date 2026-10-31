@@ -3,6 +3,8 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   type AuthResponse,
+  type EmailConfirmRequest,
+  type EmailStartRequest,
   ERROR_CODES,
   type LoginRequest,
   type RegisterRequest,
@@ -31,6 +33,9 @@ const invalidVerificationCode = (): AppError =>
 
 const isUniqueViolation = (error: unknown): boolean =>
   typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'P2002';
+
+/** Placeholder profile name for accounts created by email: the part before the "@". */
+const displayNameOf = (email: string): string => email.split('@')[0]?.slice(0, 80) || 'Aventureiro';
 
 const invalidCredentials = (): AppError =>
   new AppError(401, ERROR_CODES.UNAUTHORIZED, 'E-mail ou senha inválidos');
@@ -156,6 +161,73 @@ export class AuthService {
     await this.rateLimit.hitBoth('resend-verification', email, ip, LIMITS.resendVerification);
     const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
     if (user && !user.emailVerifiedAt && user.passwordHash) await this.verification.sendCode(user);
+  }
+
+  /**
+   * Passwordless entry, step 1: always answers the same. An unknown email gets a pending account
+   * (no password); every email gets a code, subject to the minimum interval between sends.
+   */
+  async emailStart(input: EmailStartRequest, ip: string): Promise<void> {
+    const email = input.email.trim().toLowerCase();
+    await this.rateLimit.hitBoth('email-start', email, ip, LIMITS.emailStart);
+    const existing = await this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true, email: true, deletedAt: true },
+    });
+    if (existing) {
+      if (!existing.deletedAt) await this.verification.sendCode(existing);
+      return;
+    }
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          email,
+          name: displayNameOf(email),
+          timezone: input.timezone ?? 'America/Sao_Paulo',
+          termsAcceptedAt: this.clock.now(),
+          termsVersion: input.termsVersion ?? 'unknown',
+          stats: { create: {} },
+          categories: {
+            create: DEFAULT_CATEGORIES.map((category, position) => ({ ...category, position })),
+          },
+        },
+        select: { id: true, email: true },
+      });
+      await this.verification.sendCode(user);
+    } catch (error) {
+      // Two simultaneous requests for the same new email: the other one won the race.
+      if (!isUniqueViolation(error)) throw error;
+    }
+  }
+
+  /**
+   * Passwordless entry, step 2: trades the code for a session. The first confirmation marks the
+   * email as confirmed and creates the starter items, in the same transaction as the code.
+   */
+  async emailConfirm(
+    input: EmailConfirmRequest,
+    ip: string,
+    deviceName?: string,
+  ): Promise<AuthResponse> {
+    const email = input.email.trim().toLowerCase();
+    await this.rateLimit.hitBoth('verify-email', email, ip, LIMITS.verifyEmail);
+    const user = await this.prisma.user.findFirst({ where: { email, deletedAt: null } });
+    if (!user) throw invalidVerificationCode();
+
+    const now = this.clock.now();
+    const confirmed = await this.prisma.$transaction(async (tx) => {
+      if (!(await this.verification.consume(user.id, input.code, true, tx))) return false;
+      if (!user.emailVerifiedAt) {
+        await tx.user.update({ where: { id: user.id }, data: { emailVerifiedAt: now } });
+        await this.starterItems.seed(tx, { userId: user.id, timezone: user.timezone, now });
+      }
+      return true;
+    });
+    if (!confirmed) throw invalidVerificationCode();
+    return {
+      tokens: await this.tokens.issue(user.id, undefined, cleanDeviceName(deviceName)),
+      user: { id: user.id, name: user.name, email: user.email, timezone: user.timezone },
+    };
   }
 
   async login(input: LoginRequest, ip: string, deviceName?: string): Promise<AuthResponse> {

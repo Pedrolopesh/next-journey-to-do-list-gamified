@@ -1,13 +1,17 @@
 import { Body, Controller, Delete, Get, HttpCode, Inject, Patch, Post, Put } from '@nestjs/common';
 import {
+  type AgeRange,
   type AppEvent,
   appEventSchema,
   type Character,
+  type CharacterClass,
   characterSchema,
   type DataExport,
   type DeleteAccountRequest,
   deleteAccountRequestSchema,
   ERROR_CODES,
+  type Gender,
+  type Goal,
   type LpcLook,
   lpcLookSchema,
   type MeResponse,
@@ -70,6 +74,10 @@ export class MeController {
         email: true,
         timezone: true,
         notifyAt: true,
+        goal: true,
+        ageRange: true,
+        gender: true,
+        remindersOptIn: true,
         passwordHash: true,
         tutorialSeenAt: true,
         stats: true,
@@ -102,6 +110,10 @@ export class MeController {
         timezone: user.timezone,
         notifyAt: user.notifyAt,
         hasPassword: user.passwordHash !== null,
+        goal: user.goal as Goal | null,
+        ageRange: user.ageRange as AgeRange | null,
+        gender: user.gender as Gender | null,
+        remindersOptIn: user.remindersOptIn,
       },
       player: {
         ...player,
@@ -111,6 +123,9 @@ export class MeController {
         ? {
             name: user.character.name,
             title: user.character.title as Character['title'],
+            ...(user.character.characterClass
+              ? { characterClass: user.character.characterClass as CharacterClass }
+              : {}),
             skin: user.character.skin,
             hair: user.character.hair,
             outfit: user.character.outfit,
@@ -134,7 +149,7 @@ export class MeController {
     };
   }
 
-  /** Profile time zone, tutorial seen and reminder time. */
+  /** Profile time zone, tutorial seen, reminder time and onboarding answers. */
   @Patch()
   async patch(
     @CurrentUserId() userId: string,
@@ -145,6 +160,10 @@ export class MeController {
       data: {
         ...(body.timezone !== undefined ? { timezone: body.timezone } : {}),
         ...(body.notifyAt !== undefined ? { notifyAt: body.notifyAt } : {}),
+        ...(body.goal !== undefined ? { goal: body.goal } : {}),
+        ...(body.ageRange !== undefined ? { ageRange: body.ageRange } : {}),
+        ...(body.gender !== undefined ? { gender: body.gender } : {}),
+        ...(body.remindersOptIn !== undefined ? { remindersOptIn: body.remindersOptIn } : {}),
         ...(body.tutorialSeen ? { tutorialSeenAt: new Date() } : {}),
       },
     });
@@ -176,9 +195,10 @@ export class MeController {
     @CurrentUserId() userId: string,
     @Body(new ZodValidationPipe(characterSchema)) body: Character,
   ): Promise<Character> {
-    const { look, ...rest } = body;
+    const { look, characterClass, ...rest } = body;
     const data = {
       ...rest,
+      characterClass: characterClass ?? null,
       accessory: body.accessory ?? null,
       look: look ?? Prisma.JsonNull,
     };

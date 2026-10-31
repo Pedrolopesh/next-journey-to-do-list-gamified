@@ -4,9 +4,13 @@ Código em `apps/api/src/modules/account`. Dados coletados, direitos e prazos: [
 
 ## Exclusão de conta (`DELETE /v1/me`)
 
-1. **Segunda prova** antes de apagar: a senha atual (conta com senha) ou um ID token novo do provedor, de uma identidade ligada à conta (conta só social). O ID token precisa ter sido emitido há no máximo 5 minutos (a dona está presente agora); sem `iat` o token é recusado. Cada tentativa conta (5 a cada 15 minutos). Qualquer falha dá o mesmo `403 REAUTH_FAILED`, nunca `401`, para o app não tratar como sessão encerrada.
+1. **Segunda prova** antes de apagar: a senha atual (conta com senha), o código de 6 dígitos recebido por e-mail (pedido em `/auth/email/start`; serve a qualquer conta) ou um ID token novo do provedor, de uma identidade ligada à conta (conta só social). O ID token precisa ter sido emitido há no máximo 5 minutos (a dona está presente agora); sem `iat` o token é recusado. Cada tentativa conta (5 a cada 15 minutos). Qualquer falha dá o mesmo `403 REAUTH_FAILED`, nunca `401`, para o app não tratar como sessão encerrada.
 2. **Anonimiza na hora:** remove tudo que identifica a pessoa e encerra as sessões. O e-mail original é liberado (a pessoa pode se cadastrar de novo); o restante dos dados some na purga.
 3. **Purga diária** (03:00): apaga de vez, em cascata nas tabelas filhas, as contas excluídas há mais de `ACCOUNT_PURGE_DAYS` (30 por padrão) e também os cadastros por senha que nunca confirmaram o e-mail há mais de 7 dias (os códigos saem em cascata).
+
+## Dados do onboarding
+
+Meta, faixa de idade, gênero, classe do personagem e a escolha dos lembretes (`remindersOptIn`) ficam em `users` e `characters`. Idade e gênero são **opcionais** (o app tem "Pular") e nada depende deles. Só o próprio usuário os lê (`GET /v1/me`); entram na exportação e são apagados na anonimização da conta.
 
 ## Exportação dos dados (`GET /v1/me/export`)
 

@@ -1,6 +1,10 @@
 import { Body, Controller, Headers, HttpCode, Inject, Ip, Post } from '@nestjs/common';
 import {
   type AuthResponse,
+  type EmailConfirmRequest,
+  emailConfirmRequestSchema,
+  type EmailStartRequest,
+  emailStartRequestSchema,
   type ForgotPasswordRequest,
   forgotPasswordRequestSchema,
   type LoginRequest,
@@ -50,6 +54,29 @@ export class AuthController {
     @Headers('x-device-name') deviceName?: string,
   ): Promise<AuthResponse> {
     return this.auth.verifyEmail(body, ip, deviceName);
+  }
+
+  /** Passwordless entry: always 202 and no session; the code goes to the email. */
+  @Public()
+  @ConstantTime()
+  @Post('email/start')
+  @HttpCode(202)
+  async emailStart(
+    @Body(new ZodValidationPipe(emailStartRequestSchema)) body: EmailStartRequest,
+    @Ip() ip: string,
+  ): Promise<void> {
+    await this.auth.emailStart(body, ip);
+  }
+
+  @Public()
+  @Post('email/confirm')
+  @HttpCode(200)
+  emailConfirm(
+    @Body(new ZodValidationPipe(emailConfirmRequestSchema)) body: EmailConfirmRequest,
+    @Ip() ip: string,
+    @Headers('x-device-name') deviceName?: string,
+  ): Promise<AuthResponse> {
+    return this.auth.emailConfirm(body, ip, deviceName);
   }
 
   /** Always 202, whether or not the account exists. */
