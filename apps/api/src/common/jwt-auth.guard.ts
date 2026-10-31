@@ -13,9 +13,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export type AuthenticatedRequest = Request & { user: { id: string; sessionId?: string } };
 
 /**
- * Global guard: validates the access JWT (fixed HS256 algorithm) on every non-public route and
- * checks that the account still exists (primary key lookup, no cache): a deleted account loses
- * access at once, without waiting for the token's 15 minutes.
+ * Global guard: validates the access JWT and that the account and session still exist. Rules:
+ * docs/api/operacao-e-seguranca.md.
  */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -54,12 +53,10 @@ export class JwtAuthGuard implements CanActivate {
       throw new AppError(401, ERROR_CODES.UNAUTHORIZED, 'Não autenticado');
     }
 
-    // A database error here does NOT become a 401 (it denies access with a 500): a temporary
-    // failure must not sign the app out, since it treats 401 as an ended session.
+    // A database error here must not become a 401: a temporary failure would sign the app out.
     const user = await this.prisma.user.findFirst({
-      // With `sid`, the session must still be active: ending a device (or changing the password, or
-      // signing out) drops the access token at once, in the same query. An old token without `sid`
-      // only checks the account.
+      // With `sid`, the session must still be active, so ending a device drops the token at once.
+      // Rules: docs/api/operacao-e-seguranca.md.
       where: {
         id: userId,
         deletedAt: null,

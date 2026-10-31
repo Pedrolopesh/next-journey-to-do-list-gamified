@@ -7,9 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { UNKNOWN_DEVICE } from './device-name.js';
 
 /**
- * The account's sessions. A session is a family of refresh tokens (one device): rotation swaps the
- * token but keeps the family, so the list shows one item per device. Everything filters by owner:
- * another person's id is a 404.
+ * The account's sessions (one per device). Rules: docs/api/autenticacao-e-sessoes.md.
  */
 @Injectable()
 export class SessionsService {

@@ -14,9 +14,8 @@ const iso = (date: Date): string => date.toISOString();
 const isoOrNull = (date: Date | null): string | null => (date ? date.toISOString() : null);
 
 /**
- * Export of the account's own data (LGPD, right of access). Each table goes through an allowlist of
- * fields (explicit `select`): never the whole model and never a password hash, token, code or
- * provider id. Everything filters by the token's `userId`.
+ * Export of the account's own data, through an allowlist of fields. Rules:
+ * docs/api/conta-e-privacidade.md.
  */
 @Injectable()
 export class DataExportService {

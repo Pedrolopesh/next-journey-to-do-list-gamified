@@ -27,10 +27,9 @@ type ExpiringTable = {
 export const EXPIRED_GRACE_DAYS = 7;
 
 /**
- * Daily cleanup of the tables that only grow: refresh tokens, password reset links and email
- * confirmation codes. It only deletes what EXPIRED more than 7 days ago: a revoked refresh token
- * that is still within its validity stays, because it is what exposes the reuse of a stolen token.
- * Idempotent, so two instances running together do no harm.
+ * Daily cleanup. It only deletes what expired more than 7 days ago: a revoked refresh token still
+ * within its validity must stay, because it exposes the reuse of a stolen token. Rules:
+ * docs/api/autenticacao-e-sessoes.md.
  */
 @Injectable()
 export class AuthCleanupService {

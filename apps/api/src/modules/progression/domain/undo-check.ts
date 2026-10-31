@@ -10,12 +10,7 @@ export type UndoSummary = {
 export type UndoResult = { state: PlayerState; summary: UndoSummary };
 
 /**
- * Unchecks a check. Pure function.
- *
- * - Works on any day and in any chapter.
- * - EXP, level and chapter never go back: only the coins decrease.
- * - The loss is that of the current chapter (3, 5, 10, 15, 20), capped at the balance.
- * - The coin bonus per level is not reverted.
+ * Unchecks a check. Pure function. Rules: docs/api/progressao-e-jogo.md.
  */
 export function desfazerCheck(
   state: PlayerState,

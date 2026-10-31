@@ -26,8 +26,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const UNVERIFIED_ACCOUNT_DAYS = 7;
 
 /**
- * Account deletion (privacy requirement): anonymizes right away and deletes for good after the
- * retention period.
+ * Account deletion: anonymizes at once, deletes for good after the retention period. Rules:
+ * docs/api/conta-e-privacidade.md.
  */
 @Injectable()
 export class AccountService {
@@ -84,9 +84,9 @@ export class AccountService {
   }
 
   /**
-   * Second proof before deleting: the current password (password account) or a fresh provider ID
-   * token whose identity is linked to the account (social-only account). Counts every attempt; any
-   * failure gives the same 403 (never 401, so the app does not treat it as an ended session).
+   * Second proof before deleting the account (password or a fresh ID token). Every failure is the
+   * same 403, never 401: the app treats 401 as an ended session. Rules:
+   * docs/api/conta-e-privacidade.md.
    */
   private async confirmOwner(
     user: { id: string; passwordHash: string | null },

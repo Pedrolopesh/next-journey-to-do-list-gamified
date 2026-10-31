@@ -19,8 +19,7 @@ export type CheckInput = {
 };
 
 /**
- * Record of what a check did, stored in item_checks. It is the input of `desfazerCheck` and lets
- * that exact check be reverted.
+ * Record of what a check did, stored in item_checks; the input of `desfazerCheck`.
  */
 export type CheckRecord = {
   checkId: string;
@@ -56,13 +55,7 @@ export type ApplyCheckResult = {
 };
 
 /**
- * Applies a check to the player's state. Pure function: takes data, returns data.
- *
- * - EXP and coins come from the difficulty (config). A habit has no daily limit.
- * - The EXP left over when leveling up is carried over; one check can raise more than one level.
- * - Every level gained earns the coin bonus.
- * - Every level gained finishes a chapter of the active story, until the story ends. The chapter
- *   progress is the EXP inside the level.
+ * Applies a check to the player's state. Pure function. Rules: docs/api/progressao-e-jogo.md.
  */
 export function aplicarCheck(
   state: PlayerState,

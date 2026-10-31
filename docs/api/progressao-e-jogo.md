@@ -36,6 +36,10 @@ Código em `apps/api/src/modules/progression/domain` (funções puras, uma por r
 - Um diário está **atrasado** quando o último dia agendado antes de hoje terminou sem check. Só conta dias a partir da criação. Marcar hoje (mesmo um atrasado) tira o atraso.
 - **Sequência:** dias seguidos com check, voltando a partir de hoje. Dia agendado sem check (que não seja hoje) quebra; dias não agendados não quebram. Hoje ainda sem check não quebra (o dia não terminou). Marcar um atrasado hoje reinicia em 1.
 
+## Dias seguidos completos (Chama)
+
+Conta os dias seguidos em que **todo** diário agendado foi concluído no próprio dia, voltando a partir de hoje. Um dia sem nenhum diário agendado é **neutro**: não conta e não quebra. Hoje incompleto ainda não quebra (o dia não terminou); um dia anterior incompleto quebra. Os dias perfeitos (3 ou mais diários agendados, todos feitos) olham só a janela de 90 dias, porque o retroativo tem limite de volta: alargar a janela sem carregar mais histórico faria a conquista contar a menos.
+
 ## Conquistas
 
 O catálogo (slugs, classes, ícones) está em `packages/contracts`; o critério de cada uma é uma função pura em `domain/achievements.ts`, e o serviço monta o contexto a partir do banco.

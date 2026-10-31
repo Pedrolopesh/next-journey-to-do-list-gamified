@@ -172,12 +172,8 @@ export class AchievementsService {
   }
 
   /**
-   * Evaluates the achievements in the action's transaction (check, item, category, character or
-   * event). Each one is unlocked only once (the primary key prevents duplicates). The collection
-   * ones enter on the next round, when the others are already stored.
-   *
-   * One modal per action: everything unlocked stays pending (`notifiedAt` null), but the response
-   * carries only the oldest pending one. The others show up, one at a time, on the following actions.
+   * Evaluates the achievements in the action's transaction. Rules (one modal per action, collection
+   * rounds): docs/api/progressao-e-jogo.md.
    */
   async evaluate(
     tx: Prisma.TransactionClient,
