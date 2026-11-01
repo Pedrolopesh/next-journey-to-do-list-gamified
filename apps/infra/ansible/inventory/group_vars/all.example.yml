@@ -6,6 +6,9 @@ admin_ssh_public_keys:
   - 'ssh-ed25519 AAAA... desktop'
 # Only set to true after logging in by key from every machine.
 ssh_disable_password_auth: false
+# Admin addresses (tailnet or fixed IPs) allowed to open the editor tunnel (VS Code Remote-SSH) as the
+# deploy user, to the host's loopback only. Empty = SSH forwarding stays fully off.
+ssh_forwarding_addresses: []
 app_envs:
   dev:
     port: 3010
