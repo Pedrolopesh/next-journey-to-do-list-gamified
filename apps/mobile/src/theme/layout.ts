@@ -1,6 +1,8 @@
 // Espaçamento, raio e tamanhos do design system. Fonte: docs/FIGMA-INTERA.md.
 // Espaçamento e ícones acompanham a largura da tela (ver `scale.ts`); o alvo de toque nunca fica
 // abaixo de 44 pt (regra de acessibilidade).
+import { Platform } from 'react-native';
+
 import { scale } from './scale';
 
 export const space = {
@@ -29,3 +31,11 @@ export const size = {
   navBarHeight: 84,
   iconSize: scale(24),
 } as const;
+
+/**
+ * Top padding of a screen presented as a modal: the iOS sheet already starts below the status bar,
+ * so the safe-area inset would only leave an empty band above the header; Android draws it full
+ * screen and still needs the inset.
+ */
+export const modalTop = (safeAreaTop: number): number =>
+  Platform.OS === 'ios' ? space[8] : safeAreaTop;
