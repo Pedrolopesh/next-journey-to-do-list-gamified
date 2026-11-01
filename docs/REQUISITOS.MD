@@ -217,7 +217,7 @@ Uma tela estática depois de um toque é defeito, mesmo que a lógica esteja cer
 |---|---|
 | Plataformas | iOS e Android a partir das versões mínimas do SDK do Expo usado; iPhone e aparelhos Android de 4 GB de RAM como referência. |
 | Desempenho | Feedback do check em menos de 100 ms; p95 da API abaixo de 300 ms em check e listagens; banner a 60 fps; abertura a frio em menos de 3 s. |
-| Segurança | Senhas com argon2id; access token JWT de 15 min + refresh token de 30 dias com rotação e revogação; HTTPS obrigatório; rate limit de 5 tentativas de login por minuto por IP e e-mail; ID tokens do Google e da Apple validados no back-end. |
+| Segurança | Senhas com argon2id; access token JWT de 15 min + refresh token de 365 dias (renovado a cada uso) com rotação e revogação; HTTPS obrigatório; rate limit de 5 tentativas de login por minuto por IP e e-mail; ID tokens do Google e da Apple validados no back-end. |
 | Armazenamento no aparelho | Tokens só no SecureStore (Keychain / Keystore); nada sensível no AsyncStorage. |
 | Privacidade (LGPD) | Aceite de Termos e Política no cadastro; exclusão de conta com remoção dos dados pessoais em até 30 dias; logs sem e-mail, senha ou token. |
 | Disponibilidade | 99,5% ao mês; backup diário do PostgreSQL com retenção de 7 dias. |

@@ -11,7 +11,7 @@ import { Button } from '@/components/button';
 import { TabScreen } from '@/components/tab-screen';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { useAction } from '@/features/feedback/use-action';
-import { colors, radius, size, space } from '@/theme';
+import { colors, fontSize, radius, size, space } from '@/theme';
 
 function LinkRow({ label, href }: { label: string; href: Href }) {
   const router = useRouter();
@@ -88,9 +88,9 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   content: { gap: space[8], paddingBottom: space[40] },
   card: { gap: space[4], paddingVertical: space[16] },
-  name: { color: colors.text.primary, fontSize: 20, fontWeight: '600' },
-  title: { color: colors.brand.primaryLight, fontSize: 13 },
-  stats: { color: colors.text.secondary, fontSize: 13 },
+  name: { color: colors.text.primary, fontSize: fontSize[20], fontWeight: '600' },
+  title: { color: colors.brand.primaryLight, fontSize: fontSize[13] },
+  stats: { color: colors.text.secondary, fontSize: fontSize[13] },
   link: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -102,5 +102,5 @@ const styles = StyleSheet.create({
     borderColor: colors.border.subtle,
     paddingHorizontal: space[16],
   },
-  linkText: { color: colors.text.primary, fontSize: 15 },
+  linkText: { color: colors.text.primary, fontSize: fontSize[15] },
 });

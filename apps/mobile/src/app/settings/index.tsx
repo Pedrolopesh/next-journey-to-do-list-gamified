@@ -16,7 +16,7 @@ import { toast } from '@/features/feedback/toast-store';
 import { parseNotifyTime } from '@/features/settings/notify-time';
 import { syncDailyReminder } from '@/features/settings/reminder';
 import { timezoneOptions } from '@/features/settings/timezones';
-import { colors, space } from '@/theme';
+import { colors, fontSize, space } from '@/theme';
 
 /** Configurações (RF-38): fuso horário, lembrete, categorias e sobre. */
 export default function SettingsScreen() {
@@ -150,8 +150,13 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   group: { gap: space[8] },
-  label: { color: colors.text.secondary, fontSize: 13, fontWeight: '500' },
-  hint: { color: colors.text.muted, fontSize: 12 },
-  message: { color: colors.brand.primaryLight, fontSize: 13 },
-  about: { color: colors.text.muted, fontSize: 12, textAlign: 'center', marginTop: space[16] },
+  label: { color: colors.text.secondary, fontSize: fontSize[13], fontWeight: '500' },
+  hint: { color: colors.text.muted, fontSize: fontSize[12] },
+  message: { color: colors.brand.primaryLight, fontSize: fontSize[13] },
+  about: {
+    color: colors.text.muted,
+    fontSize: fontSize[12],
+    textAlign: 'center',
+    marginTop: space[16],
+  },
 });

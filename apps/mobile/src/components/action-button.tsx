@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, softGlowOutline, space } from '@/theme';
+import { colors, fontSize, radius, softGlowOutline, space } from '@/theme';
 
 import { PixelArt, type PixelArtName } from './pixel-art';
 
@@ -47,8 +47,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: space[16],
   },
   text: { flex: 1, gap: 2 },
-  title: { color: colors.text.primary, fontSize: 16, fontWeight: '600' },
-  description: { color: colors.text.secondary, fontSize: 13 },
+  title: { color: colors.text.primary, fontSize: fontSize[16], fontWeight: '600' },
+  description: { color: colors.text.secondary, fontSize: fontSize[13] },
   pressed: { transform: [{ scale: 0.98 }] },
   disabled: { opacity: 0.45 },
 });

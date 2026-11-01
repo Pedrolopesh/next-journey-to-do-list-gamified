@@ -31,7 +31,7 @@ const envSchema = z
     ),
     JWT_PREVIOUS_KEY_ID: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
     ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
-    REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
+    REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(365),
     // Transactional email (Resend). Without a key, nothing is sent (development).
     RESEND_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
     MAIL_FROM: z.string().default('Next Journey <no-reply@example.com>'),

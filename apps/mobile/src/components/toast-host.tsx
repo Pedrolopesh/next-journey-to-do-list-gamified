@@ -3,7 +3,7 @@ import { Animated, StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { type ToastKind, useToastStore } from '@/features/feedback/toast-store';
-import { colors, radius, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 const DURATION_MS: Record<ToastKind, number> = {
   success: 2500,
@@ -73,5 +73,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: space[16],
     paddingVertical: space[12],
   },
-  text: { color: colors.text.onPrimary, fontSize: 14, fontWeight: '600', textAlign: 'center' },
+  text: {
+    color: colors.text.onPrimary,
+    fontSize: fontSize[14],
+    fontWeight: '600',
+    textAlign: 'center',
+  },
 });

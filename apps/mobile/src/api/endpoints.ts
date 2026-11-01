@@ -13,7 +13,8 @@ import {
   type CreateItemRequest,
   type DataExport,
   type DeleteAccountRequest,
-  type ForgotPasswordRequest,
+  type EmailConfirmRequest,
+  type EmailStartRequest,
   type HistoryResponse,
   historyResponseSchema,
   type HomeResponse,
@@ -21,15 +22,9 @@ import {
   type Item,
   itemSchema,
   type ItemType,
-  type LoginRequest,
   type MeResponse,
   meResponseSchema,
   type PatchMeRequest,
-  type RegisterRequest,
-  type RegisterResponse,
-  registerResponseSchema,
-  type ResendVerificationRequest,
-  type ResetPasswordRequest,
   type Session,
   sessionsResponseSchema,
   type SocialLoginRequest,
@@ -39,7 +34,6 @@ import {
   timelineSchema,
   type UpdateCategoryRequest,
   type UpdateItemRequest,
-  type VerifyEmailRequest,
 } from '@nextjourney/contracts';
 import { z } from 'zod';
 
@@ -48,24 +42,14 @@ import { http } from './client';
 // Toda resposta é validada com o schema do contrato: não confiamos no que chega pela rede.
 
 // --- auth
-export async function login(body: LoginRequest): Promise<AuthResponse> {
-  const { data } = await http.post<unknown>('/auth/login', body);
+/** Passwordless entry: asks for the 6-digit code (always 202, whether or not the account exists). */
+export async function emailStart(body: EmailStartRequest): Promise<void> {
+  await http.post('/auth/email/start', body);
+}
+
+export async function emailConfirm(body: EmailConfirmRequest): Promise<AuthResponse> {
+  const { data } = await http.post<unknown>('/auth/email/confirm', body);
   return authResponseSchema.parse(data);
-}
-
-/** O cadastro não devolve sessão: a pessoa confirma o e-mail com o código e só então entra. */
-export async function register(body: RegisterRequest): Promise<RegisterResponse> {
-  const { data } = await http.post<unknown>('/auth/register', body);
-  return registerResponseSchema.parse(data);
-}
-
-export async function verifyEmail(body: VerifyEmailRequest): Promise<AuthResponse> {
-  const { data } = await http.post<unknown>('/auth/verify-email', body);
-  return authResponseSchema.parse(data);
-}
-
-export async function resendVerification(body: ResendVerificationRequest): Promise<void> {
-  await http.post('/auth/resend-verification', body);
 }
 
 export async function socialLogin(
@@ -74,14 +58,6 @@ export async function socialLogin(
 ): Promise<AuthResponse> {
   const { data } = await http.post<unknown>(`/auth/${provider}`, body);
   return authResponseSchema.parse(data);
-}
-
-export async function forgotPassword(body: ForgotPasswordRequest): Promise<void> {
-  await http.post('/auth/forgot-password', body);
-}
-
-export async function resetPassword(body: ResetPasswordRequest): Promise<void> {
-  await http.post('/auth/reset-password', body);
 }
 
 // --- sessões da conta (aparelhos)

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { storyRatio, useMe } from '@/api/queries';
-import { colors, space } from '@/theme';
+import { colors, fontSize, space } from '@/theme';
 
 /**
  * Resumo do avanço que aparece colado ao banner quando o cartão do capítulo rola para fora da
@@ -52,6 +52,6 @@ const styles = StyleSheet.create({
   fill: { height: '100%', backgroundColor: colors.brand.primary },
   foot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   coins: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
-  coinsText: { color: colors.brand.gold, fontSize: 13, fontWeight: '700' },
-  exp: { color: colors.text.muted, fontSize: 12 },
+  coinsText: { color: colors.brand.gold, fontSize: fontSize[13], fontWeight: '700' },
+  exp: { color: colors.text.muted, fontSize: fontSize[12] },
 });

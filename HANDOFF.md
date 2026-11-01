@@ -2,7 +2,7 @@
 
 Resumo para qualquer agente (ou pessoa) continuar de onde parou. Leia antes o `AGENTS.md` (regras, stack e checklist de segurança). Este arquivo não substitui o `AGENTS.md`; ele conta o **estado atual** e o que falta. Atualize-o ao fim de cada etapa.
 
-Última atualização: 2026-10-19, depois dos PRs #29 a #34 (pontuação v2, histórico, estrelas de dificuldade, conquistas com ritmo e testes de interface), todos na `main`.
+Última atualização: 2026-10-31 (fluxo de entrada v2; veja a seção abaixo). Antes: 2026-10-19, depois dos PRs #29 a #34 (pontuação v2, histórico, estrelas de dificuldade, conquistas com ritmo e testes de interface), todos na `main`.
 
 ## Combinados com o Pedro (dono do projeto)
 
@@ -13,6 +13,21 @@ Resumo para qualquer agente (ou pessoa) continuar de onde parou. Leia antes o `A
 - Toda ação do usuário no app mostra carregando e termina em toast de sucesso ou erro (RN-FB, `docs/QA.md` seção 7).
 - Textos de interface só em `apps/mobile/src/i18n/pt-BR.json`.
 - Arte de terceiros só com CC0, OGA-BY ou CC-BY, sempre com crédito (`CREDITS.md`, `apps/banner/lab/CREDITS-LPC.md` e tela Créditos do app).
+
+## Fluxo de entrada v2 (2026-10-31, OpenSpec `fluxo-de-entrada-v2`)
+
+Novo fluxo do Figma (seção "Fluxo de entrada (novo)") implementado: entrada sem senha (Apple, Google ou código de 6 dígitos por e-mail), introdução em 3 telas, meta, personagem em 3 passos (looks prontos, personalizar, nome), escolha de história com cards e modal, lembretes, idade e gênero opcionais, e a Home com "Seu QG" (sem "Mudar cenário do QG": o cenário é o da história). API: `POST /v1/auth/email/start` e `/confirm`, exclusão de conta por código, sessão de 365 dias, campos de perfil novos. As telas e rotas de senha saíram do app; os endpoints de senha seguem na API para versões antigas.
+
+Pendências deste trabalho:
+
+- **Maestro, fluxo 01** (`01-criar-e-marcar-tarefa`): falha ao digitar o título no formulário de item (o campo não recebe o foco); o fluxo 00 passa em iPhone 14 Pro Max e 16 Pro. Não foi comparado com a `main`, então pode ser anterior a esta mudança. Os fluxos 02 a 04 não foram executados depois do 01.
+- **Revisão jurídica** da coleta de faixa de idade (inclui "Menos de 18") antes da loja; idade e gênero são opcionais.
+- **Links de Termos de Uso e Política de Privacidade** na Boas-vindas: o texto está sublinhado, mas ainda não abre nada (falta a URL pública).
+- **Classes do personagem** (8, provisórias, sem arte própria) e **textos dos modais das histórias** (exemplos).
+- **Aceite dos Termos no e-mail**: a conta criada por e-mail guarda a versão enviada pelo app (`termsVersion`), sem tela de aceite própria além do texto da Boas-vindas.
+- **Remover os endpoints de senha** (`register`, `login`, `forgot-password`, `reset-password`) e a tabela `password_resets`: mudança própria, quando as versões antigas do app saírem de uso.
+- **Voltar no onboarding** permite refazer o personagem depois de criado; a troca de visual conta para as conquistas como a edição no Perfil (aceito, não há ganho além do que o Perfil já permite).
+- **Responsividade:** espaçamentos e tamanhos de fonte passam a acompanhar a largura da tela (`apps/mobile/src/theme/scale.ts`, tokens `fontSize` e `space`); conferir telas densas em celulares pequenos e tablets.
 
 ## O que existe hoje (tudo na `main`)
 

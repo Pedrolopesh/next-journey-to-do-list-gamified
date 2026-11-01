@@ -54,7 +54,7 @@ A API **não sobe** se faltar ou estiver inválida alguma obrigatória, e a mens
 | `NODE_ENV`, `HOST`, `PORT`, `LOG_LEVEL` | execução | `development`, `127.0.0.1`, `3000`, `info` |
 | `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_KEY_ID` | emissor, audiência e `kid` da chave atual | `nextjourney-api`, `nextjourney-app`, `k1` |
 | `JWT_ACCESS_SECRET_PREVIOUS`, `JWT_PREVIOUS_KEY_ID` | chave anterior, válida até o fim do token na troca do segredo | vazio |
-| `ACCESS_TOKEN_TTL_SECONDS`, `REFRESH_TOKEN_TTL_DAYS` | validade dos tokens | 900, 30 |
+| `ACCESS_TOKEN_TTL_SECONDS`, `REFRESH_TOKEN_TTL_DAYS` | validade dos tokens | 900, 365 |
 | `RESEND_API_KEY`, `MAIL_FROM` | e-mail transacional; sem chave nada é enviado (desenvolvimento) | vazio |
 | `PASSWORD_RESET_URL`, `PASSWORD_RESET_TTL_MINUTES` | deep link e validade do link de nova senha | `nextjourney://reset-password`, 30 |
 | `GOOGLE_CLIENT_IDS`, `APPLE_CLIENT_ID` | ids públicos do login social; vazio = recurso indisponível | vazio |

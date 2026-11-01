@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { storyRatio, useMe } from '@/api/queries';
-import { colors, radius, rgba, space, tonedCard } from '@/theme';
+import { colors, fontSize, radius, rgba, space, tonedCard } from '@/theme';
 
 import { PixelArt } from './pixel-art';
 
@@ -88,15 +88,15 @@ const styles = StyleSheet.create({
   },
   top: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
   titles: { flex: 1, gap: 2 },
-  name: { color: colors.text.primary, fontSize: 16, fontWeight: '600' },
-  chapter: { color: colors.text.secondary, fontSize: 13 },
+  name: { color: colors.text.primary, fontSize: fontSize[16], fontWeight: '600' },
+  chapter: { color: colors.text.secondary, fontSize: fontSize[13] },
   level: {
     borderRadius: radius.pill,
     backgroundColor: rgba(colors.brand.primary, 0.3),
     paddingVertical: space[4],
     paddingHorizontal: space[12],
   },
-  levelText: { color: colors.brand.primaryLight, fontSize: 12, fontWeight: '700' },
+  levelText: { color: colors.brand.primaryLight, fontSize: fontSize[12], fontWeight: '700' },
   segments: { flexDirection: 'row', gap: space[4] },
   segment: {
     flex: 1,
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   },
   fill: { height: '100%', backgroundColor: colors.brand.primary },
   foot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  footText: { color: colors.text.muted, fontSize: 12 },
+  footText: { color: colors.text.muted, fontSize: fontSize[12] },
   coins: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
-  coinsText: { color: colors.brand.gold, fontSize: 13, fontWeight: '700' },
+  coinsText: { color: colors.brand.gold, fontSize: fontSize[13], fontWeight: '700' },
 });

@@ -41,6 +41,6 @@ import { TokensService } from './tokens.service.js';
     { provide: IdTokenVerifier, useClass: RemoteIdTokenVerifier },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
-  exports: [IdTokenVerifier, RateLimitService],
+  exports: [IdTokenVerifier, RateLimitService, EmailVerificationService],
 })
 export class AuthModule {}

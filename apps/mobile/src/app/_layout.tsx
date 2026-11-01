@@ -15,10 +15,12 @@ import { ProgressionModalHost } from '@/components/progression-modal-host';
 import { ToastHost } from '@/components/toast-host';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { useCheckSync } from '@/features/offline/use-check-sync';
+import { useCharacterDraft } from '@/features/onboarding/character-draft';
+import { useOnboardingFlow } from '@/features/onboarding/flow-store';
 import { isOnboardingComplete } from '@/features/onboarding/next-step';
 import { syncDailyReminder } from '@/features/settings/reminder';
 import { log } from '@/logging';
-import { colors, space } from '@/theme';
+import { colors, fontSize, space } from '@/theme';
 
 const logo = require('../../assets/images/logo-livro.png') as number;
 
@@ -42,6 +44,7 @@ function Gate() {
   const { t } = useTranslation();
   const status = useSessionStore((state) => state.status);
   const me = useMe();
+  const finishing = useOnboardingFlow((state) => state.finishing);
   const signedIn = status === 'signedIn';
   useCheckSync();
   const notifyAt = me.data?.user.notifyAt;
@@ -75,10 +78,10 @@ function Gate() {
         <Stack.Protected guard={status === 'signedOut'}>
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
-        <Stack.Protected guard={signedIn && !ready}>
+        <Stack.Protected guard={signedIn && (!ready || finishing)}>
           <Stack.Screen name="(onboarding)" />
         </Stack.Protected>
-        <Stack.Protected guard={signedIn && ready}>
+        <Stack.Protected guard={signedIn && ready && !finishing}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="item/new" options={{ presentation: 'modal' }} />
           <Stack.Screen name="item/[id]" options={{ presentation: 'modal' }} />
@@ -159,6 +162,9 @@ export default function RootLayout() {
     if (status === 'signedOut') {
       queryClient.clear();
       useFeedbackStore.getState().clear();
+      // Nothing of an interrupted onboarding may leak into the next sign-in
+      useOnboardingFlow.getState().setFinishing(false);
+      useCharacterDraft.getState().reset();
     }
   }, [status, queryClient]);
 
@@ -180,6 +186,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.base,
   },
   splashLogo: { width: 128, height: 112 },
-  splashTitle: { color: colors.brand.primaryLight, fontSize: 22, fontWeight: '700' },
-  error: { color: colors.status.danger, fontSize: 13 },
+  splashTitle: { color: colors.brand.primaryLight, fontSize: fontSize[22], fontWeight: '700' },
+  error: { color: colors.status.danger, fontSize: fontSize[13] },
 });

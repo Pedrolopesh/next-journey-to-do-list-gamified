@@ -16,7 +16,7 @@ import { tierColor } from '@/features/achievements/tier';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import type { ModalEntry } from '@/features/feedback/modal-queue';
 import { log } from '@/logging';
-import { colors, radius, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 /** Alerta de conquista nova (modal único do app). A descrição vem do catálogo, se já carregado. */
 function AchievementAlert({
@@ -151,6 +151,11 @@ const styles = StyleSheet.create({
   },
   header: { height: 72, alignItems: 'center', justifyContent: 'center' },
   body: { padding: space[20], gap: space[12] },
-  title: { color: colors.text.primary, fontSize: 20, fontWeight: '700', textAlign: 'center' },
-  text: { color: colors.text.secondary, fontSize: 14, textAlign: 'center' },
+  title: {
+    color: colors.text.primary,
+    fontSize: fontSize[20],
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  text: { color: colors.text.secondary, fontSize: fontSize[14], textAlign: 'center' },
 });

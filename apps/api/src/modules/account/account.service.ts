@@ -8,6 +8,7 @@ import { AppError } from '../../common/app-error.js';
 import { Clock } from '../../common/clock.js';
 import { ENV, type Env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { EmailVerificationService } from '../auth/email-verification.service.js';
 import { IdTokenVerifier } from '../auth/id-token-verifier.js';
 import { RateLimitService } from '../auth/rate-limit.service.js';
 import { SecurityEvents } from '../security/security-events.service.js';
@@ -37,6 +38,7 @@ export class AccountService {
     @Inject(ENV) private readonly env: Env,
     @Inject(Logger) private readonly logger: Logger,
     @Inject(IdTokenVerifier) private readonly verifier: IdTokenVerifier,
+    @Inject(EmailVerificationService) private readonly emailCodes: EmailVerificationService,
     @Inject(RateLimitService) private readonly rateLimit: RateLimitService,
     @Inject(SecurityEvents) private readonly events: SecurityEvents,
   ) {}
@@ -70,9 +72,16 @@ export class AccountService {
           name: 'Conta excluída',
           passwordHash: null,
           notifyAt: null,
+          goal: null,
+          ageRange: null,
+          gender: null,
+          remindersOptIn: null,
         },
       }),
-      this.prisma.character.updateMany({ where: { userId }, data: { name: 'Conta excluída' } }),
+      this.prisma.character.updateMany({
+        where: { userId },
+        data: { name: 'Conta excluída', characterClass: null },
+      }),
       this.prisma.refreshToken.updateMany({
         where: { userId, revokedAt: null },
         data: { revokedAt: now },
@@ -84,7 +93,7 @@ export class AccountService {
   }
 
   /**
-   * Second proof before deleting the account (password or a fresh ID token). Every failure is the
+   * Second proof before deleting the account (password, email code or a fresh ID token). Every failure is the
    * same 403, never 401: the app treats 401 as an ended session. Rules:
    * docs/api/conta-e-privacidade.md.
    */
@@ -93,6 +102,12 @@ export class AccountService {
     proof: DeleteAccountRequest,
   ): Promise<void> {
     await this.rateLimit.hit('delete-account', user.id, REAUTH_LIMIT);
+    if ('emailCode' in proof) {
+      // The code was sent to the account's own email: whoever has it owns the mailbox.
+      if (!(await this.emailCodes.consume(user.id, proof.emailCode, true))) throw reauthFailed();
+      await this.rateLimit.reset('delete-account', user.id);
+      return;
+    }
     if (user.passwordHash) {
       if (!('password' in proof)) throw reauthFailed();
       const ok = await argon2.verify(user.passwordHash, proof.password).catch(() => false);
@@ -127,7 +142,7 @@ export class AccountService {
   async purgeExpired(): Promise<number> {
     const limit = new Date(this.clock.now().getTime() - this.env.ACCOUNT_PURGE_DAYS * DAY_MS);
     const result = await this.prisma.user.deleteMany({ where: { deletedAt: { lt: limit } } });
-    // Password sign-up that never confirmed its email (the codes go in cascade).
+    // Sign-up that never confirmed its email, by password or by code (the codes go in cascade).
     const pendingLimit = new Date(this.clock.now().getTime() - UNVERIFIED_ACCOUNT_DAYS * DAY_MS);
     const pending = await this.prisma.user.deleteMany({
       where: { emailVerifiedAt: null, identities: { none: {} }, createdAt: { lt: pendingLimit } },

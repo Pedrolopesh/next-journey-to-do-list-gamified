@@ -5,7 +5,7 @@ import { Pills } from '@/components/pills';
 import { toast } from '@/features/feedback/toast-store';
 import { SCENARIOS, TIME_MODES, timeOfDayFor } from '@/features/qg/options';
 import { useQgPrefs } from '@/features/qg/qg-store';
-import { colors, radius, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 /** Escolha do ambiente do QG: cenário e hora do dia. Vale na Home e na prévia do personagem. */
 export function QgControls() {
@@ -57,5 +57,5 @@ const styles = StyleSheet.create({
     padding: space[12],
   },
   group: { gap: space[8] },
-  label: { color: colors.text.secondary, fontSize: 13, fontWeight: '500' },
+  label: { color: colors.text.secondary, fontSize: fontSize[13], fontWeight: '500' },
 });

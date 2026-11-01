@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { DifficultyIcon } from '@/components/difficulty-icon';
-import { colors, radius, size, softGlow, space } from '@/theme';
+import { colors, fontSize, radius, size, softGlow, space } from '@/theme';
 
 type Props = {
   item: Item;
@@ -116,14 +116,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkDone: { backgroundColor: colors.status.success, borderColor: colors.status.success },
-  checkMark: { color: colors.text.onPrimary, fontSize: 20, fontWeight: '700' },
+  checkMark: { color: colors.text.onPrimary, fontSize: fontSize[20], fontWeight: '700' },
   body: { flex: 1, gap: space[4], minHeight: size.touchTarget, justifyContent: 'center' },
-  title: { color: colors.text.primary, fontSize: 15, fontWeight: '500' },
+  title: { color: colors.text.primary, fontSize: fontSize[15], fontWeight: '500' },
   titleDone: { color: colors.text.secondary, textDecorationLine: 'line-through' },
   meta: { flexDirection: 'row', alignItems: 'center', gap: space[8], flexWrap: 'wrap' },
-  overdue: { color: colors.status.danger, fontSize: 12, fontWeight: '600' },
+  overdue: { color: colors.status.danger, fontSize: fontSize[12], fontWeight: '600' },
   streak: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  streakText: { color: colors.brand.gold, fontSize: 12, fontWeight: '600' },
-  counters: { color: colors.text.muted, fontSize: 12 },
+  streakText: { color: colors.brand.gold, fontSize: fontSize[12], fontWeight: '600' },
+  counters: { color: colors.text.muted, fontSize: fontSize[12] },
   difficulty: { width: size.touchTarget / 1.5, alignItems: 'center', justifyContent: 'center' },
 });

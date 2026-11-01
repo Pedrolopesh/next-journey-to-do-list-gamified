@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { type DataExport, ERROR_CODES } from '@nextjourney/contracts';
+import { type CharacterClass, type DataExport, ERROR_CODES } from '@nextjourney/contracts';
 
 import { AppError } from '../../common/app-error.js';
 import { Clock } from '../../common/clock.js';
@@ -37,6 +37,10 @@ export class DataExportService {
         email: true,
         timezone: true,
         notifyAt: true,
+        goal: true,
+        ageRange: true,
+        gender: true,
+        remindersOptIn: true,
         createdAt: true,
         termsAcceptedAt: true,
         termsVersion: true,
@@ -60,6 +64,7 @@ export class DataExportService {
           select: {
             name: true,
             title: true,
+            characterClass: true,
             skin: true,
             hair: true,
             outfit: true,
@@ -146,6 +151,10 @@ export class DataExportService {
         email: user.email,
         timezone: user.timezone,
         notifyAt: user.notifyAt,
+        goal: user.goal as DataExport['account']['goal'],
+        ageRange: user.ageRange as DataExport['account']['ageRange'],
+        gender: user.gender as DataExport['account']['gender'],
+        remindersOptIn: user.remindersOptIn,
         createdAt: iso(user.createdAt),
         termsAcceptedAt: iso(user.termsAcceptedAt),
         termsVersion: user.termsVersion,
@@ -153,6 +162,11 @@ export class DataExportService {
         emailVerifiedAt: isoOrNull(user.emailVerifiedAt),
         signInMethods: [
           ...(user.passwordHash ? (['password'] as const) : []),
+          // Accounts created by email code have no other way in (every confirmed account can also
+          // use the code, but only these are listed here)
+          ...(user.emailVerifiedAt && !user.passwordHash && user.identities.length === 0
+            ? (['email'] as const)
+            : []),
           ...user.identities.map((identity) => identity.provider),
         ],
       },
@@ -170,6 +184,7 @@ export class DataExportService {
         ? {
             name: character.name,
             title: character.title,
+            characterClass: character.characterClass as CharacterClass | null,
             skin: character.skin,
             hair: character.hair,
             outfit: character.outfit,

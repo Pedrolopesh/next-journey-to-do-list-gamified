@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { tierColor } from '@/features/achievements/tier';
-import { colors, radius, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 import { BottomSheet } from './bottom-sheet';
 import { Button } from './button';
@@ -74,9 +74,19 @@ export function AchievementSheet({ achievement, onClose }: Props) {
 const styles = StyleSheet.create({
   art: { alignItems: 'center' },
   dimmed: { opacity: 0.45 },
-  title: { color: colors.text.primary, fontSize: 20, fontWeight: '700', textAlign: 'center' },
-  state: { color: colors.brand.gold, fontSize: 13, fontWeight: '600', textAlign: 'center' },
-  description: { color: colors.text.secondary, fontSize: 15 },
+  title: {
+    color: colors.text.primary,
+    fontSize: fontSize[20],
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  state: {
+    color: colors.brand.gold,
+    fontSize: fontSize[13],
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  description: { color: colors.text.secondary, fontSize: fontSize[15] },
   progress: { gap: space[4] },
   bar: {
     height: 10,
@@ -85,6 +95,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   fill: { height: '100%', backgroundColor: colors.brand.primary },
-  progressText: { color: colors.brand.primaryLight, fontSize: 12 },
-  tier: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
+  progressText: { color: colors.brand.primaryLight, fontSize: fontSize[12] },
+  tier: { fontSize: fontSize[13], fontWeight: '700', textAlign: 'center' },
 });

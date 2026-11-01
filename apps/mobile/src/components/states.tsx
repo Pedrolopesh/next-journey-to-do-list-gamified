@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
-import { colors, radius, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 /** Linhas cinza pulsando enquanto a lista carrega (skeleton). */
 export function SkeletonList({ rows = 3 }: { rows?: number }) {
@@ -99,12 +99,17 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     color: colors.text.primary,
-    fontSize: 18,
+    fontSize: fontSize[18],
     fontWeight: '700',
     textAlign: 'center',
   },
-  emptyHint: { color: colors.text.secondary, fontSize: 14, lineHeight: 20, textAlign: 'center' },
+  emptyHint: {
+    color: colors.text.secondary,
+    fontSize: fontSize[14],
+    lineHeight: 20,
+    textAlign: 'center',
+  },
   center: { alignItems: 'center', gap: space[8], paddingVertical: space[24] },
-  title: { color: colors.text.secondary, fontSize: 14, textAlign: 'center' },
-  hint: { color: colors.text.muted, fontSize: 12, textAlign: 'center' },
+  title: { color: colors.text.secondary, fontSize: fontSize[14], textAlign: 'center' },
+  hint: { color: colors.text.muted, fontSize: fontSize[12], textAlign: 'center' },
 });

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { isoDateTimeSchema } from './common';
+import { ageRangeSchema, characterClassSchema, genderSchema, goalSchema } from './profile';
 
 const iso = isoDateTimeSchema;
 
@@ -22,7 +23,11 @@ export const dataExportSchema = z.object({
     tutorialSeenAt: iso.nullable(),
     emailVerifiedAt: iso.nullable(),
     /** Formas de entrar que a conta tem (nunca o segredo nem o id no provedor). */
-    signInMethods: z.array(z.enum(['password', 'google', 'apple'])),
+    signInMethods: z.array(z.enum(['password', 'email', 'google', 'apple'])),
+    goal: goalSchema.nullable(),
+    ageRange: ageRangeSchema.nullable(),
+    gender: genderSchema.nullable(),
+    remindersOptIn: z.boolean().nullable(),
   }),
   progress: z.object({
     level: z.number().int(),
@@ -38,6 +43,7 @@ export const dataExportSchema = z.object({
     .object({
       name: z.string(),
       title: z.string(),
+      characterClass: characterClassSchema.nullable(),
       skin: z.string(),
       hair: z.string(),
       outfit: z.string(),

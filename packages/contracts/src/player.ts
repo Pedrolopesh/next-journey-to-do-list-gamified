@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { characterSchema } from './character';
 import { timezoneSchema } from './common';
+import { ageRangeSchema, genderSchema, goalSchema } from './profile';
 
 /** Capítulo da história ativa. Cada nível ganho conclui um capítulo; o progresso é separado por história. */
 export const storyProgressSchema = z.object({
@@ -34,6 +35,11 @@ export const meResponseSchema = z.object({
     notifyAt: z.string().nullable(),
     /** Falso em conta criada só por login social: a exclusão pede o provedor em vez da senha. */
     hasPassword: z.boolean(),
+    /** Onboarding answers; null until the person answers (age and gender may stay null). */
+    goal: goalSchema.nullable(),
+    ageRange: ageRangeSchema.nullable(),
+    gender: genderSchema.nullable(),
+    remindersOptIn: z.boolean().nullable(),
   }),
   player: playerStateSchema.extend({
     expForNextLevel: z.number().int().positive(),
@@ -56,7 +62,7 @@ export const meResponseSchema = z.object({
 });
 export type MeResponse = z.infer<typeof meResponseSchema>;
 
-/** PATCH /me: fuso do perfil, tutorial visto e horário do lembrete diário (HH:MM). */
+/** PATCH /me: fuso, tutorial visto, horário do lembrete (HH:MM) e respostas do onboarding. */
 export const patchMeRequestSchema = z
   .object({
     timezone: timezoneSchema,
@@ -65,6 +71,10 @@ export const patchMeRequestSchema = z
       .string()
       .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
       .nullable(),
+    goal: goalSchema,
+    ageRange: ageRangeSchema.nullable(),
+    gender: genderSchema.nullable(),
+    remindersOptIn: z.boolean(),
   })
   .partial();
 export type PatchMeRequest = z.infer<typeof patchMeRequestSchema>;

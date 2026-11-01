@@ -10,7 +10,7 @@ import { Pills } from '@/components/pills';
 import { ScreenFrame } from '@/components/screen-frame';
 import { TextField } from '@/components/text-field';
 import { toast } from '@/features/feedback/toast-store';
-import { colors, radius, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 /** Categorias (RF-23): renomear, criar e excluir até 10, com cor da paleta. */
 export default function CategoriesScreen() {
@@ -179,10 +179,10 @@ const styles = StyleSheet.create({
     padding: space[12],
   },
   dot: { width: 12, height: 12, borderRadius: 6 },
-  name: { color: colors.text.primary, fontSize: 15, fontWeight: '500' },
+  name: { color: colors.text.primary, fontSize: fontSize[15], fontWeight: '500' },
   actions: { flexDirection: 'row', gap: space[8] },
   editor: { gap: space[8] },
   new: { gap: space[12], marginTop: space[8] },
-  hint: { color: colors.text.muted, fontSize: 12 },
-  error: { color: colors.status.danger, fontSize: 13 },
+  hint: { color: colors.text.muted, fontSize: fontSize[12] },
+  error: { color: colors.status.danger, fontSize: fontSize[13] },
 });

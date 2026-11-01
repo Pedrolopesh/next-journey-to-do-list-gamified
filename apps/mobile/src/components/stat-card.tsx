@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, space, tonedCard } from '@/theme';
+import { colors, fontSize, radius, space, tonedCard } from '@/theme';
 
 import { PixelArt, type PixelArtName } from './pixel-art';
 
@@ -42,6 +42,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: space[12],
   },
   info: { flex: 1, gap: space[4] },
-  label: { color: colors.text.secondary, fontSize: 12 },
-  value: { fontSize: 26, fontWeight: '700' },
+  label: { color: colors.text.secondary, fontSize: fontSize[12] },
+  value: { fontSize: fontSize[26], fontWeight: '700' },
 });

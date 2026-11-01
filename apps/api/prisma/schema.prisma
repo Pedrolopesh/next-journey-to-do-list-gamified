@@ -35,6 +35,12 @@ model User {
   tutorialSeenAt         DateTime? @map("tutorial_seen_at") @db.Timestamptz
   /// Horário do lembrete diário (HH:MM), no fuso do perfil
   notifyAt               String?   @map("notify_at") @db.VarChar(5)
+  /// Respostas do onboarding (valores dos enums de `packages/contracts/src/profile.ts`)
+  goal                   String?   @db.VarChar(20)
+  ageRange               String?   @map("age_range") @db.VarChar(10)
+  gender                 String?   @db.VarChar(10)
+  /// Se a pessoa ligou os lembretes na tela de notificações (nulo = ainda não respondeu)
+  remindersOptIn         Boolean?  @map("reminders_opt_in")
   createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
   deletedAt              DateTime? @map("deleted_at") @db.Timestamptz
   /// Quando a pessoa provou ser dona do e-mail (nulo = cadastro ainda pendente)
@@ -60,17 +66,17 @@ model User {
 }
 
 model RefreshToken {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id") @db.Uuid
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
   /// sha256 do segredo do token; o token em si nunca é guardado
-  tokenHash String    @unique @map("token_hash")
+  tokenHash  String    @unique @map("token_hash")
   /// Todos os tokens rotacionados a partir do mesmo login compartilham a família
-  familyId  String    @map("family_id") @db.Uuid
+  familyId   String    @map("family_id") @db.Uuid
   /// Nome do aparelho informado pelo app (cabeçalho X-Device-Name), mantido na rotação
   deviceName String?   @map("device_name") @db.VarChar(80)
-  expiresAt DateTime  @map("expires_at") @db.Timestamptz
-  revokedAt DateTime? @map("revoked_at") @db.Timestamptz
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -254,15 +260,17 @@ model RateLimit {
 }
 
 model Character {
-  userId    String  @id @map("user_id") @db.Uuid
-  name      String
-  title     String
-  skin      String
-  hair      String
-  outfit    String
-  accessory String?
+  userId         String  @id @map("user_id") @db.Uuid
+  name           String
+  title          String
+  /// Classe escolhida no onboarding (enum de `profile.ts`); nulo em personagens antigos
+  characterClass String? @map("character_class") @db.VarChar(20)
+  skin           String
+  hair           String
+  outfit         String
+  accessory      String?
   /// Aparência LPC detalhada (validada por `lpcLookSchema` antes de gravar)
-  look      Json?
+  look           Json?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

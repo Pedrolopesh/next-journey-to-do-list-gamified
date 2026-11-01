@@ -2,7 +2,16 @@
 
 Código em `apps/api/src/modules/auth`. As decisões e os motivos estão no [ADR-0008](../adr/0008-autenticacao-e-sessao.md); aqui está o que cada parte faz.
 
-## Cadastro e confirmação do e-mail
+## Entrada por código de e-mail (sem senha)
+
+É a forma de entrar do app. Dois passos, sem cadastro separado:
+
+1. `POST /v1/auth/email/start` (`{ email, timezone?, termsVersion? }`) responde sempre `202`, sem corpo, exista a conta ou não. E-mail novo cria uma conta **pendente sem senha** (nome provisório tirado da parte antes do `@`); todo e-mail recebe um código de 6 dígitos, respeitando o intervalo de 60 s entre envios. Limite: 10 por e-mail e IP por hora e 30 por e-mail por hora (o app deixa reenviar a cada 60 s).
+2. `POST /v1/auth/email/confirm` (`{ email, code }`) troca o código pela sessão. O código segue as mesmas regras de baixo (15 minutos, uso único, 5 tentativas). A primeira confirmação marca `emailVerifiedAt`, **apaga qualquer senha gravada enquanto a conta estava pendente** (impede que quem cadastrou o e-mail alheio pelo endpoint legado entre depois) e cria os itens de exemplo, na mesma transação que consome o código; as seguintes só devolvem a sessão. Toda falha (código errado, expirado, usado ou e-mail sem conta) responde `400 INVALID_VERIFICATION_CODE`, igual.
+
+Quem já tinha conta com senha entra pelo mesmo caminho: o código prova a posse do e-mail. Os endpoints de senha abaixo continuam na API só para versões antigas do app; o app novo não os usa.
+
+## Cadastro e confirmação do e-mail (por senha, legado)
 
 1. `POST /v1/auth/register` cria o usuário **pendente** (com as categorias padrão) e envia um código por e-mail. Responde sempre `202 { status: "verification_sent" }`, sem sessão, e **igual** para e-mail novo, pendente ou já confirmado (sem enumeração de contas).
    - Cadastro pendente repetido: o último vence; só quem confirma com o código e a senha ativa entra.
@@ -26,7 +35,7 @@ Código em `apps/api/src/modules/auth`. As decisões e os motivos estão no [ADR
 ## Tokens
 
 - **Acesso:** JWT curto (HS256, 900 s por padrão, `ACCESS_TOKEN_TTL_SECONDS`) com emissor e audiência fixos e o id da sessão (`sid`). O cabeçalho `kid` só escolhe qual chave tentar (a atual ou a anterior, durante a troca do segredo); a assinatura decide. Procedimento de troca: `docs/SEGURANCA.md`, seção 8.
-- **Refresh:** `<id>.<segredo>` aleatório, 30 dias por padrão (`REFRESH_TOKEN_TTL_DAYS`); só o `sha256` do segredo fica no banco.
+- **Refresh:** `<id>.<segredo>` aleatório, 365 dias por padrão (`REFRESH_TOKEN_TTL_DAYS`), renovados a cada rotação: a sessão só termina com "Sair", exclusão da conta, revogação em Sessões ou reúso detectado; só o `sha256` do segredo fica no banco.
 - **Rotação atômica:** a cada refresh o token é trocado. O `UPDATE` condicional (`revokedAt` nulo e ainda válido) deixa passar só **uma** de várias requisições simultâneas com o mesmo token; a que perde é tratada como **reuso** e revoga a família inteira (sinal de token roubado). Conflito de transação sob concorrência nega (falha fechada); outro erro (banco fora) segue como 5xx, para o app não tratar falha temporária como sessão encerrada.
 - **Logout** revoga a família do refresh token informado; é silencioso se o token for inválido.
 
