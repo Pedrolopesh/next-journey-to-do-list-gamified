@@ -28,8 +28,8 @@ type Props = {
 };
 
 /**
- * Character editing (Profile → "Personalizar personagem"): ready-made looks, details, class and
- * name in one scrolling form. The onboarding uses the same sections, split over three screens.
+ * Character editing (Profile → "Personalizar personagem"): ready-made looks, details and class in
+ * one scrolling form; the name is kept as it was. The onboarding uses the same sections, split over three screens.
  */
 export function CharacterForm({
   initial,
