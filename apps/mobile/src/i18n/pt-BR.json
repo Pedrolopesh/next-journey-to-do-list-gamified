@@ -592,7 +592,7 @@
     "saveFailed": "Não foi possível salvar. Tente de novo.",
     "goal": {
       "title": "O que você quer mudar na sua vida?",
-      "subtitle": "Escolha a meta que mais combina com você.",
+      "subtitle": "Escolha uma ou mais metas que combinam com você.",
       "options": {
         "procrastination": "Parar de procrastinar",
         "fitness": "Ficar em melhor forma",

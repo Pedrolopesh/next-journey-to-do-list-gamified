@@ -110,7 +110,7 @@ export function ItemListScreen({
   };
 
   const header = (
-    <View style={styles.header}>
+    <View style={[styles.header, !groupByCategory && styles.headerFlat]}>
       <View onLayout={onCardLayout}>
         <StoryProgressCard showCoins />
       </View>
@@ -259,6 +259,8 @@ export function ItemListScreen({
 
 const styles = StyleSheet.create({
   header: { gap: space[8] },
+  // lists without the category filter: same room under the heading as the filtered one
+  headerFlat: { paddingBottom: space[12] },
   // colado ao banner: a tela tem margem de 16 em volta, o resumo ocupa a largura toda
   mini: { position: 'absolute', top: 0, left: 0, right: 0 },
   heading: {

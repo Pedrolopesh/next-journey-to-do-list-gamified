@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { characterSchema } from './character';
 import { timezoneSchema } from './common';
-import { ageRangeSchema, genderSchema, goalSchema } from './profile';
+import { ageRangeSchema, genderSchema, goalsSchema } from './profile';
 
 /** Capítulo da história ativa. Cada nível ganho conclui um capítulo; o progresso é separado por história. */
 export const storyProgressSchema = z.object({
@@ -35,8 +35,8 @@ export const meResponseSchema = z.object({
     notifyAt: z.string().nullable(),
     /** Falso em conta criada só por login social: a exclusão pede o provedor em vez da senha. */
     hasPassword: z.boolean(),
-    /** Onboarding answers; null until the person answers (age and gender may stay null). */
-    goal: goalSchema.nullable(),
+    /** Onboarding answers; empty until the person answers (age and gender may stay null). */
+    goals: goalsSchema,
     ageRange: ageRangeSchema.nullable(),
     gender: genderSchema.nullable(),
     remindersOptIn: z.boolean().nullable(),
@@ -71,7 +71,7 @@ export const patchMeRequestSchema = z
       .string()
       .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
       .nullable(),
-    goal: goalSchema,
+    goals: goalsSchema.min(1),
     ageRange: ageRangeSchema.nullable(),
     gender: genderSchema.nullable(),
     remindersOptIn: z.boolean(),

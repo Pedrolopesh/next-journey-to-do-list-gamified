@@ -41,7 +41,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.greeting} accessibilityRole="header">
-          {t('home.greeting', { name: me?.user.name ?? '' })}
+          {t('home.greeting', { name: me?.character?.name ?? me?.user.name ?? '' })}
         </Text>
 
         {home.isPending ? (

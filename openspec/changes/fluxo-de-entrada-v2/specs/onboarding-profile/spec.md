@@ -2,12 +2,12 @@
 
 ### Requirement: Dados de perfil do onboarding
 
-O sistema SHALL guardar, por conta, a meta (`procrastination`, `fitness`, `discipline`, `wellbeing`, `projects`, `fun`, `learning`), a faixa de idade (`under18`, `18-24`, `25-34`, `35-44`, `45-54`, `55-64`, `65plus`), o gênero (`male`, `female`, `other`) e se a pessoa ligou os lembretes (`remindersOptIn`). Idade e gênero SHALL ser opcionais e podem ser limpos com `null`. Os valores SHALL ser validados por enum fechado em `packages/contracts`.
+O sistema SHALL guardar, por conta, uma ou mais metas (`procrastination`, `fitness`, `discipline`, `wellbeing`, `projects`, `fun`, `learning`), a faixa de idade (`under18`, `18-24`, `25-34`, `35-44`, `45-54`, `55-64`, `65plus`), o gênero (`male`, `female`, `other`) e se a pessoa ligou os lembretes (`remindersOptIn`). Idade e gênero SHALL ser opcionais e podem ser limpos com `null`. Os valores SHALL ser validados por enum fechado em `packages/contracts`.
 
 #### Scenario: Salvar a meta
 
-- **WHEN** o app envia `PATCH /me` com `goal: "fitness"`
-- **THEN** a API grava e `GET /me` devolve `goal: "fitness"`
+- **WHEN** o app envia `PATCH /me` com `goals: ["fitness", "learning"]`
+- **THEN** a API grava e `GET /me` devolve `goals: ["fitness", "learning"]`
 
 #### Scenario: Pular idade e gênero
 

@@ -72,7 +72,7 @@ export class AccountService {
           name: 'Conta excluída',
           passwordHash: null,
           notifyAt: null,
-          goal: null,
+          goals: [],
           ageRange: null,
           gender: null,
           remindersOptIn: null,

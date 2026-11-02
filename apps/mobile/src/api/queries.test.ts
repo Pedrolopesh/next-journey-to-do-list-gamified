@@ -15,7 +15,7 @@ const me = (exp: number, next: number): MeResponse => ({
     timezone: 'UTC',
     notifyAt: null,
     hasPassword: true,
-    goal: null,
+    goals: [],
     ageRange: null,
     gender: null,
     remindersOptIn: null,

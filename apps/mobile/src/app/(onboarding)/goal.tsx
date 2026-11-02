@@ -23,21 +23,21 @@ const ICONS: Record<Goal, PixelArtName> = {
   learning: 'apprentice',
 };
 
-/** "What do you want to change in your life?": one goal, saved on the profile. */
+/** "What do you want to change in your life?": one or more goals, saved on the profile. */
 export default function GoalScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [goal, setGoal] = useState<Goal | null>(null);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const { run, loading } = useAction({
     name: 'onboarding.goal',
     error: (error) => describeError(error, t),
   });
 
   const next = async (): Promise<void> => {
-    if (!goal) return;
+    if (goals.length === 0) return;
     const ok = await run(async () => {
-      queryClient.setQueryData(queryKeys.me, await patchMe({ goal }));
+      queryClient.setQueryData(queryKeys.me, await patchMe({ goals }));
     });
     if (ok) router.push('/character');
   };
@@ -50,15 +50,22 @@ export default function GoalScreen() {
         <Button
           label={t('onboarding.continue')}
           loading={loading}
-          disabled={!goal}
+          disabled={goals.length === 0}
           onPress={() => void next()}
         />
       }
     >
       <ChoiceList
         label={t('onboarding.goal.title')}
-        value={goal}
-        onChange={setGoal}
+        multiple
+        value={goals}
+        onChange={(value) => {
+          setGoals((current) =>
+            current.includes(value)
+              ? current.filter((goal) => goal !== value)
+              : [...current, value],
+          );
+        }}
         options={GOALS.map((value) => ({
           value,
           label: t(`onboarding.goal.options.${value}`),

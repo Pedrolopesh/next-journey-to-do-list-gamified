@@ -44,7 +44,7 @@ describe('login sem senha por código de e-mail', () => {
     expect(await ctx.prisma.item.count({ where: { userId: user.id } })).toBeGreaterThan(0);
     const me = await ctx.http().get('/v1/me').set('Authorization', bearer(ok.body)).expect(200);
     expect(me.body.user.hasPassword).toBe(false);
-    expect(me.body.user.goal).toBeNull();
+    expect(me.body.user.goals).toEqual([]);
   });
 
   it('a exportação lista o e-mail como forma de entrar da conta sem senha', async () => {
