@@ -11,7 +11,6 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { ClassPicker, LookDetails, ReadyLooks } from '@/components/character-sections';
-import { TextField } from '@/components/text-field';
 import { toast } from '@/features/feedback/toast-store';
 import { DEFAULT_LOOK, legacyHair, legacySkin } from '@/features/qg/options';
 import { colors, fontSize, space } from '@/theme';
@@ -45,7 +44,6 @@ export function CharacterForm({
   const [characterClass, setCharacterClass] = useState<CharacterClass | null>(
     initial?.characterClass ?? null,
   );
-  const [name, setName] = useState(initial?.name ?? '');
   const [formError, setFormError] = useState<string | null>(null);
   // Validação reprovada também avisa por toast, para o botão nunca "não fazer nada"
   useEffect(() => {
@@ -70,7 +68,8 @@ export function CharacterForm({
   const submit = (): void => {
     setFormError(null);
     const parsed = characterSchema.safeParse({
-      name: name.trim(),
+      // The name is changed in the profile, not here: it stays as it was
+      name: initial?.name ?? '',
       title: initial?.title ?? 'Aventureiro',
       ...(characterClass ? { characterClass } : {}),
       ...layersFor(look),
@@ -87,8 +86,6 @@ export function CharacterForm({
       <ReadyLooks look={look} onChange={applyLook} title={t('character.editTitle')} />
       <LookDetails look={look} onChange={applyLook} />
       <ClassPicker value={characterClass} onChange={setCharacterClass} />
-      <TextField label={t('character.name')} value={name} onChangeText={setName} maxLength={40} />
-      <Text style={styles.hint}>{t('character.nameHint')}</Text>
       {(formError ?? error) ? (
         <Text style={styles.error} accessibilityLiveRegion="polite">
           {formError ?? error}
@@ -101,6 +98,5 @@ export function CharacterForm({
 
 const styles = StyleSheet.create({
   container: { gap: space[16] },
-  hint: { color: colors.text.muted, fontSize: fontSize[12] },
   error: { color: colors.status.danger, fontSize: fontSize[13] },
 });

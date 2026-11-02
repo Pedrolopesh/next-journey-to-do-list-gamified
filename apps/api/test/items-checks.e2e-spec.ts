@@ -339,6 +339,9 @@ describe('itens e check', () => {
     ]);
     expect(all.body.nextCursor).toBeNull();
     expect(all.body.items[2]).toMatchObject({ id: a.id, checkId: checkA, difficulty: 'medium' });
+    // What was filled in comes along, for the history details
+    expect(all.body.items[2]).toMatchObject({ notes: null, dueAt: null });
+    expect(typeof all.body.items[2].createdAt).toBe('string');
 
     const page1 = await history('?limit=2');
     expect(page1.body.items).toHaveLength(2);
