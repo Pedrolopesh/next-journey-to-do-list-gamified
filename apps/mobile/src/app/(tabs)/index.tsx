@@ -121,7 +121,7 @@ export default function HomeScreen() {
             title={t('qg.changeStory')}
             description={t('qg.changeStoryDesc')}
             onPress={() => {
-              router.push('/story/change');
+              router.push('/story/timeline');
             }}
           />
         </View>
