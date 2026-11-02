@@ -111,7 +111,9 @@ export default function TimelineScreen() {
 
         {selected ? (
           <View style={styles.summary}>
-            <Text style={styles.description}>{selected.description}</Text>
+            <Text style={styles.description}>
+              {t(`story.about.${selected.slug}`, { defaultValue: selected.description })}
+            </Text>
             {!selected.isActive ? (
               <Button
                 label={t('timeline.playStory')}
