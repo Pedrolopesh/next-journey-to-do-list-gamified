@@ -392,16 +392,24 @@
     "close": "Fechar",
     "chooseSubtitle": "Cada história tem o seu cenário e os seus capítulos.",
     "about": {
-      "beach": "Um herói chega a uma praia desconhecida. Cada passo seu é um capítulo.",
-      "rooftop": "Entre prédios e luzes, a cidade guarda segredos para quem não desiste.",
-      "zombie": "O mundo acabou, mas a sua base ainda está de pé. Resistir é a missão.",
-      "castle": "Portões antigos, juramentos e uma jornada rumo ao coração do castelo.",
-      "paradise": "Uma floresta viva e calma esconde trilhas que só quem persiste encontra.",
-      "hell": "Calor, fogo e provas duras. Só o hábito mantém o herói de pé."
+      "beach": "A praia parece o lugar mais relaxante do mundo, e é mesmo. Mas o mar tranquilo não tira o peso das suas responsabilidades: a paisagem ajuda, só que quem dá o próximo passo é você. Aqui você aprende a manter o ritmo, sem pressa, concluindo cada tarefa mesmo com a vontade de ficar parado olhando as ondas.",
+      "rooftop": "Na cidade tudo se move rápido. As luzes podem enganar, mas a rotina é dura e guarda os segredos de quem sobrevive nela. É um lugar de gente que batalha todos os dias: pessoas corajosas, desafiadoras, que não desistem. Se a sua vida é uma correria e você quer transformá-la em conquista, essa é a sua jornada.",
+      "zombie": "O mundo acabou, mas ainda existem bases e pessoas lutando para proteger e salvar o pouco de humanidade que restou, em busca de uma cura. A sua missão é árdua: resistir e sobreviver ao caos do fim, um dia de cada vez. Cada hábito mantido é mais uma barricada de pé.",
+      "castle": "Uma história medieval de reis e rainhas, em que o poder é o grande objetivo. Você pode se tornar um herói, um cavaleiro ou até um rei mago, e escrever uma vida de glórias e de heroísmo. Se você gosta de honra, de desafios e de subir degrau por degrau até o trono, esse castelo é o seu.",
+      "paradise": "Um lugar calmo, tranquilo e pacífico, com trilhas, lagos e uma cabana no meio das árvores. Aqui se vive da natureza e se encontra nela tudo o que há de bom. É uma jornada para quem quer seguir no próprio tempo, sem pressa, construindo hábitos leves e constantes como a própria floresta.",
+      "hell": "Um submundo hostil e perigoso, onde só o hábito sustenta a sua jornada. O caminho não será fácil, mas há muito a descobrir sobre como sobreviver em um lugar tão difícil. Se você gosta de desafio de verdade e quer provar do que é capaz, essa é a sua prova de fogo."
     },
     "changeTitle": "Mudar história",
     "changeSubtitle": "O cenário do seu QG muda junto com a história.",
-    "changeConfirm": "Escolher esta história"
+    "changeConfirm": "Escolher esta história",
+    "tagline": {
+      "beach": "Ondas, sol e calma: o lugar parece leve, mas as suas tarefas continuam esperando.",
+      "rooftop": "Correria, luzes e ruas que nunca param: sobreviver aqui é para quem tem coragem.",
+      "zombie": "O mundo acabou, mas ainda há quem lute para salvar o que restou da humanidade.",
+      "castle": "Reis, rainhas e glória: uma jornada medieval onde o poder é o grande prêmio.",
+      "paradise": "Trilhas, lagos e uma cabana: viver em paz, da natureza e do que ela tem de melhor.",
+      "hell": "Um submundo hostil e perigoso: aqui só o hábito mantém você de pé."
+    }
   },
   "settings": {
     "timezone": "Fuso horário",
