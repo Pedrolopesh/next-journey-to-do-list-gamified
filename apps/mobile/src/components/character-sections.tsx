@@ -1,9 +1,9 @@
 import { CHARACTER_CLASSES, type CharacterClass, type LpcLook } from '@nextjourney/contracts';
+import { IconDice } from '@tabler/icons-react-native';
 import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Button } from '@/components/button';
 import { Pills } from '@/components/pills';
 import { Swatches } from '@/components/swatches';
 import { toast } from '@/features/feedback/toast-store';
@@ -21,7 +21,7 @@ import {
   TORSO_PARTS,
 } from '@/features/qg/options';
 import palettes from '@/features/qg/palettes.json';
-import { colors, fontSize, radius, space } from '@/theme';
+import { colors, fontSize, radius, size, space } from '@/theme';
 
 export function Group({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -82,15 +82,23 @@ export function ReadyLooks({ look, onChange, title }: LookProps & { title?: stri
   return (
     <View style={styles.sectionGap}>
       <Text style={styles.heading}>{title ?? t('character.quickStart')}</Text>
-      <Text style={styles.label}>{t('character.presets')}</Text>
+      <View style={styles.presetsRow}>
+        <Text style={styles.label}>{t('character.presets')}</Text>
+        {/* Up here, away from the screen footer, so it does not read as a save button */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('character.randomize')}
+          onPress={() => {
+            onChange(randomLook());
+            toast.success(t('character.randomized'));
+          }}
+          style={({ pressed }) => [styles.randomize, pressed && styles.randomizePressed]}
+        >
+          <IconDice size={size.iconSize} color={colors.brand.primaryLight} />
+          <Text style={styles.randomizeLabel}>{t('character.randomize')}</Text>
+        </Pressable>
+      </View>
       <LookCards look={look} onChange={onChange} />
-      <Button
-        label={t('character.randomize')}
-        onPress={() => {
-          onChange(randomLook());
-          toast.success(t('character.randomized'));
-        }}
-      />
       {/* Only where the person is creating the character: the edit screen is that "later" */}
       {title === undefined ? (
         <Text style={styles.hint}>{t('character.changeLaterHint')}</Text>
@@ -260,6 +268,19 @@ const styles = StyleSheet.create({
     padding: space[12],
   },
   label: { color: colors.text.secondary, fontSize: fontSize[13], fontWeight: '500' },
+  presetsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  randomize: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[8],
+    minHeight: size.touchTarget,
+    paddingHorizontal: space[12],
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.brand.primary,
+  },
+  randomizePressed: { opacity: 0.7 },
+  randomizeLabel: { color: colors.brand.primaryLight, fontSize: fontSize[13], fontWeight: '600' },
   hint: { color: colors.text.muted, fontSize: fontSize[12], textAlign: 'center' },
   cards: { gap: space[12], paddingVertical: space[8] },
   card: {

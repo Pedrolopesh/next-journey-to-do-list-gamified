@@ -588,6 +588,7 @@
   "onboarding": {
     "continue": "Continuar",
     "skip": "Pular",
+    "save": "Salvar",
     "pickOne": "Escolha uma opção para continuar.",
     "saveFailed": "Não foi possível salvar. Tente de novo.",
     "goal": {
