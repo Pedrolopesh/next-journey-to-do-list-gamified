@@ -104,6 +104,9 @@ export class ItemsService {
         categoryId: true,
         difficulty: true,
         completedAt: true,
+        notes: true,
+        dueAt: true,
+        createdAt: true,
       },
       orderBy: { completedAt: 'desc' },
       take: limit + 1,
@@ -122,6 +125,9 @@ export class ItemsService {
       difficulty: row.difficulty,
       completedAt: (row.completedAt as Date).toISOString(),
       checkId: checkByItem.get(row.id) ?? null,
+      notes: row.notes,
+      dueAt: row.dueAt?.toISOString() ?? null,
+      createdAt: row.createdAt.toISOString(),
     }));
     return {
       items,

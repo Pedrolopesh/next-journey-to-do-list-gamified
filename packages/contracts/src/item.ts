@@ -65,6 +65,10 @@ export const historyItemSchema = z.object({
   completedAt: isoDateTimeSchema,
   /** Check que concluiu a tarefa: desmarcar devolve a tarefa à lista (as moedas diminuem). */
   checkId: idSchema.nullable(),
+  /** What the person filled in when creating the task (optional: older API versions omit them). */
+  notes: z.string().nullable().optional(),
+  dueAt: isoDateTimeSchema.nullable().optional(),
+  createdAt: isoDateTimeSchema.optional(),
 });
 export type HistoryItem = z.infer<typeof historyItemSchema>;
 

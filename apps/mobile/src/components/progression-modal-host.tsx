@@ -1,22 +1,21 @@
-import { IconTrophy } from '@tabler/icons-react-native';
+import { IconFlag, IconTrophy } from '@tabler/icons-react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, StyleSheet, Text, View } from 'react-native';
 
 import { ackAchievements } from '@/api/endpoints';
 import { toApiError } from '@/api/errors';
 import { queryKeys, showNextPending, useAchievements } from '@/api/queries';
 import { useSessionStore } from '@/auth/session-store';
 import { AchievementUnlockedModal } from '@/components/achievement-unlocked-modal';
-import { Button } from '@/components/button';
+import { CelebrationModal } from '@/components/celebration-modal';
 import { tierColor } from '@/features/achievements/tier';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import type { ModalEntry } from '@/features/feedback/modal-queue';
 import { log } from '@/logging';
-import { colors, fontSize, radius, space } from '@/theme';
+import { colors } from '@/theme';
 
 /** Alerta de conquista nova (modal único do app). A descrição vem do catálogo, se já carregado. */
 function AchievementAlert({
@@ -94,68 +93,30 @@ export function ProgressionModalHost() {
     return <AchievementAlert entry={entry} onDismiss={dismiss} />;
   }
 
-  let header: string;
-  let title: string;
-  let text: string;
-  switch (entry.kind) {
-    case 'level':
-      header = colors.brand.primary;
-      title = t('feedback.levelUpTitle', { level: entry.level });
-      text = t('feedback.levelUpText');
-      break;
-    case 'chapter':
-      header = colors.brand.primaryLight;
-      title = entry.storyCompleted
-        ? t('feedback.storyCompleted')
-        : t('feedback.chapterTitle', { number: entry.number });
-      text = `${entry.title}\n\n${entry.text}`;
-      break;
-  }
-
+  const level = entry.kind === 'level';
   return (
-    <Modal transparent animationType="fade" visible onRequestClose={dismiss}>
-      <View style={styles.backdrop}>
-        <View style={styles.card} accessibilityViewIsModal>
-          <View style={[styles.header, { backgroundColor: header }]}>
-            <IconTrophy size={32} color={colors.bg.base} strokeWidth={1.75} />
-          </View>
-          <View style={styles.body}>
-            <Text style={styles.title} accessibilityRole="header">
-              {title}
-            </Text>
-            <Text style={styles.text}>{text}</Text>
-            <Button label={t('feedback.continue')} onPress={dismiss} />
-          </View>
-        </View>
-      </View>
-    </Modal>
+    <CelebrationModal
+      visible
+      tone={level ? colors.brand.primary : colors.brand.primaryLight}
+      art={
+        level ? (
+          <IconTrophy size={64} color={colors.brand.primary} strokeWidth={1.75} />
+        ) : (
+          <IconFlag size={64} color={colors.brand.primary} strokeWidth={1.75} />
+        )
+      }
+      headline={
+        entry.kind === 'level'
+          ? t('feedback.levelUpTitle', { level: entry.level })
+          : entry.storyCompleted
+            ? t('feedback.storyCompleted')
+            : t('feedback.chapterTitle', { number: entry.number })
+      }
+      title={entry.kind === 'level' ? t('feedback.levelUpHeading') : entry.title}
+      description={entry.kind === 'level' ? t('feedback.levelUpText') : entry.text}
+      primaryLabel={t('feedback.continue')}
+      onPrimary={dismiss}
+      onClose={dismiss}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: space[24],
-  },
-  card: {
-    width: '100%',
-    maxWidth: 360,
-    borderRadius: radius.lg,
-    backgroundColor: colors.bg.surface,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border.strong,
-  },
-  header: { height: 72, alignItems: 'center', justifyContent: 'center' },
-  body: { padding: space[20], gap: space[12] },
-  title: {
-    color: colors.text.primary,
-    fontSize: fontSize[20],
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  text: { color: colors.text.secondary, fontSize: fontSize[14], textAlign: 'center' },
-});

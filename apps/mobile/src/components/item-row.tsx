@@ -3,8 +3,9 @@ import { IconFlame } from '@tabler/icons-react-native';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { CheckBox } from '@/components/check-box';
 import { DifficultyIcon } from '@/components/difficulty-icon';
-import { colors, fontSize, radius, size, softGlow, space } from '@/theme';
+import { colors, fontSize, radius, size, space } from '@/theme';
 
 type Props = {
   item: Item;
@@ -27,29 +28,21 @@ export function ItemRow({ item, onCheck, onOpen, onUndo, counters = false }: Pro
 
   return (
     <View style={styles.row}>
-      <Pressable
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: done, disabled: locked }}
-        accessibilityLabel={
+      <CheckBox
+        checked={done}
+        disabled={locked}
+        label={
           canUndo
             ? t('items.uncheckLabel', { title: item.title })
             : locked
               ? t('items.doneLabel', { title: item.title })
               : t('items.checkLabel', { title: item.title })
         }
-        disabled={locked}
         onPress={() => {
           if (canUndo) onUndo(item);
           else onCheck(item);
         }}
-        style={[
-          styles.check,
-          done && styles.checkDone,
-          done && softGlow(colors.status.success, { strength: 0.6 }),
-        ]}
-      >
-        {done ? <Text style={styles.checkMark}>✓</Text> : null}
-      </Pressable>
+      />
 
       <Pressable
         style={styles.body}
@@ -106,17 +99,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     padding: space[12],
   },
-  check: {
-    width: size.touchTarget,
-    height: size.touchTarget,
-    borderRadius: radius.pill,
-    borderWidth: 2,
-    borderColor: colors.border.strong,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkDone: { backgroundColor: colors.status.success, borderColor: colors.status.success },
-  checkMark: { color: colors.text.onPrimary, fontSize: fontSize[20], fontWeight: '700' },
   body: { flex: 1, gap: space[4], minHeight: size.touchTarget, justifyContent: 'center' },
   title: { color: colors.text.primary, fontSize: fontSize[15], fontWeight: '500' },
   titleDone: { color: colors.text.secondary, textDecorationLine: 'line-through' },

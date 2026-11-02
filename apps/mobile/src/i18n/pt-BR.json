@@ -110,7 +110,7 @@
     "undoneNoCoins": "Check desmarcado. Você não tinha moedas a perder.",
     "undoFailed": "Não foi possível desfazer. Tente de novo.",
     "levelUpTitle": "Nível {{level}}!",
-    "levelUpText": "Você subiu de nível. Continue assim!",
+    "levelUpText": "Cada tarefa que você concluiu trouxe o seu herói até aqui. Continue assim e veja até onde essa jornada vai.",
     "achievementTitle": "Conquista desbloqueada",
     "achievementUnlocked": "Conquista desbloqueada!",
     "achievementHint": "Continue marcando seus itens: ainda há muitas conquistas para desbloquear.",
@@ -119,7 +119,8 @@
     "achievementReward": "Recompensa liberada: {{reward}}",
     "chapterTitle": "Capítulo {{number}} concluído",
     "storyCompleted": "História concluída!",
-    "continue": "Continuar"
+    "continue": "Continuar",
+    "levelUpHeading": "Você subiu de nível!"
   },
   "items": {
     "doneLabel": "{{title}} concluído hoje",
@@ -156,7 +157,7 @@
   "home": {
     "greeting": "Olá, {{name}}",
     "pendingDailies": "Diários pendentes",
-    "pendingTasks": "Tarefas abertas",
+    "pendingTasks": "Tarefas",
     "bestStreak": "Maior sequência",
     "storyCard": "História {{name}}",
     "chapter": "Capítulo {{number}}: {{title}}",
@@ -521,10 +522,22 @@
     "emptyHint": "Quando você concluir uma tarefa, ela fica guardada aqui para você rever depois.",
     "completedOn": "Concluída em {{date}}",
     "undo": "Desfazer",
-    "undoHint": "Desfazer devolve a tarefa à lista e tira moedas; o EXP continua.",
+    "undoHint": "Desmarcar faz com que a tarefa volte à lista e você perde moedas mas mantém seu EXP.",
     "more": "Carregar mais",
     "load": "Não foi possível carregar o histórico.",
-    "noCategory": "Sem categoria"
+    "noCategory": "Sem categoria",
+    "checked": "Concluída: toque para desmarcar",
+    "unchecked": "Desmarcada: toque para marcar de novo",
+    "expand": "Ver detalhes",
+    "collapse": "Esconder detalhes",
+    "category": "Categoria",
+    "difficultyField": "Dificuldade",
+    "notes": "Nota",
+    "noNotes": "Sem nota",
+    "createdOn": "Criada em",
+    "dueOn": "Prazo",
+    "noDue": "Sem prazo",
+    "completedAtField": "Concluída em"
   },
   "entry": {
     "tagline": "Entre para guardar o seu progresso.",
