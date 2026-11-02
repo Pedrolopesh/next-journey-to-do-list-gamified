@@ -249,12 +249,15 @@
     },
     "slide2": {
       "title": "Marque, ganhe, evolua",
-      "text": "Cada diário, tarefa ou hábito que você conclui rende EXP e moedas."
+      "text": "Cada diário, tarefa ou hábito que você conclui rende EXP e moedas.",
+      "undo": "Se você desmarcar uma tarefa, perde as moedas, mas mantém a experiência que ganhou no caminho."
     },
     "slide3": {
       "title": "Você escolhe a jornada",
       "text": "Seu herói avança capítulo a capítulo. Quanto mais você avança, mais descobre."
-    }
+    },
+    "demoItem": "Estudar por 30 minutos",
+    "demoChapter": "A chegada"
   },
   "character": {
     "saved": "Personagem salvo!",
