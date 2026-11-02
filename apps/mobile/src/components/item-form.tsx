@@ -243,7 +243,7 @@ export function ItemForm({
         value={notes}
         onChangeText={setNotes}
         multiline
-        maxLength={1000}
+        maxLength={500}
       />
 
       {formError && formError !== t('itemForm.titleRequired') ? (

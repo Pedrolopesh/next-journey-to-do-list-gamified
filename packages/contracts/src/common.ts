@@ -37,3 +37,6 @@ export const scheduleDaysSchema = z
   .max(7)
   .refine((days) => new Set(days).size === days.length, 'Dias repetidos');
 export type ScheduleDays = z.infer<typeof scheduleDaysSchema>;
+
+/** Email typed by a person: 254 characters is the practical limit of an address (RFC 5321). */
+export const emailInputSchema = z.email().max(254);

@@ -84,4 +84,31 @@ describe('perfil do onboarding', () => {
     const withClass = await ctx.http().get('/v1/me').set('Authorization', bearer(auth)).expect(200);
     expect(withClass.body.character.characterClass).toBe('mage');
   });
+
+  it('o nome do personagem aceita apelidos livres e recusa marcação e caracteres invisíveis', async () => {
+    const auth = await registerUser(ctx);
+    const base = { title: 'Aventureiro', skin: 'light', hair: 'brown', outfit: 'tunic' };
+    const put = (name: string) =>
+      ctx
+        .http()
+        .put('/v1/me/character')
+        .set('Authorization', bearer(auth))
+        .send({ ...base, name });
+
+    await put('Zé_77 🐉').expect(200);
+    for (const bad of [
+      '<script>alert(1)</script>',
+      'a<b',
+      'nome\u202Einvertido',
+      'inv\u200Bisível',
+    ]) {
+      await put(bad).expect(400);
+    }
+    await put('a'.repeat(41)).expect(400);
+  });
+
+  it('o e-mail do pedido de código tem limite de tamanho', async () => {
+    const huge = `${'a'.repeat(250)}@exemplo.com`;
+    await ctx.http().post('/v1/auth/email/start').send({ email: huge }).expect(400);
+  });
 });

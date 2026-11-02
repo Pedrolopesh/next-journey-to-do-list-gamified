@@ -71,6 +71,7 @@ export default function SettingsScreen() {
           onChangeText={setNotify}
           keyboardType="numbers-and-punctuation"
           placeholder="08:00"
+          maxLength={5}
         />
         <Text style={styles.hint}>{t('settings.notifyHint')}</Text>
         <Button

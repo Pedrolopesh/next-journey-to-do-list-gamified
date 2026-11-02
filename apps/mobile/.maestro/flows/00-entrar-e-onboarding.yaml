@@ -7,7 +7,7 @@ appId: br.com.wetechhub.app.dev
 - launchApp
 # O bundle leva um tempo para carregar
 - extendedWaitUntil:
-    visible: 'Entrar com e-mail|Perfil(, tab.*)?|Pular|Crie seu herói|O que você quer mudar.*|Comece rápido|Escolha sua história|Conquista desbloqueada!'
+    visible: 'Entrar com e-mail|Perfil(, tab.*)?|Pular|Crie seu herói|O que você quer mudar.*|Escolha o seu personagem|Escolha sua história|Conquista desbloqueada!'
     timeout: 120000
 - runFlow: ../subflows/onboarding.yaml
 - runFlow:

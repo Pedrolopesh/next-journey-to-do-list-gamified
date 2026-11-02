@@ -60,6 +60,7 @@ export default function EmailScreen() {
         autoCapitalize="none"
         autoComplete="email"
         keyboardType="email-address"
+        maxLength={254}
         error={error ?? undefined}
       />
     </OnboardingScreen>

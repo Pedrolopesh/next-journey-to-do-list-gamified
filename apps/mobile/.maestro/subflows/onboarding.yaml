@@ -20,7 +20,7 @@ appId: br.com.wetechhub.app.dev
 # Looks prontos: "Pular" segue para o nome
 - runFlow:
     when:
-      visible: 'Comece rápido'
+      visible: 'Escolha o seu personagem'
     commands:
       - tapOn: 'Pular'
 - runFlow:

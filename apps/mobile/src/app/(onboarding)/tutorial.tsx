@@ -73,7 +73,6 @@ export default function TutorialScreen() {
           {t(`tutorial.${slide}.title`)}
         </Text>
         <Text style={styles.text}>{t(`tutorial.${slide}.text`)}</Text>
-        {slide === 'slide2' ? <Text style={styles.note}>{t('tutorial.slide2.undo')}</Text> : null}
         <Text
           style={styles.dots}
           accessibilityLabel={t('tutorial.progress', { current: index + 1, total: SLIDES.length })}
@@ -111,7 +110,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   text: { color: colors.text.secondary, fontSize: fontSize[15], textAlign: 'center' },
-  note: { color: colors.text.muted, fontSize: fontSize[13], textAlign: 'center' },
   dots: { color: colors.brand.primaryLight, fontSize: fontSize[14], letterSpacing: 4 },
   actions: { gap: space[8] },
   reserved: { opacity: 0 },

@@ -11,6 +11,8 @@ type Props<T extends string> = {
   /** Lista que rola na horizontal (filtros) em vez de quebrar linha. */
   scroll?: boolean;
   label?: string;
+  /** Unselected options already show their own color (outline and text), as a preview. */
+  tinted?: boolean;
 };
 
 /** Seletor de uma opção (categorias, dificuldade, tipo). Alvo de toque de 44 pt. */
@@ -20,6 +22,7 @@ export function Pills<T extends string>({
   onChange,
   scroll = false,
   label,
+  tinted = false,
 }: Props<T>) {
   const content = options.map((option) => {
     const selected = option.value === value;
@@ -40,10 +43,19 @@ export function Pills<T extends string>({
             borderColor: option.color ?? colors.brand.primary,
             ...softGlow(option.color ?? colors.brand.primary, { strength: 0.6 }),
           },
+          !selected && tinted && option.color && { borderColor: option.color },
           option.disabled && styles.disabled,
         ]}
       >
-        <Text style={[styles.text, selected && styles.textSelected]}>{option.label}</Text>
+        <Text
+          style={[
+            styles.text,
+            selected && styles.textSelected,
+            !selected && tinted && option.color && { color: option.color },
+          ]}
+        >
+          {option.label}
+        </Text>
       </Pressable>
     );
   });

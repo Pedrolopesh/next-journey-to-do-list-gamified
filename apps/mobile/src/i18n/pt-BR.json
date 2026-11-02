@@ -250,8 +250,7 @@
     },
     "slide2": {
       "title": "Marque, ganhe, evolua",
-      "text": "Cada diário, tarefa ou hábito que você conclui rende EXP e moedas.",
-      "undo": "Se você desmarcar uma tarefa, perde as moedas, mas mantém a experiência que ganhou no caminho."
+      "text": "Cada item marcado rende EXP e moedas. Se você desmarcar, perde as moedas, mas mantém o EXP."
     },
     "slide3": {
       "title": "Você escolhe a jornada",
@@ -354,7 +353,7 @@
     "randomize": "Sortear aparência",
     "randomized": "Aparência sorteada. Ajuste o que quiser.",
     "presetApplied": "Look aplicado. Ajuste o que quiser.",
-    "quickStart": "Comece rápido",
+    "quickStart": "Escolha o seu personagem",
     "details": "Ajustar detalhes",
     "nameHint": "Pode mudar depois no Perfil.",
     "presetNames": {
@@ -381,7 +380,9 @@
     },
     "nameTitle": "Qual é o nome do seu personagem?",
     "nameText": "É assim que ele vai aparecer na sua jornada. Pode mudar depois no Perfil.",
-    "editTitle": "Editando o personagem"
+    "editTitle": "Editando o personagem",
+    "changeLaterHint": "Depois você pode alterar a aparência do seu personagem em Configurações.",
+    "nameInvalid": "Esse nome tem caracteres que não podem ser usados, como < ou >."
   },
   "story": {
     "saved": "História escolhida!",
@@ -485,7 +486,9 @@
     "nameRequired": "Informe um nome.",
     "limit": "Limite de {{max}} categorias.",
     "last": "É preciso manter pelo menos uma categoria.",
-    "failed": "Não foi possível concluir. Tente de novo."
+    "failed": "Não foi possível concluir. Tente de novo.",
+    "previewHint": "Escolha a cor vendo como a categoria aparece nos filtros das listas.",
+    "previewName": "Categoria"
   },
   "qg": {
     "customize": "Personalizar QG",

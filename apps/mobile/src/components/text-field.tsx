@@ -11,6 +11,9 @@ type Props = Omit<TextInputProps, 'style'> & {
   secret?: boolean;
 };
 
+/** Longest text any field accepts unless it sets a tighter limit of its own. */
+export const MAX_INPUT_LENGTH = 500;
+
 export function TextField({ label, error, secret = false, ...input }: Props) {
   const { t } = useTranslation();
   const [hidden, setHidden] = useState(secret);
@@ -20,6 +23,7 @@ export function TextField({ label, error, secret = false, ...input }: Props) {
       <Text style={styles.label}>{label}</Text>
       <View style={[styles.field, error ? styles.fieldError : null]}>
         <TextInput
+          maxLength={MAX_INPUT_LENGTH}
           {...input}
           accessibilityLabel={label}
           placeholderTextColor={colors.text.muted}

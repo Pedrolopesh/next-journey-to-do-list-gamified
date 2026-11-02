@@ -6,6 +6,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { toApiError } from '@/api/errors';
 import { useCategories, useCategoryMutations } from '@/api/queries';
 import { Button } from '@/components/button';
+import { CategoryChip } from '@/components/category-chip';
 import { Pills } from '@/components/pills';
 import { ScreenFrame } from '@/components/screen-frame';
 import { TextField } from '@/components/text-field';
@@ -40,7 +41,6 @@ export default function CategoriesScreen() {
     <ScreenFrame title={t('categories.title')}>
       {list.map((category: Category) => (
         <View key={category.id} style={styles.row}>
-          <View style={[styles.dot, { backgroundColor: category.color }]} />
           {editing?.id === category.id ? (
             <View style={styles.editor}>
               <TextField
@@ -70,7 +70,7 @@ export default function CategoriesScreen() {
               />
             </View>
           ) : (
-            <Text style={styles.name}>{category.name}</Text>
+            <CategoryChip name={category.name} color={category.color} />
           )}
           {editing?.id !== category.id ? (
             <View style={styles.actions}>
@@ -127,12 +127,19 @@ export default function CategoriesScreen() {
             onChangeText={setName}
             maxLength={30}
           />
+          <Text style={styles.hint}>{t('categories.previewHint')}</Text>
+          {/* Each option is the category as it will look in the filters, in its own color */}
           <Pills
             scroll
+            tinted
             label={t('categories.color')}
             value={color}
             onChange={setColor}
-            options={CATEGORY_COLORS.map((value) => ({ value, label: '●', color: value }))}
+            options={CATEGORY_COLORS.map((value) => ({
+              value,
+              label: name.trim() === '' ? t('categories.previewName') : name.trim(),
+              color: value,
+            }))}
           />
           <Button
             label={t('categories.add')}
@@ -178,8 +185,6 @@ const styles = StyleSheet.create({
     borderColor: colors.border.subtle,
     padding: space[12],
   },
-  dot: { width: 12, height: 12, borderRadius: 6 },
-  name: { color: colors.text.primary, fontSize: fontSize[15], fontWeight: '500' },
   actions: { flexDirection: 'row', gap: space[8] },
   editor: { gap: space[8] },
   new: { gap: space[12], marginTop: space[8] },

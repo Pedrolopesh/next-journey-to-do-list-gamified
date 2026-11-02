@@ -77,7 +77,9 @@ export default function RemindersScreen() {
       }
     >
       <View style={styles.notification} accessibilityRole="summary">
-        <Image source={logo} style={styles.logo} accessibilityIgnoresInvertColors />
+        <View style={styles.logoBox}>
+          <Image source={logo} style={styles.logo} accessibilityIgnoresInvertColors />
+        </View>
         <View style={styles.notificationText}>
           <Text style={styles.notificationTitle}>{t('reminder.title')}</Text>
           <Text style={styles.notificationBody}>{t('reminder.body')}</Text>
@@ -98,7 +100,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border.strong,
   },
-  logo: { width: 40, height: 40, borderRadius: radius.md },
+  // The book sits smaller inside the rounded square, like an app icon in a real notification
+  logoBox: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.bg.base,
+  },
+  logo: { width: 24, height: 21 },
   notificationText: { flex: 1, gap: space[4] },
   notificationTitle: { color: colors.text.primary, fontSize: fontSize[14], fontWeight: '700' },
   notificationBody: { color: colors.text.secondary, fontSize: fontSize[13] },

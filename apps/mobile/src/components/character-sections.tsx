@@ -91,6 +91,10 @@ export function ReadyLooks({ look, onChange, title }: LookProps & { title?: stri
           toast.success(t('character.randomized'));
         }}
       />
+      {/* Only where the person is creating the character: the edit screen is that "later" */}
+      {title === undefined ? (
+        <Text style={styles.hint}>{t('character.changeLaterHint')}</Text>
+      ) : null}
     </View>
   );
 }
@@ -256,6 +260,7 @@ const styles = StyleSheet.create({
     padding: space[12],
   },
   label: { color: colors.text.secondary, fontSize: fontSize[13], fontWeight: '500' },
+  hint: { color: colors.text.muted, fontSize: fontSize[12], textAlign: 'center' },
   cards: { gap: space[12], paddingVertical: space[8] },
   card: {
     width: 120,

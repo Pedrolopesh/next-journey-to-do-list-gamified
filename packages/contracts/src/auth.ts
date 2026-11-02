@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { timezoneSchema } from './common';
+import { emailInputSchema, timezoneSchema } from './common';
 
 /** Regras da senha, na ordem do checklist visível no cadastro (RF-01). */
 export const PASSWORD_RULES = [
@@ -18,7 +18,7 @@ export const passwordSchema = z
 export const registerRequestSchema = z
   .object({
     name: z.string().trim().min(1).max(80),
-    email: z.email(),
+    email: emailInputSchema,
     password: passwordSchema,
     confirmPassword: z.string(),
     acceptedTerms: z.literal(true),
@@ -39,7 +39,7 @@ export const VERIFICATION_CODE_LENGTH = 6;
 
 /** Confirma o e-mail: o código vale só junto com a senha escolhida no cadastro. */
 export const verifyEmailRequestSchema = z.object({
-  email: z.email(),
+  email: emailInputSchema,
   code: z.string().regex(/^\d{6}$/),
   password: z.string().min(1).max(128),
 });
@@ -50,7 +50,7 @@ export type ResendVerificationRequest = z.infer<typeof resendVerificationRequest
 
 /** Passwordless entry: asks for a code (always 202) and trades it for a session. */
 export const emailStartRequestSchema = z.object({
-  email: z.email(),
+  email: emailInputSchema,
   /** Used only when the email has no account yet (the code confirms it). */
   timezone: timezoneSchema.optional(),
   /** Version of the Terms shown on the welcome screen; stored on the new account. */
@@ -59,13 +59,13 @@ export const emailStartRequestSchema = z.object({
 export type EmailStartRequest = z.infer<typeof emailStartRequestSchema>;
 
 export const emailConfirmRequestSchema = z.object({
-  email: z.email(),
+  email: emailInputSchema,
   code: z.string().regex(/^\d{6}$/),
 });
 export type EmailConfirmRequest = z.infer<typeof emailConfirmRequestSchema>;
 
 export const loginRequestSchema = z.object({
-  email: z.email(),
+  email: emailInputSchema,
   password: z.string().min(1).max(128),
 });
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
@@ -110,7 +110,7 @@ export type AuthTokens = z.infer<typeof authTokensSchema>;
 export const userSummarySchema = z.object({
   id: z.uuid(),
   name: z.string(),
-  email: z.email(),
+  email: emailInputSchema,
   timezone: timezoneSchema,
 });
 export type UserSummary = z.infer<typeof userSummarySchema>;
