@@ -52,7 +52,7 @@ export default function TimelineScreen() {
       }}
       debug={false}
     >
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.heading} accessibilityRole="header">
           {t('timeline.pickStory')}
         </Text>
@@ -72,6 +72,7 @@ export default function TimelineScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.cards}
+            showsVerticalScrollIndicator={false}
           >
             {stories.data.map((story) => {
               const isSelected = story.slug === slug;

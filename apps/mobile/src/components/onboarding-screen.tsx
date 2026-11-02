@@ -47,6 +47,7 @@ export function OnboardingScreen({ title, subtitle, children, footer, preview, h
         style={styles.flex}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         {title ? (
           <Text style={styles.title} accessibilityRole="header">

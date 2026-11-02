@@ -231,6 +231,7 @@ export function ItemListScreen({
           }
           contentContainerStyle={styles.list}
           stickySectionHeadersEnabled={false}
+          showsVerticalScrollIndicator={false}
         />
       )}
 

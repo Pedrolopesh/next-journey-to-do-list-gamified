@@ -113,7 +113,11 @@ export function ItemForm({
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       {onClose ? (
         <View style={styles.header}>
           <Pressable

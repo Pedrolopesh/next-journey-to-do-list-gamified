@@ -86,6 +86,7 @@ export default function ChangeStoryScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.row}
+            showsVerticalScrollIndicator={false}
           >
             {stories.data.map((story) => {
               const isSelected = story.slug === selected;

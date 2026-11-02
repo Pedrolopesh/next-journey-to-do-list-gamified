@@ -35,6 +35,7 @@ export default function HomeScreen() {
             tintColor={colors.brand.primaryLight}
           />
         }
+        showsVerticalScrollIndicator={false}
       >
         <Text style={styles.greeting} accessibilityRole="header">
           {t('home.greeting', { name: me?.user.name ?? '' })}

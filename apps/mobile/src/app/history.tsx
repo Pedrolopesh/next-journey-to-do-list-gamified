@@ -114,6 +114,7 @@ export default function HistoryScreen() {
             ) : undefined
           }
           contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </ScreenFrame>

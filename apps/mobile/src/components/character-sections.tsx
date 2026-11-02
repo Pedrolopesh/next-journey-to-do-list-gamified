@@ -46,6 +46,7 @@ export function LookCards({ look, onChange }: LookProps) {
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.cards}
+      showsVerticalScrollIndicator={false}
     >
       {PRESETS.map((preset) => {
         const selected = preset.id === selectedId;

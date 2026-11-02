@@ -55,6 +55,7 @@ export function Pills<T extends string>({
         showsHorizontalScrollIndicator={false}
         style={styles.scroller}
         contentContainerStyle={[styles.row, styles.scrollRow]}
+        showsVerticalScrollIndicator={false}
       >
         {content}
       </ScrollView>
@@ -65,6 +66,8 @@ export function Pills<T extends string>({
       horizontal={false}
       scrollEnabled={false}
       contentContainerStyle={[styles.row, styles.wrap]}
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
     >
       {content}
     </ScrollView>
