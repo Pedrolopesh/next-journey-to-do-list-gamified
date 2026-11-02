@@ -17,6 +17,7 @@ export function Swatches({ options, value, onChange, label }: Props) {
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.row}
+      showsVerticalScrollIndicator={false}
     >
       {options.map((option) => {
         const selected = option.value === value;

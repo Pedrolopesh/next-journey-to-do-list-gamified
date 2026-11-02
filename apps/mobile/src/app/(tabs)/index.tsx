@@ -1,9 +1,11 @@
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useHome, useMe } from '@/api/queries';
 import { ActionButton } from '@/components/action-button';
+import { CoinsInfoModal } from '@/components/info-modals';
 import { StatCard } from '@/components/stat-card';
 import { ErrorState, SkeletonList } from '@/components/states';
 import { StoryProgressCard } from '@/components/story-progress-card';
@@ -15,6 +17,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const home = useHome();
   const { data: me } = useMe();
+  const [coinsOpen, setCoinsOpen] = useState(false);
 
   return (
     <TabScreen
@@ -35,6 +38,7 @@ export default function HomeScreen() {
             tintColor={colors.brand.primaryLight}
           />
         }
+        showsVerticalScrollIndicator={false}
       >
         <Text style={styles.greeting} accessibilityRole="header">
           {t('home.greeting', { name: me?.user.name ?? '' })}
@@ -57,23 +61,35 @@ export default function HomeScreen() {
                 art="dailies"
                 value={home.data.counters.pendingDailies}
                 label={t('home.pendingDailies')}
+                onPress={() => {
+                  router.navigate('/dailies');
+                }}
               />
               <StatCard
                 art="tasks"
                 value={home.data.counters.pendingTasks}
                 label={t('home.pendingTasks')}
+                onPress={() => {
+                  router.navigate('/todos');
+                }}
               />
               <StatCard
                 art="streak"
                 value={home.data.counters.bestStreak}
                 label={t('home.bestStreak')}
                 tone={colors.status.warning}
+                onPress={() => {
+                  router.navigate('/habits');
+                }}
               />
               <StatCard
                 art="coin"
                 value={me?.player.coins ?? 0}
                 label={t('home.coins')}
                 tone={colors.brand.gold}
+                onPress={() => {
+                  setCoinsOpen(true);
+                }}
               />
             </View>
 
@@ -81,6 +97,13 @@ export default function HomeScreen() {
           </>
         )}
 
+        <CoinsInfoModal
+          visible={coinsOpen}
+          coins={me?.player.coins ?? 0}
+          onClose={() => {
+            setCoinsOpen(false);
+          }}
+        />
         <Text style={styles.section} accessibilityRole="header">
           {t('home.hqTitle')}
         </Text>
@@ -98,7 +121,7 @@ export default function HomeScreen() {
             title={t('qg.changeStory')}
             description={t('qg.changeStoryDesc')}
             onPress={() => {
-              router.push('/story/change');
+              router.push('/story/timeline');
             }}
           />
         </View>

@@ -1,4 +1,4 @@
-import { characterSchema } from '@nextjourney/contracts';
+import { characterNameSchema, characterSchema } from '@nextjourney/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -32,6 +32,13 @@ export default function NameScreen() {
 
   const submit = async (): Promise<void> => {
     setError(null);
+    // Say what is wrong with the name before the generic message
+    const nameCheck = characterNameSchema.safeParse(draft.name);
+    if (!nameCheck.success && draft.name.trim() !== '') {
+      setError(t('character.nameInvalid'));
+      toast.error(t('character.nameInvalid'));
+      return;
+    }
     const parsed = characterSchema.safeParse({
       name: draft.name.trim(),
       title: 'Aventureiro',

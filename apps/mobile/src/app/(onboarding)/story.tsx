@@ -76,7 +76,7 @@ export default function StoryScreen() {
               key={story.slug}
               accessibilityRole="radio"
               accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={`${story.name}. ${story.description}`}
+              accessibilityLabel={`${story.name}. ${t(`story.tagline.${story.slug}`, { defaultValue: story.description })}`}
               onPress={() => {
                 setSelected(story.slug);
               }}
@@ -106,7 +106,9 @@ export default function StoryScreen() {
               </View>
               <View style={styles.cardText}>
                 <Text style={[styles.name, { color: story.themeColor }]}>{story.name}</Text>
-                <Text style={styles.description}>{story.description}</Text>
+                <Text style={styles.description}>
+                  {t(`story.tagline.${story.slug}`, { defaultValue: story.description })}
+                </Text>
               </View>
             </Pressable>
           );

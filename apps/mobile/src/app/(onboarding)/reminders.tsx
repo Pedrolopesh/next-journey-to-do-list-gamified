@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { patchMe } from '@/api/endpoints';
 import { queryKeys, useMe } from '@/api/queries';
@@ -14,6 +14,8 @@ import { useAction } from '@/features/feedback/use-action';
 import { characterLayers } from '@/features/qg/character-layers';
 import { syncDailyReminder } from '@/features/settings/reminder';
 import { colors, fontSize, radius, space } from '@/theme';
+
+const logo = require('../../../assets/images/logo-livro.png') as number;
 
 /** Time of the daily reminder when the person turns the notifications on here. */
 const DEFAULT_REMINDER = '09:00';
@@ -75,8 +77,13 @@ export default function RemindersScreen() {
       }
     >
       <View style={styles.notification} accessibilityRole="summary">
-        <Text style={styles.notificationTitle}>{t('reminder.title')}</Text>
-        <Text style={styles.notificationBody}>{t('reminder.body')}</Text>
+        <View style={styles.logoBox}>
+          <Image source={logo} style={styles.logo} accessibilityIgnoresInvertColors />
+        </View>
+        <View style={styles.notificationText}>
+          <Text style={styles.notificationTitle}>{t('reminder.title')}</Text>
+          <Text style={styles.notificationBody}>{t('reminder.body')}</Text>
+        </View>
       </View>
     </OnboardingScreen>
   );
@@ -84,13 +91,26 @@ export default function RemindersScreen() {
 
 const styles = StyleSheet.create({
   notification: {
-    gap: space[4],
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[12],
     padding: space[16],
     borderRadius: radius.card,
     backgroundColor: colors.bg.surface,
     borderWidth: 1,
     borderColor: colors.border.strong,
   },
+  // The book sits smaller inside the rounded square, like an app icon in a real notification
+  logoBox: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.bg.base,
+  },
+  logo: { width: 24, height: 21 },
+  notificationText: { flex: 1, gap: space[4] },
   notificationTitle: { color: colors.text.primary, fontSize: fontSize[14], fontWeight: '700' },
   notificationBody: { color: colors.text.secondary, fontSize: fontSize[13] },
 });

@@ -110,7 +110,7 @@
     "undoneNoCoins": "Check desmarcado. Você não tinha moedas a perder.",
     "undoFailed": "Não foi possível desfazer. Tente de novo.",
     "levelUpTitle": "Nível {{level}}!",
-    "levelUpText": "Você subiu de nível. Continue assim!",
+    "levelUpText": "Cada tarefa que você concluiu trouxe o seu herói até aqui. Continue assim e veja até onde essa jornada vai.",
     "achievementTitle": "Conquista desbloqueada",
     "achievementUnlocked": "Conquista desbloqueada!",
     "achievementHint": "Continue marcando seus itens: ainda há muitas conquistas para desbloquear.",
@@ -119,7 +119,8 @@
     "achievementReward": "Recompensa liberada: {{reward}}",
     "chapterTitle": "Capítulo {{number}} concluído",
     "storyCompleted": "História concluída!",
-    "continue": "Continuar"
+    "continue": "Continuar",
+    "levelUpHeading": "Você subiu de nível!"
   },
   "items": {
     "doneLabel": "{{title}} concluído hoje",
@@ -156,7 +157,7 @@
   "home": {
     "greeting": "Olá, {{name}}",
     "pendingDailies": "Diários pendentes",
-    "pendingTasks": "Tarefas abertas",
+    "pendingTasks": "Tarefas",
     "bestStreak": "Maior sequência",
     "storyCard": "História {{name}}",
     "chapter": "Capítulo {{number}}: {{title}}",
@@ -245,16 +246,18 @@
     "progress": "Passo {{current}} de {{total}}",
     "slide1": {
       "title": "Crie seu herói",
-      "text": "Escolha o visual, o nome e o cenário. É ele quem vive a sua história."
+      "text": "Escolha o visual, o nome e a história que você quer contar. É ele quem vive a sua jornada."
     },
     "slide2": {
       "title": "Marque, ganhe, evolua",
-      "text": "Cada diário, tarefa ou hábito que você conclui rende EXP e moedas."
+      "text": "Cada item marcado rende EXP e moedas. Se você desmarcar, perde as moedas, mas mantém o EXP."
     },
     "slide3": {
       "title": "Você escolhe a jornada",
       "text": "Seu herói avança capítulo a capítulo. Quanto mais você avança, mais descobre."
-    }
+    },
+    "demoItem": "Estudar por 30 minutos",
+    "demoChapter": "A chegada"
   },
   "character": {
     "saved": "Personagem salvo!",
@@ -350,7 +353,7 @@
     "randomize": "Sortear aparência",
     "randomized": "Aparência sorteada. Ajuste o que quiser.",
     "presetApplied": "Look aplicado. Ajuste o que quiser.",
-    "quickStart": "Comece rápido",
+    "quickStart": "Escolha o seu personagem",
     "details": "Ajustar detalhes",
     "nameHint": "Pode mudar depois no Perfil.",
     "presetNames": {
@@ -377,7 +380,9 @@
     },
     "nameTitle": "Qual é o nome do seu personagem?",
     "nameText": "É assim que ele vai aparecer na sua jornada. Pode mudar depois no Perfil.",
-    "editTitle": "Editando o personagem"
+    "editTitle": "Editando o personagem",
+    "changeLaterHint": "Depois você pode alterar a aparência do seu personagem em Configurações.",
+    "nameInvalid": "Esse nome tem caracteres que não podem ser usados, como < ou >."
   },
   "story": {
     "saved": "História escolhida!",
@@ -388,16 +393,24 @@
     "close": "Fechar",
     "chooseSubtitle": "Cada história tem o seu cenário e os seus capítulos.",
     "about": {
-      "beach": "Um herói chega a uma praia desconhecida. Cada passo seu é um capítulo.",
-      "rooftop": "Entre prédios e luzes, a cidade guarda segredos para quem não desiste.",
-      "zombie": "O mundo acabou, mas a sua base ainda está de pé. Resistir é a missão.",
-      "castle": "Portões antigos, juramentos e uma jornada rumo ao coração do castelo.",
-      "paradise": "Uma floresta viva e calma esconde trilhas que só quem persiste encontra.",
-      "hell": "Calor, fogo e provas duras. Só o hábito mantém o herói de pé."
+      "beach": "A praia parece o lugar mais relaxante do mundo, e é mesmo. Mas o mar tranquilo não tira o peso das suas responsabilidades: a paisagem ajuda, só que quem dá o próximo passo é você. Aqui você aprende a manter o ritmo, sem pressa, concluindo cada tarefa mesmo com a vontade de ficar parado olhando as ondas.",
+      "rooftop": "Na cidade tudo se move rápido. As luzes podem enganar, mas a rotina é dura e guarda os segredos de quem sobrevive nela. É um lugar de gente que batalha todos os dias: pessoas corajosas, desafiadoras, que não desistem. Se a sua vida é uma correria e você quer transformá-la em conquista, essa é a sua jornada.",
+      "zombie": "O mundo acabou, mas ainda existem bases e pessoas lutando para proteger e salvar o pouco de humanidade que restou, em busca de uma cura. A sua missão é árdua: resistir e sobreviver ao caos do fim, um dia de cada vez. Cada hábito mantido é mais uma barricada de pé.",
+      "castle": "Uma história medieval de reis e rainhas, em que o poder é o grande objetivo. Você pode se tornar um herói, um cavaleiro ou até um rei mago, e escrever uma vida de glórias e de heroísmo. Se você gosta de honra, de desafios e de subir degrau por degrau até o trono, esse castelo é o seu.",
+      "paradise": "Um lugar calmo, tranquilo e pacífico, com trilhas, lagos e uma cabana no meio das árvores. Aqui se vive da natureza e se encontra nela tudo o que há de bom. É uma jornada para quem quer seguir no próprio tempo, sem pressa, construindo hábitos leves e constantes como a própria floresta.",
+      "hell": "Um submundo hostil e perigoso, onde só o hábito sustenta a sua jornada. O caminho não será fácil, mas há muito a descobrir sobre como sobreviver em um lugar tão difícil. Se você gosta de desafio de verdade e quer provar do que é capaz, essa é a sua prova de fogo."
     },
     "changeTitle": "Mudar história",
     "changeSubtitle": "O cenário do seu QG muda junto com a história.",
-    "changeConfirm": "Escolher esta história"
+    "changeConfirm": "Escolher esta história",
+    "tagline": {
+      "beach": "Ondas, sol e calma: o lugar parece leve, mas as suas tarefas continuam esperando.",
+      "rooftop": "Correria, luzes e ruas que nunca param: sobreviver aqui é para quem tem coragem.",
+      "zombie": "O mundo acabou, mas ainda há quem lute para salvar o que restou da humanidade.",
+      "castle": "Reis, rainhas e glória: uma jornada medieval onde o poder é o grande prêmio.",
+      "paradise": "Trilhas, lagos e uma cabana: viver em paz, da natureza e do que ela tem de melhor.",
+      "hell": "Um submundo hostil e perigoso: aqui só o hábito mantém você de pé."
+    }
   },
   "settings": {
     "timezone": "Fuso horário",
@@ -473,7 +486,9 @@
     "nameRequired": "Informe um nome.",
     "limit": "Limite de {{max}} categorias.",
     "last": "É preciso manter pelo menos uma categoria.",
-    "failed": "Não foi possível concluir. Tente de novo."
+    "failed": "Não foi possível concluir. Tente de novo.",
+    "previewHint": "Escolha a cor vendo como a categoria aparece nos filtros das listas.",
+    "previewName": "Categoria"
   },
   "qg": {
     "customize": "Personalizar QG",
@@ -521,10 +536,22 @@
     "emptyHint": "Quando você concluir uma tarefa, ela fica guardada aqui para você rever depois.",
     "completedOn": "Concluída em {{date}}",
     "undo": "Desfazer",
-    "undoHint": "Desfazer devolve a tarefa à lista e tira moedas; o EXP continua.",
+    "undoHint": "Desmarcar faz com que a tarefa volte à lista e você perde moedas mas mantém seu EXP.",
     "more": "Carregar mais",
     "load": "Não foi possível carregar o histórico.",
-    "noCategory": "Sem categoria"
+    "noCategory": "Sem categoria",
+    "checked": "Concluída: toque para desmarcar",
+    "unchecked": "Desmarcada: toque para marcar de novo",
+    "expand": "Ver detalhes",
+    "collapse": "Esconder detalhes",
+    "category": "Categoria",
+    "difficultyField": "Dificuldade",
+    "notes": "Nota",
+    "noNotes": "Sem nota",
+    "createdOn": "Criada em",
+    "dueOn": "Prazo",
+    "noDue": "Sem prazo",
+    "completedAtField": "Concluída em"
   },
   "entry": {
     "tagline": "Entre para guardar o seu progresso.",
@@ -605,6 +632,33 @@
         "female": "Feminino",
         "other": "Outro"
       }
+    }
+  },
+  "info": {
+    "close": "Entendi",
+    "coins": {
+      "headline": "Moedas",
+      "title": "Como ganhar moedas",
+      "balance": "Você tem {{count}} moedas.",
+      "earnTitle": "Ganhe moedas",
+      "earnCheck": "Marque um diário, tarefa ou hábito: fácil {{easy}}, médio {{medium}}, difícil {{hard}}.",
+      "earnLevel": "Suba de nível e ganhe {{bonus}} moedas de bônus.",
+      "earnAgain": "Marcar de novo depois de desmarcar devolve as moedas do item.",
+      "loseTitle": "E se eu desmarcar?",
+      "lose": "Desmarcar um item tira moedas ({{first}}, depois {{second}}, e assim por diante), mas o EXP que você ganhou continua seu."
+    },
+    "level": {
+      "headline": "Nível {{level}}",
+      "title": "Como funcionam os níveis",
+      "now": "Experiência agora",
+      "nowValue": "{{exp}} de {{next}} EXP para o nível {{nextLevel}}",
+      "expTitle": "Ganhe EXP",
+      "exp": "Cada item marcado rende EXP: fácil {{easy}}, médio {{medium}}, difícil {{hard}}. O EXP nunca volta, mesmo se você desmarcar.",
+      "upTitle": "Suba de nível",
+      "up": "Ao encher a barra você sobe de nível, conclui um capítulo da história e ganha {{bonus}} moedas.",
+      "unlockTitle": "O que você desbloqueia",
+      "unlock": "Cada nível muda o cenário da jornada e revela o próximo capítulo da história. São {{chapters}} capítulos por história.",
+      "chapterOf": "Capítulo {{number}} de {{total}}"
     }
   }
 }

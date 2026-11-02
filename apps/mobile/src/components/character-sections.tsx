@@ -34,48 +34,56 @@ export function Group({ label, children }: { label: string; children: ReactNode 
 
 type LookProps = { look: LpcLook; onChange: (look: LpcLook) => void };
 
-/** Ready-made looks as cards (character image and name) plus "Sortear aparência". */
-/** `title` replaces the default heading (the edit screen is not a "quick start"). */
-export function ReadyLooks({ look, onChange, title }: LookProps & { title?: string }) {
+/** Ready-made looks as cards (character image and name); the selected one gets the outline. */
+export function LookCards({ look, onChange }: LookProps) {
   const { t } = useTranslation();
   const selectedId = PRESETS.find(
     (preset) => JSON.stringify(preset.look) === JSON.stringify(look),
   )?.id;
+  // Vertical room for the glow of the selected card
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.cards}
+      showsVerticalScrollIndicator={false}
+    >
+      {PRESETS.map((preset) => {
+        const selected = preset.id === selectedId;
+        const name = t(`character.presetNames.${preset.id}`);
+        return (
+          <Pressable
+            key={preset.id}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('character.presets')}: ${name}`}
+            accessibilityState={{ selected }}
+            onPress={() => {
+              onChange(preset.look);
+            }}
+            style={[styles.card, selected && styles.cardSelected]}
+          >
+            <Image
+              source={LOOK_IMAGES[preset.id]}
+              style={styles.cardImage}
+              resizeMode="contain"
+              accessibilityIgnoresInvertColors
+            />
+            <Text style={styles.cardName}>{name}</Text>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
+/** Ready-made looks plus "Sortear aparência". `title` replaces the default heading. */
+export function ReadyLooks({ look, onChange, title }: LookProps & { title?: string }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.sectionGap}>
       <Text style={styles.heading}>{title ?? t('character.quickStart')}</Text>
       <Text style={styles.label}>{t('character.presets')}</Text>
-      {/* Vertical room for the glow of the selected card */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.cards}
-      >
-        {PRESETS.map((preset) => {
-          const selected = preset.id === selectedId;
-          const name = t(`character.presetNames.${preset.id}`);
-          return (
-            <Pressable
-              key={preset.id}
-              accessibilityRole="button"
-              accessibilityLabel={`${t('character.presets')}: ${name}`}
-              accessibilityState={{ selected }}
-              onPress={() => {
-                onChange(preset.look);
-              }}
-              style={[styles.card, selected && styles.cardSelected]}
-            >
-              <Image
-                source={LOOK_IMAGES[preset.id]}
-                style={styles.cardImage}
-                resizeMode="contain"
-                accessibilityIgnoresInvertColors
-              />
-              <Text style={styles.cardName}>{name}</Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      <LookCards look={look} onChange={onChange} />
       <Button
         label={t('character.randomize')}
         onPress={() => {
@@ -83,6 +91,10 @@ export function ReadyLooks({ look, onChange, title }: LookProps & { title?: stri
           toast.success(t('character.randomized'));
         }}
       />
+      {/* Only where the person is creating the character: the edit screen is that "later" */}
+      {title === undefined ? (
+        <Text style={styles.hint}>{t('character.changeLaterHint')}</Text>
+      ) : null}
     </View>
   );
 }
@@ -248,6 +260,7 @@ const styles = StyleSheet.create({
     padding: space[12],
   },
   label: { color: colors.text.secondary, fontSize: fontSize[13], fontWeight: '500' },
+  hint: { color: colors.text.muted, fontSize: fontSize[12], textAlign: 'center' },
   cards: { gap: space[12], paddingVertical: space[8] },
   card: {
     width: 120,

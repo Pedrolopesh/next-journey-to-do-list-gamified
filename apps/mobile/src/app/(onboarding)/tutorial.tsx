@@ -1,70 +1,35 @@
+import type { LpcLook } from '@nextjourney/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, type ImageSourcePropType, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { patchMe } from '@/api/endpoints';
 import { queryKeys } from '@/api/queries';
 import { BackButton } from '@/components/back-button';
 import { Button } from '@/components/button';
-import { PixelArt } from '@/components/pixel-art';
+import { IntroCheckDemo, IntroScenery, IntroWalkingHero } from '@/components/intro-demos';
 import { describeError } from '@/features/feedback/error-message';
 import { useAction } from '@/features/feedback/use-action';
-import { colors, fontSize, radius, space } from '@/theme';
+import { DEFAULT_LOOK } from '@/features/qg/options';
+import { colors, fontSize, space } from '@/theme';
 
 const SLIDES = ['slide1', 'slide2', 'slide3'] as const;
 
-const beach = require('../../../assets/onboarding/scene-beach.png') as ImageSourcePropType;
-const castle = require('../../../assets/onboarding/scene-castle.png') as ImageSourcePropType;
-const zombie = require('../../../assets/onboarding/scene-zombie.png') as ImageSourcePropType;
-const hell = require('../../../assets/onboarding/scene-hell.png') as ImageSourcePropType;
-const hero = require('../../../assets/onboarding/preview-adventurer.png') as ImageSourcePropType;
-
-/** Illustration of each slide (scene art generated from the banner, and the app's own pixel art). */
-function Illustration({ slide }: { slide: (typeof SLIDES)[number] }) {
-  if (slide === 'slide1') {
-    return (
-      <Image
-        source={hero}
-        style={styles.hero}
-        resizeMode="cover"
-        accessibilityIgnoresInvertColors
-      />
-    );
-  }
-  if (slide === 'slide2') {
-    return (
-      <View style={styles.pixels}>
-        <PixelArt name="dailies" size={72} />
-        <PixelArt name="coin" size={72} />
-        <PixelArt name="streak" size={72} />
-      </View>
-    );
-  }
-  return (
-    <View style={styles.grid}>
-      {[beach, castle, zombie, hell].map((source, index) => (
-        <Image
-          key={index}
-          source={source}
-          style={styles.tile}
-          resizeMode="cover"
-          accessibilityIgnoresInvertColors
-        />
-      ))}
-    </View>
-  );
-}
-
-/** Intro in 3 screens (skippable): create the hero, mark to earn EXP, choose the journey. */
+/**
+ * Intro in 3 screens (skippable) that let the person try the app: swap the hero, check an item and
+ * see the coins and EXP move, and pick a scenery. Nothing here is saved or sent to the API.
+ */
 export default function TutorialScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [index, setIndex] = useState(0);
+  // The look picked on the first slide follows the person through the other two (not saved)
+  const [look, setLook] = useState<LpcLook>(DEFAULT_LOOK);
   const { run, loading: saving } = useAction({
     name: 'onboarding.tutorial',
     error: (error) => describeError(error, t),
@@ -76,7 +41,7 @@ export default function TutorialScreen() {
     run(async () => {
       const me = await patchMe({ tutorialSeen: true });
       queryClient.setQueryData(queryKeys.me, me);
-      router.replace('/goal');
+      router.push('/goal');
     });
 
   return (
@@ -95,8 +60,15 @@ export default function TutorialScreen() {
           />
         ) : null}
       </View>
-      <View style={styles.body}>
-        <Illustration slide={slide} />
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.body}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {slide === 'slide1' ? <IntroWalkingHero look={look} onLookChange={setLook} /> : null}
+        {slide === 'slide2' ? <IntroCheckDemo look={look} /> : null}
+        {slide === 'slide3' ? <IntroScenery look={look} /> : null}
         <Text style={styles.title} accessibilityRole="header">
           {t(`tutorial.${slide}.title`)}
         </Text>
@@ -107,7 +79,7 @@ export default function TutorialScreen() {
         >
           {SLIDES.map((_, i) => (i === index ? '●' : '○')).join(' ')}
         </Text>
-      </View>
+      </ScrollView>
       <View style={styles.actions}>
         <Button
           label={last ? t('tutorial.start') : t('tutorial.next')}
@@ -127,13 +99,10 @@ export default function TutorialScreen() {
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   container: { flex: 1, paddingHorizontal: space.screenMargin, backgroundColor: colors.bg.base },
   backRow: { height: 44 },
-  body: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space[16] },
-  hero: { width: '100%', height: 220, borderRadius: radius.lg },
-  pixels: { flexDirection: 'row', gap: space[16], height: 220, alignItems: 'center' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space[8], width: '100%', height: 220 },
-  tile: { width: '48.5%', height: 106, borderRadius: radius.md },
+  body: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', gap: space[16] },
   title: {
     color: colors.text.primary,
     fontSize: fontSize[24],

@@ -43,7 +43,11 @@ export default function EditCharacterScreen() {
           <IconChevronLeft size={22} color={colors.text.primary} strokeWidth={2} />
         </Pressable>
       </View>
-      <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.form}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <CharacterForm
           initial={me?.character ?? null}
           submitLabel={t('character.save')}

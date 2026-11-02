@@ -53,7 +53,7 @@ export default function ProfileScreen() {
 
   return (
     <TabScreen title={t('tabs.profile')} debug={false}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <Text style={styles.name}>{me?.character?.name ?? me?.user.name ?? ''}</Text>
           {me?.character ? <Text style={styles.title}>{me.character.title}</Text> : null}

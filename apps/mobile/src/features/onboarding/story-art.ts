@@ -18,3 +18,13 @@ export const LOOK_IMAGES: Record<string, ImageSourcePropType> = {
   student: require('../../../assets/onboarding/look-student.png') as ImageSourcePropType,
   legend: require('../../../assets/onboarding/look-legend.png') as ImageSourcePropType,
 };
+
+/** Theme color of each story, as the server seeds them (the intro shows them without the API). */
+export const STORY_COLORS: Record<string, string> = {
+  beach: '#0EA5E9',
+  rooftop: '#6366F1',
+  zombie: '#84CC16',
+  castle: '#DC2626',
+  paradise: '#16A34A',
+  hell: '#F97316',
+};
