@@ -8,7 +8,7 @@ import { toApiError } from '@/api/errors';
 import { useDeleteItem, useItems, useUpdateItem } from '@/api/queries';
 import { ItemForm } from '@/components/item-form';
 import { toast } from '@/features/feedback/toast-store';
-import { colors } from '@/theme';
+import { colors, modalTop } from '@/theme';
 
 export default function EditItemScreen() {
   const { t } = useTranslation();
@@ -29,14 +29,14 @@ export default function EditItemScreen() {
 
   if (!item) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container, { paddingTop: modalTop(insets.top) }]}>
         <Text style={styles.message}>{t('itemForm.notFound')}</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: modalTop(insets.top) }]}>
       <ItemForm
         item={item}
         initialType={item.type}

@@ -20,7 +20,13 @@ import { dueDateFor, type DuePreset, endOfDayIso } from '@/features/items/due-pr
 import { deviceToday } from '@/features/items/local-date';
 import { colors, fontSize, radius, size, space } from '@/theme';
 
-const WEEK_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
+/** Weekdays (0 = Sunday) in the order shown: Monday to Friday, then Saturday and Sunday below. */
+const WEEK_ROWS = [
+  [1, 2, 3, 4, 5],
+  [6, 0],
+] as const;
+/** A new daily starts on the working days only. */
+const DEFAULT_DAYS = [1, 2, 3, 4, 5];
 
 type Props = {
   /** Item existente (edição) ou nulo (criação). */
@@ -55,7 +61,7 @@ export function ItemForm({
   const [notes, setNotes] = useState(item?.notes ?? '');
   const [difficulty, setDifficulty] = useState(item?.difficulty ?? 'medium');
   const [categoryId, setCategoryId] = useState<string | null>(item?.categoryId ?? null);
-  const [days, setDays] = useState<number[]>(item?.scheduleDays ?? [...WEEK_DAYS]);
+  const [days, setDays] = useState<number[]>(item?.scheduleDays ?? DEFAULT_DAYS);
   const [due, setDue] = useState<DuePreset>(item?.dueAt ? 'today' : 'none');
   const [dueTouched, setDueTouched] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -180,28 +186,35 @@ export function ItemForm({
       {type === 'daily' ? (
         <View style={styles.group}>
           <Text style={styles.label}>{t('itemForm.days')}</Text>
-          <View style={styles.days}>
-            {WEEK_DAYS.map((day) => {
-              const selected = days.includes(day);
-              return (
-                <Button
-                  key={day}
-                  label={t(`itemForm.weekday.${day}`)}
-                  variant={selected ? 'primary' : 'secondary'}
-                  onPress={() => {
-                    // sempre pelo menos um dia
-                    setDays((current) =>
-                      selected
-                        ? current.length > 1
-                          ? current.filter((d) => d !== day)
-                          : current
-                        : [...current, day].sort(),
-                    );
-                  }}
-                />
-              );
-            })}
-          </View>
+          {WEEK_ROWS.map((row, index) => (
+            <View key={index} style={styles.days}>
+              {row.map((day) => {
+                const selected = days.includes(day);
+                return (
+                  <View key={day} style={styles.day}>
+                    <Button
+                      label={t(`itemForm.weekday.${day}`)}
+                      variant={selected ? 'primary' : 'secondary'}
+                      onPress={() => {
+                        // sempre pelo menos um dia
+                        setDays((current) =>
+                          selected
+                            ? current.length > 1
+                              ? current.filter((d) => d !== day)
+                              : current
+                            : [...current, day].sort(),
+                        );
+                      }}
+                    />
+                  </View>
+                );
+              })}
+              {/* Keeps the second row's buttons as wide as the first row's */}
+              {Array.from({ length: WEEK_ROWS[0].length - row.length }, (_, spacer) => (
+                <View key={`spacer-${spacer}`} style={styles.day} />
+              ))}
+            </View>
+          ))}
         </View>
       ) : null}
 
@@ -267,6 +280,7 @@ const styles = StyleSheet.create({
   },
   group: { gap: space[8] },
   label: { color: colors.text.secondary, fontSize: fontSize[13], fontWeight: '500' },
-  days: { flexDirection: 'row', flexWrap: 'wrap', gap: space[4] },
+  days: { flexDirection: 'row', gap: space[4] },
+  day: { flex: 1 },
   error: { color: colors.status.danger, fontSize: fontSize[13] },
 });
