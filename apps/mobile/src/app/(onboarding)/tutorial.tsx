@@ -1,17 +1,23 @@
+import type { LpcLook } from '@nextjourney/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, type ImageSourcePropType, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { patchMe } from '@/api/endpoints';
 import { queryKeys } from '@/api/queries';
+import { BannerView, type InitMessage, QG_ASPECT_RATIO } from '@/banner/banner-view';
 import { BackButton } from '@/components/back-button';
 import { Button } from '@/components/button';
+import { LookCards } from '@/components/character-sections';
 import { PixelArt } from '@/components/pixel-art';
 import { describeError } from '@/features/feedback/error-message';
 import { useAction } from '@/features/feedback/use-action';
+import { layersOfLook } from '@/features/onboarding/character-draft';
+import { DEFAULT_LOOK } from '@/features/qg/options';
+import { useTimeOfDay } from '@/features/qg/use-time-of-day';
 import { colors, fontSize, radius, space } from '@/theme';
 
 const SLIDES = ['slide1', 'slide2', 'slide3'] as const;
@@ -20,20 +26,41 @@ const beach = require('../../../assets/onboarding/scene-beach.png') as ImageSour
 const castle = require('../../../assets/onboarding/scene-castle.png') as ImageSourcePropType;
 const zombie = require('../../../assets/onboarding/scene-zombie.png') as ImageSourcePropType;
 const hell = require('../../../assets/onboarding/scene-hell.png') as ImageSourcePropType;
-const hero = require('../../../assets/onboarding/preview-adventurer.png') as ImageSourcePropType;
+
+/**
+ * First slide: the hero walking on the beach, and the ready-made looks below to swap him. It only
+ * shows what the app is about: nothing here is saved.
+ */
+function WalkingHero() {
+  const [look, setLook] = useState<LpcLook>(DEFAULT_LOOK);
+  const time = useTimeOfDay('auto');
+  const initMessage = useMemo<InitMessage>(
+    () => ({
+      v: 1,
+      type: 'INIT',
+      payload: {
+        scene: 'journey',
+        character: layersOfLook(look),
+        sceneKey: 'beach',
+        progress: 0.5,
+        timeOfDay: time,
+      },
+    }),
+    [look, time],
+  );
+  return (
+    <View style={styles.walking}>
+      <View style={styles.banner}>
+        <BannerView initMessage={initMessage} aspectRatio={QG_ASPECT_RATIO} />
+      </View>
+      <LookCards look={look} onChange={setLook} />
+    </View>
+  );
+}
 
 /** Illustration of each slide (scene art generated from the banner, and the app's own pixel art). */
 function Illustration({ slide }: { slide: (typeof SLIDES)[number] }) {
-  if (slide === 'slide1') {
-    return (
-      <Image
-        source={hero}
-        style={styles.hero}
-        resizeMode="cover"
-        accessibilityIgnoresInvertColors
-      />
-    );
-  }
+  if (slide === 'slide1') return <WalkingHero />;
   if (slide === 'slide2') {
     return (
       <View style={styles.pixels}>
@@ -76,7 +103,7 @@ export default function TutorialScreen() {
     run(async () => {
       const me = await patchMe({ tutorialSeen: true });
       queryClient.setQueryData(queryKeys.me, me);
-      router.replace('/goal');
+      router.push('/goal');
     });
 
   return (
@@ -130,7 +157,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: space.screenMargin, backgroundColor: colors.bg.base },
   backRow: { height: 44 },
   body: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space[16] },
-  hero: { width: '100%', height: 220, borderRadius: radius.lg },
+  walking: { width: '100%', gap: space[8] },
+  banner: { borderRadius: radius.lg, overflow: 'hidden' },
   pixels: { flexDirection: 'row', gap: space[16], height: 220, alignItems: 'center' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space[8], width: '100%', height: 220 },
   tile: { width: '48.5%', height: 106, borderRadius: radius.md },

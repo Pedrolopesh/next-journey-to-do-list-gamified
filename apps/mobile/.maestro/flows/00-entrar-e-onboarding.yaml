@@ -35,9 +35,10 @@ appId: br.com.wetechhub.app.dev
 # O campo do código já abre com o foco
 - inputText: ${MAESTRO_CODE}
 - tapOn: 'Confirmar'
-# Conta com um item criado: aparece UMA conquista pendente por cima do tutorial (e só ela)
+# Conta nova (tutorial ainda não visto): a introdução é a primeira tela; se houver uma conquista
+# pendente, ela aparece por cima do tutorial (e só ela)
 - extendedWaitUntil:
-    visible: 'Pular|Crie seu herói|Conquista desbloqueada!|Comece rápido'
+    visible: 'Crie seu herói|Conquista desbloqueada!'
     timeout: 30000
 - runFlow: ../subflows/onboarding.yaml
 - extendedWaitUntil:
