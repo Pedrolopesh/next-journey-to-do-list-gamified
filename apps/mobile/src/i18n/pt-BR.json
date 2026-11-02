@@ -622,5 +622,32 @@
         "other": "Outro"
       }
     }
+  },
+  "info": {
+    "close": "Entendi",
+    "coins": {
+      "headline": "Moedas",
+      "title": "Como ganhar moedas",
+      "balance": "Você tem {{count}} moedas.",
+      "earnTitle": "Ganhe moedas",
+      "earnCheck": "Marque um diário, tarefa ou hábito: fácil {{easy}}, médio {{medium}}, difícil {{hard}}.",
+      "earnLevel": "Suba de nível e ganhe {{bonus}} moedas de bônus.",
+      "earnAgain": "Marcar de novo depois de desmarcar devolve as moedas do item.",
+      "loseTitle": "E se eu desmarcar?",
+      "lose": "Desmarcar um item tira moedas ({{first}}, depois {{second}}, e assim por diante), mas o EXP que você ganhou continua seu."
+    },
+    "level": {
+      "headline": "Nível {{level}}",
+      "title": "Como funcionam os níveis",
+      "now": "Experiência agora",
+      "nowValue": "{{exp}} de {{next}} EXP para o nível {{nextLevel}}",
+      "expTitle": "Ganhe EXP",
+      "exp": "Cada item marcado rende EXP: fácil {{easy}}, médio {{medium}}, difícil {{hard}}. O EXP nunca volta, mesmo se você desmarcar.",
+      "upTitle": "Suba de nível",
+      "up": "Ao encher a barra você sobe de nível, conclui um capítulo da história e ganha {{bonus}} moedas.",
+      "unlockTitle": "O que você desbloqueia",
+      "unlock": "Cada nível muda o cenário da jornada e revela o próximo capítulo da história. São {{chapters}} capítulos por história.",
+      "chapterOf": "Capítulo {{number}} de {{total}}"
+    }
   }
 }

@@ -2,11 +2,12 @@ import { DEFAULT_GAME_CONFIG } from '@nextjourney/contracts';
 import { IconCoin } from '@tabler/icons-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { storyRatio, useMe } from '@/api/queries';
 import { colors, fontSize, radius, rgba, space, tonedCard } from '@/theme';
 
+import { LevelInfoModal } from './info-modals';
 import { PixelArt } from './pixel-art';
 
 type Props = {
@@ -115,26 +116,48 @@ export function StoryProgressView({
 export function StoryProgressCard({ showCoins = false }: Props) {
   const { t } = useTranslation();
   const { data: me } = useMe();
+  const [open, setOpen] = useState(false);
   if (!me) return null;
   const { player, story } = me;
   const { completed, chapter } = player.story;
   return (
-    <StoryProgressView
-      name={story?.name ?? t('progress.label')}
-      subtitle={
-        completed
-          ? t('progress.storyDone')
-          : t('progress.chapter', { number: chapter, title: story?.chapterTitle ?? '' })
-      }
-      chapter={chapter}
-      completed={completed}
-      level={player.level}
-      coins={player.coins}
-      expInLevel={player.expInLevel}
-      expForNextLevel={player.expForNextLevel}
-      ratio={storyRatio(me)}
-      showCoins={showCoins}
-    />
+    <>
+      <LevelInfoModal
+        visible={open}
+        level={player.level}
+        expInLevel={player.expInLevel}
+        expForNextLevel={player.expForNextLevel}
+        chapter={chapter}
+        storySlug={story?.slug ?? null}
+        onClose={() => {
+          setOpen(false);
+        }}
+      />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityHint={t('info.level.title')}
+        onPress={() => {
+          setOpen(true);
+        }}
+      >
+        <StoryProgressView
+          name={story?.name ?? t('progress.label')}
+          subtitle={
+            completed
+              ? t('progress.storyDone')
+              : t('progress.chapter', { number: chapter, title: story?.chapterTitle ?? '' })
+          }
+          chapter={chapter}
+          completed={completed}
+          level={player.level}
+          coins={player.coins}
+          expInLevel={player.expInLevel}
+          expForNextLevel={player.expForNextLevel}
+          ratio={storyRatio(me)}
+          showCoins={showCoins}
+        />
+      </Pressable>
+    </>
   );
 }
 
