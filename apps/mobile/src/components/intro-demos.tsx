@@ -12,14 +12,15 @@ import {
 } from '@/banner/banner-view';
 import { toast } from '@/features/feedback/toast-store';
 import { layersOfLook } from '@/features/onboarding/character-draft';
+import { STORY_COLORS } from '@/features/onboarding/story-art';
 import { STORY_SCENARIOS, type StoryScenario } from '@/features/qg/options';
 import { useTimeOfDay } from '@/features/qg/use-time-of-day';
-import { radius, space } from '@/theme';
+import { colors, radius, space } from '@/theme';
 
 import { LookCards } from './character-sections';
 import { ExpToast } from './exp-toast';
 import { ItemRow } from './item-row';
-import { Pills } from './pills';
+import { StoryChips } from './story-chips';
 import { StoryProgressView } from './story-progress-card';
 
 /** The journey scene (the hero walking) for a look and a scenery: what the tabs show. */
@@ -172,12 +173,17 @@ export function IntroScenery({ look }: LookProps) {
       <View style={styles.banner}>
         <BannerView initMessage={initMessage} aspectRatio={QG_ASPECT_RATIO} />
       </View>
-      <Pills
-        scroll
-        label={t('qg.scenario')}
-        value={scene}
-        onChange={setScene}
-        options={STORY_SCENARIOS.map((id) => ({ value: id, label: t(`qg.scenarios.${id}`) }))}
+      <StoryChips
+        stories={STORY_SCENARIOS.map((id) => ({
+          slug: id,
+          name: t(`qg.scenarios.${id}`),
+          color: STORY_COLORS[id] ?? colors.brand.primaryLight,
+        }))}
+        selected={scene}
+        onSelect={(slug) => {
+          const next = STORY_SCENARIOS.find((id) => id === slug);
+          if (next) setScene(next);
+        }}
       />
     </View>
   );
