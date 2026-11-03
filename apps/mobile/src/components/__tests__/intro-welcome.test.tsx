@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react-native';
+import { AccessibilityInfo } from 'react-native';
 
 import { IntroWelcome } from '../intro-welcome';
 import { PixelTitle } from '../pixel-title';
@@ -7,6 +8,11 @@ jest.mock('@expo-google-fonts/pixelify-sans', () => ({
   PixelifySans_700Bold: 1,
   useFonts: () => [true, null],
 }));
+
+// With "reduce motion" on nothing animates, so no timer is left running after the test
+beforeEach(() => {
+  jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+});
 
 describe('intro welcome', () => {
   it('mostra a boas-vindas e os três passos', async () => {
