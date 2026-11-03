@@ -48,7 +48,7 @@ export default function TutorialScreen() {
     run(async () => {
       const me = await patchMe({ tutorialSeen: true });
       queryClient.setQueryData(queryKeys.me, me);
-      router.push('/goal');
+      router.push('/character');
     });
 
   return (

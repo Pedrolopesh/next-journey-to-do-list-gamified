@@ -2,7 +2,7 @@
 
 ### Requirement: Ordem do fluxo de entrada
 
-O app SHALL mostrar, para quem não tem sessão, a Splash, as Boas-vindas, e (no caminho do e-mail) as telas de e-mail e de código; depois, em ordem, a introdução em 3 telas, a meta, os looks prontos, a personalização (opcional), o nome do personagem, a escolha de história, os lembretes, a idade, o gênero e a Home. "Pular" na introdução e "Pular" nos looks prontos SHALL seguir para a próxima etapa da ordem. Apple e Google SHALL seguir direto para a introdução.
+O app SHALL mostrar, para quem não tem sessão, a Splash, as Boas-vindas, e (no caminho do e-mail) as telas de e-mail e de código; depois, em ordem, a apresentação e a introdução em 3 telas, os looks prontos, a personalização (opcional), o nome do personagem, a meta, a escolha de história, os lembretes, a idade, o gênero e a Home. "Pular" na introdução e "Pular" nos looks prontos SHALL seguir para a próxima etapa da ordem. Apple e Google SHALL seguir direto para a introdução.
 
 #### Scenario: Caminho completo por e-mail
 

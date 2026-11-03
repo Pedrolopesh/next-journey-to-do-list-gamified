@@ -55,7 +55,7 @@ export default function NameScreen() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.me });
       void showNextPending(queryClient);
     });
-    if (ok) router.push('/story');
+    if (ok) router.push('/goal');
   };
 
   return (

@@ -1,10 +1,10 @@
-# Passa pelas telas de onboarding que estiverem abertas (introdução, meta, personagem, história e
+# Passa pelas telas de onboarding que estiverem abertas (introdução, personagem, meta, história e
 # perguntas finais). Seguro para chamar a qualquer momento: cada etapa só roda se a tela estiver
 # visível.
 appId: br.com.wetechhub.app.dev
 ---
 - runFlow: fechar-conquista.yaml
-# Introdução: abre na apresentação e "Pular introdução" leva à meta
+# Introdução: abre na apresentação e "Pular introdução" leva aos looks do personagem
 - runFlow:
     when:
       visible: 'Começar a aventura'

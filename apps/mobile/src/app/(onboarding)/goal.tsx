@@ -39,7 +39,7 @@ export default function GoalScreen() {
     const ok = await run(async () => {
       queryClient.setQueryData(queryKeys.me, await patchMe({ goals }));
     });
-    if (ok) router.push('/character');
+    if (ok) router.push('/story');
   };
 
   return (
