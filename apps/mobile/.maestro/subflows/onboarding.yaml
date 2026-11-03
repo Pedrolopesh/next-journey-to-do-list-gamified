@@ -4,12 +4,17 @@
 appId: br.com.wetechhub.app.dev
 ---
 - runFlow: fechar-conquista.yaml
-# Introdução: "Pular" leva à meta
+# Introdução: abre na apresentação e "Pular introdução" leva à meta
 - runFlow:
     when:
-      visible: 'Crie seu herói|Marque, ganhe, evolua|Você escolhe a jornada'
+      visible: 'Começar a aventura'
     commands:
-      - tapOn: 'Pular'
+      - tapOn: 'Começar a aventura'
+- runFlow:
+    when:
+      visible: 'Suas tarefas viram uma aventura|Marque e ganhe recompensas|Escolha a sua jornada'
+    commands:
+      - tapOn: 'Pular introdução'
 - runFlow: fechar-conquista.yaml
 - runFlow:
     when:

@@ -1,4 +1,3 @@
-import type { LpcLook } from '@nextjourney/contracts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -10,17 +9,26 @@ import { patchMe } from '@/api/endpoints';
 import { queryKeys } from '@/api/queries';
 import { BackButton } from '@/components/back-button';
 import { Button } from '@/components/button';
-import { IntroCheckDemo, IntroScenery, IntroWalkingHero } from '@/components/intro-demos';
+import {
+  IntroCheckDemo,
+  IntroItemTypes,
+  IntroRewards,
+  IntroScenery,
+  IntroWalkingHero,
+} from '@/components/intro-demos';
+import { IntroWelcome } from '@/components/intro-welcome';
+import { PixelTitle } from '@/components/pixel-title';
 import { describeError } from '@/features/feedback/error-message';
 import { useAction } from '@/features/feedback/use-action';
 import { DEFAULT_LOOK } from '@/features/qg/options';
 import { colors, fontSize, space } from '@/theme';
 
-const SLIDES = ['slide1', 'slide2', 'slide3'] as const;
+const STEPS = ['welcome', 'slide1', 'slide2', 'slide3'] as const;
 
 /**
- * Intro in 3 screens (skippable) that let the person try the app: swap the hero, check an item and
- * see the coins and EXP move, and pick a scenery. Nothing here is saved or sent to the API.
+ * Intro (skippable): a welcome with the animated book, then 3 screens that let the person try the
+ * app: see the hero walk, check an item and see the rewards, and pick a scenery. Nothing here is
+ * saved or sent to the API, and the next step is always creating the character.
  */
 export default function TutorialScreen() {
   const { t } = useTranslation();
@@ -28,14 +36,13 @@ export default function TutorialScreen() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [index, setIndex] = useState(0);
-  // The look picked on the first slide follows the person through the other two (not saved)
-  const [look, setLook] = useState<LpcLook>(DEFAULT_LOOK);
   const { run, loading: saving } = useAction({
     name: 'onboarding.tutorial',
     error: (error) => describeError(error, t),
   });
-  const last = index === SLIDES.length - 1;
-  const slide = SLIDES[index] ?? SLIDES[0];
+  const step = STEPS[index] ?? STEPS[0];
+  const welcome = step === 'welcome';
+  const last = index === STEPS.length - 1;
 
   const finish = (): Promise<boolean> =>
     run(async () => {
@@ -65,32 +72,41 @@ export default function TutorialScreen() {
         contentContainerStyle={styles.body}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        accessibilityLabel={t('tutorial.progress', { current: index + 1, total: STEPS.length })}
       >
-        {slide === 'slide1' ? <IntroWalkingHero look={look} onLookChange={setLook} /> : null}
-        {slide === 'slide2' ? <IntroCheckDemo look={look} /> : null}
-        {slide === 'slide3' ? <IntroScenery look={look} /> : null}
-        <Text style={styles.title} accessibilityRole="header">
-          {t(`tutorial.${slide}.title`)}
-        </Text>
-        <Text style={styles.text}>{t(`tutorial.${slide}.text`)}</Text>
-        <Text
-          style={styles.dots}
-          accessibilityLabel={t('tutorial.progress', { current: index + 1, total: SLIDES.length })}
-        >
-          {SLIDES.map((_, i) => (i === index ? '●' : '○')).join(' ')}
-        </Text>
+        {welcome ? (
+          <IntroWelcome />
+        ) : (
+          <>
+            <PixelTitle lead={t('tutorial.titleLead')} accent={t('tutorial.titleAccent')} />
+            {step === 'slide1' ? <IntroWalkingHero look={DEFAULT_LOOK} /> : null}
+            {step === 'slide2' ? <IntroCheckDemo /> : null}
+            {step === 'slide3' ? <IntroScenery look={DEFAULT_LOOK} /> : null}
+            <View style={styles.copy}>
+              <Text style={styles.title} accessibilityRole="header">
+                {t(`tutorial.${step}.title`)}
+              </Text>
+              <Text style={styles.text}>{t(`tutorial.${step}.text`)}</Text>
+            </View>
+            {step === 'slide1' ? <IntroItemTypes /> : null}
+            {step === 'slide2' ? <IntroRewards /> : null}
+          </>
+        )}
       </ScrollView>
       <View style={styles.actions}>
         <Button
-          label={last ? t('tutorial.start') : t('tutorial.next')}
+          label={welcome ? t('tutorial.begin') : last ? t('tutorial.start') : t('tutorial.next')}
           loading={saving}
           onPress={() => {
             if (last) void finish();
             else setIndex(index + 1);
           }}
         />
-        {/* The space of "Pular" stays reserved on the last slide so the content does not jump */}
-        <View style={last ? styles.reserved : undefined}>
+        {/* The space of "Pular" stays reserved on the welcome so the button does not jump */}
+        <View
+          style={welcome ? styles.reserved : undefined}
+          pointerEvents={welcome ? 'none' : 'auto'}
+        >
           <Button label={t('tutorial.skip')} variant="ghost" onPress={() => void finish()} />
         </View>
       </View>
@@ -102,15 +118,10 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   container: { flex: 1, paddingHorizontal: space.screenMargin, backgroundColor: colors.bg.base },
   backRow: { height: 44 },
-  body: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', gap: space[16] },
-  title: {
-    color: colors.text.primary,
-    fontSize: fontSize[24],
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  text: { color: colors.text.secondary, fontSize: fontSize[15], textAlign: 'center' },
-  dots: { color: colors.brand.primaryLight, fontSize: fontSize[14], letterSpacing: 4 },
+  body: { flexGrow: 1, gap: space[16], paddingBottom: space[16] },
+  copy: { gap: space[8] },
+  title: { color: colors.text.primary, fontSize: fontSize[22], fontWeight: '700' },
+  text: { color: colors.text.secondary, fontSize: fontSize[14] },
   actions: { gap: space[8] },
   reserved: { opacity: 0 },
 });

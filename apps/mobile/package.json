@@ -3,6 +3,7 @@
   "main": "expo-router/entry",
   "version": "0.0.0",
   "dependencies": {
+    "@expo-google-fonts/pixelify-sans": "0.4.2",
     "@expo/ui": "~58.0.23",
     "@hookform/resolvers": "^5.9.2",
     "@nextjourney/contracts": "workspace:*",

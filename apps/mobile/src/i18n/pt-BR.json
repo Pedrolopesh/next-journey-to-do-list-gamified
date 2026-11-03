@@ -241,20 +241,41 @@
   },
   "tutorial": {
     "next": "Próximo",
-    "skip": "Pular",
-    "start": "Começar",
+    "skip": "Pular introdução",
+    "begin": "Começar a aventura",
+    "start": "Criar meu personagem",
     "progress": "Passo {{current}} de {{total}}",
+    "titleLead": "Seja Bem vindo, A sua",
+    "titleAccent": "próxima Jornada",
+    "welcome": {
+      "title": "Bem-vindo ao Next Journey",
+      "text": "Aqui, cada tarefa que você conclui é um passo da história do seu herói. Vamos começar?",
+      "kicker": "Comece em 2 minutos",
+      "steps": {
+        "character": "Crie seu\npersonagem",
+        "story": "Escolha sua\nhistória",
+        "check": "Marque\ne evolua"
+      }
+    },
     "slide1": {
-      "title": "Crie seu herói",
-      "text": "Escolha o visual, o nome e a história que você quer contar. É ele quem vive a sua jornada."
+      "title": "Suas tarefas viram uma aventura",
+      "text": "Cada diário, tarefa ou hábito que você conclui faz o seu herói avançar na história.",
+      "types": {
+        "daily": { "name": "Diários", "text": "Rotinas nos dias que você escolher." },
+        "todo": { "name": "Tarefas", "text": "O que precisa ser feito, com prazo." },
+        "habit": { "name": "Hábitos", "text": "O que você quer manter sempre." }
+      }
     },
     "slide2": {
-      "title": "Marque, ganhe, evolua",
-      "text": "Cada item marcado rende EXP e moedas. Se você desmarcar, perde as moedas, mas mantém o EXP."
+      "title": "Marque e ganhe recompensas",
+      "text": "Cada item concluído rende EXP e moedas. Se você desmarcar, perde as moedas, mas mantém o EXP.",
+      "level": "Nv. {{number}}",
+      "expLabel": "EXP: a barra enche, o nível sobe e um capítulo novo abre",
+      "coinsLabel": "Moedas: cada item concluído rende moedas"
     },
     "slide3": {
-      "title": "Você escolhe a jornada",
-      "text": "Seu herói avança capítulo a capítulo. Quanto mais você avança, mais descobre."
+      "title": "Escolha a sua jornada",
+      "text": "São 6 histórias, cada uma com cenário e capítulos próprios. Subir de nível abre o próximo capítulo."
     },
     "demoItem": "Estudar por 30 minutos",
     "demoChapter": "A chegada"
