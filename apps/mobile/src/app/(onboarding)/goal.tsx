@@ -44,6 +44,7 @@ export default function GoalScreen() {
 
   return (
     <OnboardingScreen
+      hideBack
       title={t('onboarding.goal.title')}
       subtitle={t('onboarding.goal.subtitle')}
       footer={
