@@ -5,6 +5,7 @@ import { colors, fontSize, radius, space } from '@/theme';
 
 import { AnimatedLogo } from './animated-logo';
 import { PixelArt, type PixelArtName } from './pixel-art';
+import { PixelTitle } from './pixel-title';
 
 const STEPS: readonly { art: PixelArtName; key: 'character' | 'story' | 'check' }[] = [
   { art: 'character', key: 'character' },
@@ -20,15 +21,11 @@ export function IntroWelcome() {
   const { t } = useTranslation();
   return (
     <View style={styles.stack}>
+      <PixelTitle lead={t('tutorial.titleLead')} accent={t('tutorial.titleAccent')} />
       <View style={styles.frame}>
         <AnimatedLogo />
       </View>
-      <View style={styles.speech}>
-        <Text style={styles.speechTitle} accessibilityRole="header">
-          {t('tutorial.welcome.title')}
-        </Text>
-        <Text style={styles.speechText}>{t('tutorial.welcome.text')}</Text>
-      </View>
+      <Text style={styles.speechText}>{t('tutorial.welcome.text')}</Text>
       <Text style={styles.kicker}>{t('tutorial.welcome.kicker')}</Text>
       <View style={styles.steps}>
         {STEPS.map((step) => (
@@ -61,16 +58,7 @@ const styles = StyleSheet.create({
     borderColor: colors.brand.gold,
     backgroundColor: colors.bg.surface,
   },
-  speech: {
-    gap: space[4],
-    padding: space[16],
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.border.strong,
-    backgroundColor: colors.bg.surface,
-  },
-  speechTitle: { color: colors.brand.primaryLight, fontSize: fontSize[16], fontWeight: '700' },
-  speechText: { color: colors.text.primary, fontSize: fontSize[14] },
+  speechText: { color: colors.text.primary, fontSize: fontSize[15], textAlign: 'center' },
   kicker: {
     color: colors.text.muted,
     fontSize: fontSize[12],

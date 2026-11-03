@@ -17,7 +17,8 @@ beforeEach(() => {
 describe('intro welcome', () => {
   it('shows the welcome and the three steps', async () => {
     await render(<IntroWelcome />);
-    expect(screen.getByText('Bem-vindo ao Next Journey')).toBeTruthy();
+    expect(screen.getByText(/cada tarefa que você conclui é um passo/)).toBeTruthy();
+    expect(screen.queryByText('Bem-vindo ao Next Journey')).toBeNull();
     expect(screen.getByText('personagem')).toBeTruthy();
     expect(screen.getByText('história')).toBeTruthy();
     expect(screen.getByText('e evolua')).toBeTruthy();

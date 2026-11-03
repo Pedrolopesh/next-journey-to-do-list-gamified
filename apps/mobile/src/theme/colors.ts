@@ -12,8 +12,6 @@ export const colors = {
     primaryDark: '#5b21b6',
     gold: '#f59e0b',
   },
-  // Cream of the pixel-art book pages
-  pixel: { page: '#f5e6c8' },
   text: {
     primary: '#f1f5f9',
     secondary: '#94a3b8',
