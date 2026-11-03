@@ -14,6 +14,7 @@ import { Button } from '@/components/button';
 import { ProgressionModalHost } from '@/components/progression-modal-host';
 import { ToastHost } from '@/components/toast-host';
 import { useFeedbackStore } from '@/features/feedback/feedback-store';
+import { useItemDraftStore } from '@/features/items/item-draft-store';
 import { useCheckSync } from '@/features/offline/use-check-sync';
 import { useCharacterDraft } from '@/features/onboarding/character-draft';
 import { useOnboardingFlow } from '@/features/onboarding/flow-store';
@@ -165,6 +166,7 @@ export default function RootLayout() {
       // Nothing of an interrupted onboarding may leak into the next sign-in
       useOnboardingFlow.getState().setFinishing(false);
       useCharacterDraft.getState().reset();
+      useItemDraftStore.getState().clear();
     }
   }, [status, queryClient]);
 

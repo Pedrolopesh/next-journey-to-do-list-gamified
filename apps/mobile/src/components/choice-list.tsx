@@ -8,22 +8,37 @@ type Option<T extends string> = { value: T; label: string; art?: PixelArtName };
 
 type Props<T extends string> = {
   options: readonly Option<T>[];
-  value: T | null;
+  /** The chosen value, or the chosen values when `multiple` is set. */
+  value: T | readonly T[] | null;
   onChange: (value: T) => void;
   label: string;
+  /** Rows work as checkboxes: `onChange` toggles the tapped value. */
+  multiple?: boolean;
 };
 
-/** Single-choice list of full-width rows (onboarding questions). */
-export function ChoiceList<T extends string>({ options, value, onChange, label }: Props<T>) {
+/** List of full-width rows with one choice, or several with `multiple` (onboarding questions). */
+export function ChoiceList<T extends string>({
+  options,
+  value,
+  onChange,
+  label,
+  multiple = false,
+}: Props<T>) {
+  const isSelected = (candidate: T): boolean =>
+    Array.isArray(value) ? (value as readonly T[]).includes(candidate) : candidate === value;
   return (
-    <View style={styles.list} accessibilityRole="radiogroup" accessibilityLabel={label}>
+    <View
+      style={styles.list}
+      accessibilityRole={multiple ? 'list' : 'radiogroup'}
+      accessibilityLabel={label}
+    >
       {options.map((option) => {
-        const selected = option.value === value;
+        const selected = isSelected(option.value);
         return (
           <Pressable
             key={option.value}
-            accessibilityRole="radio"
-            accessibilityState={{ selected }}
+            accessibilityRole={multiple ? 'checkbox' : 'radio'}
+            accessibilityState={multiple ? { checked: selected } : { selected }}
             accessibilityLabel={option.label}
             onPress={() => {
               onChange(option.value);

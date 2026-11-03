@@ -37,19 +37,17 @@ export default function AgeScreen() {
       subtitle={t('onboarding.age.subtitle')}
       footer={
         <>
-          <Button
-            label={t('onboarding.continue')}
-            loading={loading}
-            disabled={!value}
-            onPress={() => void next()}
-          />
-          <Button
-            label={t('onboarding.skip')}
-            variant="ghost"
-            onPress={() => {
-              router.push('/gender');
-            }}
-          />
+          {value ? (
+            <Button label={t('onboarding.save')} loading={loading} onPress={() => void next()} />
+          ) : (
+            <Button
+              label={t('onboarding.skip')}
+              variant="ghost"
+              onPress={() => {
+                router.push('/gender');
+              }}
+            />
+          )}
         </>
       }
     >

@@ -17,14 +17,31 @@ describe('perfil do onboarding', () => {
       .http()
       .patch('/v1/me')
       .set('Authorization', bearer(auth))
-      .send({ goal: 'fitness', ageRange: '25-34', gender: 'other', remindersOptIn: true })
+      .send({
+        goals: ['fitness', 'learning'],
+        ageRange: '25-34',
+        gender: 'other',
+        remindersOptIn: true,
+      })
       .expect(200);
     expect(patched.body.user).toMatchObject({
-      goal: 'fitness',
+      goals: ['fitness', 'learning'],
       ageRange: '25-34',
       gender: 'other',
       remindersOptIn: true,
     });
+  });
+
+  it('rejeita metas vazias ou repetidas', async () => {
+    const auth = await registerUser(ctx);
+    for (const goals of [[], ['fitness', 'fitness'], ['unknown']]) {
+      await ctx
+        .http()
+        .patch('/v1/me')
+        .set('Authorization', bearer(auth))
+        .send({ goals })
+        .expect(400);
+    }
   });
 
   it('idade e gênero podem ser limpos com null', async () => {

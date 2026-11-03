@@ -42,13 +42,11 @@ export default function GenderScreen() {
       subtitle={t('onboarding.gender.subtitle')}
       footer={
         <>
-          <Button
-            label={t('onboarding.continue')}
-            loading={loading}
-            disabled={!value}
-            onPress={() => void next()}
-          />
-          <Button label={t('onboarding.skip')} variant="ghost" onPress={finish} />
+          {value ? (
+            <Button label={t('onboarding.save')} loading={loading} onPress={() => void next()} />
+          ) : (
+            <Button label={t('onboarding.skip')} variant="ghost" onPress={finish} />
+          )}
         </>
       }
     >

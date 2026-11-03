@@ -45,14 +45,14 @@ export default function RemindersScreen() {
       if (granted) toast.success(t('onboarding.reminders.enabled'));
       else toast.info(t('onboarding.reminders.denied'));
     });
-    if (ok) router.push('/age');
+    if (ok) router.push('/goal');
   };
 
   const skip = async (): Promise<void> => {
     const ok = await decline.run(async () => {
       queryClient.setQueryData(queryKeys.me, await patchMe({ remindersOptIn: false }));
     });
-    if (ok) router.push('/age');
+    if (ok) router.push('/goal');
   };
 
   return (

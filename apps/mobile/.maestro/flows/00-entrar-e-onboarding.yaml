@@ -7,7 +7,7 @@ appId: br.com.wetechhub.app.dev
 - launchApp
 # O bundle leva um tempo para carregar
 - extendedWaitUntil:
-    visible: 'Entrar com e-mail|Perfil(, tab.*)?|Pular|Crie seu herói|O que você quer mudar.*|Escolha o seu personagem|Escolha sua história|Conquista desbloqueada!'
+    visible: 'Entrar com e-mail|Perfil(, tab.*)?|Pular introdução|Começar a aventura|O que você quer mudar.*|Escolha o seu personagem|Escolha sua história|Conquista desbloqueada!'
     timeout: 120000
 - runFlow: ../subflows/onboarding.yaml
 - runFlow:
@@ -38,7 +38,7 @@ appId: br.com.wetechhub.app.dev
 # Conta nova (tutorial ainda não visto): a introdução é a primeira tela; se houver uma conquista
 # pendente, ela aparece por cima do tutorial (e só ela)
 - extendedWaitUntil:
-    visible: 'Crie seu herói|Conquista desbloqueada!'
+    visible: 'Começar a aventura|Conquista desbloqueada!'
     timeout: 30000
 - runFlow: ../subflows/onboarding.yaml
 - extendedWaitUntil:

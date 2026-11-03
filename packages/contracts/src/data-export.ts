@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { isoDateTimeSchema } from './common';
-import { ageRangeSchema, characterClassSchema, genderSchema, goalSchema } from './profile';
+import { ageRangeSchema, characterClassSchema, genderSchema, goalsSchema } from './profile';
 
 const iso = isoDateTimeSchema;
 
@@ -24,7 +24,7 @@ export const dataExportSchema = z.object({
     emailVerifiedAt: iso.nullable(),
     /** Formas de entrar que a conta tem (nunca o segredo nem o id no provedor). */
     signInMethods: z.array(z.enum(['password', 'email', 'google', 'apple'])),
-    goal: goalSchema.nullable(),
+    goals: goalsSchema,
     ageRange: ageRangeSchema.nullable(),
     gender: genderSchema.nullable(),
     remindersOptIn: z.boolean().nullable(),

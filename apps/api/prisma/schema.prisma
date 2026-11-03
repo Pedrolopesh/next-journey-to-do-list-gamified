@@ -36,7 +36,7 @@ model User {
   /// Horário do lembrete diário (HH:MM), no fuso do perfil
   notifyAt               String?   @map("notify_at") @db.VarChar(5)
   /// Respostas do onboarding (valores dos enums de `packages/contracts/src/profile.ts`)
-  goal                   String?   @db.VarChar(20)
+  goals                  String[]  @default([]) @db.VarChar(20)
   ageRange               String?   @map("age_range") @db.VarChar(10)
   gender                 String?   @db.VarChar(10)
   /// Se a pessoa ligou os lembretes na tela de notificações (nulo = ainda não respondeu)

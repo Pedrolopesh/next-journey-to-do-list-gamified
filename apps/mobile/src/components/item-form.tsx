@@ -17,6 +17,7 @@ import { Pills } from '@/components/pills';
 import { TextField } from '@/components/text-field';
 import { toast } from '@/features/feedback/toast-store';
 import { dueDateFor, type DuePreset, endOfDayIso } from '@/features/items/due-presets';
+import type { ItemDraft } from '@/features/items/item-draft-store';
 import { deviceToday } from '@/features/items/local-date';
 import { colors, fontSize, radius, size, space } from '@/theme';
 
@@ -37,6 +38,10 @@ type Props = {
   onSubmitCreate: (body: CreateItemRequest) => void;
   onSubmitUpdate: (body: UpdateItemRequest) => void;
   onDelete?: () => void;
+  /** New item only: what was left half-written, restored into the fields. */
+  draft?: ItemDraft | null;
+  /** New item only: called with the fields as the person types, to keep the draft. */
+  onDraftChange?: (draft: ItemDraft) => void;
   /** Fecha o modal (botão X no canto). */
   onClose?: () => void;
 };
@@ -50,27 +55,46 @@ export function ItemForm({
   onSubmitCreate,
   onSubmitUpdate,
   onDelete,
+  draft = null,
+  onDraftChange,
   onClose,
 }: Props) {
   const { t } = useTranslation();
   const categories = useCategories();
   const editing = item !== null;
 
-  const [type, setType] = useState<ItemType>(item?.type ?? initialType);
-  const [title, setTitle] = useState(item?.title ?? '');
-  const [notes, setNotes] = useState(item?.notes ?? '');
-  const [difficulty, setDifficulty] = useState(item?.difficulty ?? 'medium');
-  const [categoryId, setCategoryId] = useState<string | null>(item?.categoryId ?? null);
-  const [days, setDays] = useState<number[]>(item?.scheduleDays ?? DEFAULT_DAYS);
-  const [due, setDue] = useState<DuePreset>(item?.dueAt ? 'today' : 'none');
-  const [dueTouched, setDueTouched] = useState(false);
+  // Only the first render reads the draft: later changes come from the fields themselves
+  const [restored] = useState(() => (editing ? null : draft));
+
+  const [type, setType] = useState<ItemType>(item?.type ?? restored?.type ?? initialType);
+  const [title, setTitle] = useState(item?.title ?? restored?.title ?? '');
+  const [notes, setNotes] = useState(item?.notes ?? restored?.notes ?? '');
+  const [difficulty, setDifficulty] = useState(
+    item?.difficulty ?? restored?.difficulty ?? 'medium',
+  );
+  const [categoryId, setCategoryId] = useState<string | null>(
+    item?.categoryId ?? restored?.categoryId ?? null,
+  );
+  const [days, setDays] = useState<number[]>(item?.scheduleDays ?? restored?.days ?? DEFAULT_DAYS);
+  const [due, setDue] = useState<DuePreset>(item?.dueAt ? 'today' : (restored?.due ?? 'none'));
+  const [dueTouched, setDueTouched] = useState(restored?.dueTouched ?? false);
   const [formError, setFormError] = useState<string | null>(null);
   // Validação reprovada também avisa por toast, para o botão nunca "não fazer nada"
   useEffect(() => {
     if (formError) toast.error(formError);
   }, [formError]);
 
-  const effectiveCategory = categoryId ?? categories.data?.[0]?.id ?? null;
+  useEffect(() => {
+    if (!onDraftChange) return;
+    onDraftChange({ type, title, notes, difficulty, categoryId, days, due, dueTouched });
+  }, [onDraftChange, type, title, notes, difficulty, categoryId, days, due, dueTouched]);
+
+  // A restored draft may point to a category that was deleted since
+  const known = categoryId && categories.data?.some((category) => category.id === categoryId);
+  const effectiveCategory =
+    (categories.data ? (known ? categoryId : null) : categoryId) ??
+    categories.data?.[0]?.id ??
+    null;
 
   const submit = (): void => {
     setFormError(null);
@@ -122,6 +146,7 @@ export function ItemForm({
     <ScrollView
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
       showsVerticalScrollIndicator={false}
     >
       {onClose ? (

@@ -12,6 +12,11 @@ export const GOALS = [
 ] as const;
 export const goalSchema = z.enum(GOALS);
 export type Goal = z.infer<typeof goalSchema>;
+/** One or more goals; no repeats. */
+export const goalsSchema = z
+  .array(goalSchema)
+  .max(GOALS.length)
+  .refine((goals) => new Set(goals).size === goals.length, 'Duplicate goals');
 
 /** Optional on purpose: nothing in the app depends on it. */
 export const AGE_RANGES = [
