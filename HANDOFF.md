@@ -16,7 +16,7 @@ Resumo para qualquer agente (ou pessoa) continuar de onde parou. Leia antes o `A
 
 ## Fluxo de entrada v2 (2026-10-31, OpenSpec `fluxo-de-entrada-v2`)
 
-Novo fluxo do Figma (seção "Fluxo de entrada (novo)") implementado: entrada sem senha (Apple, Google ou código de 6 dígitos por e-mail), apresentação e introdução em 3 telas, personagem em 3 passos (looks prontos, personalizar, nome), meta, escolha de história com cards e modal, lembretes, idade e gênero opcionais, e a Home com "Seu QG" (sem "Mudar cenário do QG": o cenário é o da história). API: `POST /v1/auth/email/start` e `/confirm`, exclusão de conta por código, sessão de 365 dias, campos de perfil novos. As telas e rotas de senha saíram do app; os endpoints de senha seguem na API para versões antigas.
+Novo fluxo do Figma (seção "Fluxo de entrada (novo)") implementado: entrada sem senha (Apple, Google ou código de 6 dígitos por e-mail), apresentação e introdução em 3 telas, personagem em 3 passos (looks prontos, personalizar, nome), escolha de história com cards e modal, lembretes, meta, idade e gênero opcionais, e a Home com "Seu QG" (sem "Mudar cenário do QG": o cenário é o da história). API: `POST /v1/auth/email/start` e `/confirm`, exclusão de conta por código, sessão de 365 dias, campos de perfil novos. As telas e rotas de senha saíram do app; os endpoints de senha seguem na API para versões antigas.
 
 Pendências deste trabalho:
 

@@ -5,6 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BackButton } from '@/components/back-button';
 import { colors, fontSize, space } from '@/theme';
 
+import { useKeyboardVisible } from './use-keyboard-visible';
+
 type Props = {
   title?: string;
   subtitle?: string;
@@ -23,13 +25,17 @@ type Props = {
  */
 export function OnboardingScreen({ title, subtitle, children, footer, preview, hideBack }: Props) {
   const insets = useSafeAreaInsets();
+  const keyboard = useKeyboardVisible();
+  // The preview takes a third of the screen: with the keyboard open it would leave no room for
+  // the field, so it steps aside until the keyboard closes
+  const showPreview = preview && !keyboard;
   return (
     // The footer (primary action) rises with the keyboard instead of hiding behind it
     <KeyboardAvoidingView
-      style={[styles.container, preview ? null : { paddingTop: insets.top + space[8] }]}
+      style={[styles.container, showPreview ? null : { paddingTop: insets.top + space[8] }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {preview ? (
+      {showPreview ? (
         <View style={{ paddingTop: insets.top }}>
           {preview}
           {hideBack ? null : (
@@ -58,7 +64,15 @@ export function OnboardingScreen({ title, subtitle, children, footer, preview, h
         {children}
       </ScrollView>
       {footer ? (
-        <View style={[styles.footer, { paddingBottom: insets.bottom + space[16] }]}>{footer}</View>
+        <View
+          style={[
+            styles.footer,
+            // The home-indicator area sits under the keyboard: keep only a small gap to its edge
+            { paddingBottom: keyboard ? space[8] : insets.bottom + space[16] },
+          ]}
+        >
+          {footer}
+        </View>
       ) : null}
     </KeyboardAvoidingView>
   );

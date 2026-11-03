@@ -1,5 +1,5 @@
-# Passa pelas telas de onboarding que estiverem abertas (introdução, personagem, meta, história e
-# perguntas finais). Seguro para chamar a qualquer momento: cada etapa só roda se a tela estiver
+# Passa pelas telas de onboarding que estiverem abertas (introdução, personagem, história e
+# perguntas finais, entre elas a meta). Seguro para chamar a qualquer momento: cada etapa só roda se a tela estiver
 # visível.
 appId: br.com.wetechhub.app.dev
 ---
