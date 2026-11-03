@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     top: HEIGHT * PAGE.top,
     width: WIDTH * PAGE.width,
     height: HEIGHT * PAGE.height,
-    backgroundColor: '#f5e6c8',
+    backgroundColor: colors.pixel.page,
     borderColor: colors.brand.gold,
     borderWidth: 1,
     // Hinge on the spine: the left edge of the page stays put while the page flips

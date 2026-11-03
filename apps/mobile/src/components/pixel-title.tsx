@@ -15,7 +15,7 @@ const STOPS = [
 /** One full trip through the colors, and how much of the loop the word spans at once. */
 const LOOP_MS = 7000;
 const SPREAD = 0.35;
-const FRAME_MS = 50;
+const FRAME_MS = 80;
 
 type Props = { lead: string; accent: string };
 

@@ -72,7 +72,6 @@ export default function TutorialScreen() {
         contentContainerStyle={styles.body}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        accessibilityLabel={t('tutorial.progress', { current: index + 1, total: STEPS.length })}
       >
         {welcome ? (
           <IntroWelcome />
@@ -106,6 +105,8 @@ export default function TutorialScreen() {
         <View
           style={welcome ? styles.reserved : undefined}
           pointerEvents={welcome ? 'none' : 'auto'}
+          accessibilityElementsHidden={welcome}
+          importantForAccessibility={welcome ? 'no-hide-descendants' : 'auto'}
         >
           <Button label={t('tutorial.skip')} variant="ghost" onPress={() => void finish()} />
         </View>

@@ -89,7 +89,12 @@ export function ItemForm({
     onDraftChange({ type, title, notes, difficulty, categoryId, days, due, dueTouched });
   }, [onDraftChange, type, title, notes, difficulty, categoryId, days, due, dueTouched]);
 
-  const effectiveCategory = categoryId ?? categories.data?.[0]?.id ?? null;
+  // A restored draft may point to a category that was deleted since
+  const known = categoryId && categories.data?.some((category) => category.id === categoryId);
+  const effectiveCategory =
+    (categories.data ? (known ? categoryId : null) : categoryId) ??
+    categories.data?.[0]?.id ??
+    null;
 
   const submit = (): void => {
     setFormError(null);

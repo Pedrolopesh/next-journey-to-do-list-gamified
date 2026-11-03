@@ -35,8 +35,8 @@ export const meResponseSchema = z.object({
     notifyAt: z.string().nullable(),
     /** Falso em conta criada só por login social: a exclusão pede o provedor em vez da senha. */
     hasPassword: z.boolean(),
-    /** Onboarding answers; empty until the person answers (and from an API that predates the field) (age and gender may stay null). */
-    goals: goalsSchema.default([]),
+    /** Onboarding answers; empty until the person answers; age and gender may stay null. */
+    goals: goalsSchema,
     ageRange: ageRangeSchema.nullable(),
     gender: genderSchema.nullable(),
     remindersOptIn: z.boolean().nullable(),
