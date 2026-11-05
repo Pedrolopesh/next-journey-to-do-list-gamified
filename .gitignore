@@ -20,7 +20,7 @@ backups/
 *.dump
 apps/mobile/.maestro/relatorio.xml
 
-# Local-only: personal notes and agent tooling (never committed)
+# Local-only files (never committed)
 internal/
 .claude/
 AGENTS.md
