@@ -1,6 +1,6 @@
 # API: documentação interna
 
-Como a API (`apps/api`, NestJS + Prisma + PostgreSQL) funciona por dentro. Estes documentos guardam as **regras de negócio e de funcionamento** que antes ficavam em comentários longos no código; o código mantém só comentários curtos, quando o motivo de uma linha não é óbvio (regras 11 e 12 do `AGENTS.md`).
+Como a API (`apps/api`, NestJS + Prisma + PostgreSQL) funciona por dentro. Estes documentos guardam as **regras de negócio e de funcionamento** que antes ficavam em comentários longos no código; o código mantém só comentários curtos, quando o motivo de uma linha não é óbvio (regras 11 e 12 do `CONTRIBUTING.md`).
 
 | Documento | Assunto |
 |---|---|

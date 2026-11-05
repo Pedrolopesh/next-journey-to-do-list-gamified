@@ -1,25 +1,26 @@
 # Next Journey — como o projeto funciona
 
-Atualizado em 2026-10-12. Este documento descreve **o que existe hoje** no repositório e **como as peças conversam**. O estado do trabalho e o que falta ficam no [`HANDOFF.md`](../HANDOFF.md). Fontes: plano de implementação (documento local, fora do Git) (fases), [REQUISITOS.MD](./REQUISITOS.MD) (especificação), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design) e [TURBOREPO.md](./TURBOREPO.md) (ferramenta de build).
+Atualizado em 2026-11-05. Este documento descreve **o que existe hoje** no repositório e **como as peças conversam**. Fontes: [REQUISITOS.MD](./REQUISITOS.MD) (especificação), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design), [TURBOREPO.md](./TURBOREPO.md) (ferramenta de build), as specs em `openspec/` e os ADRs em [`adr/`](./adr/README.md).
 
 ## 1. O produto em uma frase
 
 Um to-do list de uso pessoal para iOS e Android em que cada item marcado rende EXP e moedas e faz um personagem pixel art (LPC) avançar por uma história em 5 capítulos (6 histórias, uma por cenário; cada nível ganho conclui um capítulo). Três tipos de item (diário, tarefa, hábito) usam o mesmo check. Sem social, sem loja, sem penalidades na v1.
 
-## 2. Estado atual do repositório (2026-10-12)
+## 2. Estado atual do repositório (2026-11-05)
 
 | Item | Estado |
 |---|---|
-| Plano, especificação e registro do Figma | Prontos, em `docs/` |
+| Especificação e registro do Figma | Prontos, em `docs/` e `openspec/` |
 | Monorepo pnpm + Turborepo, hooks e CI | Funcionando: ESLint, Prettier, Husky, lint-staged, commitlint e GitHub Actions (lint, typecheck, test, build e varredura de segurança em todo PR) |
 | `packages/contracts` | Schemas Zod compartilhados (auth, itens, check, histórias, personagem, protocolo do banner), com testes; build com `tsup` |
 | `packages/tsconfig`, `packages/eslint-config` | Prontos |
-| `apps/api` | NestJS + Prisma + PostgreSQL: auth, itens, check, progressão, histórias, conquistas, personagem, `GET /home`, exclusão de conta; testes unitários e e2e |
+| `apps/api` | NestJS + Prisma + PostgreSQL: entrada por e-mail com código, sessões, perfil (metas, idade e gênero opcionais), itens, check, progressão, histórias, conquistas, personagem, `GET /home`, exportação e exclusão de conta; testes unitários e e2e |
 | `apps/banner` | Vite + TypeScript: cena Mapa (CSS) e cena QG (canvas, 7 cenários, personagem LPC); laboratório de desenvolvimento em páginas (`lab.html`: botões, indicadores, conquistas, cenários, personagem e créditos) e painel de debug (`dev.html`), ambos fora do build |
-| `apps/mobile` | Expo + React Native: cadastro, onboarding, Home com o QG, abas de itens, perfil, configurações e créditos |
-| Hospedagem | Decidida: servidor próprio em contêineres. Ainda sem deploy do Next Journey |
+| `apps/mobile` | Expo + React Native: entrada por e-mail com código, apresentação, criação do personagem, escolha da história, lembretes, Home com o QG, abas de itens (com rascunho da nova tarefa), conquistas, perfil, configurações e créditos |
+| `apps/infra`, `apps/smoke` | Servidor em contêineres (Ansible, OpenTofu, Docker Compose), pipeline de entrega e testes de fumaça |
+| Ambientes | Dois ambientes da API (desenvolvimento e produção), com a mesma versão; produção só depois de aprovação manual |
 
-As Fases 1 a 5 estão concluídas em código; a Fase 6 (conteúdo e arte) e a Fase 7 (produção) estão em andamento. O que falta está no `HANDOFF.md`.
+O que ainda falta: builds de loja do app, Termos e Política de Privacidade publicados, revisão jurídica da pergunta de idade e remoção dos endpoints de senha legados. Os registros de decisão estão em `docs/adr/` e as mudanças em `openspec/`.
 
 ## 3. Estrutura de pastas
 
@@ -29,15 +30,17 @@ next-journey-to-do-list-gamified/
     api/        NestJS + Prisma + PostgreSQL
     banner/     Vite + TypeScript; Mapa em CSS e QG em canvas (src/qg)
     mobile/     Expo + React Native + Expo Router
+    infra/      servidor, contêineres, deploy e runbooks
+    smoke/      testes de fumaça contra um ambiente no ar
   packages/
     contracts/      schemas Zod e tipos compartilhados
+    insignias/      arte das insígnias (grades de caracteres e paleta)
     tsconfig/       configurações base do TypeScript
     eslint-config/  regras de lint compartilhadas
-  docs/            plano, requisitos, Figma, ADRs, QA, segurança e este documento
+  docs/            requisitos, Figma, ADRs, QA, segurança e este documento
   openspec/        propostas e specs de mudanças de comportamento
-  scripts/         varredura de segurança e backup
-  HANDOFF.md       estado do trabalho para quem for continuar
-  AGENTS.md        regras para agentes de IA (o bloco do Turborepo é escrito pelo próprio turbo)
+  scripts/         verificação local, varredura de segurança e backup
+  CONTRIBUTING.md  regras de código, segurança e PR
 ```
 
 Nome dos pacotes: escopo `@nextjourney/*` (ex.: `@nextjourney/contracts`). Um pacote enxerga o outro pelo nome, sem publicar nada.
@@ -58,7 +61,7 @@ Nome dos pacotes: escopo `@nextjourney/*` (ex.: `@nextjourney/contracts`). Um pa
         └──────── todos importam schemas Zod de packages/contracts ────────┘
 ```
 
-- **App ↔ API:** REST sob `/v1`, com JWT de acesso (15 min) e refresh token rotativo (365 dias, renovado a cada uso). Login Google e Apple acontece no aparelho; só o ID token vai para a API, que o valida.
+- **App ↔ API:** REST sob `/v1`, com JWT de acesso (15 min) e refresh token rotativo (365 dias, renovado a cada uso). A entrada é por e-mail: a API envia um código de 6 dígitos (`/auth/email/start` e `/auth/email/confirm`), sem senha. Login Google e Apple acontece no aparelho; só o ID token vai para a API, que o valida. Os endpoints de senha (`register`, `login`, `forgot-password`) são legados e serão removidos.
 - **App ↔ banner:** o banner é um único `banner.html` embutido no app (gerado pelo Vite com `vite-plugin-singlefile`) e carregado em um WebView. O app envia mensagens (`INIT`, `ITEM_CHECKED`, `CHAPTER_COMPLETED`, `SET_CHARACTER`, `SET_TIME_OF_DAY`, `PAUSE`/`RESUME`) e o banner responde com `READY`, `CHAPTER_TRANSITION_DONE` e `ERROR`. Toda mensagem é validada com Zod nos dois lados.
 - **Contratos:** `packages/contracts` é a única fonte dos formatos de dados. Se um schema muda, o typecheck dos três apps quebra no mesmo PR.
 
@@ -90,23 +93,21 @@ Valores iniciais (ficam na tabela `game_config`, ajustáveis sem novo build): EX
 
 ## 7. Como rodar hoje
 
-Pré-requisitos, comandos e armadilhas conhecidas estão no [`HANDOFF.md`](../HANDOFF.md) (seção "Como rodar localmente"). Em resumo: Node 24, pnpm 11 via corepack, `pnpm install` e `pnpm exec turbo run lint typecheck test build`.
+Os passos completos estão no [README](../README.md). Em resumo: Node 24, pnpm 11 via corepack, `pnpm install`, PostgreSQL local com `docker compose up -d`, migrations e seed, e `pnpm run verify` para conferir tudo.
 
 ## 8. Ambientes e hospedagem
 
-- **Desenvolvimento:** Postgres local via `docker compose` (arquivo na raiz, Fase 4), app em development build contra a API local ou de staging.
-- **Staging e produção:** uma VPS própria da We Tech Hub (Ubuntu 24.04), em Docker, com nginx no host (80/443) e certbot. Regras: Postgres próprio do Next Journey em compose project separado, portas publicadas só em `127.0.0.1`, limites de memória e CPU por container, staging e produção em projetos e portas distintos, backup diário do Postgres com 7 dias de retenção, monitor externo no `/health`. Endereço, inventário e achados de auditoria ficam fora do repositório.
-- **Pré-requisito de segurança:** concluir a revisão da hospedagem (registrada fora do repositório) antes do primeiro deploy.
+- **Desenvolvimento local:** Postgres via `docker compose` (arquivo na raiz) e app em development build contra a API local ou a de desenvolvimento.
+- **Desenvolvimento e produção hospedados:** uma VPS em Docker, com nginx no host (80/443) e TLS. Regras: Postgres próprio do projeto em compose project separado, portas publicadas só em `127.0.0.1`, limites de memória e CPU por container, os dois ambientes em projetos e portas distintos, backup diário do Postgres com 7 dias de retenção, monitor externo no `/health`. A imagem da API é escaneada, assinada e verificada no servidor antes de subir (ver `docs/adr/`). Endereço, inventário e achados de auditoria ficam fora do repositório.
 - **Builds do app:** EAS Build e EAS Submit, perfis `development`, `preview` e `production`; OTA (EAS Update) para correções de JavaScript e do banner.
-- **E-mail:** Resend, para recuperação de senha e para o código de confirmação do cadastro.
+- **E-mail:** Resend, para o código de entrada. Sem chave configurada (ambiente local), a API escreve o código no log.
 - **Identidade:** nome Next Journey; bundle id `br.com.wetechhub.app` (dev: `br.com.wetechhub.app.dev`), imutável a partir do primeiro build iOS com credenciais Apple.
 
 ## 9. Como o trabalho é conduzido
 
-- Plano em 9 fases (0 a 8) e 3 marcos, com critério de pronto por fase. Estado na tabela de Andamento do plano (documento local, fora do Git).
-- Cada passo numerado vira um PR pequeno com Conventional Commits (`feat(mobile): ...`, `chore: ...`). PR só entra com lint, typecheck e testes verdes no CI.
-- Decisões difíceis de reverter viram ADR em `docs/adr/`. O diário do projeto fica em `docs/DIARIO.md`. Datas sempre em ISO 8601.
-- Regra de ouro do plano: se uma decisão, mudança de escopo ou desvio não está escrito com data, ele não aconteceu.
+- Trabalho em fases (histórico em [`fases/`](./fases/)), cada mudança de comportamento com proposta e spec no OpenSpec antes do código.
+- Cada mudança vira um PR pequeno com Conventional Commits (`feat(mobile): ...`, `chore: ...`). PR só entra com `pnpm run verify` e a CI verdes, revisão de código e varredura de segurança (ver [PROCESSO-DE-PR.md](./PROCESSO-DE-PR.md)).
+- Decisões difíceis de reverter viram ADR em `docs/adr/`. Datas sempre em ISO 8601.
 
 ## 10. Decisões já tomadas (2026-10-02)
 
@@ -121,7 +122,8 @@ Pré-requisitos, comandos e armadilhas conhecidas estão no [`HANDOFF.md`](../HA
 
 ## 11. Pendências conhecidas
 
-- Concluir a revisão de segurança da hospedagem antes do primeiro deploy (registrada fora do repositório).
-- Confirmar as "Regras complementares" propostas em REQUISITOS.MD.
-- Desenhar no Figma: Conquistas, modal de conquista, Minha história, Categorias, Configurações, Termos no cadastro e Créditos.
-- Escrever o ADR-0003 (WebView para o banner), depois da medição em aparelho.
+- Publicar Termos de Uso e Política de Privacidade e ligar os links das telas de entrada.
+- Revisão jurídica da coleta de faixa de idade (opcional; nada depende dela).
+- Remover os endpoints de senha legados depois que as versões antigas do app saírem de uso.
+- Medir o banner em aparelho real e escrever o ADR-0003 (WebView para o banner).
+- Builds de loja (EAS) e testes de interface (Maestro) na CI.

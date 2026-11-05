@@ -1,4 +1,4 @@
-// Regras de commit do projeto (AGENTS.md, "Não fazer"): Conventional Commits em minúscula, SEM corpo
+// Regras de commit do projeto (CONTRIBUTING.md, "Não fazer"): Conventional Commits em minúscula, SEM corpo
 // e SEM atribuição a ferramenta de IA ou co-autor.
 // Só atribuição de verdade (trailer de co-autor, rodapé "Generated with", id de sessão), não a palavra solta:
 // citar CLAUDE.md ou "copilot" como assunto de um commit é legítimo

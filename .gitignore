@@ -19,3 +19,10 @@ apps/api/src/generated/
 backups/
 *.dump
 apps/mobile/.maestro/relatorio.xml
+
+# Local-only: personal notes and agent tooling (never committed)
+internal/
+.claude/
+AGENTS.md
+CLAUDE.md
+!/CONTRIBUTING.md

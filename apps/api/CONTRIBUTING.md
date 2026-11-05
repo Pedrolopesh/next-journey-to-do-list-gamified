@@ -1,6 +1,6 @@
 # apps/api — Next Journey (API NestJS)
 
-Regras do monorepo em `../../AGENTS.md` (leia primeiro). Aqui ficam as regras específicas da API.
+Regras do monorepo em `../../CONTRIBUTING.md` (leia primeiro). Aqui ficam as regras específicas da API.
 
 ## Stack real (2026-10-09)
 
@@ -24,4 +24,4 @@ Toda regra de progressão mora aqui, como **função pura com teste**:
 
 ## Quando entrarem controllers e services (Fase 4)
 
-Guards no nível do controller, validação de entrada com os schemas do contrato, `select` explícito ou DTO de saída, logs sem dado sensível, checks idempotentes por `checkId`. Checklist completo no `AGENTS.md` da raiz.
+Guards no nível do controller, validação de entrada com os schemas do contrato, `select` explícito ou DTO de saída, logs sem dado sensível, checks idempotentes por `checkId`. Checklist completo no `CONTRIBUTING.md` da raiz.
