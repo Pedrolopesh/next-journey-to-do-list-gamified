@@ -28,7 +28,7 @@
 | 8 | Testes de unidade e de propriedade | feito (51 testes) |
 | 9 | Schemas Zod compartilhados | feito |
 | 10 | Protocolo do banner no mesmo pacote | feito na Fase 2 |
-| 11 | AGENTS.md de `contracts` e `progression` | feito |
+| 11 | `CONTRIBUTING.md` de `contracts` e `progression` | feito |
 | 12 | ADR-004 com as regras ambíguas | feito como proposta |
 
 ## Desvios do plano

@@ -117,6 +117,23 @@ Além do script, confira à mão:
 
 Se achar um segredo (mesmo antigo), **pare**: não faça push, avise quem mantém o projeto, revogue o segredo e só então remova do código e, se já foi commitado, do histórico.
 
+## Higiene de repositório público (OBRIGATÓRIO)
+
+Este repositório é aberto: quem clona vê tudo, e o que entra no Git não sai mais. Estas regras valem para pessoas e para qualquer ferramenta de IA que escreva código aqui. `scripts/check-hygiene.sh` (parte de `pnpm run security`, do `verify` e da CI) confere as quatro primeiras; as demais são de revisão.
+
+1. **Notas, diário, plano pessoal e regras locais ficam em `internal/`** (ignorada pelo Git), junto de `AGENTS.md`, `CLAUDE.md` e `.claude/` locais. Nunca versione `internal/`, `HANDOFF*`, `DIARIO*`, `RESUMO-DA-SESSAO*` nem `docs/gestao/`.
+2. **Sem menção a ferramenta, anotação pessoal ou documento fora do Git** em código, docs, comentários ou PR (editores de nota, assistentes de IA, atalhos do ambiente de alguém). Se a informação importa a quem contribui, escreva-a na documentação do repositório, em linguagem neutra.
+3. **Sem `TODO` nem `FIXME` em comentário.** Pendência vira issue ou entra em "Risks and pending items" do PR.
+4. **Sem co-autoria, rodapé gerado por ferramenta nem URL de sessão** em commit ou PR (a CI barra).
+5. **Nunca use `git add -A`, `git add .` nem `git commit -a` às cegas.** Adicione os arquivos pelo nome e confira `git status` e `git diff --cached --stat` antes de cada commit; um arquivo local que ainda não está no `.gitignore` entra sem aviso.
+6. **Documentação acompanha o código.** Mudou comportamento, comando, variável de ambiente ou fluxo? Atualize no mesmo PR o `README.md` e o `docs/COMO-FUNCIONA.md` (e o que mais descrever aquilo). Doc que contradiz o código é defeito.
+7. **Workflow novo ou alterado do GitHub Actions:** ações fixadas por SHA, `permissions` mínimas declaradas no topo e nenhum segredo em `run:` sem passar por `env:`.
+8. **Imagem de contêiner:** a base roda `apt-get upgrade` (ou equivalente) para fechar CVEs do sistema; o Trivy da entrega falha em HIGH ou CRITICAL com correção disponível.
+9. **Dependência:** nome exato conferido, lockfile junto, `pnpm audit` limpo e nenhuma licença incompatível com a MIT do projeto. Atualização em lote (Dependabot) só entra depois de `pnpm run verify` e de abrir o app.
+10. **Licença e créditos:** arte, fonte ou som de terceiros entra com a licença anotada em `CREDITS.md` no mesmo PR.
+11. **Tela nova ou alterada:** botão de voltar do Android (e o gesto) se comporta como o do iOS, todo título tem papel de cabeçalho para leitor de tela, e o nome das rotas não se repete à mão em dois lugares.
+12. **OpenSpec:** mudança de comportamento tem proposta com `.openspec.yaml`, `proposal.md`, `tasks.md` e specs (ou `skip_specs: true` quando não houver spec); o `scripts/check-openspec.sh` confere.
+
 ## Processo de PR (OBRIGATÓRIO; detalhes em `docs/PROCESSO-DE-PR.md`)
 
 1. **`pnpm run verify` verde** antes de abrir o PR: commits (commitlint), lint, tipos, testes, build, e2e da API, OpenSpec, duplicação (`jscpd`, limite 2%) e `security:full`. A CI repete os passos e ainda confere o título e a descrição do PR.

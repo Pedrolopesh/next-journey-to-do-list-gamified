@@ -30,7 +30,7 @@ Um repositório onde instalação, build, lint, typecheck e os hooks de qualidad
 | 8 | ESLint: ferramenta que aponta erros e padroniza o código | feito |
 | 9 | Prettier e `.editorconfig`: formatação única | feito |
 | 10 | Husky, lint-staged e commitlint: verificações automáticas ao commitar e dar push | feito |
-| 11 | `AGENTS.md` e `CLAUDE.md`: regras para pessoas e agentes de IA | feito (AGENTS.md por app quando cada app existir) |
+| 11 | `CONTRIBUTING.md`: regras para quem contribui, pessoas ou ferramentas | feito (um por pacote) |
 | 12 | CI no GitHub Actions: roda as verificações em todo PR | feito |
 | 13 | `.gitignore`, README, LICENSE | feito (`.env.example` por app quando cada app existir; licença pendente de escolha) |
 | 14 | Primeiro PR, merge e ADR-002 | feito |

@@ -38,6 +38,8 @@ if [ "${FULL:-0}" = "1" ]; then
   git ls-files -o -i --exclude-standard | grep -E '(^|/)\.env($|\.)|\.pem$|\.p12$|\.keystore$|id_rsa|credentials' | grep -v -E 'node_modules|\.env\.example$' || echo "nenhum"
 fi
 
+bash scripts/check-hygiene.sh || fail=1
+
 echo "==> Vulnerabilidades em dependências (pnpm audit)"
 pnpm audit --audit-level=high || fail=1
 

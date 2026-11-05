@@ -30,3 +30,4 @@ Write the content in English, direct: short sentences, present tense, no history
 - [ ] New routes are protected, validated with Zod and return only the needed fields; no access to another user's object (IDOR)
 - [ ] Nothing sensitive in logs, errors, URLs or insecure storage; new dependencies have the exact name checked and the lockfile included
 - [ ] No attribution to an AI tool in commits or here
+- [ ] Public-repository hygiene (CONTRIBUTING.md): nothing from `internal/` staged, no tool or personal mention, no pending-item comment, README and docs updated for any behavior change

@@ -50,6 +50,7 @@ step "8/8 Lembretes que a máquina não confere"
 cat <<'MSG'
 - /code-review rodado e todos os achados tratados (ou registrados como issue)
 - Descrição do PR no padrão do template (.github/PULL_REQUEST_TEMPLATE.md)
+- Arquivos do commit conferidos pelo nome (git status e git diff --cached --stat); README e docs atualizados se o comportamento mudou
 - Fluxos do Maestro rodados se mexeu em tela (pnpm --filter @nextjourney/mobile test:ui)
 MSG
 echo; echo "OK: pronto para abrir o PR."
