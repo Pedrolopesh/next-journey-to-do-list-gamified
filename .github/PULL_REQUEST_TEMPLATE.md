@@ -17,7 +17,7 @@ Write the content in English, direct: short sentences, present tense, no history
 
 - [ ] `pnpm run verify` passed (lint, types, tests, build, API e2e, OpenSpec, duplication, security)
 - [ ] `/code-review` run and its findings handled before opening the PR
-- [ ] Diff reviewed: new code and comments in English, no comment that repeats the code (CONTRIBUTING.md rules 11 and 12)
+- [ ] Diff reviewed: new identifiers, test names, comments and docs in English, no comment that repeats the code (CONTRIBUTING.md rules 11 and 12)
 - [ ] Touched a screen: Maestro flows (`pnpm --filter @nextjourney/mobile test:ui`) and RN-FB (every action shows loading and ends in a toast)
 
 ## Risks and pending items
