@@ -27,8 +27,8 @@ const bodyColors = Object.keys(catalog.palettes.body.colors);
 const hairColors = Object.keys(catalog.palettes.hair.colors);
 const clothColors = Object.keys(catalog.palettes.cloth.colors);
 
-describe('opções do QG batem com o catálogo do banner', () => {
-  it('toda peça e cor oferecida no app existe no catálogo', () => {
+describe('QG options match the banner catalog', () => {
+  it('every piece and color offered in the app exists in the catalog', () => {
     for (const id of [...HAIR_PARTS, ...TORSO_PARTS, ...LEGS_PARTS, ...FEET_PARTS])
       expect(partIds.has(id), id).toBe(true);
     for (const color of SKIN_TONES) expect(bodyColors, color).toContain(color);
@@ -36,7 +36,7 @@ describe('opções do QG batem com o catálogo do banner', () => {
     for (const color of CLOTH_COLORS) expect(clothColors, color).toContain(color);
   });
 
-  it('o look padrão usa só opções oferecidas', () => {
+  it('the default look uses only offered options', () => {
     expect(SKIN_TONES).toContain(DEFAULT_LOOK.skin);
     expect(HAIR_PARTS).toContain(DEFAULT_LOOK.hair);
     expect(TORSO_PARTS).toContain(DEFAULT_LOOK.torso);
@@ -44,8 +44,8 @@ describe('opções do QG batem com o catálogo do banner', () => {
   });
 });
 
-describe('hora do dia', () => {
-  it('manhã, tarde e noite pelo relógio', () => {
+describe('time of day', () => {
+  it('morning, afternoon and night by the clock', () => {
     expect(timeOfDayFor(new Date(2026, 9, 11, 4, 59))).toBe('night');
     expect(timeOfDayFor(new Date(2026, 9, 11, 5, 0))).toBe('morning');
     expect(timeOfDayFor(new Date(2026, 9, 11, 11, 59))).toBe('morning');
@@ -54,15 +54,15 @@ describe('hora do dia', () => {
     expect(timeOfDayFor(new Date(2026, 9, 11, 18, 0))).toBe('night');
   });
 
-  it('modo fixo ignora o relógio; automático usa o relógio', () => {
+  it('fixed mode ignores the clock; automatic uses the clock', () => {
     const noon = new Date(2026, 9, 11, 12, 0);
     expect(resolveTime('night', noon)).toBe('night');
     expect(resolveTime('auto', noon)).toBe('afternoon');
   });
 });
 
-describe('validações e chaves simples', () => {
-  it('reconhece cenário e modo de hora válidos', () => {
+describe('validations and simple keys', () => {
+  it('recognizes a valid scenery and time mode', () => {
     expect(SCENARIOS.every(isScenario)).toBe(true);
     expect(STORY_SCENARIOS).not.toContain('cabin');
     expect(STORY_SCENARIOS).toHaveLength(SCENARIOS.length - 1);
@@ -71,7 +71,7 @@ describe('validações e chaves simples', () => {
     expect(isTimeMode('meio-dia')).toBe(false);
   });
 
-  it('mapeia pele e cabelo LPC para a chave simples do cadastro', () => {
+  it('maps LPC skin and hair to the sign-up simple key', () => {
     expect(legacySkin('amber')).toBe('tan');
     expect(legacySkin('black')).toBe('dark');
     expect(legacyHair(null)).toBe('bald');
@@ -79,7 +79,7 @@ describe('validações e chaves simples', () => {
   });
 });
 
-describe('looks prontos e sorteio', () => {
+describe('ready-made looks and draw', () => {
   const valid = (look: ReturnType<typeof randomLook>): void => {
     expect(SKIN_TONES).toContain(look.skin);
     expect(
@@ -93,12 +93,12 @@ describe('looks prontos e sorteio', () => {
       expect(CLOTH_COLORS).toContain(color);
   };
 
-  it('todo look pronto usa só opções oferecidas e tem ids únicos', () => {
+  it('every ready-made look uses only offered options and has unique ids', () => {
     expect(new Set(PRESETS.map((preset) => preset.id)).size).toBe(PRESETS.length);
     for (const preset of PRESETS) valid(preset.look as ReturnType<typeof randomLook>);
   });
 
-  it('o sorteio sempre devolve opções oferecidas, nos extremos do gerador', () => {
+  it('the draw always returns offered options, at the generator extremes', () => {
     for (const value of [0, 0.05, 0.5, 0.999]) valid(randomLook(() => value));
   });
 });

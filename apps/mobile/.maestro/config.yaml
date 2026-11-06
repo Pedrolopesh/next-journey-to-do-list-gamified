@@ -1,12 +1,12 @@
 # Testes de interface do app (Maestro). Rode com `pnpm --filter @nextjourney/mobile test:ui`.
-# Os fluxos compartilham a mesma conta, então rodam um por vez e nesta ordem (veja docs/TESTES.md).
+# The flows share the same account, so they run one at a time and in this order (see docs/TESTES.md).
 flows:
   - flows/*
 executionOrder:
   continueOnFailure: false
   flowsOrder:
-    - 00-entrar-e-onboarding
-    - 01-criar-e-marcar-tarefa
-    - 02-desmarcar-aviso-amarelo
-    - 03-galeria-de-conquistas
-    - 04-historico-e-estado-vazio
+    - 00-sign-in-and-onboarding
+    - 01-create-and-check-task
+    - 02-uncheck-yellow-notice
+    - 03-achievements-gallery
+    - 04-history-and-empty-state

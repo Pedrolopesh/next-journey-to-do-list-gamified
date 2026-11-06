@@ -11,7 +11,7 @@ type ToastState = {
 
 let nextId = 1;
 
-/** Toast global: toda ação do usuário termina em sucesso ou erro visível (regra de feedback). */
+/** Global toast: every user action ends in a visible success or error (feedback rule). */
 export const useToastStore = create<ToastState>((set, get) => ({
   current: null,
   show: (kind, message) => {

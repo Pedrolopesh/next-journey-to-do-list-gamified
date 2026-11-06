@@ -9,7 +9,7 @@ import { ChoiceList } from '../choice-list';
 import { CodeInput } from '../code-input';
 
 describe('ChoiceList', () => {
-  it('marca a opção escolhida e avisa a troca', async () => {
+  it('marks the chosen option and reports the change', async () => {
     const onChange = jest.fn();
     await render(
       <ChoiceList
@@ -46,7 +46,7 @@ describe('CodeInput', () => {
     );
   }
 
-  it('aceita só dígitos e no máximo 6', async () => {
+  it('accepts only digits and at most 6', async () => {
     const onValue = jest.fn();
     await render(<Harness onValue={onValue} />);
     const input = screen.getByDisplayValue('');
@@ -55,8 +55,8 @@ describe('CodeInput', () => {
   });
 });
 
-describe('estado do onboarding', () => {
-  it('o rascunho do personagem volta ao padrão', () => {
+describe('onboarding state', () => {
+  it('the character draft goes back to the default', () => {
     const { setName, setCharacterClass, reset } = useCharacterDraft.getState();
     setName('Aria');
     setCharacterClass('mage');
@@ -68,7 +68,7 @@ describe('estado do onboarding', () => {
     });
   });
 
-  it('o fim do onboarding liga e desliga o modo "terminando"', () => {
+  it('the end of onboarding turns the finishing mode on and off', () => {
     useOnboardingFlow.getState().setFinishing(true);
     expect(useOnboardingFlow.getState().finishing).toBe(true);
     useOnboardingFlow.getState().setFinishing(false);

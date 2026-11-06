@@ -24,7 +24,7 @@ describe('showNextPending', () => {
     mockFetch.mockReset();
   });
 
-  it('põe na fila só a pendente mais antiga', async () => {
+  it('queues only the oldest pending one', async () => {
     mockFetch.mockResolvedValue([
       item('b', '2026-10-09T12:00:02Z', true),
       item('a', '2026-10-09T12:00:01Z', true),
@@ -36,21 +36,21 @@ describe('showNextPending', () => {
     ).toEqual(['a']);
   });
 
-  it('não abre outro modal se já há um aberto', async () => {
+  it('does not open another modal if one is already open', async () => {
     useFeedbackStore.setState({ modals: [{ kind: 'level', level: 2 }] });
     mockFetch.mockResolvedValue([item('a', '2026-10-09T12:00:01Z', true)]);
     await showNextPending(new QueryClient());
     expect(useFeedbackStore.getState().modals).toHaveLength(1);
   });
 
-  it('não repete uma conquista que já foi mostrada nesta sessão', async () => {
+  it('does not repeat an achievement already shown in this session', async () => {
     useFeedbackStore.setState({ shownAchievements: ['a'] });
     mockFetch.mockResolvedValue([item('a', '2026-10-09T12:00:01Z', true)]);
     await showNextPending(new QueryClient());
     expect(useFeedbackStore.getState().modals).toHaveLength(0);
   });
 
-  it('sem rede, não quebra e não mostra nada', async () => {
+  it('without network, it does not break and shows nothing', async () => {
     mockFetch.mockRejectedValue(new Error('offline'));
     await expect(showNextPending(new QueryClient())).resolves.toBeUndefined();
     expect(useFeedbackStore.getState().modals).toHaveLength(0);

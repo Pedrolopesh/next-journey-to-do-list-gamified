@@ -5,7 +5,7 @@ import { Animated, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/button';
 import { colors, fontSize, radius, space } from '@/theme';
 
-/** Linhas cinza pulsando enquanto a lista carrega (skeleton). */
+/** Gray lines pulsing while the list loads (skeleton). */
 export function SkeletonList({ rows = 3 }: { rows?: number }) {
   const [opacity] = useState(() => new Animated.Value(0.5));
   useEffect(() => {
@@ -31,8 +31,8 @@ export function SkeletonList({ rows = 3 }: { rows?: number }) {
 }
 
 /**
- * Página sem itens: ícone num círculo, título e uma mensagem amigável dizendo o que fazer, como se
- * a informação ainda não existisse (e não como um erro).
+ * Page without items: an icon in a circle, a title and a friendly message saying what to do, as if
+ * the information did not exist yet (and not as an error).
  */
 export function EmptyState({
   title,
@@ -66,7 +66,7 @@ export function ErrorState({
 }: {
   message: string;
   retryLabel: string;
-  /** Mostra o botão carregando enquanto a nova tentativa roda. */
+  /** Shows the button loading while the retry runs. */
   retrying?: boolean;
   onRetry: () => void;
 }) {

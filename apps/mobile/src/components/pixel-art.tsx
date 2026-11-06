@@ -8,7 +8,7 @@ export type { PixelArtName };
 
 type Run = { x: number; y: number; w: number; fill: string };
 
-/** Junta pixels vizinhos da mesma cor na linha (menos nós SVG por ícone). */
+/** Merges neighboring pixels of the same color in the row (fewer SVG nodes per icon). */
 function runs(rows: readonly string[], palette: Record<string, string> = PIXEL_PALETTE): Run[] {
   const out: Run[] = [];
   rows.forEach((row, y) => {
@@ -29,7 +29,7 @@ function runs(rows: readonly string[], palette: Record<string, string> = PIXEL_P
   return out;
 }
 
-/** Pixel art do app (vetor, sem borrar ao ampliar). Decorativa: some para leitores de tela. */
+/** App pixel art (vector, does not blur when scaled up). Decorative: hidden from screen readers. */
 export function PixelArt({ name, size = 48 }: { name: PixelArtName; size?: number }) {
   return (
     <Svg
@@ -53,7 +53,7 @@ export function PixelArt({ name, size = 48 }: { name: PixelArtName; size?: numbe
   );
 }
 
-/** Um traçado por cor: junta os pixels da cor em um só `Path` (poucos nós SVG por insígnia). */
+/** One path per color: merges the pixels of that color into a single `Path` (few SVG nodes per badge). */
 export function pathsByColor(
   rows: readonly string[],
   palette: Record<string, string>,
@@ -66,8 +66,8 @@ export function pathsByColor(
 }
 
 /**
- * Insígnia de conquista (pixel art 24x24 de `@nextjourney/insignias`). Nome desconhecido não
- * desenha nada. A galeria mostra dezenas ao mesmo tempo: um `Path` por cor e memoizada.
+ * Achievement badge (24x24 pixel art from `@nextjourney/insignias`). An unknown name draws
+ * nothing. The gallery shows dozens at once: one `Path` per color, and memoized.
  */
 export const Insignia = memo(function Insignia({
   glyph,

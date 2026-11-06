@@ -16,7 +16,7 @@ import { toast } from '@/features/feedback/toast-store';
 import { characterLayers } from '@/features/qg/character-layers';
 import { colors, radius, size, space } from '@/theme';
 
-/** Editar o personagem (RF-37). Cosméticos de conquista aparecem liberados aqui. */
+/** Edit the character (RF-37). Achievement cosmetics show up unlocked here. */
 export default function EditCharacterScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -29,7 +29,7 @@ export default function EditCharacterScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Banner de ponta a ponta no topo, como na Home: as opções rolam embaixo */}
+      {/* Edge-to-edge banner at the top, as on the Home: the options scroll below */}
       <View>
         <CharacterPreview layers={preview ?? characterLayers(me?.character ?? null)} />
         <Pressable

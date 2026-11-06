@@ -1,0 +1,15 @@
+# Taps a text field by its label (variable FIELD). On Android tapping the label focuses the field;
+# on iOS the label is a separate text, so it taps what sits right below it.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: ${FIELD}
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          below: ${FIELD}

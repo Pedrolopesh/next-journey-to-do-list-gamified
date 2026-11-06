@@ -11,7 +11,7 @@ type Props = {
   children: ReactNode;
 };
 
-/** Modal que sobe do rodapé: toque fora ou no botão voltar do sistema para fechar. */
+/** Modal that rises from the bottom: tap outside or the system back button to close. */
 export function BottomSheet({ visible, onClose, children }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();

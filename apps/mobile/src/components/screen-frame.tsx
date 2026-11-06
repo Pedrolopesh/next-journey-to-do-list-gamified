@@ -9,7 +9,7 @@ import { colors, fontSize, size, space } from '@/theme';
 
 type Props = { title: string; children: ReactNode; scroll?: boolean; canGoBack?: boolean };
 
-/** Moldura das telas empilhadas (história, conquistas, configurações): título e botão voltar de 44 pt. */
+/** Frame for stacked screens (story, achievements, settings): title and a 44 pt back button. */
 export function ScreenFrame({ title, children, scroll = true, canGoBack = true }: Props) {
   const { t } = useTranslation();
   const router = useRouter();

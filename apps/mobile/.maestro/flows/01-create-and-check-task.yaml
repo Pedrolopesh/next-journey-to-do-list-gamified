@@ -1,0 +1,39 @@
+# Create a task, check it, see the EXP and coins notice and verify that one modal shows at a time.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow: ../subflows/start.yaml
+- tapOn: 'Tarefas(, tab.*)?'
+- tapOn: 'Novo item'
+- runFlow:
+    file: ../subflows/tap-field.yaml
+    env:
+      FIELD: 'Título'
+- inputText: 'Pagar a conta de luz'
+- hideKeyboard
+# Difficulty selector with stars (Figma) and an X button to close
+- assertVisible: 'Dificuldade'
+- assertVisible: 'Fechar'
+- assertVisible: '(Dificuldade: )?Médio'
+- tapOn: '(Dificuldade: )?Fácil'
+- runFlow: ../subflows/create-item.yaml
+# Creating unlocks "Primeira tarefa": the modal shows after the creation, only one
+- extendedWaitUntil:
+    visible: 'Conquista desbloqueada!'
+    timeout: 15000
+- runFlow: ../subflows/close-achievement.yaml
+- runFlow:
+    file: ../subflows/view-item.yaml
+    env:
+      ITEM: '.*Pagar a conta de luz.*'
+# Check (easy difficulty): the server gives 5 EXP and 1 coin; the notice and the modal come together,
+# so the value is verified on the API
+- tapOn: 'Marcar Pagar a conta de luz'
+- extendedWaitUntil:
+    visible: '\+5 EXP.*moedas|Conquista desbloqueada!'
+    timeout: 15000
+- runFlow: ../subflows/close-achievement.yaml
+- runScript:
+    file: ../scripts/check-player.js
+    env:
+      EXP_TOTAL: '5'
+      COINS: '1'

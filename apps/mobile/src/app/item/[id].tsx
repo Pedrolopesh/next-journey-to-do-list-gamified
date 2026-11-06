@@ -15,7 +15,7 @@ export default function EditItemScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  // O item vem do cache das listas (diário, tarefa ou hábito)
+  // The item comes from the lists cache (daily, task or habit)
   const dailies = useItems('daily');
   const todos = useItems('todo');
   const habits = useItems('habit');

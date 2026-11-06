@@ -1,6 +1,6 @@
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-/** Aceita "8:30", "08:30" e "0830"; devolve HH:MM ou nulo se inválido. Vazio = lembrete desligado. */
+/** Accepts "8:30", "08:30" and "0830"; returns HH:MM or null if invalid. Empty = reminder off. */
 export function parseNotifyTime(input: string): { ok: true; value: string | null } | { ok: false } {
   const text = input.trim();
   if (text === '') return { ok: true, value: null };

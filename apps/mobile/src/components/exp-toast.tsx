@@ -5,7 +5,7 @@ import { colors, fontSize, radius, space } from '@/theme';
 
 type Props = { message: string | null; onHidden: () => void };
 
-/** Toast de EXP a cada check (RF-25): aparece, fica 1,6 s e some. */
+/** EXP toast on every check (RF-25): appears, stays 1.6 s and fades. */
 export function ExpToast({ message, onHidden }: Props) {
   const [opacity] = useState(() => new Animated.Value(0));
 

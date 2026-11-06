@@ -9,7 +9,7 @@ const TIER_COLOR: Record<AchievementTier, string> = {
   4: colors.tier.diamond,
 };
 
-/** Cor da moldura da classe (1 bronze, 2 prata, 3 ouro, 4 diamante) que o servidor manda. */
+/** Color of the class frame (1 bronze, 2 silver, 3 gold, 4 diamond) that the server sends. */
 export function tierColor(tier: AchievementTier): string {
   return TIER_COLOR[tier];
 }

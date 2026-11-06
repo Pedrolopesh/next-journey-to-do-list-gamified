@@ -11,7 +11,7 @@ const base = {
 };
 
 describe('AchievementUnlockedModal', () => {
-  it('mostra o título, a conquista e o incentivo', async () => {
+  it('shows the title, the achievement and the encouragement', async () => {
     await render(
       <AchievementUnlockedModal {...base} onContinue={jest.fn()} onSeeAll={jest.fn()} />,
     );
@@ -21,7 +21,7 @@ describe('AchievementUnlockedModal', () => {
     expect(screen.getByText(/ainda há muitas conquistas/)).toBeTruthy();
   });
 
-  it('continuar e fechar só fecham; ver todas abre a galeria', async () => {
+  it('continue and close only close; see all opens the gallery', async () => {
     const onContinue = jest.fn();
     const onSeeAll = jest.fn();
     await render(
@@ -35,7 +35,7 @@ describe('AchievementUnlockedModal', () => {
     expect(onSeeAll).toHaveBeenCalledTimes(1);
   });
 
-  it('sem descrição, não mostra linha vazia', async () => {
+  it('without a description, it does not show an empty line', async () => {
     await render(
       <AchievementUnlockedModal
         {...base}

@@ -11,8 +11,8 @@ import { Insignia } from './pixel-art';
 type Props = { achievement: Achievement | null; onClose: () => void };
 
 /**
- * Detalhes da conquista no mesmo modal de quando ela é ganha (topo colorido, raios e insígnia):
- * conquistada pinta na cor da classe; bloqueada fica neutra, com o critério e o progresso.
+ * Achievement details in the same modal as when it is earned (colored top, rays and badge):
+ * an earned one paints in the class color; a locked one stays neutral, with the criterion and the progress.
  */
 export function AchievementSheet({ achievement, onClose }: Props) {
   const { t } = useTranslation();

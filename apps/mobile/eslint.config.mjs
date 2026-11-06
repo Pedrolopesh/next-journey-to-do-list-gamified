@@ -7,7 +7,7 @@ import expo from 'eslint-config-expo/flat.js';
 export default defineConfig(
   expo,
   common,
-  // .maestro/scripts roda no motor do Maestro (globais próprios: http, json), não em Node
+  // .maestro/scripts runs in the Maestro engine (its own globals: http, json), not in Node
   { ignores: ['dist/**', '.expo/**', 'expo-env.d.ts', '.maestro/scripts/**'] },
   {
     // O lint-staged roda da raiz do monorepo: o resolver precisa do tsconfig do app por caminho

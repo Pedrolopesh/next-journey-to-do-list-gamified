@@ -1,7 +1,7 @@
 export type ActionHooks = {
-  /** Mensagem de sucesso. Omitir só quando o próprio resultado já é visível (ex.: a tela muda). */
+  /** Success message. Omit only when the result is already visible (e.g. the screen changes). */
   success?: string;
-  /** Texto do erro. Recebe o erro para escolher a mensagem certa (rede, validação, conflito). */
+  /** Error text. Receives the error to pick the right message (network, validation, conflict). */
   error: (error: unknown) => string;
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
@@ -11,8 +11,8 @@ export type ActionHooks = {
 };
 
 /**
- * Executa uma ação garantindo o ciclo completo: carregando -> sucesso ou erro, sempre com retorno
- * ao usuário. Devolve `true` se deu certo. Nunca lança.
+ * Runs an action guaranteeing the full cycle: loading -> success or error, always with feedback
+ * to the user. Returns `true` on success. Never throws.
  */
 export async function runAction(
   action: () => Promise<unknown>,

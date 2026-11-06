@@ -10,13 +10,13 @@ import {
 export type TokenAccess = {
   getAccess: () => string | null;
   getRefresh: () => string | null;
-  /** Guarda os tokens novos (e o usuário) depois de um refresh bem-sucedido. */
+  /** Stores the new tokens (and the user) after a successful refresh. */
   onRefreshed: (response: AuthResponse) => void;
-  /** O refresh falhou: a sessão acabou. */
+  /** The refresh failed: the session is over. */
   onSessionExpired: () => void;
 };
 
-/** Parte do logger que o cliente HTTP usa (o logger real está em src/logging). */
+/** Part of the logger the HTTP client uses (the real logger lives in src/logging). */
 export type HttpLog = {
   debug: (event: string, data?: unknown) => void;
   info: (event: string, data?: unknown) => void;
@@ -27,7 +27,7 @@ type Options = {
   baseURL: string;
   tokens: TokenAccess;
   log?: HttpLog;
-  /** Só para testes. */
+  /** Tests only. */
   adapter?: AxiosAdapter;
 };
 
@@ -38,13 +38,13 @@ const isAuthPath = (url: string | undefined): boolean =>
   AUTH_PATHS.some((path) => url?.includes(path));
 
 /**
- * 429 em texto/HTML vem do proxy, antes de a API processar a chamada: repetir é seguro, até para
- * POST. O 429 da própria API (JSON com `code`) não se repete, para não gastar mais do limite.
+ * A 429 in text/HTML comes from the proxy, before the API processed the call: retrying is safe, even for
+ * POST. The API's own 429 (JSON with `code`) is not retried, to avoid spending more of the limit.
  */
 const MAX_RATE_RETRIES = 2;
 const MAX_RATE_WAIT_MS = 5_000;
 
-/** Espera do 429: `Retry-After` (segundos ou data) ou 0,5 s, 1 s... Passou do teto: null, desiste. */
+/** 429 wait: `Retry-After` (seconds or date) or 0.5 s, 1 s... Over the cap: null, give up. */
 export function rateLimitWait(
   retryAfter: unknown,
   attempt: number,
@@ -64,12 +64,12 @@ export function rateLimitWait(
 export type RefreshedTokens = AuthTokens;
 
 /**
- * Cliente HTTP: injeta o access token e, num 401, renova pelo refresh token UMA vez e refaz a
- * chamada. Requisições concorrentes que levam 401 compartilham a mesma renovação (fila).
+ * HTTP client: injects the access token and, on a 401, renews with the refresh token ONCE and repeats
+ * the call. Concurrent requests that get a 401 share the same renewal (queue).
  */
 export function createHttpClient({ baseURL, tokens, adapter, log }: Options): AxiosInstance {
   const client = create({ baseURL, timeout: 15_000, ...(adapter ? { adapter } : {}) });
-  // Sem interceptors: o próprio refresh não pode cair no laço do 401
+  // No interceptors: the refresh itself must not fall into the 401 loop
   const bare = create({ baseURL, timeout: 15_000, ...(adapter ? { adapter } : {}) });
 
   let refreshing: Promise<string> | undefined;
@@ -92,7 +92,7 @@ export function createHttpClient({ baseURL, tokens, adapter, log }: Options): Ax
     return refreshing;
   };
 
-  // Registro de cada chamada: o que foi enviado, o que voltou e quanto demorou
+  // Log of each call: what was sent, what came back and how long it took
   if (log) {
     const started = new WeakMap<object, { id: number; at: number }>();
     let counter = 0;
@@ -147,8 +147,8 @@ export function createHttpClient({ baseURL, tokens, adapter, log }: Options): Ax
   }
 
   client.interceptors.request.use((config) => {
-    // Na repetição depois do refresh o cabeçalho já traz o token novo; a sessão pode ainda não ter
-    // gravado esse token (grava no armazenamento seguro antes), então não se sobrescreve.
+    // On the retry after the refresh the header already carries the new token; the session may not have
+    // saved that token yet (it saves to secure storage first), so it is not overwritten.
     if ((config as RetriableConfig)._retried) return config;
     const access = tokens.getAccess();
     if (access && !isAuthPath(config.url)) config.headers.set('Authorization', `Bearer ${access}`);

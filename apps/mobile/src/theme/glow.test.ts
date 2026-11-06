@@ -2,15 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import { mix, rgba, softGlow, softGlowOutline } from './glow';
 
-describe('brilho suave', () => {
-  it('converte hex em rgba e mistura cores', () => {
+describe('soft glow', () => {
+  it('converts hex to rgba and mixes colors', () => {
     expect(rgba('#7c3aed', 0.5)).toBe('rgba(124, 58, 237, 0.5)');
     expect(mix('#000000', '#ffffff', 0)).toBe('#000000');
     expect(mix('#000000', '#ffffff', 1)).toBe('#ffffff');
     expect(mix('#7c3aed', '#16213e', 0.18)).toBe('#6a36ce');
   });
 
-  it('em repouso tem realce, sombra e halo; apertado encurta o brilho', () => {
+  it('at rest it has a highlight, shadow and halo; pressed shortens the glow', () => {
     const rest = softGlow('#7c3aed');
     const pressed = softGlow('#7c3aed', { pressed: true });
     expect(rest.boxShadow).toHaveLength(3);
@@ -19,14 +19,14 @@ describe('brilho suave', () => {
     expect(rest.experimental_backgroundImage).toContain('linear-gradient');
   });
 
-  it('a força reduz o halo e é limitada entre 0 e 1', () => {
+  it('the strength reduces the halo and is clamped between 0 and 1', () => {
     const weak = JSON.stringify(softGlow('#7c3aed', { strength: 0.2 }).boxShadow);
     const strong = JSON.stringify(softGlow('#7c3aed', { strength: 5 }).boxShadow);
     expect(weak).not.toBe(strong);
     expect(strong).toBe(JSON.stringify(softGlow('#7c3aed').boxShadow));
   });
 
-  it('o contornado tem borda na cor e halo; apertado enche e encurta o brilho', () => {
+  it('the outlined one has a colored border and a halo; pressed fills and shortens the glow', () => {
     const rest = softGlowOutline('#7c3aed');
     const pressed = softGlowOutline('#7c3aed', { pressed: true });
     expect(rest.borderWidth).toBe(1.5);

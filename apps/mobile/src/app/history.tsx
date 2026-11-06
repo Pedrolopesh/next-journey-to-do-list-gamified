@@ -18,9 +18,9 @@ import { toast } from '@/features/feedback/toast-store';
 import { colors, fontSize, radius, size, space } from '@/theme';
 
 /**
- * Histórico: as tarefas concluídas, que saíram da lista de tarefas, da mais recente para a mais
- * antiga. Cada linha tem o mesmo check das listas (desmarcar devolve a tarefa à lista; marcar de
- * novo a conclui outra vez) e abre os detalhes na própria tela.
+ * History: the completed tasks, which left the task list, most recent first. Each row has the
+ * same check as the lists (unchecking returns the task to the list; checking again
+ * completes it once more) and opens the details on the same screen.
  */
 export default function HistoryScreen() {
   const { t } = useTranslation();
@@ -28,11 +28,11 @@ export default function HistoryScreen() {
   const categories = useCategories();
   const undo = useUndoCheck();
   const check = useCheckItem('todo');
-  // O dia é o do fuso do perfil (regra 8), não o do aparelho
+  // The day is the profile's time zone day (rule 8), not the device's
   const timeZone = useMe().data?.user.timezone;
   const [expanded, setExpanded] = useState<string | null>(null);
-  // Linhas desmarcadas nesta visita: saem do histórico no servidor, mas ficam na tela para poder
-  // marcar de novo
+  // Rows unchecked in this visit: they leave the history on the server, but stay on screen so they can
+  // be checked again
   const [unchecked, setUnchecked] = useState<Record<string, HistoryItem>>({});
 
   const rows = history.data?.pages.flatMap((page) => page.items) ?? [];
@@ -62,7 +62,7 @@ export default function HistoryScreen() {
           else toast.info(t('feedback.undoneNoCoins'));
         },
         onError: (cause) => {
-          // Já estava desfeito (toque repetido): o resultado é o esperado, não é erro
+          // Already undone (repeated tap): the result is the expected one, not an error
           if (toApiError(cause)?.code === 'CHECK_ALREADY_REVERTED') {
             setUnchecked((current) => ({ ...current, [row.id]: row }));
             toast.info(t('feedback.undone'));

@@ -37,7 +37,7 @@ pnpm --filter @nextjourney/mobile test:ui
 O script `apps/mobile/scripts/ui-tests.mjs` cria uma conta de teste nova na API a cada execução (e-mail, senha e código aleatórios, só na memória; nada fica no repositório), confirma o e-mail dela direto no banco local (`apps/api/prisma/confirm-test-email.ts`) e grava um código de entrada conhecido (`apps/api/prisma/set-test-code.ts`); os dois utilitários recusam banco não local. O app entra pelo código; a senha serve só para as conferências por API e passa para o Maestro. Para rodar só alguns fluxos (o de entrada vai sempre primeiro, porque loga na conta nova; os fluxos seguintes dependem dos anteriores, então rode sempre em sequência a partir do 00, sem pular):
 
 ```bash
-UI_FLOW=.maestro/flows/00-entrar-e-onboarding.yaml,.maestro/flows/01-criar-e-marcar-tarefa.yaml \
+UI_FLOW=.maestro/flows/00-sign-in-and-onboarding.yaml,.maestro/flows/01-create-and-check-task.yaml \
   pnpm --filter @nextjourney/mobile test:ui
 ```
 
@@ -54,10 +54,10 @@ UI_FLOW=.maestro/flows/00-entrar-e-onboarding.yaml,.maestro/flows/01-criar-e-mar
 Convenções:
 
 - Textos e rótulos vêm do `pt-BR.json`; o fluxo usa o mesmo texto que o usuário vê. Mudou o texto, ajuste o fluxo.
-- Avisos que somem em poucos segundos (toast) não são conferidos pela tela; o fluxo confere o estado na API (`.maestro/scripts/conferir-jogador.js`).
-- Android e iOS leem a tela de jeitos diferentes: no iOS a aba aparece como `Perfil, tab, 5 of 5`, o cartão de item ou conquista é um rótulo só (`Abrir <título>`, `<nome>. <descrição> bloqueada`) e o rótulo de um campo não recebe o foco. Por isso os fluxos usam expressões (`Perfil(, tab.*)?`, `.*Pagar a conta de luz.*`) e, onde o comportamento muda, `when: platform:` (`subflows/tocar-campo.yaml`, `subflows/voltar.yaml`). Fluxo novo precisa passar nos dois.
-- Em tela pequena (Android 1280 px) o botão "Criar item" e a lista ficam abaixo da dobra: `subflows/criar-item.yaml` e `subflows/ver-item.yaml` rolam até eles e os centralizam (colado na borda, o toque cai na barra de navegação).
-- Todo fluxo começa por `subflows/inicio.yaml`, que fecha modal, formulário ou tela deixados abertos por uma execução que falhou.
+- Avisos que somem em poucos segundos (toast) não são conferidos pela tela; o fluxo confere o estado na API (`.maestro/scripts/check-player.js`).
+- Android e iOS leem a tela de jeitos diferentes: no iOS a aba aparece como `Perfil, tab, 5 of 5`, o cartão de item ou conquista é um rótulo só (`Abrir <título>`, `<nome>. <descrição> bloqueada`) e o rótulo de um campo não recebe o foco. Por isso os fluxos usam expressões (`Perfil(, tab.*)?`, `.*Pagar a conta de luz.*`) e, onde o comportamento muda, `when: platform:` (`subflows/tap-field.yaml`, `subflows/back.yaml`). Fluxo novo precisa passar nos dois.
+- Em tela pequena (Android 1280 px) o botão "Criar item" e a lista ficam abaixo da dobra: `subflows/create-item.yaml` e `subflows/view-item.yaml` rolam até eles e os centralizam (colado na borda, o toque cai na barra de navegação).
+- Todo fluxo começa por `subflows/start.yaml`, que fecha modal, formulário ou tela deixados abertos por uma execução que falhou.
 - Os fluxos dependem do anterior (mesma conta, mesma ordem). A ordem fica em `.maestro/config.yaml`.
 - Relatório da última execução: `apps/mobile/.maestro/relatorio.xml` (ignorado pelo Git).
 

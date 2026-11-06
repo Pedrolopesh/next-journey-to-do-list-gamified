@@ -5,8 +5,8 @@ import { useSessionStore } from '@/auth/session-store';
 import { isOnboardingComplete } from '@/features/onboarding/next-step';
 
 /**
- * Expo Router 58 não cai mais sozinho no primeiro grupo liberado quando a rota pedida está
- * protegida (ex.: "/" sem login, ou depois de sair da conta). Leva para o grupo certo.
+ * Expo Router 58 no longer falls back on its own to the first unlocked group when the requested route is
+ * protected (e.g. "/" without login, or after signing out). Sends the person to the right group.
  */
 export default function NotFound() {
   const status = useSessionStore((state) => state.status);

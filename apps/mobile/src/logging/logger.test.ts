@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createLogger, type LogEntry, redact } from './logger';
 
 describe('redact', () => {
-  it('esconde senha, token, e-mail e cabeçalho de autorização em qualquer nível', () => {
+  it('hides password, token, email and authorization header at any level', () => {
     const result = redact({
       email: 'a@b.com',
       password: 'x',
@@ -14,7 +14,7 @@ describe('redact', () => {
     expect(result).toMatchObject({ nested: { ok: 1 } });
   });
 
-  it('corta textos longos, listas grandes e estruturas profundas', () => {
+  it('cuts long texts, big lists and deep structures', () => {
     const long = 'a'.repeat(500);
     expect((redact(long) as string).length).toBeLessThan(260);
     expect((redact(Array.from({ length: 50 }, (_, i) => i)) as unknown[]).length).toBe(11);
@@ -34,18 +34,18 @@ describe('createLogger', () => {
     return { log, out };
   };
 
-  it('registra evento com hora, nível e dados redigidos', () => {
+  it('records an event with time, level and redacted data', () => {
     const { log, out } = setup(true);
     log.info('auth.login', { password: 'x', n: 1 });
     expect(out[0]).toEqual({
       at: '2026-10-10T12:00:00.000Z',
       level: 'info',
       event: 'auth.login',
-      data: { password: '[REDACTED]', n: 1 }, // scan-allow: valor mascarado, não é senha
+      data: { password: '[REDACTED]', n: 1 }, // scan-allow: masked value, not a password
     });
   });
 
-  it('debug só aparece no modo verboso', () => {
+  it('debug only shows in verbose mode', () => {
     const quiet = setup(false);
     quiet.log.debug('http.body', { a: 1 });
     expect(quiet.out).toHaveLength(0);
@@ -54,7 +54,7 @@ describe('createLogger', () => {
     expect(loud.out).toHaveLength(1);
   });
 
-  it('guarda só os últimos registros', () => {
+  it('keeps only the latest records', () => {
     const { log } = setup(true);
     for (let i = 0; i < 5; i++) log.info(`e${i}`);
     expect(log.recent().map((entry) => entry.event)).toEqual(['e2', 'e3', 'e4']);

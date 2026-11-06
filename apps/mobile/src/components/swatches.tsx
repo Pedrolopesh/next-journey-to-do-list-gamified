@@ -3,14 +3,14 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { colors, size, space } from '@/theme';
 
 type Props = {
-  /** Nome da cor e a cor de exemplo (hex) de cada bolinha. */
+  /** Color name and the sample color (hex) of each dot. */
   options: readonly { value: string; color: string; label: string }[];
   value: string | null;
   onChange: (value: string) => void;
   label: string;
 };
 
-/** Escolha de cor por bolinhas (mais direta que uma lista de nomes). Alvo de toque de 44 pt. */
+/** Color choice by dots (more direct than a list of names). 44 pt touch target. */
 export function Swatches({ options, value, onChange, label }: Props) {
   return (
     <ScrollView

@@ -47,7 +47,7 @@ describe('DeleteAccountScreen', () => {
     useToastStore.setState({ current: null });
   });
 
-  it('conta com senha: senha vazia mostra erro de campo e toast, sem chamar a API', async () => {
+  it('account with password: empty password shows a field error and a toast, without calling the API', async () => {
     (useMe as jest.Mock).mockReturnValue(meWith(true));
     await renderScreen();
     await fireEvent.press(screen.getByLabelText('Excluir minha conta'));
@@ -56,7 +56,7 @@ describe('DeleteAccountScreen', () => {
     expect(deleteAccount).not.toHaveBeenCalled();
   });
 
-  it('conta com senha: envia a senha e encerra a sessão local', async () => {
+  it('account with password: sends the password and ends the local session', async () => {
     (useMe as jest.Mock).mockReturnValue(meWith(true));
     (deleteAccount as jest.Mock).mockResolvedValue(undefined);
     const clear = jest.spyOn(useSessionStore.getState(), 'clear').mockResolvedValue();
@@ -73,7 +73,7 @@ describe('DeleteAccountScreen', () => {
     expect(useToastStore.getState().current?.message).toBe('Conta excluída.');
   });
 
-  it('prova recusada (REAUTH_FAILED): avisa e não encerra a sessão', async () => {
+  it('proof refused (REAUTH_FAILED): warns and does not end the session', async () => {
     (useMe as jest.Mock).mockReturnValue(meWith(true));
     (deleteAccount as jest.Mock).mockRejectedValue(
       new AxiosError('x', 'ERR_BAD_REQUEST', undefined, undefined, {
@@ -98,14 +98,14 @@ describe('DeleteAccountScreen', () => {
     expect(clear).not.toHaveBeenCalled();
   });
 
-  it('conta só social: pede o provedor em vez da senha', async () => {
+  it('social-only account: asks for the provider instead of the password', async () => {
     (useMe as jest.Mock).mockReturnValue(meWith(false));
     await renderScreen();
     expect(screen.queryByLabelText('Digite sua senha para confirmar')).toBeNull();
     expect(screen.getByLabelText('Confirmar com Google e excluir')).toBeTruthy();
   });
 
-  it('se o /me falha, avisa e oferece tentar de novo (nunca fica girando)', async () => {
+  it('if /me fails, warns and offers a retry (never keeps spinning)', async () => {
     const refetch = jest.fn();
     (useMe as jest.Mock).mockReturnValue({ data: undefined, isError: true, refetch });
     await renderScreen();

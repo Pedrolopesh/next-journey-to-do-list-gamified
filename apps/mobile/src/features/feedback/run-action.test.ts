@@ -17,21 +17,21 @@ function setup() {
 }
 
 describe('runAction', () => {
-  it('mostra carregando, depois sucesso, e para de carregar', async () => {
+  it('shows loading, then success, and stops loading', async () => {
     const { events, hooks } = setup();
     const ok = await runAction(() => Promise.resolve(1), { ...hooks, success: 'Salvo' });
     expect(ok).toBe(true);
     expect(events).toEqual(['loading:true', 'ok:Salvo', 'loading:false']);
   });
 
-  it('mostra o erro e nunca lança', async () => {
+  it('shows the error and never throws', async () => {
     const { events, hooks } = setup();
     const ok = await runAction(() => Promise.reject(new Error('rede')), hooks);
     expect(ok).toBe(false);
     expect(events).toEqual(['loading:true', 'erro:falhou: rede', 'loading:false']);
   });
 
-  it('sem mensagem de sucesso não dispara toast de sucesso', async () => {
+  it('without a success message it does not fire a success toast', async () => {
     const { events, hooks } = setup();
     await runAction(() => Promise.resolve(), hooks);
     expect(events).toEqual(['loading:true', 'loading:false']);

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { ALLOWED_LICENSES, CREDITS } from './credits';
 
-describe('créditos', () => {
-  it('toda entrada tem ativo, autor e licença', () => {
+describe('credits', () => {
+  it('every entry has an asset, an author and a license', () => {
     expect(CREDITS.length).toBeGreaterThan(0);
     for (const credit of CREDITS) {
       expect(credit.asset).not.toBe('');
@@ -12,13 +12,13 @@ describe('créditos', () => {
     }
   });
 
-  it('só tem licença permissiva (nada de CC-BY-SA ou GPL)', () => {
+  it('has only permissive licenses (no CC-BY-SA or GPL)', () => {
     for (const credit of CREDITS) {
       expect(ALLOWED_LICENSES as readonly string[], credit.asset).toContain(credit.license);
     }
   });
 
-  it('inclui os créditos da arte LPC', () => {
+  it('includes the LPC art credits', () => {
     expect(CREDITS.length).toBeGreaterThan(20);
     expect(CREDITS.some((credit) => credit.author.includes('Sharm'))).toBe(true);
   });

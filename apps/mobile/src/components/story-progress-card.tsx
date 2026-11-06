@@ -11,13 +11,13 @@ import { LevelInfoModal } from './info-modals';
 import { PixelArt } from './pixel-art';
 
 type Props = {
-  /** Mostra o saldo de moedas no rodapé (as abas mostram; a Home já tem o indicador de moedas). */
+  /** Shows the coin balance in the footer (the tabs show it; the Home already has the coins indicator). */
   showCoins?: boolean;
 };
 
 type ViewProps = {
   name: string;
-  /** Capítulo atual ("Capítulo 1: A chegada") ou "História concluída". */
+  /** Current chapter ("Capítulo 1: A chegada") or "História concluída". */
   subtitle: string;
   chapter: number;
   completed: boolean;
@@ -25,12 +25,12 @@ type ViewProps = {
   coins: number;
   expInLevel: number;
   expForNextLevel: number;
-  /** Quanto do capítulo atual já está cheio, de 0 a 1. */
+  /** How full the current chapter already is, from 0 to 1. */
   ratio: number;
   showCoins?: boolean;
 };
 
-/** Um trecho da barra: o preenchimento anima quando o valor muda (EXP subindo). */
+/** One segment of the bar: the fill animates when the value changes (EXP going up). */
 function Segment({ fill }: { fill: number }) {
   const [value] = useState(() => new Animated.Value(fill));
   useEffect(() => {
@@ -49,8 +49,8 @@ function Segment({ fill }: { fill: number }) {
 }
 
 /**
- * Avanço da história, só a parte visual (sem dados do servidor): a Home, as abas e a demonstração
- * da introdução usam este mesmo componente, então a aparência muda em todos de uma vez.
+ * Story progress, visual part only (no server data): the Home, the tabs and the intro demo
+ * use this same component, so the look changes in all of them at once.
  */
 export function StoryProgressView({
   name,
@@ -112,7 +112,7 @@ export function StoryProgressView({
   );
 }
 
-/** Avanço da história do usuário, o mesmo na Home e nas abas (dados do servidor). */
+/** The user's story progress, the same on the Home and in the tabs (server data). */
 export function StoryProgressCard({ showCoins = false }: Props) {
   const { t } = useTranslation();
   const { data: me } = useMe();

@@ -23,7 +23,7 @@ type Props = {
   submitting: boolean;
   error: string | null;
   onSubmit: (character: Character) => void;
-  /** Avisa cada mudança de aparência para a prévia (banner) mostrar a combinação. */
+  /** Reports each appearance change so the preview (banner) shows the combination. */
   onPreview?: (character: CharacterLayers) => void;
 };
 
@@ -45,7 +45,7 @@ export function CharacterForm({
     initial?.characterClass ?? null,
   );
   const [formError, setFormError] = useState<string | null>(null);
-  // Validação reprovada também avisa por toast, para o botão nunca "não fazer nada"
+  // Failed validation also notifies by toast, so the button never "does nothing"
   useEffect(() => {
     if (formError) toast.error(formError);
   }, [formError]);

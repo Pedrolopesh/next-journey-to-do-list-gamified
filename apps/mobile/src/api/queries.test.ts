@@ -35,11 +35,11 @@ const me = (exp: number, next: number): MeResponse => ({
 });
 
 describe('chapterProgress', () => {
-  it('é a fração de EXP dentro do nível (cada nível conclui um capítulo)', () => {
+  it('is the fraction of EXP within the level (each level completes a chapter)', () => {
     expect(chapterProgress(me(25, 50))).toBe(0.5);
     expect(chapterProgress(me(0, 50))).toBe(0);
   });
-  it('sem dados vale 0 e nunca passa de 1', () => {
+  it('without data it is 0 and never goes above 1', () => {
     expect(chapterProgress(undefined)).toBe(0);
     expect(chapterProgress(me(80, 50))).toBe(1);
   });

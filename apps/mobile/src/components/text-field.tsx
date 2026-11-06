@@ -7,7 +7,7 @@ import { colors, fontSize, radius, size, space } from '@/theme';
 type Props = Omit<TextInputProps, 'style'> & {
   label: string;
   error?: string | undefined;
-  /** Campo de senha: mostra o botão mostrar/ocultar. */
+  /** Password field: shows the show/hide button. */
   secret?: boolean;
 };
 

@@ -30,7 +30,7 @@ const WEEK_ROWS = [
 const DEFAULT_DAYS = [1, 2, 3, 4, 5];
 
 type Props = {
-  /** Item existente (edição) ou nulo (criação). */
+  /** Existing item (edit) or null (create). */
   item: Item | null;
   initialType: ItemType;
   submitting: boolean;
@@ -42,11 +42,11 @@ type Props = {
   draft?: ItemDraft | null;
   /** New item only: called with the fields as the person types, to keep the draft. */
   onDraftChange?: (draft: ItemDraft) => void;
-  /** Fecha o modal (botão X no canto). */
+  /** Closes the modal (X button in the corner). */
   onClose?: () => void;
 };
 
-/** Formulário de criar e editar item. Validado com o mesmo schema que a API usa. */
+/** Create and edit item form. Validated with the same schema the API uses. */
 export function ItemForm({
   item,
   initialType,
@@ -79,7 +79,7 @@ export function ItemForm({
   const [due, setDue] = useState<DuePreset>(item?.dueAt ? 'today' : (restored?.due ?? 'none'));
   const [dueTouched, setDueTouched] = useState(restored?.dueTouched ?? false);
   const [formError, setFormError] = useState<string | null>(null);
-  // Validação reprovada também avisa por toast, para o botão nunca "não fazer nada"
+  // Failed validation also notifies by toast, so the button never "does nothing"
   useEffect(() => {
     if (formError) toast.error(formError);
   }, [formError]);
@@ -221,7 +221,7 @@ export function ItemForm({
                       label={t(`itemForm.weekday.${day}`)}
                       variant={selected ? 'primary' : 'secondary'}
                       onPress={() => {
-                        // sempre pelo menos um dia
+                        // always at least one day
                         setDays((current) =>
                           selected
                             ? current.length > 1

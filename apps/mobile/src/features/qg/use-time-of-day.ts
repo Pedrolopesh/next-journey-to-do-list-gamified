@@ -5,7 +5,7 @@ import { resolveTime, type TimeMode } from './options';
 
 const CHECK_EVERY_MS = 60_000;
 
-/** Hora do dia do QG; no modo automático reavalia o relógio a cada minuto. */
+/** QG time of day; in automatic mode it re-reads the clock every minute. */
 export function useTimeOfDay(mode: TimeMode): TimeOfDay {
   const [value, setValue] = useState<TimeOfDay>(() => resolveTime(mode, new Date()));
   useEffect(() => {

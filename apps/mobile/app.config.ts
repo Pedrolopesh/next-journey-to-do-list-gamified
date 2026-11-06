@@ -1,9 +1,9 @@
 import type { ExpoConfig } from 'expo/config';
 
-// APP_VARIANT=production vem do perfil `production` do EAS (eas.json). Qualquer outro valor é dev.
+// APP_VARIANT=production comes from the EAS `production` profile (eas.json). Any other value is dev.
 const IS_PROD = process.env.APP_VARIANT === 'production';
 
-// Bundle id e package definidos em 2026-10-02. Imutáveis a partir do primeiro build iOS publicado.
+// Bundle id and package set on 2026-10-02. Immutable from the first published iOS build.
 const APP_ID = 'br.com.wetechhub.app';
 const appId = IS_PROD ? APP_ID : `${APP_ID}.dev`;
 
@@ -22,7 +22,7 @@ const config: ExpoConfig = {
     bundleIdentifier: appId,
     icon: './assets/expo.icon',
     supportsTablet: false,
-    // Sign in with Apple (exigência da App Store quando há login social)
+    // Sign in with Apple (App Store requirement when there is social login)
     usesAppleSignIn: true,
   },
   android: {
@@ -49,18 +49,18 @@ const config: ExpoConfig = {
       },
     ],
   ],
-  // (o plugin do Google entra abaixo, só se o client id iOS estiver configurado)
+  // (the Google plugin comes in below, only if the iOS client id is configured)
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
   },
-  // Só valores públicos. EXPO_PUBLIC_* é embutido no app: nunca coloque segredo aqui.
+  // Public values only. EXPO_PUBLIC_* is bundled into the app: never put a secret here.
   extra: {
     appVariant: IS_PROD ? 'production' : 'development',
   },
 };
 
-// O plugin do Google Sign-In precisa do esquema de URL do client id iOS (público, não é segredo).
+// The Google Sign-In plugin needs the URL scheme of the iOS client id (public, not a secret).
 const googleIosUrlScheme = process.env.GOOGLE_IOS_URL_SCHEME;
 if (googleIosUrlScheme) {
   config.plugins = [

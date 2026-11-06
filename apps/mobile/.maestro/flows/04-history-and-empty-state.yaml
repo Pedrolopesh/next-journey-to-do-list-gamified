@@ -1,8 +1,8 @@
-# Tarefa concluída vai para o histórico (Perfil) e o aviso aparece no rodapé de Tarefas;
-# desfazer pelo histórico devolve a tarefa à lista e o histórico fica vazio.
+# A completed task goes to the history (Profile) and the notice shows in the Tasks footer;
+# undoing from the history returns the task to the list and the history becomes empty.
 appId: br.com.wetechhub.app.dev
 ---
-- runFlow: ../subflows/inicio.yaml
+- runFlow: ../subflows/start.yaml
 - tapOn: 'Tarefas(, tab.*)?'
 - scrollUntilVisible:
     element: 'Tarefas concluídas saem desta lista e ficam no histórico, em Perfil.'

@@ -22,7 +22,7 @@ jest.mock('expo-haptics', () => ({
 }));
 
 describe('IntroCheckDemo', () => {
-  it('marcar mostra o toast e soma as moedas; desmarcar tira moedas e mantém o EXP', async () => {
+  it('checking shows the toast and adds the coins; unchecking removes coins and keeps the EXP', async () => {
     const warn = jest.spyOn(toast, 'warning').mockImplementation(() => undefined);
     await render(<IntroCheckDemo />);
 
@@ -39,7 +39,7 @@ describe('IntroCheckDemo', () => {
     warn.mockRestore();
   });
 
-  it('marcar de novo devolve as moedas, mas o EXP só conta uma vez', async () => {
+  it('checking again gives the coins back, but the EXP only counts once', async () => {
     jest.spyOn(toast, 'warning').mockImplementation(() => undefined);
     await render(<IntroCheckDemo />);
     await fireEvent.press(screen.getByRole('checkbox', { name: /Marcar Estudar/ }));
@@ -50,14 +50,14 @@ describe('IntroCheckDemo', () => {
 });
 
 describe('intro slides', () => {
-  it('mostra os três tipos de item', async () => {
+  it('shows the three kinds of item', async () => {
     await render(<IntroItemTypes />);
     expect(screen.getByText('Diários')).toBeTruthy();
     expect(screen.getByText('Tarefas')).toBeTruthy();
     expect(screen.getByText('Hábitos')).toBeTruthy();
   });
 
-  it('mostra as recompensas só com imagem, sem os textos EXP e Moedas', async () => {
+  it('shows the rewards with images only, without the EXP and Moedas texts', async () => {
     await render(<IntroRewards />);
     expect(screen.getByLabelText(/EXP: a barra enche/)).toBeTruthy();
     expect(screen.getByLabelText(/Moedas: cada item/)).toBeTruthy();
