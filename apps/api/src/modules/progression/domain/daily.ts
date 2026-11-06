@@ -1,8 +1,8 @@
 import type { LocalDate } from '@nextjourney/contracts';
 
-import { addDays, diaDaSemana } from './dates.js';
+import { addDays, dayOfWeek } from './dates.js';
 
-export type Diario = {
+export type Daily = {
   /** Scheduled days, from 0 (Sunday) to 6 (Saturday). "Every day" means all 7. */
   scheduleDays: readonly number[];
   createdOn: LocalDate;
@@ -11,43 +11,43 @@ export type Diario = {
 
 const MAX_LOOKBACK_DAYS = 3660;
 
-function agendadoEm(diario: Pick<Diario, 'scheduleDays'>, dia: LocalDate): boolean {
-  return diario.scheduleDays.includes(diaDaSemana(dia));
+function isScheduledOn(daily: Pick<Daily, 'scheduleDays'>, day: LocalDate): boolean {
+  return daily.scheduleDays.includes(dayOfWeek(day));
 }
 
 /**
- * A daily is overdue when its last scheduled day before today ended without a check. Takes `hoje`
+ * A daily is overdue when its last scheduled day before today ended without a check. Takes `today`
  * as an argument and never reads the clock. Rules: docs/api/progressao-e-jogo.md.
  */
-export function estaAtrasado(diario: Diario, hoje: LocalDate): boolean {
+export function isOverdue(daily: Daily, today: LocalDate): boolean {
   for (let i = 1; i <= 7; i += 1) {
-    const dia = addDays(hoje, -i);
-    if (dia < diario.createdOn) return false;
-    if (agendadoEm(diario, dia)) {
-      return diario.lastCheckedOn === null || diario.lastCheckedOn < dia;
+    const day = addDays(today, -i);
+    if (day < daily.createdOn) return false;
+    if (isScheduledOn(daily, day)) {
+      return daily.lastCheckedOn === null || daily.lastCheckedOn < day;
     }
   }
   return false;
 }
 
-export type HistoricoDiario = Pick<Diario, 'scheduleDays' | 'createdOn'> & {
+export type DailyHistory = Pick<Daily, 'scheduleDays' | 'createdOn'> & {
   /** Local days with an active (not undone) check. */
-  diasMarcados: readonly LocalDate[];
+  checkedDays: readonly LocalDate[];
 };
 
 /**
  * Streak of consecutive days with a check. Checking an overdue daily today restarts it at 1. Rules:
  * docs/api/progressao-e-jogo.md.
  */
-export function calcularStreak(historico: HistoricoDiario, hoje: LocalDate): number {
-  const marcados = new Set(historico.diasMarcados);
+export function calculateStreak(historico: DailyHistory, today: LocalDate): number {
+  const checkedSets = new Set(historico.checkedDays);
   let streak = 0;
   for (let i = 0; i < MAX_LOOKBACK_DAYS; i += 1) {
-    const dia = addDays(hoje, -i);
-    if (dia < historico.createdOn) break;
-    if (marcados.has(dia)) {
+    const day = addDays(today, -i);
+    if (day < historico.createdOn) break;
+    if (checkedSets.has(day)) {
       streak += 1;
-    } else if (i > 0 && agendadoEm(historico, dia)) {
+    } else if (i > 0 && isScheduledOn(historico, day)) {
       break;
     }
   }

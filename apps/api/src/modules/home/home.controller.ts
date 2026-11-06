@@ -5,7 +5,7 @@ import { Clock } from '../../common/clock.js';
 import { CurrentUserId } from '../../common/current-user.decorator.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { ItemsService } from '../items/items.service.js';
-import { diaLocal, expParaNivel } from '../progression/domain/index.js';
+import { expForLevel, localDay } from '../progression/domain/index.js';
 import { GameConfigService } from '../progression/game-config.service.js';
 import { StoriesService } from '../stories/stories.service.js';
 
@@ -27,7 +27,7 @@ export class HomeController {
       select: { timezone: true },
     });
     const now = this.clock.now();
-    const hoje = diaLocal(now, user.timezone);
+    const hoje = localDay(now, user.timezone);
 
     const [dailies, todos, active, config, stats] = await Promise.all([
       this.items.list(userId, 'daily', undefined),
@@ -41,7 +41,7 @@ export class HomeController {
     // To-do "for today": due by the end of today's local day (includes the overdue ones).
     const dueToday = todos.filter(
       (item): item is Item & { dueAt: string } =>
-        item.dueAt !== null && diaLocal(item.dueAt, user.timezone) <= hoje,
+        item.dueAt !== null && localDay(item.dueAt, user.timezone) <= hoje,
     );
 
     let story: HomeResponse['story'] = null;
@@ -56,7 +56,7 @@ export class HomeController {
         chapter: active.progress.chapter,
         chapterTitle: chapter?.title ?? '',
         expInLevel: stats.expInLevel,
-        expForNextLevel: expParaNivel(stats.level, config),
+        expForNextLevel: expForLevel(stats.level, config),
         completed: active.progress.completed,
       };
     }

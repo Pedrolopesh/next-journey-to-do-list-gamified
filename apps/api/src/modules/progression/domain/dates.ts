@@ -20,7 +20,7 @@ export function addDays(date: LocalDate, days: number): LocalDate {
 }
 
 /** 0 = Sunday ... 6 = Saturday. */
-export function diaDaSemana(date: LocalDate): number {
+export function dayOfWeek(date: LocalDate): number {
   return toUtcDate(date).getUTCDay();
 }
 
@@ -29,9 +29,9 @@ export function diaDaSemana(date: LocalDate): number {
  * zone). Takes the instant as an argument: never reads the clock. Throws RangeError if the time
  * zone is invalid.
  */
-export function diaLocal(instante: Date | number | string, timezone: string): LocalDate {
-  const date = instante instanceof Date ? instante : new Date(instante);
-  if (Number.isNaN(date.getTime())) throw new RangeError('Instante inválido');
+export function localDay(instant: Date | number | string, timezone: string): LocalDate {
+  const date = instant instanceof Date ? instant : new Date(instant);
+  if (Number.isNaN(date.getTime())) throw new RangeError('Invalid instant');
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric',
@@ -41,9 +41,9 @@ export function diaLocal(instante: Date | number | string, timezone: string): Lo
 }
 
 /** Local hour (0 to 23) of an instant in the user's time zone. Takes the instant as an argument. */
-export function horaLocal(instante: Date | number | string, timezone: string): number {
-  const date = instante instanceof Date ? instante : new Date(instante);
-  if (Number.isNaN(date.getTime())) throw new RangeError('Instante inválido');
+export function localHour(instant: Date | number | string, timezone: string): number {
+  const date = instant instanceof Date ? instant : new Date(instant);
+  if (Number.isNaN(date.getTime())) throw new RangeError('Invalid instant');
   const hour = new Intl.DateTimeFormat('en-GB', {
     timeZone: timezone,
     hour: '2-digit',

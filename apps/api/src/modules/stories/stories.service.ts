@@ -4,7 +4,7 @@ import { ERROR_CODES, type StorySummary, type Timeline } from '@nextjourney/cont
 import { AppError } from '../../common/app-error.js';
 import type { Prisma, Story, StoryProgress } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { expParaNivel } from '../progression/domain/index.js';
+import { expForLevel } from '../progression/domain/index.js';
 import { GameConfigService } from '../progression/game-config.service.js';
 
 export type ActiveStory = { story: Story; progress: StoryProgress };
@@ -124,7 +124,7 @@ export class StoriesService {
               ? ('current' as const)
               : ('locked' as const),
           expInLevel: showProgress ? stats.expInLevel : null,
-          expForNextLevel: showProgress ? expParaNivel(stats.level, config) : null,
+          expForNextLevel: showProgress ? expForLevel(stats.level, config) : null,
           text: completed ? chapter.text : null,
         };
       }),

@@ -12,16 +12,16 @@ import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import {
   type AchievementContext,
+  achievementProgress,
   addDays,
   type CheckRow,
-  conquistasAtendidas,
-  diaLocal,
-  diasPerfeitos,
-  diasSeguidosCompletos,
-  estatisticasDeChecks,
-  horaLocal,
-  progressoDaConquista,
-  resumoDeHoje,
+  checkStats,
+  countFullDaysStreak,
+  countPerfectDays,
+  localDay,
+  localHour,
+  metAchievements,
+  todaySummary,
 } from '../progression/domain/index.js';
 
 type EvaluateInput = {
@@ -124,12 +124,12 @@ export class AchievementsService {
       dueAt: check.item.dueAt,
       completedAt: check.item.completedAt,
     }));
-    const stat = estatisticasDeChecks(rows);
-    const today = resumoDeHoje(rows, hoje);
-    const diarios = dailies.map((daily) => ({
+    const stat = checkStats(rows);
+    const today = todaySummary(rows, hoje);
+    const dailyHistories = dailies.map((daily) => ({
       scheduleDays: daily.scheduleDays,
       createdOn: daily.createdOn,
-      diasMarcados: daily.checks.map((check) => check.checkedOn),
+      checkedDays: daily.checks.map((check) => check.checkedOn),
     }));
     const created = { daily: 0, todo: 0, habit: 0 };
     for (const group of createdByType) created[group.type] = group._count._all;
@@ -141,10 +141,10 @@ export class AchievementsService {
       coins: stats.coins,
       chaptersCompleted,
       storiesCompleted,
-      checkHour: input.fromCheck ? horaLocal(now, timezone) : null,
+      checkHour: input.fromCheck ? localHour(now, timezone) : null,
       ...today,
-      fullDaysStreak: diasSeguidosCompletos(diarios, hoje),
-      perfectDays: diasPerfeitos(diarios, hoje),
+      fullDaysStreak: countFullDaysStreak(dailyHistories, hoje),
+      perfectDays: countPerfectDays(dailyHistories, hoje),
       created,
       checksByType: stat.checksByType,
       todosDone: stat.todosDone,
@@ -188,7 +188,7 @@ export class AchievementsService {
 
     for (let pass = 0; pass < MAX_PASSES; pass += 1) {
       const ctx = await this.context(tx, input, have);
-      const fresh = conquistasAtendidas(ctx).filter((slug) => !have.has(slug));
+      const fresh = metAchievements(ctx).filter((slug) => !have.has(slug));
       if (fresh.length === 0) break;
       for (const slug of fresh) {
         await tx.userAchievement.create({
@@ -246,7 +246,7 @@ export class AchievementsService {
         userId,
         timezone: user.timezone,
         now,
-        hoje: diaLocal(now, user.timezone),
+        hoje: localDay(now, user.timezone),
         silent,
       }),
     );
@@ -316,7 +316,7 @@ export class AchievementsService {
         unlocked: Boolean(row),
         unlockedAt: row ? row.unlockedAt.toISOString() : null,
         pending: Boolean(row) && row?.notifiedAt === null,
-        progress: progressoDaConquista(achievement.slug, ctx),
+        progress: achievementProgress(achievement.slug, ctx),
       };
     });
   }

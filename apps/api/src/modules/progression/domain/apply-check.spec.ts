@@ -5,10 +5,10 @@ import {
 } from '@nextjourney/contracts';
 import { describe, expect, it } from 'vitest';
 
-import { aplicarCheck, type CheckInput } from './apply-check.js';
-import { expParaNivel } from './levels.js';
+import { applyCheck, type CheckInput } from './apply-check.js';
+import { expForLevel } from './levels.js';
 
-const inicial: PlayerState = {
+const initial: PlayerState = {
   level: 1,
   expInLevel: 0,
   expTotal: 0,
@@ -24,165 +24,165 @@ const input = (difficulty: Difficulty, type: CheckInput['type'] = 'daily'): Chec
   localDate: '2026-10-09',
 });
 
-describe('aplicarCheck: EXP, moedas e nível', () => {
+describe('applyCheck: EXP, coins and level', () => {
   it.each([
     ['easy', 5, 1],
     ['medium', 10, 2],
     ['hard', 20, 4],
   ] as const)('dificuldade %s rende %i EXP e %i moedas', (difficulty, exp, coins) => {
-    const { state, summary } = aplicarCheck(inicial, input(difficulty), config);
-    expect(summary.expGanho).toBe(exp);
-    expect(summary.moedasGanhas).toBe(coins);
+    const { state, summary } = applyCheck(initial, input(difficulty), config);
+    expect(summary.expGained).toBe(exp);
+    expect(summary.coinsGained).toBe(coins);
     expect(state.expInLevel).toBe(exp);
     expect(state.expTotal).toBe(exp);
     expect(state.coins).toBe(coins);
     expect(state.totalChecks).toBe(1);
-    expect(summary.subiuDeNivel).toBe(false);
+    expect(summary.leveledUp).toBe(false);
   });
 
-  it('não muda o estado original (função pura)', () => {
-    const copia = structuredClone(inicial);
-    aplicarCheck(inicial, input('hard'), config);
-    expect(inicial).toEqual(copia);
+  it('does not change the original state (pure function)', () => {
+    const copia = structuredClone(initial);
+    applyCheck(initial, input('hard'), config);
+    expect(initial).toEqual(copia);
   });
 
-  it('sobe de nível ao chegar em 200 EXP (nível 1 -> 2) e dá o bônus de 10 moedas', () => {
-    const quase: PlayerState = { ...inicial, expInLevel: 195, expTotal: 195 };
-    const { state, summary } = aplicarCheck(quase, input('easy'), config);
-    expect(summary.subiuDeNivel).toBe(true);
-    expect(summary.niveisGanhos).toBe(1);
+  it('levels up at 200 EXP (level 1 -> 2) and gives the 10-coin bonus', () => {
+    const quase: PlayerState = { ...initial, expInLevel: 195, expTotal: 195 };
+    const { state, summary } = applyCheck(quase, input('easy'), config);
+    expect(summary.leveledUp).toBe(true);
+    expect(summary.levelsGained).toBe(1);
     expect(state.level).toBe(2);
     expect(state.expInLevel).toBe(0);
-    expect(summary.bonusMoedas).toBe(10);
+    expect(summary.bonusCoins).toBe(10);
     expect(state.coins).toBe(1 + 10);
   });
 
-  it('carrega o EXP que sobra para o próximo nível', () => {
-    const quase: PlayerState = { ...inicial, expInLevel: 195, expTotal: 195 };
-    const { state } = aplicarCheck(quase, input('hard'), config); // 195 + 20 = 215
+  it('carries the leftover EXP to the next level', () => {
+    const quase: PlayerState = { ...initial, expInLevel: 195, expTotal: 195 };
+    const { state } = applyCheck(quase, input('hard'), config); // 195 + 20 = 215
     expect(state.level).toBe(2);
     expect(state.expInLevel).toBe(15);
   });
 
-  it('pode subir mais de um nível num check e soma um bônus por nível', () => {
+  it('can gain more than one level in a check and adds one bonus per level', () => {
     const generosa = {
       ...config,
       expByDifficulty: { easy: 5, medium: 10, hard: 1200 },
     };
-    const { state, summary } = aplicarCheck(inicial, input('hard'), generosa);
+    const { state, summary } = applyCheck(initial, input('hard'), generosa);
     // 200 (1->2) + 400 (2->3) + 600 (3->4) = 1200; sobra 0
-    expect(summary.niveisGanhos).toBe(3);
+    expect(summary.levelsGained).toBe(3);
     expect(state.level).toBe(4);
     expect(state.expInLevel).toBe(0);
-    expect(summary.bonusMoedas).toBe(30);
+    expect(summary.bonusCoins).toBe(30);
   });
 
-  it('hábito não tem limite diário: todo check rende EXP e moedas', () => {
-    let state = inicial;
+  it('a habit has no daily limit: every check earns EXP and coins', () => {
+    let state = initial;
     for (let i = 0; i < 6; i += 1) {
-      const result = aplicarCheck(state, input('medium', 'habit'), config);
-      expect(result.summary.expGanho).toBe(10);
-      expect(result.summary.moedasGanhas).toBe(2);
+      const result = applyCheck(state, input('medium', 'habit'), config);
+      expect(result.summary.expGained).toBe(10);
+      expect(result.summary.coinsGained).toBe(2);
       state = result.state;
     }
     expect(state.totalChecks).toBe(6);
   });
 
-  it('diário, tarefa e hábito rendem igual (só a dificuldade importa)', () => {
-    const a = aplicarCheck(inicial, input('medium', 'daily'), config).summary;
-    const b = aplicarCheck(inicial, input('medium', 'todo'), config).summary;
-    const c = aplicarCheck(inicial, input('medium', 'habit'), config).summary;
+  it('daily, to-do and habit earn the same (only the difficulty matters)', () => {
+    const a = applyCheck(initial, input('medium', 'daily'), config).summary;
+    const b = applyCheck(initial, input('medium', 'todo'), config).summary;
+    const c = applyCheck(initial, input('medium', 'habit'), config).summary;
     expect(a).toEqual(b);
     expect(b).toEqual(c);
   });
 });
 
-describe('aplicarCheck: capítulos e história (cada nível ganho conclui um capítulo)', () => {
-  it('check sem subir de nível não conclui capítulo e mostra a EXP como progresso', () => {
-    const { state, summary } = aplicarCheck(inicial, input('easy'), config);
+describe('applyCheck: chapters and story (each level gained finishes a chapter)', () => {
+  it('a check without a level-up finishes no chapter and shows EXP as progress', () => {
+    const { state, summary } = applyCheck(initial, input('easy'), config);
     expect(state.story).toEqual({ chapter: 1, completed: false });
-    expect(summary.progressoCapitulo).toEqual({ capitulo: 1, expNoNivel: 5, expParaProximo: 200 });
-    expect(summary.capituloConcluido).toBe(false);
-    expect(summary.capitulosConcluidos).toEqual([]);
+    expect(summary.chapterProgress).toEqual({ chapter: 1, expInLevel: 5, expToNext: 200 });
+    expect(summary.chapterCompleted).toBe(false);
+    expect(summary.completedChapters).toEqual([]);
   });
 
-  it('subir de nível conclui o capítulo atual e abre o seguinte', () => {
-    const quase: PlayerState = { ...inicial, expInLevel: 195, expTotal: 195 };
-    const { state, summary, record } = aplicarCheck(quase, input('easy'), config);
-    expect(summary.capituloConcluido).toBe(true);
-    expect(summary.capitulosConcluidos).toEqual([1]);
+  it('a level-up finishes the current chapter and opens the next', () => {
+    const quase: PlayerState = { ...initial, expInLevel: 195, expTotal: 195 };
+    const { state, summary, record } = applyCheck(quase, input('easy'), config);
+    expect(summary.chapterCompleted).toBe(true);
+    expect(summary.completedChapters).toEqual([1]);
     expect(record.closedChapter).toBe(true);
     expect(state.level).toBe(2);
     expect(state.story).toEqual({ chapter: 2, completed: false });
-    expect(summary.progressoCapitulo).toEqual({ capitulo: 2, expNoNivel: 0, expParaProximo: 400 });
+    expect(summary.chapterProgress).toEqual({ chapter: 2, expInLevel: 0, expToNext: 400 });
   });
 
-  it('vários níveis num check concluem vários capítulos, um por nível', () => {
+  it('several levels in one check finish several chapters, one per level', () => {
     const generosa = { ...config, expByDifficulty: { easy: 5, medium: 10, hard: 1200 } };
-    const { state, summary } = aplicarCheck(inicial, input('hard'), generosa);
-    expect(summary.niveisGanhos).toBe(3);
-    expect(summary.capitulosConcluidos).toEqual([1, 2, 3]);
+    const { state, summary } = applyCheck(initial, input('hard'), generosa);
+    expect(summary.levelsGained).toBe(3);
+    expect(summary.completedChapters).toEqual([1, 2, 3]);
     expect(state.story).toEqual({ chapter: 4, completed: false });
   });
 
-  it('o 5º capítulo conclui a história; níveis seguintes seguem sem capítulo', () => {
-    const ultimo: PlayerState = {
-      ...inicial,
+  it('the 5th chapter finishes the story; later levels carry on without a chapter', () => {
+    const last: PlayerState = {
+      ...initial,
       level: 5,
       expInLevel: 970,
       expTotal: 2900,
       story: { chapter: 5, completed: false },
     };
-    const fim = aplicarCheck(ultimo, input('hard'), config); // 970 + 20 < 1000: ainda no capítulo 5
-    expect(fim.summary.capituloConcluido).toBe(false);
-    const quase: PlayerState = { ...ultimo, expInLevel: 995 };
-    const concluiu = aplicarCheck(quase, input('easy'), config);
-    expect(concluiu.summary.capitulosConcluidos).toEqual([5]);
-    expect(concluiu.summary.historiaConcluida).toBe(true);
+    const end = applyCheck(last, input('hard'), config); // 970 + 20 < 1000: still in chapter 5
+    expect(end.summary.chapterCompleted).toBe(false);
+    const quase: PlayerState = { ...last, expInLevel: 995 };
+    const concluiu = applyCheck(quase, input('easy'), config);
+    expect(concluiu.summary.completedChapters).toEqual([5]);
+    expect(concluiu.summary.storyCompleted).toBe(true);
     expect(concluiu.state.story).toEqual({ chapter: 5, completed: true });
 
-    const depois = aplicarCheck(
+    const after = applyCheck(
       { ...concluiu.state, expInLevel: concluiu.state.expInLevel },
       input('hard'),
       config,
     );
-    expect(depois.state.story).toEqual(concluiu.state.story);
-    expect(depois.record.countsForChapter).toBe(false);
-    expect(depois.record.chapterAtCheck).toBeNull();
-    expect(depois.summary.capitulosConcluidos).toEqual([]);
+    expect(after.state.story).toEqual(concluiu.state.story);
+    expect(after.record.countsForChapter).toBe(false);
+    expect(after.record.chapterAtCheck).toBeNull();
+    expect(after.summary.completedChapters).toEqual([]);
   });
 
-  it('item que já rendeu EXP hoje rende só as moedas', () => {
-    const { state, summary, record } = aplicarCheck(
-      inicial,
-      { ...input('medium'), expJaGanho: true },
+  it('an item that already earned EXP today earns only the coins', () => {
+    const { state, summary, record } = applyCheck(
+      initial,
+      { ...input('medium'), expAlreadyEarned: true },
       config,
     );
-    expect(summary.expGanho).toBe(0);
-    expect(summary.moedasGanhas).toBe(2);
+    expect(summary.expGained).toBe(0);
+    expect(summary.coinsGained).toBe(2);
     expect(state.expInLevel).toBe(0);
     expect(state.expTotal).toBe(0);
     expect(state.coins).toBe(2);
     expect(record.exp).toBe(0);
   });
 
-  it('depois da história concluída o nível sobe de 1000 em 1000 e o capítulo não avança', () => {
-    const fim: PlayerState = {
-      ...inicial,
+  it('after the story is finished the level rises by 1000 EXP and the chapter does not advance', () => {
+    const end: PlayerState = {
+      ...initial,
       level: 6,
       expInLevel: 990,
       expTotal: 4000,
       story: { chapter: 5, completed: true },
     };
-    const { state, summary } = aplicarCheck(fim, input('hard'), config);
+    const { state, summary } = applyCheck(end, input('hard'), config);
     expect(state.level).toBe(7);
     expect(state.expInLevel).toBe(10);
-    expect(summary.capitulosConcluidos).toEqual([]);
+    expect(summary.completedChapters).toEqual([]);
     expect(state.story).toEqual({ chapter: 5, completed: true });
   });
 
-  it('o registro guarda o necessário para desfazer', () => {
-    const { record } = aplicarCheck(inicial, input('medium'), config);
+  it('the record keeps what is needed to undo', () => {
+    const { record } = applyCheck(initial, input('medium'), config);
     expect(record).toEqual({
       checkId: '3f1f4c2e-5a7b-4f3e-9c1d-2b8a6d4e7f10',
       localDate: '2026-10-09',
@@ -194,20 +194,20 @@ describe('aplicarCheck: capítulos e história (cada nível ganho conclui um cap
     });
   });
 
-  it('invariante: EXP no nível sempre abaixo do necessário', () => {
-    let state = inicial;
+  it('invariant: EXP in the level is always below the requirement', () => {
+    let state = initial;
     for (let i = 0; i < 200; i += 1) {
-      state = aplicarCheck(state, input(i % 3 === 0 ? 'hard' : 'easy'), config).state;
-      expect(state.expInLevel).toBeLessThan(expParaNivel(state.level));
+      state = applyCheck(state, input(i % 3 === 0 ? 'hard' : 'easy'), config).state;
+      expect(state.expInLevel).toBeLessThan(expForLevel(state.level));
     }
   });
 
-  it('invariante: capítulos concluídos = níveis ganhos até o fim da história', () => {
-    let state = inicial;
+  it('invariant: completed chapters = levels gained until the story ends', () => {
+    let state = initial;
     let concluidos = 0;
     for (let i = 0; i < 400; i += 1) {
-      const result = aplicarCheck(state, input('hard'), config);
-      concluidos += result.summary.capitulosConcluidos.length;
+      const result = applyCheck(state, input('hard'), config);
+      concluidos += result.summary.completedChapters.length;
       state = result.state;
     }
     expect(concluidos).toBe(Math.min(state.level - 1, config.chaptersPerStory));

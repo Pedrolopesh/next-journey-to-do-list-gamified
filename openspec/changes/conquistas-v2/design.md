@@ -26,7 +26,7 @@ Escala medida na lista aprovada: 20 conquistas já medidas (19 mais a Maratonist
 7. **Retroativo** por script no seed/migração de dados: roda `evaluate` para cada usuário e grava `notifiedAt = unlockedAt`.
 8. **Surpresas** tratadas no DTO de saída da lista (allowlist): `description: null` quando `secret` e bloqueada.
 9. **Fim das recompensas.** Migration nova: remove `reward_key` de `achievements`, zera em `characters` o `outfit` e o `accessory` que forem peças retiradas (volta ao padrão `tunic-purple` e sem acessório), mantém a tabela `user_cosmetics` para o backlog e retira a trava `COSMETIC_LOCKED`, que não tem mais peça para travar. O banner remove `outfit-special` e `outfit-cape` de `OUTFITS`. Nunca editar migration aplicada.
-10. **Progresso numérico** (`progressoDaConquista`) deixa de ser um `switch` por slug e passa a sair do próprio critério (`{ current, target }` quando contável).
+10. **Progresso numérico** (`achievementProgress`) deixa de ser um `switch` por slug e passa a sair do próprio critério (`{ current, target }` quando contável).
 
 ## Risks / Trade-offs
 

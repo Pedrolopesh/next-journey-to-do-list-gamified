@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 
 import { ENV, type Env } from '../../config/env.js';
 import type { Prisma } from '../../generated/prisma/client.js';
-import { diaLocal } from '../progression/domain/index.js';
+import { localDay } from '../progression/domain/index.js';
 import { STARTER_ITEMS } from './starter-items.js';
 
 const EVERY_DAY = [0, 1, 2, 3, 4, 5, 6];
@@ -32,7 +32,7 @@ export class StarterItemsService {
     });
     const fallback = categories[0];
     if (!fallback) return 0;
-    const createdOn = diaLocal(input.now, input.timezone);
+    const createdOn = localDay(input.now, input.timezone);
     const { count } = await tx.item.createMany({
       data: STARTER_ITEMS.map((item, index) => ({
         userId: input.userId,

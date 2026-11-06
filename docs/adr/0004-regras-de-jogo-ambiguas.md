@@ -29,11 +29,11 @@ A especificação deixava casos de borda em aberto. As soluções abaixo estavam
 **Diários**
 - **Atrasado:** o último dia agendado antes de hoje (a partir da criação do diário) terminou sem check. Um diário criado hoje só atrasa depois que um dia agendado termina. Marcar hoje, mesmo um atrasado, tira o atraso.
 - **Sequência:** dias seguidos com check, voltando a partir de hoje. Dia agendado sem check (que não seja hoje) quebra; dia não agendado não quebra; hoje sem check ainda não quebra. Marcar um atrasado hoje reinicia em 1.
-- Dia local = data no fuso IANA do perfil, com virada às 00:00 (`diaLocal`, usando `Intl`; testado com horário de verão e virada de mês e de ano).
+- Dia local = data no fuso IANA do perfil, com virada às 00:00 (`localDay`, usando `Intl`; testado com horário de verão e virada de mês e de ano).
 
 ## Ainda a implementar (Fase 4 e 5)
 
-Conquistas (critérios do catálogo), resumo semanal, contador semanal do hábito e a transação do check na API. Ficam fora do domínio puro de `aplicarCheck`.
+Conquistas (critérios do catálogo), resumo semanal, contador semanal do hábito e a transação do check na API. Ficam fora do domínio puro de `applyCheck`.
 
 ## Consequências
 

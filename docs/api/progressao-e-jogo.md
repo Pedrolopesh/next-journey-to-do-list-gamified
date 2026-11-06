@@ -17,7 +17,7 @@ Código em `apps/api/src/modules/progression/domain` (funções puras, uma por r
 
 "Dia" é o dia **local** do usuário (`AAAA-MM-DD`), no fuso IANA do perfil: a virada é às 00:00 nesse fuso. As funções de domínio recebem a data ou o instante como argumento e **nunca leem o relógio** (o relógio é injetado), então os testes controlam o tempo. A aritmética de datas usa UTC só como calendário. Fuso inválido lança `RangeError`.
 
-## Marcar um item (`aplicarCheck`)
+## Marcar um item (`applyCheck`)
 
 - EXP e moedas vêm da dificuldade. Hábito não tem limite diário.
 - Se o item já rendeu EXP hoje (marcado, desmarcado e marcado de novo), rende **só as moedas**.
@@ -25,7 +25,7 @@ Código em `apps/api/src/modules/progression/domain` (funções puras, uma por r
 - Cada nível ganho conclui um capítulo da **história ativa**, até a história terminar. O progresso do capítulo é a EXP dentro do nível. Sem história ativa (onboarding incompleto) o check rende EXP e moedas, mas não conta capítulo.
 - O resultado vira um registro (`item_checks`) com tudo que o check fez, que é a entrada exata do desfazer.
 
-## Desmarcar (`desfazerCheck`)
+## Desmarcar (`undoCheck`)
 
 - Vale em qualquer dia e em qualquer capítulo.
 - **EXP, nível e capítulo nunca voltam**: só as moedas diminuem, pela perda do capítulo atual, nunca abaixo de zero.
