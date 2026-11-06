@@ -22,32 +22,32 @@ import { colors, fontSize } from '@/theme';
 import bannerAsset from '../../assets/banner/banner.html';
 import { shouldPlay } from './playback';
 
-/** Banner 390 x 180 (cena Mapa das abas) */
+/** Banner 390 x 180 (tabs Map scene) */
 const ASPECT_RATIO = 390 / 180;
-/** Banner 390 x 220 (cena QG da Home) */
+/** Banner 390 x 220 (QG scene on the Home) */
 export const QG_ASPECT_RATIO = 390 / 220;
-/** Se o banner não mandar READY neste prazo, o app mostra o fallback estático. */
+/** If the banner does not send READY within this time, the app shows the static fallback. */
 const READY_TIMEOUT_MS = 2000;
-/** Tempo do fade-in do banner depois do INIT; só então o indicador de carregamento some. */
+/** Banner fade-in time after INIT; only then does the loading indicator go away. */
 const REVEAL_MS = 350;
 
 export type InitMessage = Extract<AppToBannerMessage, { type: 'INIT' }>;
 
 export type BannerViewHandle = {
-  /** Envia uma mensagem tipada ao banner (já validada pelo tipo do contrato). */
+  /** Sends a typed message to the banner (already validated by the contract type). */
   send: (message: AppToBannerMessage) => void;
-  /** Reenvia o INIT atual da tela: volta o banner à posição real (ex.: um check que falhou). */
+  /** Resends the screen's current INIT: puts the banner back at the real position (e.g. a check that failed). */
   reset: () => void;
 };
 
 type Props = {
-  /** Proporção da área do banner (padrão: a cena Mapa). */
+  /** Aspect ratio of the banner area (default: the Map scene). */
   aspectRatio?: number;
-  /** Enviada ao banner assim que ele avisa READY. */
+  /** Sent to the banner as soon as it reports READY. */
   initMessage: InitMessage;
-  /** Tela em foco; fora de foco o banner fica pausado (padrão: em foco). */
+  /** Screen in focus; out of focus the banner is paused (default: in focus). */
   focused?: boolean;
-  /** Mensagens válidas vindas do banner (READY, CHAPTER_TRANSITION_DONE, ERROR). */
+  /** Valid messages coming from the banner (READY, CHAPTER_TRANSITION_DONE, ERROR). */
   onMessage?: (message: BannerToAppMessage) => void;
 };
 
@@ -95,7 +95,7 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
     };
   }, []);
 
-  // Pausa o banner em segundo plano e quando o sistema pede para reduzir movimento
+  // Pauses the banner in the background and when the system asks to reduce motion
   const reduceMotionRef = useRef(false);
   const focusedRef = useRef(focused);
   focusedRef.current = focused;
@@ -129,12 +129,12 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
     syncPlayback();
   }, [focused, syncPlayback]);
 
-  // Se o INIT mudar depois do READY (ex.: o GET /me chegou), posiciona de novo, sem animação
+  // If INIT changes after READY (e.g. GET /me arrived), positions again, without animation
   useEffect(() => {
     if (readyRef.current) send(initMessage);
   }, [initMessage, send]);
 
-  // O WebView só começa a contar depois que o HTML foi lido
+  // The WebView only starts counting after the HTML has been read
   useEffect(() => {
     if (html === null) return;
     const timer = setTimeout(() => {
@@ -148,12 +148,12 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
   const handleMessage = useCallback(
     (event: WebViewMessageEvent) => {
       const result = parseBannerToAppMessage(event.nativeEvent.data);
-      if (!result.ok) return; // mensagem inválida do banner é descartada
+      if (!result.ok) return; // an invalid banner message is discarded
       const { message } = result;
       if (message.type === 'READY') {
         readyRef.current = true;
         setFailed(false);
-        // O app só envia INIT depois do READY
+        // The app only sends INIT after READY
         send(initRef.current);
         syncPlayback();
         setTimeout(() => {
@@ -172,7 +172,7 @@ export const BannerView = forwardRef<BannerViewHandle, Props>(function BannerVie
       importantForAccessibility="no"
     >
       {html !== null && (
-        // <object>: na 14.0.1 o genérico padrão (undefined) zera as props nos tipos
+        // <object>: in 14.0.1 the default generic (undefined) wipes out the props in the types
         <WebView<object>
           ref={webViewRef}
           style={styles.webview}

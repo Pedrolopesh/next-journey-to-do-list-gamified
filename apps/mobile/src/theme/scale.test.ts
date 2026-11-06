@@ -8,16 +8,16 @@ vi.mock('react-native', () => ({
 const { scale } = await import('./scale');
 
 describe('scale', () => {
-  it('mantém o valor na largura de referência do Figma', () => {
+  it('keeps the value at the Figma reference width', () => {
     expect(scale(16, 390)).toBeCloseTo(16, 1);
   });
 
-  it('acompanha a largura da tela', () => {
+  it('follows the screen width', () => {
     expect(scale(16, 430)).toBeGreaterThan(16);
     expect(scale(16, 360)).toBeLessThan(16);
   });
 
-  it('limita o fator em telas muito pequenas e muito grandes', () => {
+  it('clamps the factor on very small and very large screens', () => {
     expect(scale(100, 100)).toBeCloseTo(85, 0);
     expect(scale(100, 1200)).toBeCloseTo(125, 0);
   });

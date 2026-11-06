@@ -1,4 +1,4 @@
-# Volta uma tela: o botão Voltar do sistema no Android; no iOS, o botão Voltar do cabeçalho.
+# Goes back one screen: the system Back button on Android; on iOS, the header Back button.
 appId: br.com.wetechhub.app.dev
 ---
 - runFlow:

@@ -2,8 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { CoinsInfoModal, LevelInfoModal } from '../info-modals';
 
-describe('modais informativos', () => {
-  it('moedas: mostra o saldo e as regras do jogo e fecha', async () => {
+describe('info modals', () => {
+  it('coins: shows the balance and the game rules and closes', async () => {
     const onClose = jest.fn();
     await render(<CoinsInfoModal visible coins={7} onClose={onClose} />);
     expect(screen.getByText('Você tem 7 moedas.')).toBeTruthy();
@@ -13,7 +13,7 @@ describe('modais informativos', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('nível: mostra a experiência de agora e o que o nível desbloqueia', async () => {
+  it('level: shows the current experience and what the level unlocks', async () => {
     const onClose = jest.fn();
     await render(
       <LevelInfoModal

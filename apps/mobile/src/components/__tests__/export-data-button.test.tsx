@@ -15,7 +15,7 @@ describe('ExportDataButton', () => {
     useToastStore.setState({ current: null });
   });
 
-  it('busca os dados, abre a folha de compartilhamento e avisa', async () => {
+  it('fetches the data, opens the share sheet and notifies', async () => {
     (fetchDataExport as jest.Mock).mockResolvedValue({ account: { name: 'Pessoa' } });
     const share = jest
       .spyOn(Share, 'share')
@@ -32,7 +32,7 @@ describe('ExportDataButton', () => {
     );
   });
 
-  it('muitos pedidos (429): avisa com a mensagem de limite e não abre a folha', async () => {
+  it('too many requests (429): shows the limit message and does not open the sheet', async () => {
     (fetchDataExport as jest.Mock).mockRejectedValue(
       new AxiosError('x', 'ERR_BAD_REQUEST', undefined, undefined, {
         status: 429,
@@ -54,7 +54,7 @@ describe('ExportDataButton', () => {
     expect(share).not.toHaveBeenCalled();
   });
 
-  it('fechar a folha sem compartilhar não é sucesso', async () => {
+  it('closing the sheet without sharing is not a success', async () => {
     (fetchDataExport as jest.Mock).mockResolvedValue({ account: { name: 'Pessoa' } });
     jest
       .spyOn(Share, 'share')

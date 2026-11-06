@@ -18,7 +18,7 @@ import { syncDailyReminder } from '@/features/settings/reminder';
 import { timezoneOptions } from '@/features/settings/timezones';
 import { colors, fontSize, space } from '@/theme';
 
-/** Configurações (RF-38): fuso horário, lembrete, categorias e sobre. */
+/** Settings (RF-38): time zone, reminder, categories and about. */
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -34,7 +34,7 @@ export default function SettingsScreen() {
     setMessage(null);
     try {
       queryClient.setQueryData(queryKeys.me, await patchMe(body));
-      // O "dia" do usuário muda com o fuso: recarrega tudo que depende dele
+      // The user's "day" changes with the time zone: reloads everything that depends on it
       void queryClient.invalidateQueries();
       setMessage(success);
       toast.success(success);
@@ -94,7 +94,7 @@ export default function SettingsScreen() {
                 return;
               }
               if (parsed.value) {
-                // Conquista "Hora marcada": o servidor não sabe do lembrete, que é do aparelho
+                // "Hora marcada" achievement: the server does not know about the reminder, which belongs to the device
                 void sendAppEvent('reminder_enabled')
                   .then(() => showNextPending(queryClient))
                   .catch(() => undefined);

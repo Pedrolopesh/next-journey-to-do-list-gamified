@@ -15,7 +15,7 @@ beforeEach(() => {
 });
 
 describe('intro welcome', () => {
-  it('mostra a boas-vindas e os três passos', async () => {
+  it('shows the welcome and the three steps', async () => {
     await render(<IntroWelcome />);
     expect(screen.getByText('Bem-vindo ao Next Journey')).toBeTruthy();
     expect(screen.getByText('personagem')).toBeTruthy();
@@ -23,7 +23,7 @@ describe('intro welcome', () => {
     expect(screen.getByText('e evolua')).toBeTruthy();
   });
 
-  it('o título em duas linhas é lido como uma frase só', async () => {
+  it('the two-line title is read as a single sentence', async () => {
     await render(<PixelTitle lead="Seja Bem vindo, A sua" accent="próxima Jornada" />);
     expect(screen.getByLabelText('Seja Bem vindo, A sua próxima Jornada')).toBeTruthy();
   });

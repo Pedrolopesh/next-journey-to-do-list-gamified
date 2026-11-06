@@ -4,13 +4,13 @@ import { render } from '@testing-library/react-native';
 import { Insignia, pathsByColor } from '../pixel-art';
 
 describe('Insignia', () => {
-  it('desenha uma insígnia conhecida e ignora um nome que não existe', async () => {
+  it('draws a known badge and ignores a name that does not exist', async () => {
     expect(Object.keys(INSIGNIAS)).toContain('pegada');
     await render(<Insignia glyph="pegada" size={48} />);
     await render(<Insignia glyph="nao-existe" size={48} />);
   });
 
-  it('junta os pixels por cor: poucos traçados e nenhum pixel perdido', () => {
+  it('merges pixels by color: few paths and no pixel lost', () => {
     const rows = INSIGNIAS.pegada;
     const paths = pathsByColor(rows, INSIGNIA_PALETTE);
     const pixels = rows.join('').replaceAll('.', '').length;

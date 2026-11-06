@@ -14,8 +14,8 @@ const OPTIONS: { value: Difficulty; stars: number; color: string }[] = [
 type Props = { value: Difficulty; onChange: (value: Difficulty) => void };
 
 /**
- * Seletor de dificuldade do Figma: três botões iguais com estrelas (1, 2 ou 3 acesas) e o nome.
- * O selecionado enche na cor da dificuldade com o brilho suave dos demais botões.
+ * Difficulty selector from Figma: three equal buttons with stars (1, 2 or 3 lit) and the name.
+ * The selected one fills with the difficulty color, with the soft glow of the other buttons.
  */
 export function DifficultySelector({ value, onChange }: Props) {
   const { t } = useTranslation();
@@ -68,7 +68,7 @@ export function DifficultySelector({ value, onChange }: Props) {
 }
 
 const styles = StyleSheet.create({
-  // folga em volta: o brilho do selecionado não é cortado pela lista
+  // room around it: the selected one's glow is not clipped by the list
   row: { flexDirection: 'row', gap: space[8], paddingBottom: space[8] },
   button: {
     flex: 1,

@@ -15,11 +15,11 @@ const base: CheckResult = {
 };
 
 describe('buildModalQueue', () => {
-  it('um check comum não abre modal', () => {
+  it('a regular check does not open a modal', () => {
     expect(buildModalQueue(base)).toEqual({ now: [], afterBanner: [] });
   });
 
-  it('nível, depois conquistas, na ordem; o capítulo espera o banner', () => {
+  it('level, then achievements, in order; the chapter waits for the banner', () => {
     const result: CheckResult = {
       ...base,
       leveledUp: true,

@@ -6,8 +6,8 @@ import { storyRatio, useMe } from '@/api/queries';
 import { colors, fontSize, space } from '@/theme';
 
 /**
- * Resumo do avanço que aparece colado ao banner quando o cartão do capítulo rola para fora da
- * tela: barra fina do capítulo e, embaixo, moedas e EXP.
+ * Progress summary pinned to the banner when the chapter card scrolls off the
+ * screen: a thin chapter bar and, below it, coins and EXP.
  */
 export function ProgressMiniBar() {
   const { t } = useTranslation();

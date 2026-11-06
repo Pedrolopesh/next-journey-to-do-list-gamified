@@ -36,7 +36,7 @@ echo "==> Idioma: comentário novo em português (código em inglês)"
 if [ -n "$base" ]; then
   if git diff "$base" -U0 -- 'apps/*.ts' 'apps/*.tsx' 'apps/*.js' 'apps/*.mjs' 'apps/*.sh' 'apps/*.sql' 'apps/*.prisma' \
     'packages/*.ts' 'packages/*.tsx' 'scripts/*.mjs' ':(exclude)apps/infra/ansible/collections' ':(exclude)apps/mobile/android' ':(exclude)apps/mobile/ios' \
-    | grep -E '^\+\s*(//|/\*|\*|#|--)' | grep -E '[áéíóúâêôãõç]'; then
+    | grep -E '^\+\s*(//|/\*|\*|#|--)' | perl -CSD -ne 'my $l = $_; $l =~ s/"[^"]*"//g; print if $l =~ /[áéíóúâêôãõç]/' | grep .; then
     echo "Comentário, nome de teste e identificador novos são em inglês (CONTRIBUTING.md, seção Idioma)."; fail=1
   fi
 fi

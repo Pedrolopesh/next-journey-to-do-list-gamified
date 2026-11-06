@@ -9,7 +9,7 @@ import { Insignia } from './pixel-art';
 
 type Props = { achievement: Achievement; onPress: (achievement: Achievement) => void };
 
-/** Peça da galeria: insígnia no topo e moldura na cor da classe; apagada enquanto bloqueada. */
+/** Gallery piece: badge on top and a frame in the class color; dimmed while locked. */
 export function AchievementCard({ achievement, onPress }: Props) {
   const { t } = useTranslation();
   const { unlocked, progress } = achievement;

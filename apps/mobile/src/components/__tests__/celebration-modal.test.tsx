@@ -4,7 +4,7 @@ import { Text } from 'react-native';
 import { CelebrationModal } from '../celebration-modal';
 
 describe('CelebrationModal', () => {
-  it('mostra os textos, o conteúdo extra e chama as ações', async () => {
+  it('shows the texts, the extra content and calls the actions', async () => {
     const onPrimary = jest.fn();
     const onSecondary = jest.fn();
     const onClose = jest.fn();
@@ -36,7 +36,7 @@ describe('CelebrationModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('sem ação secundária mostra só o botão principal', async () => {
+  it('without a secondary action it shows only the main button', async () => {
     await render(
       <CelebrationModal
         visible

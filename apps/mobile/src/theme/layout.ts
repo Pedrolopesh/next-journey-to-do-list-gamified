@@ -1,6 +1,6 @@
-// Espaçamento, raio e tamanhos do design system. Fonte: docs/FIGMA-INTERA.md.
-// Espaçamento e ícones acompanham a largura da tela (ver `scale.ts`); o alvo de toque nunca fica
-// abaixo de 44 pt (regra de acessibilidade).
+// Spacing, radius and sizes of the design system. Source: docs/FIGMA-INTERA.md.
+// Spacing and icons follow the screen width (see `scale.ts`); the touch target never goes
+// below 44 pt (accessibility rule).
 import { Platform } from 'react-native';
 
 import { scale } from './scale';

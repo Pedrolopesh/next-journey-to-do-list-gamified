@@ -10,7 +10,7 @@ import { ScreenFrame } from '@/components/screen-frame';
 import { ErrorState, SkeletonList } from '@/components/states';
 import { colors, fontSize, space } from '@/theme';
 
-/** Galeria de conquistas em pixel art com critério, progresso e estado (RF-32); toque abre os detalhes. */
+/** Pixel-art achievement gallery with criterion, progress and state (RF-32); tapping opens the details. */
 export default function AchievementsScreen() {
   const { t } = useTranslation();
   const achievements = useAchievements();

@@ -8,14 +8,14 @@ type Props<T extends string> = {
   options: readonly Option<T>[];
   value: T | null;
   onChange: (value: T) => void;
-  /** Lista que rola na horizontal (filtros) em vez de quebrar linha. */
+  /** List that scrolls horizontally (filters) instead of wrapping. */
   scroll?: boolean;
   label?: string;
   /** Unselected options already show their own color (outline and text), as a preview. */
   tinted?: boolean;
 };
 
-/** Seletor de uma opção (categorias, dificuldade, tipo). Alvo de toque de 44 pt. */
+/** Single-option selector (categories, difficulty, kind). 44 pt touch target. */
 export function Pills<T extends string>({
   options,
   value,
@@ -89,9 +89,9 @@ export function Pills<T extends string>({
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: space[8], alignItems: 'center' },
   wrap: { flexWrap: 'wrap' },
-  // altura fixa (pill + folga do brilho): a lista não encolhe nem pula quando o filtro muda
+  // fixed height (pill + glow room): the list does not shrink or jump when the filter changes
   scroller: { flexGrow: 0, flexShrink: 0, height: size.touchTarget + 16 },
-  // folga para o brilho do chip selecionado não ser cortado pela lista
+  // room so the selected chip's glow is not clipped by the list
   scrollRow: { paddingVertical: 8, paddingHorizontal: 4 },
   pill: {
     minHeight: size.touchTarget,

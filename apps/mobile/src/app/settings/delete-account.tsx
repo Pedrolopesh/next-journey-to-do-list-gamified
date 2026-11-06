@@ -24,7 +24,7 @@ import { toast } from '@/features/feedback/toast-store';
 import { useAction } from '@/features/feedback/use-action';
 import { colors, fontSize, space } from '@/theme';
 
-/** A pessoa desistiu no login do Google/Apple: não é erro do servidor. */
+/** The person gave up at the Google/Apple login: not a server error. */
 class Cancelled extends Error {}
 
 /**

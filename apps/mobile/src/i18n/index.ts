@@ -5,7 +5,7 @@ import ptBR from './pt-BR.json';
 
 const i18n = createInstance();
 
-// pt-BR na v1; inglês entra depois, como novo recurso neste mesmo objeto.
+// pt-BR in v1; English comes later, as a new resource in this same object.
 void i18n.use(initReactI18next).init({
   resources: { 'pt-BR': { translation: ptBR } },
   lng: 'pt-BR',

@@ -1,4 +1,4 @@
-/** Testes de componente (jest-expo + Testing Library). A lógica pura roda no Vitest (`*.test.ts`). */
+/** Component tests (jest-expo + Testing Library). Pure logic runs in Vitest (`*.test.ts`). */
 module.exports = {
   preset: 'jest-expo',
   // O primeiro teste de cada arquivo compila o React Native: em runner de CI isso passa de 5 s

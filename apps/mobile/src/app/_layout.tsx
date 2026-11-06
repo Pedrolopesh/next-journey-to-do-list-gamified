@@ -25,7 +25,7 @@ import { colors, fontSize, space } from '@/theme';
 
 const logo = require('../../assets/images/logo-livro.png') as number;
 
-/** Splash enquanto a sessão é verificada (RF-09). */
+/** Splash while the session is verified (RF-09). */
 function Splash({ children }: { children?: React.ReactNode }) {
   const { t } = useTranslation();
   return (
@@ -38,8 +38,8 @@ function Splash({ children }: { children?: React.ReactNode }) {
 }
 
 /**
- * Decide qual grupo de telas está liberado: login (sem sessão), onboarding (falta personagem ou
- * história) ou o app. O app só libera as abas com personagem e história definidos (RF-13).
+ * Decides which group of screens is unlocked: login (no session), onboarding (character or
+ * story missing) or the app. The app only unlocks the tabs once character and story are set (RF-13).
  */
 function Gate() {
   const { t } = useTranslation();
@@ -49,7 +49,7 @@ function Gate() {
   const signedIn = status === 'signedIn';
   useCheckSync();
   const notifyAt = me.data?.user.notifyAt;
-  // Reagenda o lembrete ao abrir (cobre reinstalação e troca de aparelho), sem pedir permissão
+  // Reschedules the reminder on open (covers reinstall and device change), without asking permission
   useEffect(() => {
     if (notifyAt !== undefined) void syncDailyReminder(notifyAt, { askPermission: false });
   }, [notifyAt]);
@@ -127,12 +127,12 @@ export default function RootLayout() {
       }),
   );
 
-  // Cada troca de tela vira um registro (rota sem parâmetros sensíveis)
+  // Each screen change becomes a log entry (route without sensitive params)
   useEffect(() => {
     log.info('nav.screen', { path: pathname });
   }, [pathname]);
 
-  // Erros que ninguém tratou (JS e promessas) também ficam registrados
+  // Errors nobody handled (JS and promises) are logged too
   useEffect(() => {
     const globals = globalThis as unknown as {
       ErrorUtils?: {
@@ -158,7 +158,7 @@ export default function RootLayout() {
     void restoreSession();
   }, []);
 
-  // Ao sair, nenhum dado do usuário anterior fica em cache
+  // On sign-out, no data from the previous user stays in cache
   useEffect(() => {
     if (status === 'signedOut') {
       queryClient.clear();

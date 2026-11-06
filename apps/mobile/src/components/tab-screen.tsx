@@ -33,24 +33,24 @@ const CHECK_STEP = 0.2;
 
 type Props = {
   title: string;
-  /** Cena do banner: `journey` (personagem andando, nas abas) ou `qg` (cenário da Home). */
+  /** Banner scene: `journey` (character walking, in the tabs) or `qg` (Home scenery). */
   scene?: 'journey' | 'qg';
-  /** O dono da tela pode enviar mensagens ao banner (ex.: ITEM_CHECKED depois de um check). */
+  /** The screen owner can send messages to the banner (e.g. ITEM_CHECKED after a check). */
   bannerRef?: RefObject<BannerViewHandle | null>;
-  /** Mensagens do banner (ex.: CHAPTER_TRANSITION_DONE abre o modal do capítulo). */
+  /** Messages from the banner (e.g. CHAPTER_TRANSITION_DONE opens the chapter modal). */
   onBannerMessage?: (message: BannerToAppMessage) => void;
-  /** Texto pequeno em cima do banner (ex.: "QG"). */
+  /** Small text above the banner (e.g. "QG"). */
   bannerLabel?: string;
-  /** Texto discreto embaixo do banner. */
+  /** Discreet text below the banner. */
   bannerCaption?: string;
-  /** Mostra um botão de voltar sobre o banner (telas empilhadas). */
+  /** Shows a back button over the banner (stacked screens). */
   onBack?: () => void;
-  /** Botões de simulação (só em desenvolvimento) para exercitar o banner sem a API. */
+  /** Simulation buttons (development only) to exercise the banner without the API. */
   debug?: boolean;
   children?: ReactNode;
 };
 
-/** Tela das abas: banner no topo (posição real do capítulo) e o conteúdo da aba embaixo. */
+/** Tabs screen: banner on top (real chapter position) and the tab content below. */
 export function TabScreen({
   title,
   scene = 'journey',
@@ -68,19 +68,19 @@ export function TabScreen({
   const banner = bannerRef ?? ownRef;
   const { data: me } = useMe();
   const { timeMode } = useQgPrefs();
-  // A jornada usa o cenário da história ativa (história = cenário)
+  // The journey uses the active story's scenery (story = scenery)
   const storySlug = me?.story?.slug;
   const storyScenario = isStoryScenario(storySlug) ? storySlug : DEFAULT_STORY_SCENARIO;
   const qgTime = useTimeOfDay(timeMode);
   const userId = me?.user.id;
   const level = me?.player.level;
   const shownLevel = useJourneyStore((state) => (userId ? state.shownLevel[userId] : undefined));
-  // Primeiro uso, ou nível que caiu: a cena exibida acompanha o nível atual
+  // First use, or a level that dropped: the scene shown follows the current level
   useEffect(() => {
     if (userId && level !== undefined)
       useJourneyStore.getState().reconcile(userId, sceneLevel(level));
   }, [userId, level]);
-  // Aba fora de foco continua montada (troca instantânea), mas o banner fica parado
+  // An out-of-focus tab stays mounted (instant switch), but the banner stays paused
   const [focused, setFocused] = useState(true);
   useFocusEffect(
     useCallback(() => {
@@ -93,7 +93,7 @@ export function TabScreen({
   const [simProgress, setSimProgress] = useState(0);
   const [lastEvent, setLastEvent] = useState('-');
 
-  // INIT: o cenário (do QG ou da história principal), a hora escolhida e o personagem salvo
+  // INIT: the scenery (QG or main story), the chosen time and the saved character
   const initMessage = useMemo<InitMessage>(
     () => ({
       v: 1,

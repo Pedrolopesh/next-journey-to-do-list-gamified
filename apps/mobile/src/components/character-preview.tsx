@@ -5,7 +5,7 @@ import { BannerView, type InitMessage, QG_ASPECT_RATIO } from '@/banner/banner-v
 import { useQgPrefs } from '@/features/qg/qg-store';
 import { useTimeOfDay } from '@/features/qg/use-time-of-day';
 
-/** Prévia do personagem no cenário do QG; muda na hora com a aparência, o cenário e a hora. */
+/** Character preview in the QG scene; changes right away with the appearance, the scenery and the time. */
 export function CharacterPreview({ layers }: { layers: CharacterLayers }) {
   const { scenario, timeMode } = useQgPrefs();
   const time = useTimeOfDay(timeMode);

@@ -5,7 +5,7 @@ import { colors, softGlow, space } from '@/theme';
 
 const FAB_SIZE = 52;
 
-/** Botão flutuante de criar item (52 pt, direito inferior). */
+/** Floating create-item button (52 pt, bottom right). */
 export function Fab({ label, onPress }: { label: string; onPress: () => void }) {
   return (
     <Pressable

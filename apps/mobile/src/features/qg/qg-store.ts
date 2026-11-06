@@ -12,8 +12,9 @@ type QgPrefs = {
 };
 
 /**
- * Preferências do QG (cenário e hora). O cenário da jornada vem da história ativa, não daqui. Ficam só neste aparelho: não são dado sensível e não
- * mudam a progressão, por isso não passam pela API.
+ * QG preferences (scenery and time). The journey scenery comes from the active story, not from here.
+ * They stay on this device only: they are not sensitive data and do not change progression, so they
+ * do not go through the API.
  */
 export const useQgPrefs = create<QgPrefs>()(
   persist(
@@ -34,7 +35,7 @@ export const useQgPrefs = create<QgPrefs>()(
         scenario: state.scenario,
         timeMode: state.timeMode,
       }),
-      // Valor salvo inválido (ou de uma versão futura) volta ao padrão
+      // Invalid saved value (or from a future version) goes back to the default
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<Pick<QgPrefs, 'scenario' | 'timeMode'>>;
         return {

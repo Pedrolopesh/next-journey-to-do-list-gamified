@@ -2,13 +2,13 @@ import { GoogleSignin, isSuccessResponse } from '@react-native-google-signin/goo
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Platform } from 'react-native';
 
-// Client ids são públicos (não são segredos). Sem eles o botão do Google não aparece.
+// Client ids are public (not secrets). Without them the Google button does not show.
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '';
 
 export const googleEnabled = GOOGLE_WEB_CLIENT_ID !== '';
 
-/** Prepara o Google (uma vez por tela que o usa). Sem client id configurado não faz nada. */
+/** Prepares Google (once per screen that uses it). Does nothing without a configured client id. */
 export function configureGoogle(): void {
   if (!googleEnabled) return;
   GoogleSignin.configure({
@@ -17,19 +17,19 @@ export function configureGoogle(): void {
   });
 }
 
-/** Apple só existe no iOS e quando o aparelho suporta. */
+/** Apple only exists on iOS and when the device supports it. */
 export async function isAppleAvailable(): Promise<boolean> {
   return Platform.OS === 'ios' && (await AppleAuthentication.isAvailableAsync());
 }
 
-/** Abre o login do Google e devolve o ID token, ou `null` se a pessoa cancelou. */
+/** Opens the Google login and returns the ID token, or `null` if the person cancelled. */
 export async function getGoogleIdToken(): Promise<string | null> {
   await GoogleSignin.hasPlayServices();
   const result = await GoogleSignin.signIn();
   return isSuccessResponse(result) ? (result.data.idToken ?? null) : null;
 }
 
-/** Abre o login da Apple e devolve o ID token, ou `null` se a pessoa cancelou. */
+/** Opens the Apple login and returns the ID token, or `null` if the person cancelled. */
 export async function getAppleIdToken(): Promise<string | null> {
   try {
     const credential = await AppleAuthentication.signInAsync({
@@ -40,7 +40,7 @@ export async function getAppleIdToken(): Promise<string | null> {
     });
     return credential.identityToken ?? null;
   } catch (cause) {
-    // Cancelar o fluxo da Apple não é erro; qualquer outra falha sobe
+    // Cancelling the Apple flow is not an error; any other failure bubbles up
     if ((cause as { code?: string }).code === 'ERR_REQUEST_CANCELED') return null;
     throw cause;
   }

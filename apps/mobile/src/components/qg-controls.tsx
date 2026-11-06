@@ -7,7 +7,7 @@ import { SCENARIOS, TIME_MODES, timeOfDayFor } from '@/features/qg/options';
 import { useQgPrefs } from '@/features/qg/qg-store';
 import { colors, fontSize, radius, space } from '@/theme';
 
-/** Escolha do ambiente do QG: cenário e hora do dia. Vale na Home e na prévia do personagem. */
+/** QG environment choice: scenery and time of day. Applies on the Home and in the character preview. */
 export function QgControls() {
   const { t } = useTranslation();
   const { scenario, timeMode, setScenario, setTimeMode } = useQgPrefs();

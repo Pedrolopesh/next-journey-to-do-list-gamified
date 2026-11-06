@@ -3,8 +3,8 @@ import { isNetworkError, toApiError } from '@/api/errors';
 type Translate = (key: string) => string;
 
 /**
- * Texto de erro para o toast: sem rede, código conhecido da API (`byCode`) ou mensagem genérica.
- * Nunca repassa a mensagem crua do servidor para o usuário.
+ * Error text for the toast: no network, a known API code (`byCode`) or a generic message.
+ * Never passes the server's raw message on to the user.
  */
 export function describeError(
   error: unknown,

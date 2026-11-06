@@ -44,7 +44,7 @@ export default function ProfileScreen() {
   const signOut = (): Promise<boolean> =>
     run(async () => {
       const { refreshToken, clear } = useSessionStore.getState();
-      // Revoga a sessão no servidor (best effort) e limpa o aparelho de qualquer jeito
+      // Revokes the session on the server (best effort) and clears the device either way
       if (refreshToken) await logout(refreshToken).catch(() => undefined);
       queryClient.clear();
       useFeedbackStore.getState().clear();

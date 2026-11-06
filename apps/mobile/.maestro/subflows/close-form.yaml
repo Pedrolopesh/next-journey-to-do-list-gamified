@@ -1,4 +1,4 @@
-# Se o formulário de criar item ficou aberto (execução anterior que falhou), fecha pelo X.
+# If the create item form was left open (a previous run that failed), closes it with the X.
 appId: br.com.wetechhub.app.dev
 ---
 - runFlow:

@@ -5,8 +5,8 @@ import { useFeedbackStore } from '@/features/feedback/feedback-store';
 import { useSessionStore } from './session-store';
 
 /**
- * Encerra a sessão só neste aparelho (a API já foi avisada antes): limpa os dados em cache, a fila de
- * avisos e os tokens. Um único lugar para sair, usado na exclusão da conta e na lista de sessões.
+ * Ends the session on this device only (the API was already notified): clears cached data, the notice
+ * queue and the tokens. A single place to sign out, used by account deletion and the session list.
  */
 export async function signOutLocally(queryClient: QueryClient): Promise<void> {
   queryClient.clear();

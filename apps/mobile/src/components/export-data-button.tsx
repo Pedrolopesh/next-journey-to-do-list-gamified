@@ -6,13 +6,13 @@ import { Button } from '@/components/button';
 import { describeError } from '@/features/feedback/error-message';
 import { useAction } from '@/features/feedback/use-action';
 
-/** A pessoa fechou a folha de compartilhamento sem enviar o arquivo. */
+/** The person closed the share sheet without sending the file. */
 class Dismissed extends Error {}
 
 /**
- * "Exportar meus dados" (LGPD, direito de acesso): busca o JSON da conta e abre a folha de compartilhamento
- * do sistema. O conteúdo passa só pela memória e pela folha; não é gravado nem registrado em log. O JSON vai
- * compacto (sem indentação) para caber no limite de tamanho da folha de compartilhamento do Android.
+ * "Exportar meus dados" (LGPD, right of access): fetches the account JSON and opens the system share
+ * sheet. The content only goes through memory and the sheet; it is neither saved nor logged. The JSON is
+ * compact (no indentation) to fit the size limit of Android's share sheet.
  */
 export function ExportDataButton() {
   const { t } = useTranslation();

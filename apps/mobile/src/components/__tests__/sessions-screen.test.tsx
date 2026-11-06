@@ -56,7 +56,7 @@ describe('SessionsScreen', () => {
     useToastStore.setState({ current: null });
   });
 
-  it('mostra os aparelhos e marca o atual', async () => {
+  it('shows the devices and marks the current one', async () => {
     (useSessions as jest.Mock).mockReturnValue(
       loaded([
         session({ id: 'a', deviceName: 'iOS · iPhone', current: true }),
@@ -70,7 +70,7 @@ describe('SessionsScreen', () => {
     expect(screen.getByLabelText('Encerrar sessão')).toBeTruthy();
   });
 
-  it('encerrar outro aparelho chama a API, avisa e não derruba a sessão local', async () => {
+  it('ending another device calls the API, warns and does not drop the local session', async () => {
     (useSessions as jest.Mock).mockReturnValue(
       loaded([session({ id: 'a', current: true }), session({ id: 'b', deviceName: 'Tablet' })]),
     );
@@ -85,7 +85,7 @@ describe('SessionsScreen', () => {
     expect(clear).not.toHaveBeenCalled();
   });
 
-  it('sair de todos os aparelhos encerra tudo e a sessão local', async () => {
+  it('signing out of all devices ends everything and the local session', async () => {
     (useSessions as jest.Mock).mockReturnValue(loaded([session({ id: 'a', current: true })]));
     (revokeAllSessions as jest.Mock).mockResolvedValue(undefined);
     const clear = jest.spyOn(useSessionStore.getState(), 'clear').mockResolvedValue();
@@ -98,7 +98,7 @@ describe('SessionsScreen', () => {
     expect(useToastStore.getState().current?.message).toBe('Você saiu de todos os aparelhos.');
   });
 
-  it('falha ao carregar mostra o aviso e deixa tentar de novo', async () => {
+  it('a load failure shows the warning and allows a retry', async () => {
     const refetch = jest.fn();
     (useSessions as jest.Mock).mockReturnValue({
       data: undefined,

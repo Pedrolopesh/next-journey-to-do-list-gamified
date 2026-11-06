@@ -1,6 +1,6 @@
 import type { LpcLook, TimeOfDay } from '@nextjourney/contracts';
 
-/** Cenários do QG (Home). Os ids são os mesmos de `apps/banner/src/qg/scenes`. */
+/** QG scenarios (Home). The ids are the same as in `apps/banner/src/qg/scenes`. */
 export const SCENARIOS = [
   'cabin',
   'beach',
@@ -13,7 +13,7 @@ export const SCENARIOS = [
 export type Scenario = (typeof SCENARIOS)[number];
 export const DEFAULT_SCENARIO: Scenario = 'cabin';
 
-/** Cenários das histórias (uma história por cenário): os mesmos do QG, menos a cabana. */
+/** Story scenarios (one story per scenario): the same as the QG, minus the cabin. */
 export const STORY_SCENARIOS = [
   'beach',
   'rooftop',
@@ -25,7 +25,7 @@ export const STORY_SCENARIOS = [
 export type StoryScenario = (typeof STORY_SCENARIOS)[number];
 export const DEFAULT_STORY_SCENARIO: StoryScenario = 'beach';
 
-/** Hora do QG: automática (relógio do aparelho) ou fixa. */
+/** QG time: automatic (device clock) or fixed. */
 export const TIME_MODES = ['auto', 'morning', 'afternoon', 'night'] as const;
 export type TimeMode = (typeof TIME_MODES)[number];
 
@@ -41,7 +41,7 @@ export function isTimeMode(value: unknown): value is TimeMode {
   return TIME_MODES.some((mode) => mode === value);
 }
 
-/** Manhã das 5h às 11h59, tarde das 12h às 17h59, noite no resto. */
+/** Morning from 5:00 to 11:59, afternoon from 12:00 to 17:59, night for the rest. */
 export function timeOfDayFor(date: Date): TimeOfDay {
   const hour = date.getHours();
   if (hour >= 5 && hour < 12) return 'morning';
@@ -53,7 +53,7 @@ export function resolveTime(mode: TimeMode, now: Date): TimeOfDay {
   return mode === 'auto' ? timeOfDayFor(now) : mode;
 }
 
-// ---- Aparência do personagem: as mesmas opções do laboratório do banner ----
+// ---- Character appearance: the same options as the banner lab ----
 
 export const BODY_TYPES = ['male', 'female'] as const;
 export const SKIN_TONES = ['light', 'amber', 'olive', 'taupe', 'bronze', 'brown', 'black'] as const;
@@ -114,7 +114,7 @@ export const DEFAULT_LOOK: LpcLook = {
   feetColor: 'brown',
 };
 
-/** Chave simples de pele (cadastro antigo e recompensas) mais próxima da pele LPC escolhida. */
+/** Simple skin key (old sign-up and rewards) closest to the chosen LPC skin. */
 export function legacySkin(skin: string): string {
   if (skin === 'amber' || skin === 'olive' || skin === 'taupe') return 'tan';
   if (skin === 'bronze' || skin === 'brown') return 'brown';
@@ -122,7 +122,7 @@ export function legacySkin(skin: string): string {
   return 'light';
 }
 
-/** Chave simples de cabelo mais próxima do cabelo LPC escolhido. */
+/** Simple hair key closest to the chosen LPC hair. */
 export function legacyHair(hair: string | null): string {
   if (hair === null) return 'bald';
   if (hair === 'hair-curly-short') return 'curly-red';
@@ -130,7 +130,7 @@ export function legacyHair(hair: string | null): string {
   return 'long-black';
 }
 
-/** Looks prontos: um toque preenche toda a aparência (o usuário ainda pode ajustar). */
+/** Ready-made looks: one tap fills in the whole appearance (the user can still adjust it). */
 export const PRESETS: { id: string; look: LpcLook }[] = [
   { id: 'adventurer', look: DEFAULT_LOOK },
   {
@@ -198,7 +198,7 @@ export const PRESETS: { id: string; look: LpcLook }[] = [
 const pickOne = <T>(values: readonly T[], random: () => number): T =>
   values[Math.floor(random() * values.length)] as T;
 
-/** Aparência sorteada (sempre com roupa de cima, calça e calçado; cabelo pode ser nenhum). */
+/** Random appearance (always with a top, pants and shoes; hair can be none). */
 export function randomLook(random: () => number = Math.random): LpcLook {
   return {
     bodyType: pickOne(BODY_TYPES, random),

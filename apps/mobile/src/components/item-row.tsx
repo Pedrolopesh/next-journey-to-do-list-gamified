@@ -11,19 +11,19 @@ type Props = {
   item: Item;
   onCheck: (item: Item) => void;
   onOpen?: (item: Item) => void;
-  /** Check feito hoje neste aparelho: tocar de novo no check desmarca. */
+  /** Check done today on this device: tapping the check again unchecks. */
   onUndo?: (item: Item) => void;
-  /** Hábito: contador de hoje e da semana em vez de "feito". */
+  /** Habit: today and week counter instead of "done". */
   counters?: boolean;
 };
 
-/** Linha de item (diário, tarefa ou hábito): o mesmo componente de check para os 3 tipos. */
+/** Item row (daily, task or habit): the same check component for the 3 kinds. */
 export function ItemRow({ item, onCheck, onOpen, onUndo, counters = false }: Props) {
   const { t } = useTranslation();
   const done = item.doneToday;
-  // Feito hoje e ainda desfazível neste aparelho: o check vira "desmarcar"
+  // Done today and still undoable on this device: the check becomes "uncheck"
   const canUndo = done && onUndo !== undefined;
-  // Sem como desfazer, diário e tarefa feitos ficam bloqueados; hábito pode ser marcado de novo
+  // With no way to undo, a done daily or task is locked; a habit can be checked again
   const locked = done && !canUndo && item.type !== 'habit';
 
   return (

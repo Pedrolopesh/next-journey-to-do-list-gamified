@@ -6,20 +6,20 @@ import { Insignia } from './pixel-art';
 type Props = {
   visible: boolean;
   name: string;
-  /** Critério da conquista (opcional: some quando o catálogo ainda não foi carregado). */
+  /** Achievement criterion (optional: hidden while the catalog has not loaded yet). */
   description?: string | undefined;
-  /** Insígnia (nome em `@nextjourney/insignias`). */
+  /** Badge (name in `@nextjourney/insignias`). */
   glyph: string;
-  /** Cor da moldura (classe) conquistada: pinta o topo do modal. */
+  /** Frame color (class) earned: paints the top of the modal. */
   tierColor: string;
   onContinue: () => void;
   onSeeAll: () => void;
 };
 
 /**
- * Alerta de conquista nova: o mesmo modal em todo o app. Topo na cor da classe com a insígnia no
- * centro, nome da conquista, um incentivo e duas saídas: continuar (fecha) ou ver todas as
- * conquistas (abre a galeria).
+ * New achievement alert: the same modal across the app. Top in the class color with the badge in the
+ * center, the achievement name, an encouragement and two exits: continue (closes) or see all the
+ * achievements (opens the gallery).
  */
 export function AchievementUnlockedModal({
   visible,

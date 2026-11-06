@@ -12,14 +12,14 @@ import { createHttpClient } from './http';
 
 const API_URL = resolveApiUrl({
   configured: process.env.EXPO_PUBLIC_API_URL,
-  // Bundle de release (__DEV__ falso) conta como produção mesmo se a variante do manifesto faltar
+  // Release bundle (__DEV__ false) counts as production even if the manifest variant is missing
   isProduction: !__DEV__ || Constants.expoConfig?.extra?.appVariant === 'production',
   platform: Platform.OS,
 });
 export const baseURL = `${API_URL}/v1`;
 log.info('app.api', { baseURL });
 
-/** Cliente da API com refresh automático ligado à sessão. */
+/** API client with automatic refresh tied to the session. */
 export const http = createHttpClient({
   baseURL,
   log,
@@ -35,12 +35,12 @@ export const http = createHttpClient({
   },
 });
 
-// A lista de sessões da conta mostra este nome (a API limpa e limita o texto)
+// The account's session list shows this name (the API cleans and limits the text)
 http.defaults.headers.common['X-Device-Name'] = encodeURIComponent(deviceName());
 
 /**
- * Ao abrir o app: se há refresh token salvo, troca por tokens novos e entra; senão, vai para o login.
- * Não guardamos o usuário no aparelho: ele vem da resposta do refresh.
+ * On app open: if a refresh token is saved, trade it for new tokens and sign in; otherwise go to login.
+ * The user is not stored on the device: it comes from the refresh response.
  */
 export async function restoreSession(): Promise<void> {
   const store = useSessionStore.getState();
@@ -57,7 +57,7 @@ export async function restoreSession(): Promise<void> {
     );
     await store.setSession(authResponseSchema.parse(data));
   } catch (error) {
-    // Sem rede ou API fora do ar: mantém o refresh token salvo e deixa entrar de novo depois
+    // No network or API down: keep the saved refresh token and let the person in again later
     if (isAxiosError(error) && !error.response) {
       store.markSignedOut();
       return;

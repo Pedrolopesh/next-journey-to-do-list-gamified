@@ -1,6 +1,6 @@
-// Dados puros da pixel art (sem React Native): o app e o laboratório do banner usam o mesmo arquivo.
+// Pure pixel art data (no React Native): the app and the banner lab use the same file.
 
-/** Paleta da pixel art; "." é transparente. */
+/** Pixel art palette; "." is transparent. */
 export const PIXEL_PALETTE: Record<string, string> = {
   o: '#1a1233',
   H: '#6b4423',
@@ -19,7 +19,7 @@ export const PIXEL_PALETTE: Record<string, string> = {
   W: '#f1f5f9',
 };
 
-/** Ícones 12x12; cada letra é uma cor da paleta. */
+/** 12x12 icons; each letter is a palette color. */
 export const PIXEL_ART = {
   character: [
     '....oooo....',

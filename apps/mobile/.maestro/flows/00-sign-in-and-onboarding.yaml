@@ -1,11 +1,11 @@
-# Entra com a conta de teste (e-mail e código) e passa pelo onboarding (introdução, meta,
-# personagem, história e perguntas finais).
-# Variáveis: MAESTRO_EMAIL e MAESTRO_CODE (criadas por scripts/ui-tests.mjs).
-# Tolerante ao estado do aparelho: sessão ativa, onboarding pela metade ou tela de boas-vindas.
+# Signs in with the test account (email and code) and goes through the onboarding (intro, goal,
+# character, story and final questions).
+# Variables: MAESTRO_EMAIL and MAESTRO_CODE (created by scripts/ui-tests.mjs).
+# Tolerant of the device state: active session, half-done onboarding or the welcome screen.
 appId: br.com.wetechhub.app.dev
 ---
 - launchApp
-# O bundle leva um tempo para carregar
+# The bundle takes a while to load
 - extendedWaitUntil:
     visible: 'Entrar com e-mail|Perfil(, tab.*)?|Pular introdução|Começar a aventura|O que você quer mudar.*|Escolha o seu personagem|Escolha sua história|Conquista desbloqueada!'
     timeout: 120000
@@ -23,20 +23,20 @@ appId: br.com.wetechhub.app.dev
     timeout: 30000
 - tapOn: 'Entrar com e-mail'
 - runFlow:
-    file: ../subflows/tocar-campo.yaml
+    file: ../subflows/tap-field.yaml
     env:
-      CAMPO: 'E-mail'
+      FIELD: 'E-mail'
 - inputText: ${MAESTRO_EMAIL}
-# O botão sobe com o teclado: não precisa esconder o teclado antes de tocar
+# The button rises with the keyboard: no need to hide the keyboard before tapping
 - tapOn: 'Enviar código'
 - extendedWaitUntil:
     visible: 'Digite o código'
     timeout: 30000
-# O campo do código já abre com o foco
+# The code field already opens focused
 - inputText: ${MAESTRO_CODE}
 - tapOn: 'Confirmar'
-# Conta nova (tutorial ainda não visto): a introdução é a primeira tela; se houver uma conquista
-# pendente, ela aparece por cima do tutorial (e só ela)
+# New account (tutorial not seen yet): the intro is the first screen; if there is a pending
+# achievement, it shows on top of the tutorial (and only it)
 - extendedWaitUntil:
     visible: 'Começar a aventura|Conquista desbloqueada!'
     timeout: 30000

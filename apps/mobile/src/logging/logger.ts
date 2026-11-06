@@ -1,30 +1,30 @@
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 export type LogEntry = {
-  /** ISO 8601, hora local do aparelho em UTC. */
+  /** ISO 8601, device local time in UTC. */
   at: string;
   level: LogLevel;
-  /** Nome do evento no formato `area.acao` (ex.: `http.response`, `check.start`). */
+  /** Event name in the `area.action` format (e.g. `http.response`, `check.start`). */
   event: string;
   data?: unknown;
 };
 
 export type LoggerOptions = {
-  /** Em desenvolvimento inclui corpos de requisição/resposta (sempre redigidos). */
+  /** In development includes request/response bodies (always redacted). */
   verbose: boolean;
   sink: (entry: LogEntry) => void;
   now?: () => Date;
-  /** Quantos registros ficam na memória para consulta (padrão 300). */
+  /** How many records stay in memory for lookup (default 300). */
   capacity?: number;
 };
 
-/** Campos que nunca vão para o log, em nenhuma circunstância. */
+/** Fields that never go to the log, under any circumstance. */
 const SENSITIVE = /pass|token|secret|authorization|cookie|e-?mail|credential|code|signature/i;
 const MAX_STRING = 200;
 const MAX_ITEMS = 10;
 const MAX_DEPTH = 4;
 
-/** Copia o valor trocando segredos por `[REDACTED]` e cortando textos e listas longos. */
+/** Copies the value swapping secrets for `[REDACTED]` and cutting long texts and lists. */
 export function redact(value: unknown, depth = 0): unknown {
   if (value === null || value === undefined) return value;
   if (typeof value === 'string') {
@@ -79,7 +79,7 @@ export function createLogger({
     error: (event: string, data?: unknown) => {
       write('error', event, data);
     },
-    /** Últimos registros (mais antigo primeiro), para exibir ou anexar a um relato de erro. */
+    /** Latest records (oldest first), to display or attach to an error report. */
     recent: (): readonly LogEntry[] => recent,
   };
 }

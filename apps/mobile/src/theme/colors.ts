@@ -1,4 +1,4 @@
-// Tokens de cor do design system (tema escuro). Fonte: docs/FIGMA-INTERA.md, coleção `Color`.
+// Color tokens of the design system (dark theme). Source: docs/FIGMA-INTERA.md, `Color` collection.
 export const colors = {
   bg: {
     base: '#1a1a2e',
@@ -24,7 +24,7 @@ export const colors = {
     subtle: '#1e293b',
     strong: '#334155',
   },
-  // Classes das conquistas (moldura da insígnia): bronze, prata, ouro e diamante
+  // Achievement classes (badge frame): bronze, silver, gold and diamond
   tier: {
     bronze: '#cd7f32',
     silver: '#cbd5e1',

@@ -15,9 +15,9 @@ import { useAction } from '@/features/feedback/use-action';
 import { colors, fontSize, radius, space } from '@/theme';
 
 /**
- * Minha história (RF-29): o banner da jornada em cima, as histórias (uma por cenário) para escolher
- * e os capítulos da história selecionada. Concluídos com check, atual com borda e progresso, futuros
- * com cadeado. Cada nível ganho na história ativa conclui um capítulo; o de cada história fica salvo.
+ * My story (RF-29): the journey banner on top, the stories (one per scenery) to pick from
+ * and the chapters of the selected story. Completed ones with a check, the current one with a border and progress,
+ * future ones with a padlock. Each level gained in the active story completes a chapter; each story's is saved.
  */
 export default function TimelineScreen() {
   const { t } = useTranslation();

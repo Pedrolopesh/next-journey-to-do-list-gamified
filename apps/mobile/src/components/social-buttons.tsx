@@ -18,8 +18,8 @@ import { toast } from '@/features/feedback/toast-store';
 import { colors, fontSize, space } from '@/theme';
 
 /**
- * Login com Google e com Apple. O aparelho obtém o ID token e só ele vai para a API, que valida no
- * servidor. Os botões só aparecem quando o recurso está configurado/disponível.
+ * Sign in with Google and with Apple. The device gets the ID token and only that goes to the API, which
+ * validates it on the server. The buttons only show when the feature is configured/available.
  */
 export function SocialButtons({ showDivider = true }: { showDivider?: boolean }) {
   const { t } = useTranslation();

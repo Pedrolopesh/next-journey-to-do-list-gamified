@@ -1,5 +1,5 @@
-# Fecha o modal de conquista, se houver um aberto, e confere que NÃO abriu outro em seguida
-# (regra: um modal de conquista por ação).
+# Closes the achievement modal, if one is open, and checks that another did NOT open right after
+# (rule: one achievement modal per action).
 appId: br.com.wetechhub.app.dev
 ---
 - runFlow:

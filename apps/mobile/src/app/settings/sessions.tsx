@@ -13,11 +13,11 @@ import { describeError } from '@/features/feedback/error-message';
 import { useAction } from '@/features/feedback/use-action';
 import { colors, fontSize, radius, space } from '@/theme';
 
-/** Data e hora curtas, no idioma do aparelho. */
+/** Short date and time, in the device language. */
 const when = (iso: string): string =>
   new Date(iso).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
 
-/** Aparelhos com a conta aberta: ver, encerrar um ou sair de todos. */
+/** Devices with the account open: view, end one or sign out of all. */
 export default function SessionsScreen() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -40,7 +40,7 @@ export default function SessionsScreen() {
     void end
       .run(async () => {
         await revokeSession(session.id);
-        // Encerrar a sessão deste aparelho é o mesmo que sair: volta ao login
+        // Ending this device's session is the same as signing out: back to login
         if (session.current) await signOutLocally(queryClient);
       })
       .then((ok) => {
