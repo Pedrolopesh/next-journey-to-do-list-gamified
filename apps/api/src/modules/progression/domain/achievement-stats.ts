@@ -2,13 +2,13 @@ import type { LocalDate } from '@nextjourney/contracts';
 
 import { addDays } from './dates.js';
 
-export type TipoDeItem = 'daily' | 'todo' | 'habit';
+export type ItemKind = 'daily' | 'todo' | 'habit';
 
 /** An active (not undone) check with what matters from its item. */
 export type CheckRow = {
   checkedOn: LocalDate;
   itemId: string;
-  type: TipoDeItem;
+  type: ItemKind;
   categoryId: string;
   difficulty: 'easy' | 'medium' | 'hard';
   dueAt: Date | null;
@@ -39,12 +39,12 @@ export type CheckStats = {
 
 const DAY_MS = 86_400_000;
 
-function diffDias(a: LocalDate, b: LocalDate): number {
+function daysBetween(a: LocalDate, b: LocalDate): number {
   return Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / DAY_MS);
 }
 
 /** Longest run of consecutive days in a list of days (no repeats, any order). */
-export function maiorSequencia(days: readonly LocalDate[]): number {
+export function longestRun(days: readonly LocalDate[]): number {
   const sorted = [...new Set(days)].sort();
   let best = 0;
   let run = 0;
@@ -58,60 +58,60 @@ export function maiorSequencia(days: readonly LocalDate[]): number {
 }
 
 /** Stats of the active checks: everything the consistency, habit and to-do achievements ask for. */
-export function estatisticasDeChecks(rows: readonly CheckRow[]): CheckStats {
+export function checkStats(rows: readonly CheckRow[]): CheckStats {
   const days = [...new Set(rows.map((r) => r.checkedOn))].sort();
 
-  const porDia = new Map<LocalDate, number>();
-  for (const r of rows) porDia.set(r.checkedOn, (porDia.get(r.checkedOn) ?? 0) + 1);
+  const perDay = new Map<LocalDate, number>();
+  for (const r of rows) perDay.set(r.checkedOn, (perDay.get(r.checkedOn) ?? 0) + 1);
 
   const checksByType = { daily: 0, todo: 0, habit: 0 };
   for (const r of rows) checksByType[r.type] += 1;
 
   const habitRows = rows.filter((r) => r.type === 'habit');
   const habitDays = new Set(habitRows.map((r) => r.checkedOn)).size;
-  const diasPorHabito = new Map<string, LocalDate[]>();
-  const habitosPorDia = new Map<LocalDate, Set<string>>();
+  const daysPerHabit = new Map<string, LocalDate[]>();
+  const habitsPerDay = new Map<LocalDate, Set<string>>();
   for (const r of habitRows) {
-    diasPorHabito.set(r.itemId, [...(diasPorHabito.get(r.itemId) ?? []), r.checkedOn]);
-    const set = habitosPorDia.get(r.checkedOn) ?? new Set<string>();
+    daysPerHabit.set(r.itemId, [...(daysPerHabit.get(r.itemId) ?? []), r.checkedOn]);
+    const set = habitsPerDay.get(r.checkedOn) ?? new Set<string>();
     set.add(r.itemId);
-    habitosPorDia.set(r.checkedOn, set);
+    habitsPerDay.set(r.checkedOn, set);
   }
 
-  const categoriasPorDia = new Map<LocalDate, Set<string>>();
-  const tiposPorDia = new Map<LocalDate, Set<TipoDeItem>>();
+  const categoriesPerDay = new Map<LocalDate, Set<string>>();
+  const kindsPerDay = new Map<LocalDate, Set<ItemKind>>();
   for (const r of rows) {
-    const categorias = categoriasPorDia.get(r.checkedOn) ?? new Set<string>();
-    categorias.add(r.categoryId);
-    categoriasPorDia.set(r.checkedOn, categorias);
-    const tipos = tiposPorDia.get(r.checkedOn) ?? new Set<TipoDeItem>();
-    tipos.add(r.type);
-    tiposPorDia.set(r.checkedOn, tipos);
+    const categories = categoriesPerDay.get(r.checkedOn) ?? new Set<string>();
+    categories.add(r.categoryId);
+    categoriesPerDay.set(r.checkedOn, categories);
+    const kinds = kindsPerDay.get(r.checkedOn) ?? new Set<ItemKind>();
+    kinds.add(r.type);
+    kindsPerDay.set(r.checkedOn, kinds);
   }
-  const diasCom = (minimo: number): number =>
-    [...categoriasPorDia.values()].filter((set) => set.size >= minimo).length;
+  const daysWithAtLeast = (minimum: number): number =>
+    [...categoriesPerDay.values()].filter((set) => set.size >= minimum).length;
 
   const todos = new Map<string, CheckRow>();
   for (const r of rows) if (r.type === 'todo') todos.set(r.itemId, r);
-  const concluidas = [...todos.values()].filter((r) => r.completedAt !== null);
+  const completed = [...todos.values()].filter((r) => r.completedAt !== null);
 
   return {
     distinctDays: days.length,
-    bestDayRun: maiorSequencia(days),
-    hadComeback: days.some((day, i) => i > 0 && diffDias(days[i - 1] as LocalDate, day) >= 8),
-    maxChecksInDay: Math.max(0, ...porDia.values()),
+    bestDayRun: longestRun(days),
+    hadComeback: days.some((day, i) => i > 0 && daysBetween(days[i - 1] as LocalDate, day) >= 8),
+    maxChecksInDay: Math.max(0, ...perDay.values()),
     checksByType,
     dailyDays: new Set(rows.filter((r) => r.type === 'daily').map((r) => r.checkedOn)).size,
     habitDays,
-    bestHabitRun: Math.max(0, ...[...diasPorHabito.values()].map(maiorSequencia)),
-    maxHabitsInDay: Math.max(0, ...[...habitosPorDia.values()].map((s) => s.size)),
-    balancedDays: { three: diasCom(3), five: diasCom(5) },
-    podiumDays: [...tiposPorDia.values()].filter((set) => set.size >= 3).length,
+    bestHabitRun: Math.max(0, ...[...daysPerHabit.values()].map(longestRun)),
+    maxHabitsInDay: Math.max(0, ...[...habitsPerDay.values()].map((s) => s.size)),
+    balancedDays: { three: daysWithAtLeast(3), five: daysWithAtLeast(5) },
+    podiumDays: [...kindsPerDay.values()].filter((set) => set.size >= 3).length,
     todosDone: todos.size,
-    todosOnTime: concluidas.filter(
+    todosOnTime: completed.filter(
       (r) => r.dueAt !== null && r.completedAt !== null && r.completedAt <= r.dueAt,
     ).length,
-    todosLate: concluidas.filter(
+    todosLate: completed.filter(
       (r) => r.dueAt !== null && r.completedAt !== null && r.completedAt > r.dueAt,
     ).length,
     hardTodosDone: [...todos.values()].filter((r) => r.difficulty === 'hard').length,
@@ -119,9 +119,9 @@ export function estatisticasDeChecks(rows: readonly CheckRow[]): CheckStats {
 }
 
 /** What happened on today's local day: how many to-dos were completed. */
-export function resumoDeHoje(rows: readonly CheckRow[], hoje: LocalDate): { todosToday: number } {
-  const hojeRows = rows.filter((r) => r.checkedOn === hoje);
+export function todaySummary(rows: readonly CheckRow[], today: LocalDate): { todosToday: number } {
+  const todayRows = rows.filter((r) => r.checkedOn === today);
   return {
-    todosToday: new Set(hojeRows.filter((r) => r.type === 'todo').map((r) => r.itemId)).size,
+    todosToday: new Set(todayRows.filter((r) => r.type === 'todo').map((r) => r.itemId)).size,
   };
 }

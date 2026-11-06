@@ -1,7 +1,7 @@
 import { ACHIEVEMENT_CATALOG } from '@nextjourney/contracts';
 import { describe, expect, it } from 'vitest';
 
-import { type AchievementContext, progressoDaConquista } from './achievements.js';
+import { type AchievementContext, achievementProgress } from './achievements.js';
 
 const vazio = {
   totalChecks: 0,
@@ -39,26 +39,26 @@ const vazio = {
   unlocked: new Set<string>(),
 } satisfies AchievementContext;
 
-/** Números de um texto, sem o ponto de milhar ("3.000" vira 3000). */
-const numeros = (texto: string): number[] =>
+/** Numbers in a text, without the thousands separator ("3.000" becomes 3000). */
+const numbers = (texto: string): number[] =>
   (texto.match(/\d[\d.]*/g) ?? []).map((n) => Number(n.replace(/\./g, '')));
 
-describe('catálogo e regras dizem o mesmo número', () => {
+describe('catalog and rules state the same number', () => {
   const comMeta = ACHIEVEMENT_CATALOG.flatMap((a) => {
-    const progresso = progressoDaConquista(a.slug, vazio);
-    return progresso ? [{ a, alvo: progresso.target }] : [];
+    const progresso = achievementProgress(a.slug, vazio);
+    return progresso ? [{ a, target: progresso.target }] : [];
   });
 
-  it('há conquistas com meta numérica para conferir', () => {
+  it('there are achievements with a numeric target to check', () => {
     expect(comMeta.length).toBeGreaterThan(40);
   });
 
-  it.each(comMeta.map(({ a, alvo }) => [a.slug, a.name, a.description, alvo] as const))(
+  it.each(comMeta.map(({ a, target }) => [a.slug, a.name, a.description, target] as const))(
     '%s: o texto cita a meta da regra',
-    (_slug, name, description, alvo) => {
-      expect(numeros(description), `descrição "${description}"`).toContain(alvo);
-      // o nome só tem número quando é a mesma meta (ex.: "Chama de 5 dias")
-      for (const n of numeros(name)) expect(n, `nome "${name}"`).toBe(alvo);
+    (_slug, name, description, target) => {
+      expect(numbers(description), `description "${description}"`).toContain(target);
+      // the name only has a number when it is the same target (e.g. "5-day flame")
+      for (const n of numbers(name)) expect(n, `nome "${name}"`).toBe(target);
     },
   );
 });

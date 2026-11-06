@@ -15,15 +15,15 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { AchievementsService } from '../achievements/achievements.service.js';
 import {
   addDays,
-  calcularStreak,
-  diaDaSemana,
-  diaLocal,
-  estaAtrasado,
+  calculateStreak,
+  dayOfWeek,
+  isOverdue,
+  localDay,
 } from '../progression/domain/index.js';
 
 /** Monday of the week of a local date (the week runs Monday to Sunday). */
 function inicioDaSemana(date: string): string {
-  const dow = diaDaSemana(date);
+  const dow = dayOfWeek(date);
   return addDays(date, dow === 0 ? -6 : 1 - dow);
 }
 
@@ -47,7 +47,7 @@ export class ItemsService {
     });
     if (!user) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Usuário não encontrado');
 
-    const hoje = date ?? diaLocal(this.clock.now(), user.timezone);
+    const hoje = date ?? localDay(this.clock.now(), user.timezone);
     const semana = inicioDaSemana(hoje);
 
     const items = await this.prisma.item.findMany({
@@ -150,7 +150,7 @@ export class ItemsService {
     if (!category) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Categoria não encontrada');
 
     const now = this.clock.now();
-    const hoje = diaLocal(now, user.timezone);
+    const hoje = localDay(now, user.timezone);
     const item = await this.prisma.$transaction(async (tx) => {
       const created = await tx.item.create({
         data: {
@@ -209,7 +209,7 @@ export class ItemsService {
       select: { timezone: true },
     });
     const now = this.clock.now();
-    const hoje = diaLocal(now, user.timezone);
+    const hoje = localDay(now, user.timezone);
     const checks = await this.prisma.itemCheck.findMany({
       where: { itemId, revertedAt: null },
       select: { id: true, checkedOn: true },
@@ -262,7 +262,7 @@ export class ItemsService {
           item.dueAt !== null &&
           item.completedAt === null &&
           item.dueAt < now
-        : estaAtrasado(
+        : isOverdue(
             {
               scheduleDays: item.scheduleDays,
               createdOn: item.createdOn,
@@ -271,11 +271,11 @@ export class ItemsService {
             hoje,
           ),
       streak: isDaily
-        ? calcularStreak(
+        ? calculateStreak(
             {
               scheduleDays: item.scheduleDays,
               createdOn: item.createdOn,
-              diasMarcados: checkedDays,
+              checkedDays: checkedDays,
             },
             hoje,
           )

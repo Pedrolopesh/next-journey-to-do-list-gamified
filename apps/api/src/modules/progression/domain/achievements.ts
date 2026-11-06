@@ -1,6 +1,6 @@
 import { ACHIEVEMENT_CATALOG, type AchievementSlug, type LocalDate } from '@nextjourney/contracts';
 
-import { addDays, diaDaSemana } from './dates.js';
+import { addDays, dayOfWeek } from './dates.js';
 
 export type { AchievementSlug };
 
@@ -17,7 +17,7 @@ export type AchievementContext = {
   checkHour: number | null;
   /** To-dos completed today. */
   todosToday: number;
-  /** Consecutive complete days (see `diasSeguidosCompletos`). */
+  /** Consecutive complete days (see `countFullDaysStreak`). */
   fullDaysStreak: number;
   /** Recent days on which every scheduled daily (3 or more) was done. */
   perfectDays: number;
@@ -163,22 +163,22 @@ const RULES: Record<AchievementSlug, Rule> = {
 };
 
 /** Every achievement whose criterion is met now. The caller decides what is new. */
-export function conquistasAtendidas(ctx: AchievementContext): AchievementSlug[] {
+export function metAchievements(ctx: AchievementContext): AchievementSlug[] {
   return ACHIEVEMENT_CATALOG.filter((a) => RULES[a.slug].met(ctx)).map((a) => a.slug);
 }
 
 /** Numeric progress for the gallery (null when the criterion is an event). */
-export function progressoDaConquista(
+export function achievementProgress(
   slug: AchievementSlug,
   ctx: AchievementContext,
 ): { current: number; target: number } | null {
   return RULES[slug].progress?.(ctx) ?? null;
 }
 
-export type DiarioDaChama = {
+export type DailyHistoryDays = {
   scheduleDays: readonly number[];
   createdOn: LocalDate;
-  diasMarcados: readonly LocalDate[];
+  checkedDays: readonly LocalDate[];
 };
 
 const MAX_LOOKBACK_DAYS = 90;
@@ -188,16 +188,19 @@ const MAX_LOOKBACK_DAYS = 90;
  * neutral; an incomplete today does not break it yet, an incomplete earlier day does. Rules:
  * docs/api/progressao-e-jogo.md.
  */
-export function diasSeguidosCompletos(diarios: readonly DiarioDaChama[], hoje: LocalDate): number {
-  const marcados = diarios.map((d) => new Set(d.diasMarcados));
+export function countFullDaysStreak(
+  dailyHistories: readonly DailyHistoryDays[],
+  today: LocalDate,
+): number {
+  const checkedSets = dailyHistories.map((d) => new Set(d.checkedDays));
   let streak = 0;
   for (let i = 0; i < MAX_LOOKBACK_DAYS; i += 1) {
-    const dia = addDays(hoje, -i);
-    const agendados = diarios
+    const day = addDays(today, -i);
+    const scheduled = dailyHistories
       .map((d, index) => ({ d, index }))
-      .filter(({ d }) => d.createdOn <= dia && d.scheduleDays.includes(diaDaSemana(dia)));
-    if (agendados.length === 0) continue;
-    const completo = agendados.every(({ index }) => marcados[index]?.has(dia) ?? false);
+      .filter(({ d }) => d.createdOn <= day && d.scheduleDays.includes(dayOfWeek(day)));
+    if (scheduled.length === 0) continue;
+    const completo = scheduled.every(({ index }) => checkedSets[index]?.has(day) ?? false);
     if (completo) streak += 1;
     else if (i > 0) break;
   }
@@ -205,24 +208,24 @@ export function diasSeguidosCompletos(diarios: readonly DiarioDaChama[], hoje: L
 }
 
 /**
- * Days, within the last `janela` days, with 3 or more scheduled dailies all done. Only that window
- * is evaluated because the retroactive lookback is capped: do not widen `janela` beyond it. Rules:
+ * Days, within the last `window` days, with 3 or more scheduled dailies all done. Only that window
+ * is evaluated because the retroactive lookback is capped: do not widen `window` beyond it. Rules:
  * docs/api/progressao-e-jogo.md.
  */
-export function diasPerfeitos(
-  diarios: readonly DiarioDaChama[],
-  hoje: LocalDate,
-  janela = MAX_LOOKBACK_DAYS,
+export function countPerfectDays(
+  dailyHistories: readonly DailyHistoryDays[],
+  today: LocalDate,
+  window = MAX_LOOKBACK_DAYS,
 ): number {
-  const marcados = diarios.map((d) => new Set(d.diasMarcados));
+  const checkedSets = dailyHistories.map((d) => new Set(d.checkedDays));
   let total = 0;
-  for (let i = 0; i < janela; i += 1) {
-    const dia = addDays(hoje, -i);
-    const agendados = diarios
+  for (let i = 0; i < window; i += 1) {
+    const day = addDays(today, -i);
+    const scheduled = dailyHistories
       .map((d, index) => ({ d, index }))
-      .filter(({ d }) => d.createdOn <= dia && d.scheduleDays.includes(diaDaSemana(dia)));
-    if (agendados.length < 3) continue;
-    if (agendados.every(({ index }) => marcados[index]?.has(dia) ?? false)) total += 1;
+      .filter(({ d }) => d.createdOn <= day && d.scheduleDays.includes(dayOfWeek(day)));
+    if (scheduled.length < 3) continue;
+    if (scheduled.every(({ index }) => checkedSets[index]?.has(day) ?? false)) total += 1;
   }
   return total;
 }

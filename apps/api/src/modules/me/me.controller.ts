@@ -27,7 +27,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { AccountService } from '../account/account.service.js';
 import { DataExportService } from '../account/data-export.service.js';
 import { AchievementsService } from '../achievements/achievements.service.js';
-import { expParaNivel } from '../progression/domain/index.js';
+import { expForLevel } from '../progression/domain/index.js';
 import { GameConfigService } from '../progression/game-config.service.js';
 import { NO_STORY, toPlayerState } from '../progression/player-state.js';
 import { StoriesService } from '../stories/stories.service.js';
@@ -117,7 +117,7 @@ export class MeController {
       },
       player: {
         ...player,
-        expForNextLevel: expParaNivel(player.level, config),
+        expForNextLevel: expForLevel(player.level, config),
       },
       character: user.character
         ? {

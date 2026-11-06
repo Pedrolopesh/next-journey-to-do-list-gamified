@@ -7,11 +7,11 @@ import type { Item, Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AchievementsService } from '../achievements/achievements.service.js';
 import {
-  aplicarCheck,
-  calcularStreak,
-  desfazerCheck,
-  diaLocal,
-  expParaNivel,
+  applyCheck,
+  calculateStreak,
+  expForLevel,
+  localDay,
+  undoCheck,
 } from '../progression/domain/index.js';
 import { GameConfigService } from '../progression/game-config.service.js';
 import { NO_STORY, statsColumns, toPlayerState } from '../progression/player-state.js';
@@ -51,7 +51,7 @@ export class ChecksService {
       const item = await tx.item.findFirst({ where: { id: itemId, userId, deletedAt: null } });
       if (!item) throw notFound();
 
-      const hoje = diaLocal(now, user.timezone);
+      const hoje = localDay(now, user.timezone);
       if (item.type === 'daily' && item.lastCheckedOn === hoje) {
         throw new AppError(409, 'ALREADY_CHECKED', 'Este diário já foi marcado hoje');
       }
@@ -68,7 +68,7 @@ export class ChecksService {
 
       // EXP counts once but the coins are still earned: a to-do once in a lifetime, a daily or
       // habit once per day. Rules: docs/api/itens-e-checks.md.
-      const expJaGanho =
+      const expAlreadyEarned =
         (await tx.itemCheck.count({
           where: {
             itemId,
@@ -78,9 +78,15 @@ export class ChecksService {
           },
         })) > 0;
 
-      const applied = aplicarCheck(
+      const applied = applyCheck(
         toPlayerState(stats, storyProgress),
-        { checkId, type: item.type, difficulty: item.difficulty, localDate: hoje, expJaGanho },
+        {
+          checkId,
+          type: item.type,
+          difficulty: item.difficulty,
+          localDate: hoje,
+          expAlreadyEarned,
+        },
         config,
       );
       const { summary, record } = applied;
@@ -88,9 +94,9 @@ export class ChecksService {
       // Finished chapters (one per level gained): stores the completions and returns the modal for
       // the last one (RF-28).
       let completedChapter: CheckResult['completedChapter'] = null;
-      if (active && summary.capitulosConcluidos.length > 0) {
+      if (active && summary.completedChapters.length > 0) {
         const chapters = await tx.chapter.findMany({
-          where: { storyId: active.story.id, number: { in: summary.capitulosConcluidos } },
+          where: { storyId: active.story.id, number: { in: summary.completedChapters } },
           orderBy: { number: 'asc' },
         });
         for (const chapter of chapters) {
@@ -106,7 +112,7 @@ export class ChecksService {
             number: last.number,
             title: last.title,
             text: last.text,
-            storyCompleted: summary.historiaConcluida,
+            storyCompleted: summary.storyCompleted,
           };
         }
       }
@@ -124,16 +130,16 @@ export class ChecksService {
 
       // Store the check first: the achievements (e.g. balance, flame) see this check.
       const resultBase: Omit<CheckResult, 'achievementsUnlocked'> = {
-        expGained: summary.expGanho,
-        coinsGained: summary.moedasGanhas + summary.bonusMoedas,
-        level: summary.nivel,
-        leveledUp: summary.subiuDeNivel,
+        expGained: summary.expGained,
+        coinsGained: summary.coinsGained + summary.bonusCoins,
+        level: summary.level,
+        leveledUp: summary.leveledUp,
         chapterProgress: {
-          chapter: summary.progressoCapitulo.capitulo,
-          expInLevel: summary.progressoCapitulo.expNoNivel,
-          expForNextLevel: summary.progressoCapitulo.expParaProximo,
+          chapter: summary.chapterProgress.chapter,
+          expInLevel: summary.chapterProgress.expInLevel,
+          expForNextLevel: summary.chapterProgress.expToNext,
         },
-        chapterCompleted: summary.capituloConcluido,
+        chapterCompleted: summary.chapterCompleted,
         completedChapter,
       };
       await tx.itemCheck.create({
@@ -213,8 +219,8 @@ export class ChecksService {
 
       const stats = await tx.userStats.findUniqueOrThrow({ where: { userId } });
       const config = await this.gameConfig.load(tx);
-      const hoje = diaLocal(now, user.timezone);
-      const undone = desfazerCheck(toPlayerState(stats, storyProgress), config);
+      const hoje = localDay(now, user.timezone);
+      const undone = undoCheck(toPlayerState(stats, storyProgress), config);
 
       await tx.userStats.update({ where: { userId }, data: statsColumns(undone.state) });
       await tx.itemCheck.update({ where: { id: checkId }, data: { revertedAt: now } });
@@ -239,13 +245,13 @@ export class ChecksService {
 
       return {
         expGained: 0,
-        coinsGained: -undone.summary.moedasPerdidas,
+        coinsGained: -undone.summary.coinsLost,
         level: undone.state.level,
         leveledUp: false,
         chapterProgress: {
           chapter: undone.state.story.chapter,
           expInLevel: undone.state.expInLevel,
-          expForNextLevel: expParaNivel(undone.state.level, config),
+          expForNextLevel: expForLevel(undone.state.level, config),
         },
         chapterCompleted: false,
         completedChapter: null,
@@ -273,11 +279,11 @@ export class ChecksService {
       where: { itemId: item.id, revertedAt: null },
       select: { checkedOn: true },
     });
-    return calcularStreak(
+    return calculateStreak(
       {
         scheduleDays: item.scheduleDays,
         createdOn: item.createdOn,
-        diasMarcados: rows.map((row) => row.checkedOn),
+        checkedDays: rows.map((row) => row.checkedOn),
       },
       hoje,
     );

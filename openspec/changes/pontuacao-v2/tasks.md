@@ -1,9 +1,9 @@
 ## 1. Contratos e domínio (testes primeiro)
 
 - [x] 1.1 `gameConfigSchema`: trocar `levelExpSlope/levelExpOffset` por `levelExpTable` e `undoCoinPenalty`; padrão com 200..1000 e 3, 5, 10, 15, 20; atualizar `contracts.test.ts`
-- [x] 1.2 `expParaNivel` pela tabela (teto no último valor) e testes
-- [x] 1.3 `desfazerCheck`: sem trava de dia e capítulo; EXP intacto; perda de moedas por capítulo; testes por propriedade atualizados
-- [x] 1.4 `aplicarCheck`: capítulo para no último e história concluída; nível segue; testes
+- [x] 1.2 `expForLevel` pela tabela (teto no último valor) e testes
+- [x] 1.3 `undoCheck`: sem trava de dia e capítulo; EXP intacto; perda de moedas por capítulo; testes por propriedade atualizados
+- [x] 1.4 `applyCheck`: capítulo para no último e história concluída; nível segue; testes
 
 ## 2. API
 

@@ -3,13 +3,13 @@ import { describe, expect, it } from 'vitest';
 
 import {
   type AchievementContext,
+  achievementProgress,
   type AchievementSlug,
-  conquistasAtendidas,
-  diasPerfeitos,
-  diasSeguidosCompletos,
-  progressoDaConquista,
+  countFullDaysStreak,
+  countPerfectDays,
+  metAchievements,
 } from './achievements.js';
-import { horaLocal } from './dates.js';
+import { localHour } from './dates.js';
 
 const base: AchievementContext = {
   totalChecks: 0,
@@ -49,13 +49,13 @@ const base: AchievementContext = {
 
 const com = (patch: Partial<AchievementContext>): AchievementContext => ({ ...base, ...patch });
 
-describe('conquistasAtendidas', () => {
-  it('sem nada feito, nada é atendido', () => {
-    expect(conquistasAtendidas(base)).toEqual([]);
+describe('metAchievements', () => {
+  it('with nothing done, nothing is met', () => {
+    expect(metAchievements(base)).toEqual([]);
   });
 
-  // [slug, contexto no limite, contexto um passo abaixo (quando há limite numérico)]
-  const casos: [AchievementSlug, Partial<AchievementContext>, Partial<AchievementContext>?][] = [
+  // [slug, context at the threshold, context one step below (when there is a numeric threshold)]
+  const cases: [AchievementSlug, Partial<AchievementContext>, Partial<AchievementContext>?][] = [
     ['primeiro-passo', { totalChecks: 1 }],
     ['diario-inaugural', { created: { daily: 1, todo: 0, habit: 0 } }],
     ['primeira-tarefa', { created: { daily: 0, todo: 1, habit: 0 } }],
@@ -155,8 +155,8 @@ describe('conquistasAtendidas', () => {
     ['fortuna', { coins: 3000 }, { coins: 2999 }],
   ];
 
-  it('cada critério de ação tem um caso de teste (as de coleção têm os próprios)', () => {
-    const cobertas = new Set(casos.map(([slug]) => slug));
+  it('each action criterion has a test case (collection ones have their own)', () => {
+    const cobertas = new Set(cases.map(([slug]) => slug));
     const colecao = [
       'colecionador-de-medalhas',
       'cacador-de-trofeus',
@@ -170,170 +170,166 @@ describe('conquistasAtendidas', () => {
     expect(faltando).toEqual([]);
   });
 
-  it.each(casos)('%s no limite do critério', (slug, limite, abaixo) => {
-    expect(conquistasAtendidas(com(limite))).toContain(slug);
-    if (abaixo) expect(conquistasAtendidas(com(abaixo))).not.toContain(slug);
+  it.each(cases)('%s at the criterion threshold', (slug, threshold, below) => {
+    expect(metAchievements(com(threshold))).toContain(slug);
+    if (below) expect(metAchievements(com(below))).not.toContain(slug);
   });
 
-  it('as de horário só valem quando a avaliação vem de um check', () => {
-    expect(conquistasAtendidas(com({ checkHour: null }))).not.toContain('madrugador');
-    expect(conquistasAtendidas(com({ checkHour: 6 }))).toContain('madrugador');
+  it('time-of-day ones only apply when the evaluation comes from a check', () => {
+    expect(metAchievements(com({ checkHour: null }))).not.toContain('madrugador');
+    expect(metAchievements(com({ checkHour: 6 }))).toContain('madrugador');
   });
 
-  it('lista zerada exige ter concluído uma tarefa hoje e não ter aberta', () => {
-    expect(conquistasAtendidas(com({ todosDone: 5, openTodos: 1, todosToday: 1 }))).not.toContain(
+  it('an empty list requires a to-do completed today and none open', () => {
+    expect(metAchievements(com({ todosDone: 5, openTodos: 1, todosToday: 1 }))).not.toContain(
       'lista-zerada',
     );
-    expect(conquistasAtendidas(com({ todosDone: 5, openTodos: 0, todosToday: 0 }))).not.toContain(
+    expect(metAchievements(com({ todosDone: 5, openTodos: 0, todosToday: 0 }))).not.toContain(
       'lista-zerada',
     );
   });
 });
 
-describe('conquistas de coleção', () => {
+describe('collection achievements', () => {
   const slugs = (n: number): ReadonlySet<string> =>
     new Set(ACHIEVEMENT_CATALOG.slice(0, n).map((a) => a.slug));
 
-  it('contam as conquistas já desbloqueadas', () => {
-    expect(conquistasAtendidas(com({ unlocked: slugs(13) }))).not.toContain(
-      'colecionador-de-medalhas',
-    );
-    expect(conquistasAtendidas(com({ unlocked: slugs(14) }))).toContain('colecionador-de-medalhas');
-    expect(conquistasAtendidas(com({ unlocked: slugs(35) }))).toContain('cacador-de-trofeus');
-    expect(conquistasAtendidas(com({ unlocked: slugs(50) }))).toContain('primeiro-lugar');
+  it('count the achievements already unlocked', () => {
+    expect(metAchievements(com({ unlocked: slugs(13) }))).not.toContain('colecionador-de-medalhas');
+    expect(metAchievements(com({ unlocked: slugs(14) }))).toContain('colecionador-de-medalhas');
+    expect(metAchievements(com({ unlocked: slugs(35) }))).toContain('cacador-de-trofeus');
+    expect(metAchievements(com({ unlocked: slugs(50) }))).toContain('primeiro-lugar');
   });
 
-  it('Louros pede todas as conquistas de uma trilha', () => {
+  it('Laurels requires every achievement of a track', () => {
     const trilha = ACHIEVEMENT_CATALOG.filter((a) => a.trail === 'tarefas').map((a) => a.slug);
-    expect(conquistasAtendidas(com({ unlocked: new Set(trilha) }))).toContain('louros');
-    expect(conquistasAtendidas(com({ unlocked: new Set(trilha.slice(1)) }))).not.toContain(
-      'louros',
-    );
+    expect(metAchievements(com({ unlocked: new Set(trilha) }))).toContain('louros');
+    expect(metAchievements(com({ unlocked: new Set(trilha.slice(1)) }))).not.toContain('louros');
   });
 
-  it('Cofre aberto pede todas as surpresas, menos ele mesmo', () => {
+  it('Opened Vault requires every surprise except itself', () => {
     const surpresas = ACHIEVEMENT_CATALOG.filter(
       (a) => 'secret' in a && a.slug !== 'cofre-aberto',
     ).map((a) => a.slug);
     expect(surpresas.length).toBeGreaterThan(0);
-    expect(conquistasAtendidas(com({ unlocked: new Set(surpresas) }))).toContain('cofre-aberto');
-    expect(conquistasAtendidas(com({ unlocked: new Set(surpresas.slice(1)) }))).not.toContain(
+    expect(metAchievements(com({ unlocked: new Set(surpresas) }))).toContain('cofre-aberto');
+    expect(metAchievements(com({ unlocked: new Set(surpresas.slice(1)) }))).not.toContain(
       'cofre-aberto',
     );
   });
 });
 
-describe('progressoDaConquista', () => {
-  it('devolve o progresso limitado ao alvo e nulo para conquistas de evento', () => {
-    expect(progressoDaConquista('maratonista', com({ totalChecks: 37 }))).toEqual({
+describe('achievementProgress', () => {
+  it('returns the progress capped at the target and null for event achievements', () => {
+    expect(achievementProgress('maratonista', com({ totalChecks: 37 }))).toEqual({
       current: 37,
       target: 250,
     });
-    expect(progressoDaConquista('maratonista', com({ totalChecks: 500 }))).toEqual({
+    expect(achievementProgress('maratonista', com({ totalChecks: 500 }))).toEqual({
       current: 250,
       target: 250,
     });
-    expect(progressoDaConquista('aprendiz', com({ level: 3 }))).toEqual({ current: 3, target: 5 });
-    expect(progressoDaConquista('primeiro-passo', base)).toBeNull();
+    expect(achievementProgress('aprendiz', com({ level: 3 }))).toEqual({ current: 3, target: 5 });
+    expect(achievementProgress('primeiro-passo', base)).toBeNull();
   });
 });
 
-describe('diasPerfeitos', () => {
+describe('countPerfectDays', () => {
   const todos = [0, 1, 2, 3, 4, 5, 6];
-  const diario = (dias: string[]) => ({
+  const daily = (days: string[]) => ({
     scheduleDays: todos,
     createdOn: '2026-09-01',
-    diasMarcados: dias,
+    checkedDays: days,
   });
 
-  it('conta o dia em que 3 ou mais diários agendados foram todos feitos', () => {
-    const dias = ['2026-10-09'];
-    expect(diasPerfeitos([diario(dias), diario(dias), diario(dias)], '2026-10-09')).toBe(1);
+  it('counts the days when 3 or more scheduled dailies were all done', () => {
+    const days = ['2026-10-09'];
+    expect(countPerfectDays([daily(days), daily(days), daily(days)], '2026-10-09')).toBe(1);
   });
 
-  it('com menos de 3 agendados ou com um faltando, não conta', () => {
-    const dias = ['2026-10-09'];
-    expect(diasPerfeitos([diario(dias), diario(dias)], '2026-10-09')).toBe(0);
-    expect(diasPerfeitos([diario(dias), diario(dias), diario([])], '2026-10-09')).toBe(0);
+  it('with fewer than 3 scheduled or one missing, it does not count', () => {
+    const days = ['2026-10-09'];
+    expect(countPerfectDays([daily(days), daily(days)], '2026-10-09')).toBe(0);
+    expect(countPerfectDays([daily(days), daily(days), daily([])], '2026-10-09')).toBe(0);
   });
 });
 
-describe('diasSeguidosCompletos (Chama de 7 dias)', () => {
+describe('countFullDaysStreak (7-day flame)', () => {
   const todos = [0, 1, 2, 3, 4, 5, 6];
-  const dias = (...d: string[]) => d;
+  const days = (...d: string[]) => d;
 
-  it('conta dias em que todos os diários agendados foram feitos', () => {
+  it('counts days when every scheduled daily was done', () => {
     const a = {
       scheduleDays: todos,
       createdOn: '2026-09-01',
-      diasMarcados: dias('2026-10-07', '2026-10-08', '2026-10-09'),
+      checkedDays: days('2026-10-07', '2026-10-08', '2026-10-09'),
     };
     const b = {
       scheduleDays: todos,
       createdOn: '2026-09-01',
-      diasMarcados: dias('2026-10-07', '2026-10-08', '2026-10-09'),
+      checkedDays: days('2026-10-07', '2026-10-08', '2026-10-09'),
     };
-    expect(diasSeguidosCompletos([a, b], '2026-10-09')).toBe(3);
+    expect(countFullDaysStreak([a, b], '2026-10-09')).toBe(3);
   });
 
-  it('um diário faltando no dia quebra a sequência', () => {
+  it('a daily missing on a day breaks the streak', () => {
     const a = {
       scheduleDays: todos,
       createdOn: '2026-09-01',
-      diasMarcados: dias('2026-10-07', '2026-10-08', '2026-10-09'),
+      checkedDays: days('2026-10-07', '2026-10-08', '2026-10-09'),
     };
     const b = {
       scheduleDays: todos,
       createdOn: '2026-09-01',
-      diasMarcados: dias('2026-10-07', '2026-10-09'),
-    }; // faltou dia 8
-    expect(diasSeguidosCompletos([a, b], '2026-10-09')).toBe(1);
+      checkedDays: days('2026-10-07', '2026-10-09'),
+    }; // faltou day 8
+    expect(countFullDaysStreak([a, b], '2026-10-09')).toBe(1);
   });
 
-  it('hoje incompleto não quebra: conta a partir de ontem', () => {
+  it('an incomplete today does not break it: counts from yesterday', () => {
     const a = {
       scheduleDays: todos,
       createdOn: '2026-09-01',
-      diasMarcados: dias('2026-10-07', '2026-10-08'),
+      checkedDays: days('2026-10-07', '2026-10-08'),
     };
-    expect(diasSeguidosCompletos([a], '2026-10-09')).toBe(2);
+    expect(countFullDaysStreak([a], '2026-10-09')).toBe(2);
   });
 
-  it('dias sem diário agendado são neutros (não contam nem quebram)', () => {
-    // só segunda(1) e quarta(3): 05/10 seg, 07/10 qua, 09/10 sex (neutro), 08/10 qui (neutro)
+  it('days with no scheduled daily are neutral (neither count nor break)', () => {
+    // only Monday (1) and Wednesday (3): 10/05 Mon, 10/07 Wed, 10/09 Fri (neutral), 10/08 Thu (neutral)
     const a = {
       scheduleDays: [1, 3],
       createdOn: '2026-09-01',
-      diasMarcados: dias('2026-10-05', '2026-10-07'),
+      checkedDays: days('2026-10-05', '2026-10-07'),
     };
-    expect(diasSeguidosCompletos([a], '2026-10-09')).toBe(2);
+    expect(countFullDaysStreak([a], '2026-10-09')).toBe(2);
   });
 
-  it('diário criado depois do dia não exige check naquele dia', () => {
+  it('a daily created after a day does not require a check on that day', () => {
     const a = {
       scheduleDays: todos,
       createdOn: '2026-10-08',
-      diasMarcados: dias('2026-10-08', '2026-10-09'),
+      checkedDays: days('2026-10-08', '2026-10-09'),
     };
-    expect(diasSeguidosCompletos([a], '2026-10-09')).toBe(2);
+    expect(countFullDaysStreak([a], '2026-10-09')).toBe(2);
   });
 
-  it('sem diários não há sequência', () => {
-    expect(diasSeguidosCompletos([], '2026-10-09')).toBe(0);
+  it('with no dailies there is no streak', () => {
+    expect(countFullDaysStreak([], '2026-10-09')).toBe(0);
   });
 
-  it('chega a 7 dias seguidos', () => {
-    const marcados = Array.from({ length: 7 }, (_, i) => `2026-10-0${3 + i}`);
-    const a = { scheduleDays: todos, createdOn: '2026-09-01', diasMarcados: marcados };
-    expect(diasSeguidosCompletos([a], '2026-10-09')).toBe(7);
+  it('reaches 7 consecutive days', () => {
+    const checkedSets = Array.from({ length: 7 }, (_, i) => `2026-10-0${3 + i}`);
+    const a = { scheduleDays: todos, createdOn: '2026-09-01', checkedDays: checkedSets };
+    expect(countFullDaysStreak([a], '2026-10-09')).toBe(7);
   });
 });
 
-describe('horaLocal', () => {
-  it('hora no fuso do usuário (inclui a virada de 00h)', () => {
-    expect(horaLocal('2026-10-09T15:00:00Z', 'America/Sao_Paulo')).toBe(12);
-    expect(horaLocal('2026-10-09T09:59:00Z', 'America/Sao_Paulo')).toBe(6);
-    expect(horaLocal('2026-10-09T03:00:00Z', 'America/Sao_Paulo')).toBe(0);
-    expect(() => horaLocal('x', 'UTC')).toThrow(RangeError);
+describe('localHour', () => {
+  it('hour in the user time zone (includes the 00h boundary)', () => {
+    expect(localHour('2026-10-09T15:00:00Z', 'America/Sao_Paulo')).toBe(12);
+    expect(localHour('2026-10-09T09:59:00Z', 'America/Sao_Paulo')).toBe(6);
+    expect(localHour('2026-10-09T03:00:00Z', 'America/Sao_Paulo')).toBe(0);
+    expect(() => localHour('x', 'UTC')).toThrow(RangeError);
   });
 });
