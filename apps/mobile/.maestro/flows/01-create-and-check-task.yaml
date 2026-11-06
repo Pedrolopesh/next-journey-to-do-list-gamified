@@ -9,7 +9,12 @@ appId: br.com.wetechhub.app.dev
     env:
       FIELD: 'Título'
 - inputText: 'Pagar a conta de luz'
-- hideKeyboard
+# iOS: with the hardware keyboard on there is nothing to hide, and the command fails
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 # Difficulty selector with stars (Figma) and an X button to close
 - assertVisible: 'Dificuldade'
 - assertVisible: 'Fechar'

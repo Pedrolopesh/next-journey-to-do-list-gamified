@@ -1,5 +1,5 @@
 # Goes through the onboarding screens that are open (intro, character, story and
-# final questions, among them the goal). Safe to call at any time: each step only runs if the screen is
+# final questions: reminders, goal, age and gender). Safe to call at any time: each step only runs if the screen is
 # visible.
 appId: br.com.wetechhub.app.dev
 ---
@@ -16,12 +16,6 @@ appId: br.com.wetechhub.app.dev
     commands:
       - tapOn: 'Pular introdução'
 - runFlow: close-achievement.yaml
-- runFlow:
-    when:
-      visible: 'O que você quer mudar.*'
-    commands:
-      - tapOn: 'Parar de procrastinar'
-      - tapOn: 'Continuar'
 # Ready-made looks: "Pular" goes on to the name
 - runFlow:
     when:
@@ -49,6 +43,12 @@ appId: br.com.wetechhub.app.dev
       visible: 'Quer receber lembretes?'
     commands:
       - tapOn: 'Agora não'
+- runFlow:
+    when:
+      visible: 'O que você quer mudar.*'
+    commands:
+      - tapOn: 'Parar de procrastinar'
+      - tapOn: 'Continuar'
 - runFlow:
     when:
       visible: 'Qual é a sua idade?'

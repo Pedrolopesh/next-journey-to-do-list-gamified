@@ -9,7 +9,12 @@ appId: br.com.wetechhub.app.dev
     env:
       FIELD: 'Título'
 - inputText: 'Beber água'
-- hideKeyboard
+# iOS: with the hardware keyboard on there is nothing to hide, and the command fails
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - runFlow: ../subflows/create-item.yaml
 # waits for the form to close (the item may be below the fold and the modal may not come)
 - extendedWaitUntil:
