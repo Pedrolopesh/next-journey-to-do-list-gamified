@@ -172,6 +172,5 @@ pnpm exec turbo run test --filter="...[origin/main]"   # só o que mudou
 - **Bloco de orientação do `turbo`.** O `turbo` escreve um bloco de orientação para agentes automatizados no arquivo de regras da raiz quando detecta um. Para não ter esse arquivo alterado, o `turbo.json` define `"agentGuidance": false`.
 - **pnpm 12.8.1 não ativa via corepack** nesta máquina (2026-10-02, erro `Cannot find module ... pnpm.cjs`). Por isso o `packageManager` está em 11.28.3.
 - **`pnpm init` grava a versão mais nova** no `packageManager` e em `devEngines`; o `package.json` foi reescrito à mão com a versão fixada.
-- **`rtk` e `pnpm lint`.** Ver 2.5.
 - **ESLint 9 resolve o `eslint.config.js` a partir da pasta atual**, não do arquivo. No lint-staged (que roda da raiz) isso quebraria, então o comando usa `--flag v10_config_lookup_from_file`, que faz o ESLint procurar a config perto de cada arquivo (comportamento padrão do ESLint 10). O `eslint` também precisa estar nas `devDependencies` da raiz para o lint-staged achar o binário.
 - **TypeScript 5.9, não 7.** O `typescript-eslint` 8.71 aceita `typescript <6.1`. Como o `npm` já oferece a 7.x, o `pnpm add` instala a 7 se você não fixar a faixa.
