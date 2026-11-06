@@ -1,6 +1,6 @@
 # Cenários do banner: regras de construção e de checagem
 
-Vale para criar, mudar ou revisar qualquer cenário em `apps/banner/src/qg/scenes` (QG parado e jornada com o cenário rolando) e seus níveis. Cada regra abaixo vem de um defeito que já apareceu e foi corrigido; o objetivo é não repeti-lo. Lido junto com `AGENTS.md`.
+Vale para criar, mudar ou revisar qualquer cenário em `apps/banner/src/qg/scenes` (QG parado e jornada com o cenário rolando) e seus níveis. Cada regra abaixo vem de um defeito que já apareceu e foi corrigido; o objetivo é não repeti-lo. Lido junto com `CONTRIBUTING.md`.
 
 ## 1. Como um cenário é montado
 
@@ -71,6 +71,6 @@ Fazer no laboratório (`pnpm --filter @nextjourney/banner exec vite --port 5173`
 3. Olhar de propósito: prédio ou objeto na água; objeto sobre objeto; pessoa sobre o personagem fora de ordem; objeto que aparece o tempo todo; tremida; elemento cortado na borda; veículo com forma estranha; luz no lugar errado.
 4. Conferir que o nível 1 continua igual ao que o app usa.
 5. `pnpm exec turbo run lint typecheck test build` (16 de 16) e `FULL=1 pnpm run security:full` antes de qualquer PR.
-6. Relatar ao Pedro o que foi visto e o que não foi.
+6. Relatar no PR o que foi visto e o que não foi.
 
 Testes automáticos: `scenes.test.ts` confere que todo cenário com níveis tem `levelInfo` completo, e `extras.test.ts` cobre as posições dos figurantes.

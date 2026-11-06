@@ -42,6 +42,6 @@
 
 ## 7. Documentação e verificação
 
-- [x] 7.1 Atualizar `AGENTS.md` do mobile, `HANDOFF.md` e `docs/REQUISITOS.MD` (lista de conquistas)
+- [x] 7.1 Atualizar `CONTRIBUTING.md` do mobile e `docs/REQUISITOS.MD` (lista de conquistas)
 - [ ] 7.2 Verificar no Android e no iOS: galeria, modal, fila, retroativo e personagem sem peça de recompensa (Android feito; iOS pendente)
 - [ ] 7.3 `pnpm exec turbo run lint typecheck test build` 16/16, e2e da API e `FULL=1 pnpm run security:full`

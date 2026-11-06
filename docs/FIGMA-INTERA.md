@@ -1,13 +1,12 @@
 # Intera — Design no Figma (registro e guia de retomada)
 
-> **Onde ficam as regras:** padrões de UI e armadilhas vivem em `.claude/skills/intera-figma/SKILL.md` (lido a cada sessão); a checagem automática está em `audit.js` (status bar, voltar em y=53, emoji, texto padrão, dificuldade fora do Chip, nomes suspeitos). Este arquivo é o **registro** (ids, histórico, pendências). Ao decidir algo novo com o usuário: atualizar SKILL.md + audit.js + aqui, **na mesma rodada**.
+> **Onde ficam as regras:** padrões de UI e armadilhas estão neste arquivo (seções de regras e armadilhas). Ele é o **registro** (ids, histórico, pendências). Ao decidir algo novo, atualize este arquivo **na mesma rodada**.
 
 Documento **próprio do app Intera** (separado de `FIGMA-LELUME.md`, que é do Lêlume). Registra o diagnóstico, o que foi padronizado, as regras do design system e como retomar.
 
 - **Arquivo Figma:** "Itera — Design System" · file key `TWYTMAkgcTFcS3ZfeM01Vd`
   https://www.figma.com/design/TWYTMAkgcTFcS3ZfeM01Vd/
   > **Nome final: Next Journey** (confirmado em 2026-10-02). A Splash (`5:18`) já foi trocada de "Intera" para "Next Journey". Pendente: renomear o arquivo "Itera — Design System" manualmente no Figma (a API de plugin não renomeia o arquivo) e decidir sobre os posts da página Social Midia, que ainda dizem "Intera". Onde este documento diz Intera, leia Next Journey.
-- **Skill do projeto:** `.claude/skills/intera-figma/` (`SKILL.md`, `audit.js`)
 - **Primeira aplicação do processo:** 2026-09-30 (mesmo método usado no Lêlume: backup → fundação → componentes → telas → auditoria → documentação)
 
 ## 1. Mapa do arquivo
@@ -47,7 +46,7 @@ Componentes simples: `FAB` `17:2` · `Bottom Navigation` `17:6` · `Screen Heade
 | Cores fixas | 173 nas telas; 361+ nos componentes | Ligadas às variáveis quando o valor é idêntico e a opacidade é 100% (restam só overlays com opacidade e pretos de emoji) |
 | Texto padrão do componente vazando | `Rótulo` / `Placeholder` em **13 Novo Item** e **06 Criação do Personagem** | 13: rótulo interno oculto (já existe o rótulo externo) + placeholders "Ex.: Enviar relatório mensal" / "Detalhes da tarefa (opcional)"; 06: "Nome do personagem" / "Como você quer ser chamado?" — **textos propostos, confirmar** |
 
-Estado final da auditoria nas 21 telas: **overflow 0 · componentes soltos 0 · 95 instâncias**. Fonte: `audit.js`.
+Estado final da auditoria nas 21 telas: **overflow 0 · componentes soltos 0 · 95 instâncias**. Fonte: auditoria manual do arquivo Figma.
 
 ## 4. Pendências e decisões em aberto
 - **Placeholders de imagem (intencionais, "substituir por sprites reais"):** logo da Splash (96×96, `Logo Placeholder` `5:15`), ilustração do Tutorial, avatar do Perfil; existem assets prontos na página Design System (`Avatar`, `Character`, `Banners`, `Story Thumbnails`). A marca na Splash está como "QuestLife" (fonte pixel).
@@ -67,9 +66,9 @@ Estado final da auditoria nas 21 telas: **overflow 0 · componentes soltos 0 · 
 6. Erro no meio do script desfaz o script inteiro: usar guardas de idempotência.
 
 ## 6. Como retomar numa nova conversa
-> "Estou continuando o trabalho de layout do app Intera no Figma. Leia `FIGMA-INTERA.md` e use o skill `intera-figma`. Arquivo `TWYTMAkgcTFcS3ZfeM01Vd`. Quero [ajustar tela X / criar componente Y / auditar tudo]."
+> "Estou continuando o trabalho de layout do app no Figma. Leia `FIGMA-INTERA.md`. Arquivo `TWYTMAkgcTFcS3ZfeM01Vd`. Quero [ajustar tela X / criar componente Y / auditar tudo]."
 
-Checklist quando algo sair errado: rodar `audit.js` → conferir armadilhas 1–3 → conferir se o elemento deveria ser instância → comparar com o backup do Rascunho.
+Checklist quando algo sair errado: conferir armadilhas 1–3 → conferir se o elemento deveria ser instância → comparar com o backup do Rascunho.
 
 ## 6. Mapas/cenários por jornada (2026-09-30)
 - Os mapas corretos são os 5 retângulos `Banner` (358×80, fill IMAGE) da tela `07 Escolha da História` (de cima para baixo: Empreendedor `53:781`, Estudante `53:782`, Guerreiro `53:783`, Explorador `53:784`, Lenda `53:785`).

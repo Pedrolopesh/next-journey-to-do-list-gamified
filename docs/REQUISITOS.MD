@@ -1,6 +1,6 @@
 # Next Journey — Especificação do MVP v1
 
-Criado em 2026-09-28 · Autor: Pedro Lopes · Reorganizado para leitura em 2026-10-03
+Criado em 2026-09-28 · Reorganizado para leitura em 2026-10-03
 
 ## Sumário
 
@@ -12,12 +12,12 @@ Criado em 2026-09-28 · Autor: Pedro Lopes · Reorganizado para leitura em 2026-
 6. [Projeto 1 — Back-end (apps/api)](#6-projeto-1--back-end-appsapi)
 7. [Projeto 2 — Banner (apps/banner)](#7-projeto-2--banner-appsbanner)
 8. [Projeto 3 — Aplicativo (apps/mobile)](#8-projeto-3--aplicativo-appsmobile)
-9. [Padrões comuns: AGENTS.md, lint, testes e pre-commit](#9-padrões-comuns-agentsmd-lint-testes-e-pre-commit)
+9. [Padrões comuns: CONTRIBUTING.md, lint, testes e pre-commit](#9-padrões-comuns-agentsmd-lint-testes-e-pre-commit)
 10. [Passo a passo: criar o app com Expo para iOS e Android](#10-passo-a-passo-criar-o-app-com-expo-para-ios-e-android)
 11. [Telas ausentes do Figma](#11-telas-ausentes-do-figma)
 12. [Fora do escopo e decisões em aberto](#12-fora-do-escopo-e-decisões-em-aberto)
 
-Documentos relacionados: plano de implementação em fases (documento local, fora do Git), [COMO-FUNCIONA.md](./COMO-FUNCIONA.md) (visão geral do que existe hoje), [TURBOREPO.md](./TURBOREPO.md), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design) e [SEGURANCA.md](./SEGURANCA.md).
+Documentos relacionados: [COMO-FUNCIONA.md](./COMO-FUNCIONA.md) (visão geral do que existe hoje), [TURBOREPO.md](./TURBOREPO.md), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design) e [SEGURANCA.md](./SEGURANCA.md).
 
 ---
 
@@ -246,7 +246,7 @@ next-journey-to-do-list-gamified/
     contracts/      schemas Zod e tipos (API, app, banner)
     eslint-config/  regras de lint compartilhadas
     tsconfig/       tsconfig base
-  AGENTS.md  turbo.json  pnpm-workspace.yaml  .husky/
+  CONTRIBUTING.md  turbo.json  pnpm-workspace.yaml  .husky/
 ```
 
 Não há pacote de domínio compartilhado: toda regra de progressão (EXP, moedas, nível, capítulo, sequência, conquistas) mora só em `apps/api/src/modules/progression/domain`. O app mostra o resultado do `CheckResult` e só estima o progresso do capítulo (checks do capítulo + 1 sobre o necessário) para animar o banner.
@@ -364,7 +364,7 @@ apps/api/
         *.controller.ts  *.service.ts  *.repository.ts
         domain/          funções puras + *.spec.ts
   test/              e2e (supertest)
-  AGENTS.md  Dockerfile  .env.example
+  CONTRIBUTING.md  Dockerfile  .env.example
 ```
 
 ---
@@ -423,7 +423,7 @@ apps/banner/
     styles/          animações e paralaxe
   public/sprites/    folhas LPC e tilesets (com CREDITS.md)
   dev.html           painel de debug
-  AGENTS.md  vite.config.ts
+  CONTRIBUTING.md  vite.config.ts
 ```
 
 ---
@@ -490,7 +490,7 @@ src/
 
 ---
 
-## 9. Padrões comuns: AGENTS.md, lint, testes e pre-commit
+## 9. Padrões comuns: CONTRIBUTING.md, lint, testes e pre-commit
 
 Os três projetos compartilham a mesma base de qualidade, configurada uma vez na raiz do monorepo e estendida em cada app. Nenhum commit entra sem passar por lint e formatação, e nenhum push sai sem typecheck e testes dos pacotes afetados.
 
@@ -534,9 +534,9 @@ pnpm exec commitlint --edit "$1"
 pnpm exec turbo run typecheck test --filter="...[origin/main]"
 ```
 
-### AGENTS.md
+### CONTRIBUTING.md
 
-Há um `AGENTS.md` na raiz, com as regras do monorepo, e um em cada app, com o que é específico dele. Um `CLAUDE.md` com a linha `@AGENTS.md` faz o Claude Code ler o mesmo arquivo. O conteúdo vigente está no próprio [AGENTS.md](../AGENTS.md) da raiz (stack, comandos, regras obrigatórias, checklist de segurança e a exigência de revisão e varredura de segredos antes de todo PR). Nos arquivos de cada app entram os comandos locais (por exemplo `npx expo start --dev-client`, `pnpm --filter banner dev`) e as regras específicas: módulos e logs na API; mensagens do banner sempre validadas pelo contrato; no app, nada sensível fora do SecureStore.
+Há um `CONTRIBUTING.md` na raiz, com as regras do monorepo, e um em cada app, com o que é específico dele. O conteúdo vigente está no próprio [CONTRIBUTING.md](../CONTRIBUTING.md) da raiz (stack, comandos, regras obrigatórias, checklist de segurança e a exigência de revisão e varredura de segredos antes de todo PR). Nos arquivos de cada app entram os comandos locais (por exemplo `npx expo start --dev-client`, `pnpm --filter banner dev`) e as regras específicas: módulos e logs na API; mensagens do banner sempre validadas pelo contrato; no app, nada sensível fora do SecureStore.
 
 ---
 

@@ -27,5 +27,5 @@
 
 ## 5. Fechamento
 
-- [x] 5.1 Maestro: fluxos de entrada atualizados (fluxo 00 passa; o 01 falha ao digitar o título do item, pendência no HANDOFF)
-- [ ] 5.2 `pnpm run verify`, `/code-review` e `HANDOFF.md`
+- [x] 5.1 Maestro: fluxos de entrada atualizados (fluxo 00 passa; o 01 falha ao digitar o título do item, pendência registrada)
+- [ ] 5.2 `pnpm run verify`, revisão de código e pendências registradas

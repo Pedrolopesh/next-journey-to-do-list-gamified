@@ -1,7 +1,7 @@
 schema: spec-driven
 
 # Deliberadamente CURTO. A fonte de verdade sobre stack, arquitetura, regras de
-# implementação e checklist de segurança é o AGENTS.md, na raiz do repositório.
+# implementação e checklist de segurança é o CONTRIBUTING.md, na raiz do repositório.
 # Duplicar aquilo aqui criaria duas fontes que divergem. Aqui fica só o que é
 # específico do OpenSpec: idioma, fronteira do repositório e verificação.
 context: |
@@ -10,7 +10,7 @@ context: |
   Keep OpenSpec structural headings and SHALL/MUST keywords in English.
 
   Next Journey: to-do list gamificado (monorepo pnpm + Turborepo com API NestJS,
-  banner Vite em WebView e app Expo). Leia o AGENTS.md na raiz ANTES de propor
+  banner Vite em WebView e app Expo). Leia o CONTRIBUTING.md na raiz ANTES de propor
   ou implementar qualquer mudança.
 
   FRONTEIRA DO REPOSITÓRIO
@@ -23,11 +23,10 @@ context: |
   Um change só está pronto quando passam, localmente: pnpm run lint,
   pnpm run typecheck, pnpm run test, pnpm run build e pnpm run security.
   Toda proposta deve ter uma seção de segurança (dados expostos, autorização,
-  segredos) seguindo o checklist do AGENTS.md.
+  segredos) seguindo o checklist do CONTRIBUTING.md.
 
 rules:
   proposal:
-    - Cite a fase e o passo do plano de implementação (documento local) quando existir
     - Sempre declare o que está fora do escopo
   tasks:
     - Quebre em tarefas de no máximo 2 horas, com teste junto da regra nova

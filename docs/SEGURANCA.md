@@ -1,6 +1,6 @@
 # Segurança — checklist por PR e auditorias
 
-Todo PR passa por este checklist. Ele está repetido no `.github/PULL_REQUEST_TEMPLATE.md` (marcado pelo autor) e o resumo por camada está no `AGENTS.md`. A parte automática é `pnpm run security`, que o CI também roda.
+Todo PR passa por este checklist. Ele está repetido no `.github/PULL_REQUEST_TEMPLATE.md` (marcado pelo autor) e o resumo por camada está no `CONTRIBUTING.md`. A parte automática é `pnpm run security`, que o CI também roda.
 
 ## 1. O que verificar a cada PR
 
@@ -29,7 +29,7 @@ O repositório é **público de propósito** (projeto aberto: qualquer pessoa po
 - **Infraestrutura real fica fora do repositório.** Documentos descrevem o desenho (ex.: "portas só em loopback"), nunca o ambiente real.
 - Vulnerabilidade encontrada por terceiros é reportada em privado (ver `SECURITY.md`).
 
-Por isso ficam **fora** do repositório, no Obsidian ou no gerenciador de segredos:
+Por isso ficam **fora** do repositório, num gerenciador de segredos ou de notas privado:
 - Credenciais, tokens, chaves, certificados, `.env` reais.
 - Endereço, inventário e achados de auditoria da VPS e de qualquer servidor.
 - Resultados de varreduras de vulnerabilidade com detalhes que permitam exploração.

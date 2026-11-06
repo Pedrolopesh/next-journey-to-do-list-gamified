@@ -28,7 +28,7 @@ O Pedro aprovou no Figma um novo fluxo de entrada, da Splash até a Home: login 
 
 - Remover os endpoints de senha (`register`, `login`, `forgot-password`, `reset-password`) e a tabela `password_resets`.
 - Arte própria das 8 classes (a lista é provisória) e textos finais dos modais das histórias (são exemplos).
-- Revisão jurídica da coleta de idade de menores: idade é opcional (com "Pular") e nada depende dela; a revisão antes da loja fica como pendência no `HANDOFF.md`.
+- Revisão jurídica da coleta de idade de menores: idade é opcional (com "Pular") e nada depende dela; a revisão antes da loja fica como pendência registrada.
 - Lembretes: só se guarda a escolha e se pede a permissão do sistema; o agendamento continua o que já existe (`notifyAt`).
 
 ## Segurança

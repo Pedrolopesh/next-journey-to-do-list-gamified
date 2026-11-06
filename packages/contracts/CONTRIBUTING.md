@@ -1,6 +1,6 @@
 # packages/contracts — contratos compartilhados
 
-Regras do monorepo em `../../AGENTS.md`. Este pacote é a **única fonte** dos formatos de dados entre API, app e banner.
+Regras do monorepo em `../../CONTRIBUTING.md`. Este pacote é a **única fonte** dos formatos de dados entre API, app e banner.
 
 - Schemas Zod + tipos (`z.infer`). Sem lógica de negócio e sem dependência de framework: o app (React Native), o banner (navegador) e a API (Node) importam daqui.
 - Nunca duplicar um tipo em outro pacote: importe de `@nextjourney/contracts`.

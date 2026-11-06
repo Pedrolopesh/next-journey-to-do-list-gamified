@@ -28,7 +28,7 @@ O resto (comando de build, pasta de saída, rota da raiz) vem do `vercel.json` d
 - A Vercel constrói a cada push, mesmo quando só o app ou a API mudou. O build do laboratório leva segundos, mas conta nos minutos de build e na fila do plano da Vercel; se os deploys travarem, olhe o uso do plano.
 - Esse build só roda na Vercel: nenhuma CI do repositório o exercita. O primeiro deploy depois de conectar é o teste; se falhar, o log está no projeto da Vercel.
 - Preferimos não filtrar por pasta (o "Ignored Build Step" da Vercel): um filtro mal feito deixaria o laboratório desatualizado sem aviso.
-- O laboratório é público: só entra arte CC0, OGA-BY ou CC-BY, com crédito (regra do `AGENTS.md`). Peças só CC-BY-SA ou GPL não podem ter imagem no site.
+- O laboratório é público: só entra arte CC0, OGA-BY ou CC-BY, com crédito (regra do `CONTRIBUTING.md`). Peças só CC-BY-SA ou GPL não podem ter imagem no site.
 
 ## Voltar atrás
 
