@@ -16,7 +16,7 @@ fi
 
 echo "==> Higiene: menção a ferramenta, anotação pessoal ou documento externo"
 # Excluded: the files that define the rules themselves and the vendored OpenSpec skills.
-mention_re='obsidian|\brtk\b|claude|anthropic|chatgpt|copilot|HANDOFF\.md|DIARIO\.md|AGENTS\.md|session_[0-9A-Za-z]{10,}'
+mention_re='obsidian|\brtk\b|claude|anthropic|chatgpt|copilot|HANDOFF\.md|DIARIO\.md|AGENTS\.md|session_[0-9A-Za-z]{10,}|lideran[cç]a|leadership|stakeholder'
 skip='^(\.claude/|commitlint\.config\.js$|\.github/workflows/ci\.yml$|\.github/PULL_REQUEST_TEMPLATE\.md$|scripts/(security-scan|check-hygiene)\.sh$|CONTRIBUTING\.md$|\.gitignore$|pnpm-lock\.yaml$|openspec/changes/archive/)'
 if echo "$files" | grep -v -E "$skip" | grep -v -E '\.(png|jpg|jpeg|webp|gif|ico|ttf|otf|woff2?|json\.gz)$' \
   | xargs grep -n -I -i -E "$mention_re" 2>/dev/null; then
