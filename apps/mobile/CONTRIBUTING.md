@@ -1,6 +1,6 @@
 # apps/mobile — Next Journey (app Expo)
 
-Regras do monorepo em `../../AGENTS.md` (leia primeiro). Aqui ficam as regras específicas do app.
+Regras do monorepo em `../../CONTRIBUTING.md` (leia primeiro). Aqui ficam as regras específicas do app.
 
 - Pacote: `@nextjourney/mobile`. Rotas em `src/app/` (padrão do Expo SDK 58). Código que não é rota fica fora dela (`src/components`, `src/api`, `src/theme`...).
 - Comandos: `pnpm --filter @nextjourney/mobile start | lint | typecheck`. Dependências nativas só com `npx expo install`.

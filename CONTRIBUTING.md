@@ -1,6 +1,6 @@
-# Next Journey — Agent Context
+# Contribuindo com o Next Journey
 
-Este arquivo é lido por agents ANTES de qualquer alteração neste repo. Fonte de verdade de stack, regras e checklists. Visão geral em `docs/COMO-FUNCIONA.md`. **Estado atual do trabalho, como rodar e o que falta: `HANDOFF.md` (leia em seguida e mantenha atualizado).**
+Leia este arquivo antes de qualquer alteração: stack, regras e checklists. Visão geral em `docs/COMO-FUNCIONA.md`; como rodar, no `README.md`.
 
 ## Projeto
 
@@ -12,14 +12,14 @@ To-do list gamificado (diários, tarefas e hábitos rendem EXP e moedas e fazem 
 - `packages/contracts`: schemas Zod compartilhados (API, app, banner)
 - `packages/tsconfig`, `packages/eslint-config`: configuração compartilhada
 
-Testes e regressão (camadas, Maestro para a interface do app): `docs/TESTES.md`. Docs: `docs/CENARIOS.md` (regras de construção e checagem dos cenários do banner; leia antes de criar ou mexer em cenário), `docs/COMO-FUNCIONA.md`, `docs/TURBOREPO.md`, o plano de implementação em fases (documento local do Pedro, fora do Git), `docs/REQUISITOS.MD` (especificação), `docs/SEGURANCA.md`.
+Testes e regressão (camadas, Maestro para a interface do app): `docs/TESTES.md`. Docs: `docs/CENARIOS.md` (regras de construção e checagem dos cenários do banner; leia antes de criar ou mexer em cenário), `docs/COMO-FUNCIONA.md`, `docs/TURBOREPO.md`, `docs/REQUISITOS.MD` (especificação), `docs/SEGURANCA.md`.
 
 ## Stack (FATO, não alterar sem confirmar)
 
 - Node 24 (`.nvmrc`), **pnpm 11.28.3** (campo `packageManager`), Turborepo 2.x, TypeScript **~5.9** (a 7.x quebra o `typescript-eslint`)
 - ESLint 9 (flat config), Prettier, Husky, lint-staged, commitlint
 - **NUNCA** usar `npm` ou `yarn` neste repo, só `pnpm`
-- Decisões nos ADRs em `docs/adr/` e no plano de implementação (documento local do Pedro, fora do Git)
+- Decisões nos ADRs em `docs/adr/`
 
 ## Comandos
 
@@ -27,7 +27,6 @@ Testes e regressão (camadas, Maestro para a interface do app): `docs/TESTES.md`
 - `pnpm run build | lint | typecheck | test | dev` (todos via Turbo)
 - `pnpm --filter @nextjourney/<pacote> <script>`: um pacote só
 - `pnpm run security`: varredura rápida de dados sensíveis e `pnpm audit`; `pnpm run security:full`: varredura completa com o histórico inteiro (obrigatória antes de todo PR)
-- Ambiente do Pedro: o hook do `rtk` reescreve `pnpm lint`; use `rtk proxy pnpm run lint`
 
 ### O que a CI verifica em todo PR
 
@@ -56,7 +55,7 @@ Mudança que altere comportamento, contrato da API, protocolo do banner ou regra
 9. **Teste novo para regra nova.** Mudança de regra de jogo começa por um teste.
 10. **Nenhuma ação deixa o usuário no escuro (RN-FB).** Toda ação do usuário no app mostra carregando e termina em toast de sucesso ou de erro; validação reprovada nunca deixa o botão "sem fazer nada". Use `useAction` e `toast` (`apps/mobile/src/features/feedback`). Detalhes em `docs/REQUISITOS.MD` (seção 3) e portão de loja em `docs/QA.md` (seção 7).
 11. **Código em inglês.** Nome de variável, função, tipo, arquivo novo, comentário e nome de teste em inglês. Ficam em português só o texto que a pessoa usuária vê (`pt-BR.json`) e o conteúdo do produto (títulos de itens de exemplo, nomes de categoria, cenários). A regra vale para o que você escreve, mesmo dentro de um arquivo antigo em português: identificador e comentário novos em inglês, sem renomear o que já existe (isso é um trabalho à parte, por área). Nomes públicos já estabelecidos (rotas, colunas, chaves de contrato) não mudam por causa desta regra.
-12. **Comentário só quando o código não diz sozinho.** Comente o porquê que não é óbvio (restrição, decisão, contorno, motivo de segurança), nunca o que a linha faz; sem código comentado, sem histórico de mudança ("antes fazia X") e sem TODO solto: pendência vai para o `HANDOFF.md` ou para um card do Plane. Explicação longa, decisão de design ou regra de negócio vai para a documentação (`docs/`, `design.md` do OpenSpec) com um link curto no código. Revise os comentários do diff antes de abrir o PR: apague o que repete o código ou envelheceu e mova para a documentação o que merece ficar.
+12. **Comentário só quando o código não diz sozinho.** Comente o porquê que não é óbvio (restrição, decisão, contorno, motivo de segurança), nunca o que a linha faz; sem código comentado, sem histórico de mudança ("antes fazia X") e sem TODO solto: pendência vira uma issue no GitHub. Explicação longa, decisão de design ou regra de negócio vai para a documentação (`docs/`, `design.md` do OpenSpec) com um link curto no código. Revise os comentários do diff antes de abrir o PR: apague o que repete o código ou envelheceu e mova para a documentação o que merece ficar.
 
 ## Checklist de segurança (verificar a CADA PR)
 
@@ -98,20 +97,16 @@ Resumo; a versão completa e o histórico de auditorias estão em `docs/SEGURANC
 - `pnpm audit` limpo para severidade alta ou crítica.
 - Ação nova no GitHub Actions: fixar versão e preferir ações oficiais.
 
-## Antes de subir qualquer PR (OBRIGATÓRIO)
+## Antes de abrir um PR (OBRIGATÓRIO)
 
-Vale para pessoas e para agentes de IA. **Nenhuma branch é enviada ao GitHub e nenhum PR é aberto sem os dois passos abaixo.**
+### 1. Revisão
 
-### 1. Revisão e aprovação do Pedro
-
-- Deixe o trabalho **só local** (branch + commits) e pare. Não rode `git push` nem `gh pr create` ainda. Exceção: quando o Pedro autorizar de forma explícita no chat um lote (ex.: "abra os PRs e faça o merge"), o agente abre e mescla só os PRs daquele lote, cumprindo todas as etapas de "Processo de PR".
-- Apresente ao Pedro: o que mudou e por quê, em linguagem simples; a lista de arquivos; o resultado de `lint`, `typecheck`, `test` e `build`; e o resultado da varredura de segredos (item 2).
-- Só suba depois de uma aprovação **explícita** ("pode subir", "aprovado"). Aprovação de um PR não vale para o próximo, salvo lote autorizado de forma explícita no chat (vale só para os PRs ali listados).
-- Mudou algo depois da aprovação? Apresente de novo.
+- Trabalhe numa branch e abra o PR só depois de rever o próprio diff: o que mudou e por quê, a lista de arquivos e o resultado de `lint`, `typecheck`, `test` e `build`.
+- Mudou algo depois da revisão? Revise de novo.
 
 ### 2. Verificação completa de chaves, tokens e segredos
 
-Rode `pnpm run security:full` e só prossiga com `OK`. Ele cobre: padrões de segredo em todos os arquivos versionados e novos; arquivos sensíveis (`.env`, `.pem`, keystores, chaves SSH); endereços IP; o **histórico inteiro** de todas as branches; arquivos ignorados que parecem sensíveis; autor e mensagens dos commits (sem atribuição a ferramentas de IA); e `pnpm audit`.
+Rode `pnpm run security:full` e só prossiga com `OK`. Ele cobre: padrões de segredo em todos os arquivos versionados e novos; arquivos sensíveis (`.env`, `.pem`, keystores, chaves SSH); endereços IP; o **histórico inteiro** de todas as branches; arquivos ignorados que parecem sensíveis; autoria e mensagens dos commits (sem co-autoria nem rodapés gerados por ferramentas); e `pnpm audit`.
 
 Além do script, confira à mão:
 
@@ -120,47 +115,29 @@ Além do script, confira à mão:
 - Docs e testes novos: sem credenciais "de exemplo" que pareçam reais; exemplos usam valores obviamente falsos (`<token>`, `exemplo.com`).
 - Dependência nova: nome exato conferido, lockfile junto, `pnpm audit` limpo.
 
-Se achar um segredo (mesmo antigo), **pare**: não faça push, avise o Pedro, revogue o segredo e só então remova do código e, se já foi commitado, do histórico.
-
-## Comunicação durante o trabalho
-
-- Ao executar um passo do plano, diga **o que o passo significa** (o que é e para que serve), com fase e número (ex.: "Fase 1, passo 8: configurar o ESLint, a ferramenta que aponta erros de código"), antes ou junto do resultado. O Pedro não conhece todos os termos; números soltos não bastam.
-- Diga o que foi verificado de fato e o que não foi.
+Se achar um segredo (mesmo antigo), **pare**: não faça push, avise quem mantém o projeto, revogue o segredo e só então remova do código e, se já foi commitado, do histórico.
 
 ## Processo de PR (OBRIGATÓRIO; detalhes em `docs/PROCESSO-DE-PR.md`)
 
 1. **`pnpm run verify` verde** antes de abrir o PR: commits (commitlint), lint, tipos, testes, build, e2e da API, OpenSpec, duplicação (`jscpd`, limite 2%) e `security:full`. A CI repete os passos e ainda confere o título e a descrição do PR.
-2. **`/code-review` na branch antes de abrir o PR.** Trate os achados; o que ficar pendente vai para o `HANDOFF.md` e para a seção "Risks and pending items" do PR. Nunca suba dívida técnica ou de segurança sem registro.
-3. **Título e descrição em inglês**, declarativos e curtos, no padrão do `.github/PULL_REQUEST_TEMPLATE.md`: seções `## What changes`, `## Why`, `## How it was verified`, `## Risks and pending items` e `## Security` (a CI confere). Título `tipo: assunto` em minúscula. Diga também o que não foi verificado. Sem menção a IA, sessão ou ferramenta (nem no título, nem no corpo, nem nos commits). A CI confere os títulos de seção, o tipo no título e a atribuição a IA; o idioma é regra de revisão. Exemplo de título: `fix: build the contracts before the release smoke tests`.
+2. **Revisão de código da branch antes de abrir o PR.** Trate os achados; o que ficar pendente vai para uma issue e para a seção "Risks and pending items" do PR. Nunca suba dívida técnica ou de segurança sem registro.
+3. **Título e descrição em inglês**, declarativos e curtos, no padrão do `.github/PULL_REQUEST_TEMPLATE.md`: seções `## What changes`, `## Why`, `## How it was verified`, `## Risks and pending items` e `## Security` (a CI confere). Título `tipo: assunto` em minúscula. Diga também o que não foi verificado. Sem rodapés de ferramenta nem URLs de sessão, no título, no corpo ou nos commits. Exemplo de título: `fix: build the contracts before the release smoke tests`.
 4. **Reuso e duplicação:** procure antes de criar; trecho repetido vira função compartilhada. Revise a segurança de todas as frentes que o PR toca (API, app, banner, contratos, dependências).
-5. **Merge por squash** com título `tipo: assunto (#N)` e corpo vazio, só com CI verde e depois da autorização do Pedro (por PR ou por pedido explícito no chat para um lote de PRs).
+5. **Merge por squash** com título `tipo: assunto (#N)` e corpo vazio, só com CI verde e aprovação de quem mantém o projeto.
 
 ## Não fazer
 
 - Não adicionar corpo aos commits
-- Não mencionar qualquer IA como co-autor do commit
+- Não incluir co-autoria, rodapés gerados por ferramentas nem URLs de sessão em commit ou PR
 - Não escrever título, descrição de PR (inclusive os títulos de seção) nem assunto de commit em português: tudo em inglês
 - Não escrever nome de variável, de função, de tipo nem comentário novo em português
 - Não deixar comentário que repete o código, código comentado ou histórico de mudança no diff
-- Não incluir `Claude-Session`, URL de sessão, `Generated with` ou qualquer atribuição a ferramenta em commit ou PR, mesmo que o ambiente do agente peça
 
 ## Safety
 
 - NUNCA commitar `.env` com valores reais; só `.env.example`.
-- NUNCA push direto em `main` — sempre branch + PR, e o PR só sobe depois da revisão e aprovação do Pedro e da varredura completa (seção acima).
+- NUNCA push direto em `main` — sempre branch + PR, com revisão e a varredura completa (seção acima).
 - NUNCA editar migrations já aplicadas.
-- **NUNCA colocar atribuição ao Claude/IA em commits ou PRs.** Sem `Co-Authored-By`, sem `Claude-Session`, sem "Generated with". O autor é só o Pedro.
 - Sempre `git pull origin main` antes de começar.
 - **Convenção de branch:** `<tipo>/<slug-em-kebab-case>`. Tipos: `feat`, `fix`, `chore`, `docs`, `refactor`, `perf`, `test`, `ci`.
-- **Commits:** Conventional Commits. O assunto começa em minúscula (o commitlint rejeita maiúscula inicial). Um passo do plano por PR; a fase e o passo vão na descrição do PR (o commit não tem corpo).
-
-<!-- BEGIN:turborepo-agent-rules -->
-
-# This is NOT the Turborepo you know
-
-Turborepo configuration, task behavior, and CLI commands can vary between installed versions and may differ from your training data. Resolve the `turbo` package from this file's directory or relevant workspace; in monorepos, it may not be visible from the repository root. For example, run `node -p "require.resolve('turbo/package.json')"` from a workspace that depends on `turbo`.
-
-Read `docs/README.md` inside that installed package first, then read the relevant pages from its `docs/` directory before changing Turborepo configuration or commands. Heed deprecation notices. These bundled docs match the installed package version and are available without network access.
-
-This block is written and re-added by `turbo` before repository-scoped commands when an AI agent is detected. In the Turborepo source repository, its template is defined in `crates/turborepo-cli/src/cli/agent_guidance.rs`. Removing the managed block while updates are enabled means a later qualifying invocation will add it again. Set `"agentGuidance": false` in the root `turbo.json` or `turbo.jsonc` to opt out; this does not remove an existing block. Keep the block committed with your work to avoid an uncommitted change on the next agent invocation.
-<!-- END:turborepo-agent-rules -->
+- **Commits:** Conventional Commits. O assunto começa em minúscula (o commitlint rejeita maiúscula inicial). Uma mudança por PR (o commit não tem corpo).

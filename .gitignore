@@ -19,3 +19,9 @@ apps/api/src/generated/
 backups/
 *.dump
 apps/mobile/.maestro/relatorio.xml
+
+# Local-only files (never committed)
+internal/
+.claude/
+AGENTS.md
+CLAUDE.md

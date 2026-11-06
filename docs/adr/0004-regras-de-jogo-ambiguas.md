@@ -1,7 +1,7 @@
 # ADR-0004: regras de jogo ambíguas e como foram resolvidas
 
 - Data: 2026-10-09
-- Status: **proposta** (implementada em `apps/api/src/modules/progression/domain`; aguardando a confirmação do Pedro)
+- Status: **proposta** (implementada em `apps/api/src/modules/progression/domain`; aguardando a confirmação de quem mantém o produto)
 - Fase do plano: Fase 3, passo 12
 
 ## Contexto
@@ -38,4 +38,4 @@ Conquistas (critérios do catálogo), resumo semanal, contador semanal do hábit
 ## Consequências
 
 - As regras podem mudar sem tocar em controllers: basta alterar a função e o teste.
-- Se o Pedro alterar alguma regra, este ADR é substituído por um novo (ADRs aceitos não são editados).
+- Se a pessoa responsável pelo produto alterar alguma regra, este ADR é substituído por um novo (ADRs aceitos não são editados).

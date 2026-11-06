@@ -2,7 +2,7 @@
 
 Roda antes de cada release e depois de mudanças grandes. Pré-requisitos: API local no ar com o seed aplicado (`pnpm --filter @nextjourney/api db:deploy && db:seed`), app em development build (emulador Android ou aparelho).
 
-Marque cada item e anote data, versão e aparelho no `docs/DIARIO.md`.
+Marque cada item e anote data, versão e aparelho no PR ou na issue de release.
 
 ## 1. Conta e sessão
 - [ ] Cadastro com senha fraca: o checklist mostra o que falta e o botão não envia.

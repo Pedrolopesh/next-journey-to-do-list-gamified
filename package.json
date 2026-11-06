@@ -2,6 +2,7 @@
   "name": "next-journey",
   "version": "0.0.0",
   "private": true,
+  "license": "MIT",
   "description": "Next Journey: to-do list gamificado (monorepo pnpm + Turborepo)",
   "packageManager": "pnpm@11.28.3",
   "engines": {

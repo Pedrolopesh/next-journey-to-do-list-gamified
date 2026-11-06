@@ -1,6 +1,6 @@
 # Processo de PR: da branch ao merge
 
-Objetivo: nenhum PR sobe com erro que uma máquina acharia, e todo PR é fácil de revisar. As etapas abaixo valem para pessoas e para agentes.
+Objetivo: nenhum PR sobe com erro que uma máquina acharia, e todo PR é fácil de revisar. As etapas abaixo valem para qualquer pessoa que contribua.
 
 ## 1. Antes de abrir o PR (local)
 
@@ -8,8 +8,8 @@ Objetivo: nenhum PR sobe com erro que uma máquina acharia, e todo PR é fácil 
 2. Commits: Conventional Commits **em inglês** e em minúscula, **sem corpo** e **sem atribuição a IA** (conferido por `commitlint`).
 3. Mudança de comportamento, contrato ou regra de jogo: proposta no OpenSpec (`/opsx:propose`) antes do código.
 4. `pnpm run verify` (ver abaixo). Só segue com tudo verde.
-5. Revise o diff: código novo em inglês e comentários só onde o código não diz sozinho (regras 11 e 12 do `AGENTS.md`).
-6. `/code-review` na branch. Corrija tudo que for relevante; o que ficar pendente vai para o `HANDOFF.md` com motivo, e para a seção "Risks and pending items" do PR.
+5. Revise o diff: código novo em inglês e comentários só onde o código não diz sozinho (regras 11 e 12 do `CONTRIBUTING.md`).
+6. Revisão de código da branch (`/code-review` ou revisão de outra pessoa). Corrija tudo que for relevante; o que ficar pendente vai para uma issue com o motivo, e para a seção "Risks and pending items" do PR.
 7. Descrição no padrão do `.github/PULL_REQUEST_TEMPLATE.md`, **em inglês** (veja a seção 5).
 
 ## 2. O que `pnpm run verify` confere
@@ -35,7 +35,7 @@ Objetivo: nenhum PR sobe com erro que uma máquina acharia, e todo PR é fácil 
 
 ## 4. Revisão de segurança, em todas as frentes
 
-Percorra o checklist do `AGENTS.md` para o que mudou:
+Percorra o checklist do `CONTRIBUTING.md` para o que mudou:
 
 - **API**: rota nasce protegida, entrada e saída com Zod, `select`/DTO (nunca o model inteiro), objeto do próprio usuário (IDOR), transação para contadores, sem dado sensível em log.
 - **App**: tokens só no SecureStore, nada sensível em AsyncStorage, URL ou log; validação no cliente é só UX.
@@ -48,11 +48,11 @@ Percorra o checklist do `AGENTS.md` para o que mudou:
 
 - Procure no repositório antes de criar (reuso). Trecho repetido em dois lugares vira função ou módulo compartilhado.
 - `pnpm run duplicates` falha acima de 2%. Arte gerada (`qg/scenes`) e dados de pixel art ficam de fora.
-- Dívida que não cabe no PR vai para o `HANDOFF.md`, com o motivo, nunca fica só na cabeça de alguém.
+- Dívida que não cabe no PR vira uma issue no GitHub, com o motivo, nunca fica só na cabeça de alguém.
 
 ## 5. Abrir e mesclar
 
-- Só com autorização do Pedro (por PR, ou por pedido explícito no chat para um lote). Sem `git push` antes disso.
+- Só com a aprovação de quem mantém o projeto. Revise o próprio diff antes de abrir.
 - Título e descrição **em inglês**, curtos e declarativos, com as seções `## What changes`, `## Why`, `## How it was verified`, `## Risks and pending items` e `## Security` (a CI confere esses títulos). A lista de caixas do template pode virar frases curtas (padrão dos PRs da infra). Diga também o que não foi verificado.
 - Sem rodapé de ferramenta, sem co-autor e sem menção a IA ou sessão, no título, no corpo e nos commits. A CI bloqueia as formas comuns no título e no corpo do PR e o `commitlint` nos commits; o idioma (inglês) não é conferido por máquina, é regra de revisão.
 

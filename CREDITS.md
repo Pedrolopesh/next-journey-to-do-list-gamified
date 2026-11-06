@@ -1,5 +1,7 @@
 # Créditos
 
+O código deste repositório é licenciado sob a [MIT](LICENSE). A arte e os sons de terceiros listados abaixo **não** estão cobertos pela MIT: cada item segue a licença do seu autor.
+
 Toda arte e todo som usados no Next Journey precisam estar listados aqui, com autor, licença e link.
 O script `pnpm --filter @nextjourney/banner validate:assets` valida limites técnicos; a conferência
 das licenças abaixo é manual e obrigatória antes de congelar a arte (Fase 6, passo 6).

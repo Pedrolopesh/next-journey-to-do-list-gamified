@@ -16,7 +16,7 @@ Manter o repositório **público** e tratar segurança com um nível extra de cu
 - **Nada** de segredo, `.env`, certificado, IP, host ou achado de auditoria no repositório; só `.env.example` com valores falsos. Infraestrutura real e achados ficam fora (cofre de segredos e notas privadas).
 - Proteções automáticas: varredura de segredos (`scripts/security-scan.sh`, rápida no CI e completa antes de todo PR), `pnpm audit`, hooks locais, secret scanning e push protection do GitHub, Dependabot, reporte privado de vulnerabilidades (`SECURITY.md`).
 - `main` protegida: PR obrigatório e CI verde; sem force-push.
-- **Revisão e aprovação do Pedro e varredura completa antes de subir qualquer PR** (`AGENTS.md`).
+- **Revisão e varredura completa antes de subir qualquer PR** (`CONTRIBUTING.md`).
 - Commits e PRs sem atribuição a ferramentas de IA.
 
 ## Consequências
