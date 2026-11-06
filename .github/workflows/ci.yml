@@ -96,6 +96,9 @@ jobs:
           if printf '%s\n%s' "$PR_TITLE" "$PR_BODY" | grep -i -E -q 'co-authored-by:|generated with|claude-session:|claude\.ai/code/session'; then
             echo "The title and description must not mention an AI tool or a co-author"; fail=1
           fi
+          if printf '%s\n%s' "$PR_TITLE" "$PR_BODY" | grep -E -q '[áéíóúâêôãõç]'; then
+            echo "The title and description must be in English (accented Portuguese characters found)"; fail=1
+          fi
           if printf '%s\n%s' "$PR_TITLE" "$PR_BODY" | grep -i -E -q 'leadership|lideran[cç]a|stakeholder'; then
             echo "The title and description must not cite who will review or evaluate the repository"; fail=1
           fi

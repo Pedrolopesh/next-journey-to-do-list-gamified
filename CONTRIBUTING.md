@@ -117,6 +117,16 @@ Além do script, confira à mão:
 
 Se achar um segredo (mesmo antigo), **pare**: não faça push, avise quem mantém o projeto, revogue o segredo e só então remova do código e, se já foi commitado, do histórico.
 
+## Idioma: inglês no código e nos PRs (OBRIGATÓRIO)
+
+Vale para pessoas e para qualquer ferramenta que escreva neste repositório.
+
+- **PR, commit e issue:** título, descrição (inclusive os títulos de seção), assunto de commit e comentário de revisão em inglês. A CI barra acento no título e na descrição do PR.
+- **Código:** nome de variável, função, tipo, classe, constante, arquivo novo, nome de teste e comentário em inglês. O `scripts/check-hygiene.sh` barra comentário novo com acento.
+- **Fica em português só o que a pessoa usuária vê:** `pt-BR.json` e o conteúdo do produto (itens de exemplo, nomes de categoria, cenários, conquistas). Chaves públicas já estabelecidas (rotas, colunas, ids de conquista, campos de contrato) não mudam por causa desta regra.
+- **Ao tocar um arquivo antigo em português:** o que você escreve vai em inglês; renomeie o que já existe só num PR próprio de renomeação, por área, com `pnpm run verify` verde e nenhum contrato público alterado.
+- **Documentação nova** (`docs/`, `README`, OpenSpec) também vai em inglês; a existente é migrada por área, em PRs separados.
+
 ## Higiene de repositório público (OBRIGATÓRIO)
 
 Este repositório é aberto: quem clona vê tudo, e o que entra no Git não sai mais. Estas regras valem para pessoas e para qualquer ferramenta de IA que escreva código aqui. `scripts/check-hygiene.sh` (parte de `pnpm run security`, do `verify` e da CI) confere as cinco primeiras; as demais são de revisão.
