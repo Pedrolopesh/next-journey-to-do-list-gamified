@@ -23,7 +23,7 @@ const SKY_BY_TIME: Record<TimeOfDay, string[]> = {
   night: ['#03061a', '#0a1236', '#18255a', '#3a3050'],
 };
 
-/** Postes nos cantos da frente da cerca, com a lâmpada virada para os zumbis de fora. */
+/** Posts at the front corners of the fence, with the lamp facing the zombies outside. */
 const LAMPS: Lamp[] = [
   { x: 72, baseY: 198, h: 84, dir: -1 },
   { x: 318, baseY: 198, h: 84, dir: 1 },
@@ -33,9 +33,9 @@ const CROWD_FEET = 188;
 
 type Panel = { ax: number; ay: number; ah: number; bx: number; by: number; bh: number };
 
-/** Cerca em três lados (fundo e laterais) e a frente aberta para o jogador. */
+/** Fence on three sides (back and sides) and the front open to the player. */
 const BACK: Panel = { ax: 90, ay: FENCE_BASE, ah: FENCE_H, bx: 300, by: FENCE_BASE, bh: FENCE_H };
-/** As laterais seguem a borda do piso e saem pela parte de baixo da cena: o cercado fecha dos dois lados. */
+/** The sides follow the floor edge and leave through the bottom of the scene: the enclosure closes on both sides. */
 const LEFT: Panel = { ax: 90, ay: FENCE_BASE, ah: FENCE_H, bx: 61, by: 222, bh: 46 };
 const RIGHT: Panel = { ax: 300, ay: FENCE_BASE, ah: FENCE_H, bx: 329, by: 222, bh: 46 };
 
@@ -47,7 +47,7 @@ function at(p: Panel, u: number): { x: number; base: number; h: number } {
   };
 }
 
-/** Faíscas na cerca elétrica: mesma conta para o desenho e para a luz. */
+/** Sparks on the electric fence: same calculation for the drawing and for the light. */
 function sparks(t: number): { x: number; y: number }[] {
   const out: { x: number; y: number }[] = [];
   const slot = Math.floor(t * 8);
@@ -60,14 +60,14 @@ function sparks(t: number): { x: number; y: number }[] {
   return out;
 }
 
-/** Posição do helicóptero: cruza a cena da esquerda para a direita e recomeça. */
+/** Helicopter position: crosses the scene from left to right and starts over. */
 function heliPos(t: number): { x: number; y: number } {
   return { x: ((t * 34) % (SCENE_W + 120)) - 60, y: 46 + Math.sin(t * 1.4) * 3 };
 }
 
 function dunes(env: SceneEnv): void {
   const { ctx } = env;
-  // Montanhas distantes
+  // Distant mountains
   ctx.fillStyle = '#a58468';
   ctx.beginPath();
   ctx.moveTo(0, HORIZON);
@@ -75,7 +75,7 @@ function dunes(env: SceneEnv): void {
     ctx.lineTo(x, HORIZON - 7 - Math.abs(Math.sin(x * 0.045 + 1)) * 12);
   ctx.lineTo(SCENE_W, HORIZON);
   ctx.fill();
-  // Dunas em duas camadas
+  // Dunes in two layers
   for (const [base, amp, phase, color] of [
     [HORIZON + 1, 4, 0.5, '#c99a66'],
     [HORIZON + 8, 5, 2.2, '#d6aa70'],
@@ -118,7 +118,7 @@ function hangar(env: SceneEnv, cx: number, base: number): void {
       if (Math.abs(k) < half - 1) rect(env, cx + k, y, 1, 1, '#566339');
   }
   rect(env, cx - rx - 1, base - 1, rx * 2 + 2, 1, OUT);
-  // portão
+  // gate
   block(env, cx - 11, base - 20, 22, 20, '#2c3326', '#1b1f17', '#4a5340');
   rect(env, cx, base - 20, 1, 20, OUT);
 }
@@ -145,22 +145,22 @@ function radar(env: SceneEnv, x: number, base: number): void {
 
 function tower(env: SceneEnv, x: number, base: number): void {
   const night = env.time === 'night';
-  // pernas e travessas
+  // legs and crosspieces
   for (const dx of [-8, 6]) {
     rect(env, x + dx - 1, base - 40, 4, 40, OUT);
     rect(env, x + dx, base - 40, 2, 40, '#5a6048');
   }
   for (let k = 0; k < 3; k++) rect(env, x - 8, base - 12 - k * 13, 16, 2, '#4a5038');
-  // cabine
+  // cabin
   block(env, x - 11, base - 54, 24, 14, '#58634a', '#3e4733', '#7c886a');
   rect(env, x - 8, base - 51, 18, 5, night ? '#ffd980' : '#bfe0e8');
   rect(env, x + 1, base - 51, 1, 5, OUT);
-  // telhado e antena
+  // roof and antenna
   rect(env, x - 13, base - 57, 28, 3, OUT);
   rect(env, x - 12, base - 56, 26, 1, '#7d8a62');
   rect(env, x + 1, base - 66, 1, 9, OUT);
   rect(env, x, base - 67, 3, 2, Math.sin(env.t * 4) > 0 ? '#ff4a3a' : '#7a2a24');
-  // refletor que varre a base à noite
+  // searchlight that sweeps the base at night
   if (night) {
     const { ctx } = env;
     const angle = 1.25 + Math.sin(env.t * 0.6) * 0.55;
@@ -197,7 +197,7 @@ export function flag(env: SceneEnv, x: number, base: number): void {
   }
 }
 
-/** Painel de tela de arame com postes, fios elétricos e isoladores. */
+/** Wire mesh panel with posts, electric wires and insulators. */
 function fence(env: SceneEnv, p: Panel, postEvery: number): void {
   const { ctx } = env;
   const tl = { x: p.ax, y: p.ay - p.ah };
@@ -229,7 +229,7 @@ function fence(env: SceneEnv, p: Panel, postEvery: number): void {
   }
   ctx.restore();
 
-  // trilho de cima e de baixo
+  // top and bottom rail
   ctx.strokeStyle = '#4b535b';
   ctx.lineWidth = 1.4;
   ctx.beginPath();
@@ -239,7 +239,7 @@ function fence(env: SceneEnv, p: Panel, postEvery: number): void {
   ctx.lineTo(p.bx, p.by);
   ctx.stroke();
 
-  // postes, isoladores e dois fios elétricos acima da tela
+  // posts, insulators and two electric wires above the mesh
   const count = Math.max(1, Math.round(length / postEvery));
   for (let i = 0; i <= count; i++) {
     const u = i / count;
@@ -264,7 +264,7 @@ function fence(env: SceneEnv, p: Panel, postEvery: number): void {
 function helicopter(env: SceneEnv): void {
   const { ctx } = env;
   const { x, y } = heliPos(env.t);
-  // sombra no chão
+  // shadow on the ground
   ctx.save();
   ctx.fillStyle = 'rgba(0,0,0,0.2)';
   ctx.beginPath();
@@ -272,7 +272,7 @@ function helicopter(env: SceneEnv): void {
   ctx.fill();
   ctx.restore();
 
-  // holofote à noite
+  // floodlight at night
   if (env.time === 'night') {
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
@@ -304,7 +304,7 @@ const CLOTH = [
 
 const HAIRS = [null, 'hair-buzzcut', 'hair-natural', null, 'hair-curly-short', 'hair-bob'] as const;
 
-/** 5 zumbis de cada lado, em fila irregular encostados na tela. */
+/** 5 zombies on each side, in an irregular line against the screen. */
 const CROWD_FRONT: [number, number][] = [
   [62, 174],
   [10, 178],
@@ -312,7 +312,7 @@ const CROWD_FRONT: [number, number][] = [
   [52, 196],
   [20, 204],
 ];
-/** Fileiras mais ao fundo da multidão (nível 5): mesmos zumbis, mais longe da tela. */
+/** Rows farther back in the crowd (level 5): the same zombies, farther from the screen. */
 const CROWD_BACK: [number, number][] = [
   [76, 160],
   [48, 156],
@@ -342,7 +342,7 @@ function crowd(side: 'left' | 'right', spots = CROWD_FRONT): ExtraCharacter[] {
       },
     };
   });
-  // quem está mais ao fundo (pés mais altos) é desenhado primeiro
+  // whoever is farther back (higher feet) is drawn first
   return list
     .sort((a, b) => a.feet - b.feet)
     .map((z) => ({
@@ -354,10 +354,10 @@ function crowd(side: 'left' | 'right', spots = CROWD_FRONT): ExtraCharacter[] {
     }));
 }
 
-/** Rodada em que a base se repete (distância percorrida pela calçada de areia). */
+/** Round at which the base repeats (distance traveled by the sand sidewalk). */
 const JOURNEY_PERIOD = 820;
 const BASE_PERIOD = 1100;
-/** O fundo anda mais devagar que o chão: a base passa em segundo plano. */
+/** The background moves slower than the ground: the base passes in the background. */
 const BASE_FACTOR = 0.45;
 const MOUNTAIN_FACTOR = 0.04;
 const BASE_LINE = 146;
@@ -367,14 +367,14 @@ const BASE_START = -20;
 const BASE_END = 590;
 const BASE_WIDTH = BASE_END - BASE_START + 40;
 
-/** Duas montanhas pontudas lado a lado, que reaparecem a cada volta (o resto são as ondas de sempre). */
+/** Two pointed mountains side by side, which reappear on every loop (the rest are the usual waves). */
 const PEAK_PAIR_PERIOD = 900;
 const PEAKS: { x: number; h: number; w: number }[] = [
   { x: 330, h: 30, w: 30 },
   { x: 372, h: 34, w: 32 },
 ];
 
-/** Montanhas distantes: as mesmas ondas da cena parada, rolando devagar; sem emendas por ser uma função contínua. */
+/** Distant mountains: the same waves of the still scene, scrolling slowly; no seams since it is a continuous function. */
 function mountainHeight(x: number): number {
   let h = 7 + Math.abs(Math.sin(x * 0.045 + 1)) * 12;
   for (const peak of PEAKS) {
@@ -417,7 +417,7 @@ function journeyDunes(env: SceneEnv): void {
 
 type Walker = { x: number; feet: number; variant: number };
 
-/** Zumbis parados encostados na cerca, em grupos de tamanhos diferentes. */
+/** Zombies standing against the fence, in groups of different sizes. */
 const walkersAt = (centers: [number, number][], seed: number): Walker[] => {
   const random = rng(seed);
   const out: Walker[] = [];
@@ -442,7 +442,7 @@ const WALKERS = walkersAt(
   ],
   5,
 );
-/** Mais grupos entre os de sempre, no nível 5 (Evacuação): o mesmo desenho, só mais gente. */
+/** More groups among the usual ones, at level 5 (Evacuation): the same drawing, just more people. */
 const MORE_WALKERS = walkersAt(
   [
     [95, 3],
@@ -468,7 +468,7 @@ function journeyFence(env: SceneEnv, dx: number): void {
   );
 }
 
-/** Faíscas na cerca visível: a mesma conta alimenta o desenho e a luz. */
+/** Sparks on the visible fence: the same calculation feeds the drawing and the light. */
 function journeySparks(env: SceneEnv): { x: number; y: number }[] {
   const out: { x: number; y: number }[] = [];
   const slot = Math.floor(env.t * 8);
@@ -492,7 +492,7 @@ function baseSegments(env: SceneEnv): { dx: number; k: number }[] {
   return out;
 }
 
-/** Posição (tela) dos pontos de luz da base: lâmpada do hangar e refletor da torre. */
+/** Position (screen) of the base's light points: hangar lamp and tower searchlight. */
 function baseLights(env: SceneEnv): Light[] {
   const out: Light[] = [];
   for (const { dx } of baseSegments(env)) {
@@ -503,7 +503,7 @@ function baseLights(env: SceneEnv): Light[] {
   return out;
 }
 
-/** Jornada: deserto com a base militar passando ao fundo e o personagem sozinho na estrada de areia. */
+/** Journey: desert with the military base passing in the background and the character alone on the sand road. */
 function journey(env: SceneEnv): void {
   gradientRect(env, 0, 0, SCENE_W, HORIZON + 16, SKY_BY_TIME[env.time]);
   stars(env, 0, 0, SCENE_W, 90, 11, 50);
@@ -556,7 +556,7 @@ function journey(env: SceneEnv): void {
         miniZombie(env, { ...walker, x: dx + walker.x }, i);
       });
   }
-  // Zumbis soltos no deserto, longe da base
+  // Zombies loose in the desert, far from the base
   for (const { dx } of baseSegments(env)) {
     if (env.level === 3) break;
     miniZombie(env, { x: dx + 780, feet: 158, variant: 1 }, 40);
@@ -568,7 +568,7 @@ function journey(env: SceneEnv): void {
   sandbags(env, at(250), 178, 2, 2);
   barrel(env, at(560), 176, '#6b7a4a');
   cactus(env, at(700), 174);
-  // faíscas na cerca
+  // sparks on the fence
   const { ctx } = env;
   ctx.save();
   for (const s of journeySparks(env)) {
@@ -599,13 +599,13 @@ export const zombie: SceneDef = {
   journey,
   back(env) {
     const { ctx } = env;
-    // céu
+    // sky
     gradientRect(env, 0, 0, SCENE_W, HORIZON + 16, SKY_BY_TIME[env.time]);
     stars(env, 0, 0, SCENE_W, 90, 11, 50);
     celestial(env, 0, 0, SCENE_W, HORIZON);
     dunes(env);
 
-    // chão de areia
+    // sand ground
     gradientRect(env, 0, HORIZON + 8, SCENE_W, SCENE_H - HORIZON - 8, [
       '#d6aa70',
       '#cda068',
@@ -626,13 +626,13 @@ export const zombie: SceneDef = {
     cactus(env, 22, 154);
     cactus(env, 357, 150);
 
-    // construções ao fundo (atrás da cerca)
+    // buildings in the background (behind the fence)
     hangar(env, 140, FENCE_BASE - 6);
     radar(env, 224, FENCE_BASE - 6);
     flag(env, 246, FENCE_BASE - 6);
     tower(env, 280, FENCE_BASE - 4);
 
-    // piso de concreto da base (trapézio dentro da cerca)
+    // concrete floor of the base (trapezoid inside the fence)
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(BACK.ax, FENCE_BASE);
@@ -644,7 +644,7 @@ export const zombie: SceneDef = {
     tileArea(env, env.tiles.cement, 0, 160, 60, FENCE_BASE, 272, 62);
     rect(env, 60, FENCE_BASE, 272, 62, 'rgba(190,150,100,0.14)');
     ctx.restore();
-    // faixa de segurança amarela
+    // yellow safety stripe
     ctx.strokeStyle = 'rgba(242,194,48,0.85)';
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 4]);
@@ -654,10 +654,10 @@ export const zombie: SceneDef = {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // cerca dos fundos
+    // back fence
     fence(env, BACK, 42);
 
-    // suprimentos dentro da base
+    // supplies inside the base
     crate(env, 104, 192, 14);
     crate(env, 118, 192, 12);
     crate(env, 108, 178, 12);
@@ -666,10 +666,10 @@ export const zombie: SceneDef = {
     barrel(env, 304 - 4, 190, '#6b7a4a');
   },
   front(env) {
-    // cercas laterais por cima dos zumbis e placas de perigo
+    // side fences over the zombies and danger signs
     fence(env, LEFT, 38);
     fence(env, RIGHT, 38);
-    // postes dos cantos: a luz cai sobre os zumbis de fora
+    // corner posts: the light falls on the zombies outside
     LAMPS.forEach((lamp, i) => {
       drawLampPost(env, lamp);
       drawLampCones(env, [lamp], CROWD_X[i] ?? 0, CROWD_FEET);
@@ -681,7 +681,7 @@ export const zombie: SceneDef = {
       sign(env, point.x, point.base - point.h - 12);
     }
 
-    // faíscas
+    // sparks
     const { ctx } = env;
     ctx.save();
     for (const s of sparks(env.t)) {
@@ -729,23 +729,23 @@ export const zombie: SceneDef = {
     return [
       ...lights,
       ...LAMPS.flatMap((lamp, i) => lampLights([lamp], CROWD_X[i] ?? 0, CROWD_FEET)),
-      // luar sobre toda a base
+      // moonlight over the whole base
       { x: 304, y: 34, radius: 320, color: [160, 175, 255], intensity: 0.34 },
       { x: 195, y: 150, radius: 240, color: [150, 165, 240], intensity: 0.28 },
-      // holofotes nos postes dos cantos e lâmpada do hangar
+      // floodlights on the corner posts and hangar lamp
       { x: 90, y: 130, radius: 55, color: [255, 235, 170], intensity: 0.5 },
       { x: 300, y: 130, radius: 55, color: [255, 235, 170], intensity: 0.5 },
       { x: 140, y: 140, radius: 28, color: [255, 220, 150], intensity: 0.5 },
       { x: 268, y: 106, radius: 24, color: [255, 220, 140], intensity: 0.6 },
-      // luz do helicóptero no chão
+      // helicopter light on the ground
       { x: heli.x + 28, y: 196, radius: 38, color: [255, 245, 210], intensity: 0.6 },
     ];
   },
   extras: [...crowd('left'), ...crowd('right')],
-  // no nível 3 (Cerco) não há zumbis: só o exército
+  // at level 3 (Siege) there are no zombies: only the army
   extrasFor: (level) => [
     ...(level === 3 ? [] : [...crowd('left'), ...crowd('right')]),
-    // o lado direito fica livre para o helicóptero pousado ao lado da base
+    // the right side stays free for the helicopter landed beside the base
     ...(level === 5 ? crowd('left', CROWD_BACK) : []),
     ...zombieExtras(level),
   ],

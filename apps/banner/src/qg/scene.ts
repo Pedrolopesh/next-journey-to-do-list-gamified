@@ -12,18 +12,18 @@ const QG_DEFAULT_SCENE = 'cabin';
 const CELEBRATE_MS = 1500;
 
 export type QgScene = {
-  /** Mostra o QG (esconde o Mapa) e começa a animar. */
+  /** Shows the HQ (hides the Map) and starts animating. */
   show: () => void;
-  /** Esconde o QG e para o laço de animação. */
+  /** Hides the HQ and stops the animation loop. */
   hide: () => void;
   setScene: (sceneId: string) => void;
-  /** Jornada: o personagem anda para a esquerda e o cenário rola (abas de itens). */
+  /** Journey: the character walks left and the scenery scrolls (item tabs). */
   setJourney: (journey: boolean) => void;
   setTime: (time: TimeOfDay) => void;
   setCharacter: (layers: CharacterLayers) => void;
-  /** Progresso do capítulo (0 a 1): na jornada vira a parada do personagem. */
+  /** Chapter progress (0 to 1): on the journey it becomes the character's stop. */
   setProgress: (progress: number, options?: { animate?: boolean }) => void;
-  /** Check feito: o personagem comemora; na jornada, corre até a parada do novo progresso. */
+  /** Check done: the character celebrates; on the journey, runs to the stop of the new progress. */
   celebrate: (progress: number) => void;
   pause: () => void;
   resume: () => void;
@@ -31,7 +31,7 @@ export type QgScene = {
   fadeIn: () => void;
 };
 
-/** Parada da jornada (0 a `JOURNEY_STOPS`) para o progresso do capítulo. */
+/** Journey stop (0 to `JOURNEY_STOPS`) for the chapter progress. */
 export function stopFor(progress: number): number {
   if (progress >= 1) return JOURNEY_STOPS;
   return Math.max(0, Math.floor(progress * JOURNEY_STOPS));
@@ -42,8 +42,8 @@ function isQgSceneId(id: string): boolean {
 }
 
 /**
- * Cena do QG (Home): cenário em canvas com o personagem LPC. O motor só é criado (e a arte só é
- * decodificada) na primeira vez que o QG é mostrado, para as abas com o Mapa não pagarem por isso.
+ * HQ (Home) scene: canvas scenery with the LPC character. The engine is only created (and the art only
+ * decoded) the first time the HQ is shown, so the Map tabs do not pay for it.
  */
 export function createQgScene(root: HTMLElement): QgScene {
   const host = document.createElement('div');
@@ -75,8 +75,8 @@ export function createQgScene(root: HTMLElement): QgScene {
     engine.state.sceneId = isQgSceneId(pending.sceneId) ? pending.sceneId : QG_DEFAULT_SCENE;
     engine.state.time = pending.time;
     engine.state.journey = pending.journey;
-    // Um INIT repetido (o app recarrega o perfil depois de cada check) não pode teletransportar
-    // o personagem nem cortar a corrida em andamento
+    // A repeated INIT (the app reloads the profile after each check) must not teleport
+    // the character or cut the run in progress
     if (pending.snap && engine.state.stop !== pending.stop) engine.placeHero(pending.stop);
     else engine.state.stop = pending.stop;
     pending.snap = false;
@@ -115,7 +115,7 @@ export function createQgScene(root: HTMLElement): QgScene {
         if (visible && !paused) created.start();
       })
       .catch(() => {
-        // Sem a arte o QG fica em branco; libera para tentar de novo no próximo INIT
+        // Without the art the HQ stays blank; release it to try again on the next INIT
         loading = null;
       });
   };

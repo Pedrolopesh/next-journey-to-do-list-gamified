@@ -75,7 +75,7 @@ export const HELL_LEVELS: LevelInfo[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------
-// Gente (demônios, diabretes e almas)
+// People (demons, imps and souls)
 // ---------------------------------------------------------------------------------------------
 
 const IMP: Look[] = [
@@ -155,7 +155,7 @@ const imp = (i: number): Look => IMP[i % IMP.length] ?? {};
 const soul = (i: number): Look => SOUL[i % SOUL.length] ?? {};
 
 // ---------------------------------------------------------------------------------------------
-// Objetos
+// Objects
 // ---------------------------------------------------------------------------------------------
 
 type Prop =
@@ -188,7 +188,7 @@ function skullAt(env: SceneEnv, x: number, y: number, eyes: boolean): void {
   }
 }
 
-/** Portão de ferro: dois pilares com crânios, arco de grades e olhos que brilham. */
+/** Iron gate: two pillars with skulls, arch of bars and glowing eyes. */
 function gate(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 40, y, 82, 3, 'rgba(0,0,0,0.3)');
   for (const dx of [-36, 28]) {
@@ -211,7 +211,7 @@ function gate(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 22, y - 20, 45, 20, 'rgba(255,90,30,0.18)');
 }
 
-/** Forca com jaula pendurada: a jaula balança devagar numa fase fixa. */
+/** Gibbet with a hanging cage: the cage sways slowly at a fixed phase. */
 function gallows(env: SceneEnv, x: number, y: number, ph: number): void {
   rect(env, x - 10, y + 1, 21, 3, 'rgba(0,0,0,0.3)');
   rect(env, x - 3, y - 62, 6, 63, OUT);
@@ -231,7 +231,7 @@ function gallows(env: SceneEnv, x: number, y: number, ph: number): void {
   rect(env, cx + 1, y - 34, 3, 4, BONE);
 }
 
-/** Fornalha de pedra com boca em chamas, chaminé que solta faíscas e fumaça. */
+/** Stone furnace with a mouth in flames, chimney that gives off sparks and smoke. */
 function forge(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 24, y, 50, 3, 'rgba(0,0,0,0.3)');
   rect(env, x - 22, y - 34, 46, 35, OUT);
@@ -278,7 +278,7 @@ function anvil(env: SceneEnv, x: number, y: number): void {
   if (glow) rect(env, x - 3, y - 17, 7, 2, '#ff9a3a');
 }
 
-/** Calha de pedra com lava escorrendo (a lava avança devagar). */
+/** Stone trough with flowing lava (the lava advances slowly). */
 function trough(env: SceneEnv, x: number, y: number, w: number): void {
   rect(env, x - 1, y - 7, w + 2, 9, OUT);
   rect(env, x, y - 6, w, 7, '#3a2a30');
@@ -289,7 +289,7 @@ function trough(env: SceneEnv, x: number, y: number, w: number): void {
   for (const dx of [2, w - 5]) rect(env, x + dx, y + 1, 3, 5, OUT);
 }
 
-/** Tocha de fogo azul: poste de ferro com chama fria que dança. */
+/** Blue fire torch: iron pole with a cold flame that dances. */
 function blueflame(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 5, y + 1, 11, 3, 'rgba(0,0,0,0.3)');
   rect(env, x - 1, y - 30, 3, 31, OUT);
@@ -302,7 +302,7 @@ function blueflame(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 1 + wob, y - 47 - wob, 3, 6, '#d8f0ff');
 }
 
-/** Arco de ossos: dois pilares de costelas e uma viga de fêmures com crânio no meio. */
+/** Bone arch: two pillars of ribs and a beam of femurs with a skull in the middle. */
 function soulgate(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 38, y + 1, 78, 3, 'rgba(0,0,0,0.3)');
   for (const dx of [-34, 28]) {
@@ -341,7 +341,7 @@ function obelisk(env: SceneEnv, x: number, y: number): void {
   env.ctx.globalAlpha = 1;
 }
 
-/** Alma flutuante: fantasma azul que sobe e desce devagar (fase fixa). */
+/** Floating soul: blue ghost that slowly rises and falls (fixed phase). */
 function soulWisp(env: SceneEnv, x: number, y: number, ph: number): void {
   const wx = Math.round(x + Math.sin(env.t * 0.6 + ph) * 5);
   const wy = Math.round(y + Math.sin(env.t * 0.9 + ph * 1.3) * 5);
@@ -362,7 +362,7 @@ function soulWisp(env: SceneEnv, x: number, y: number, ph: number): void {
   rect(env, wx + 1, wy - 1, 1, 2, '#1b3a66');
 }
 
-/** Pilar de fogo: coluna de pedra negra com uma labareda alta e viva no topo. */
+/** Fire pillar: black stone column with a tall, lively flame on top. */
 function pillar(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 12, y + 1, 25, 3, 'rgba(0,0,0,0.3)');
   rect(env, x - 9, y - 40, 19, 41, OUT);
@@ -380,7 +380,7 @@ function pillar(env: SceneEnv, x: number, y: number): void {
   }
 }
 
-/** Estandarte da corte: haste de ferro, tecido negro com chifres vermelhos. */
+/** Court banner: iron pole, black cloth with red horns. */
 function standard(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 6, y + 1, 13, 3, 'rgba(0,0,0,0.3)');
   rect(env, x - 1, y - 64, 3, 65, OUT);
@@ -588,7 +588,7 @@ const kit: PropKit<Prop> = {
 
 export const hellLevelLayers = propLayers(kit, HELL_LEVEL_COUNT);
 
-/** Relâmpagos do nível 5: um clarão curto e um raio ramificado, a cada poucos segundos. */
+/** Level 5 lightning: a short flash and a branching bolt, every few seconds. */
 export function hellSky(env: SceneEnv): void {
   if (env.level !== 5) return;
   const cycle = (env.t + 1.3) % 7;
@@ -609,7 +609,7 @@ export function hellSky(env: SceneEnv): void {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Figurantes
+// Extras
 // ---------------------------------------------------------------------------------------------
 
 const lv = (n: number): number => Math.min(HELL_LEVEL_COUNT, Math.max(1, n));

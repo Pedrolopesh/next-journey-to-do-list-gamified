@@ -1,7 +1,7 @@
 import type { Catalog } from '../qg/compose';
 import { createQgEngine, loadImage, type QgEngine, type QgState } from '../qg/engine';
 
-/** Catálogo e tiles de cenário: carregados uma vez e reaproveitados entre as páginas. */
+/** Catalog and scenery tiles: loaded once and reused across pages. */
 const assets = (async () => {
   const catalog = (await (await fetch('/lab/catalog.json')).json()) as Catalog;
   const tiles = Object.fromEntries(
@@ -22,12 +22,12 @@ export type LabEngine = {
   engine: QgEngine;
   state: QgState;
   catalog: Catalog;
-  /** Quantas folhas de sprite este motor pediu. */
+  /** How many sprite sheets this engine requested. */
   requests: () => number;
   destroy: () => void;
 };
 
-/** Estado inicial do personagem do laboratório. */
+/** Initial state of the lab character. */
 export const initialState = (): QgState => ({
   selection: {
     bodyType: 'male',
@@ -50,7 +50,7 @@ export const initialState = (): QgState => ({
   time: 'afternoon',
 });
 
-/** Liga o motor do QG a um canvas e o inicia; `destroy` para o desenho e solta o redimensionamento. */
+/** Attaches the HQ engine to a canvas and starts it; `destroy` stops drawing and releases the resize handling. */
 export async function createLabEngine(
   canvas: HTMLCanvasElement,
   state: QgState = initialState(),
@@ -81,7 +81,7 @@ export async function createLabEngine(
   };
 }
 
-/** Palco do canvas (390x220) usado pelas páginas de cenários e de personagem. */
+/** Canvas stage (390x220) used by the scenery and character pages. */
 export function stage(label: string): { wrap: HTMLElement; canvas: HTMLCanvasElement } {
   const wrap = document.createElement('div');
   wrap.className = 'stage';

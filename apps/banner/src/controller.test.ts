@@ -29,7 +29,7 @@ function setup() {
   return { root, sent, controller, receive };
 }
 
-describe('controlador do banner', () => {
+describe('banner controller', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -37,13 +37,13 @@ describe('controlador do banner', () => {
     vi.useRealTimers();
   });
 
-  it('envia READY com a versão ao iniciar', () => {
+  it('sends READY with the version on start', () => {
     const { controller, sent } = setup();
     controller.start();
     expect(sent).toEqual([{ v: 1, type: 'READY', payload: { bannerVersion: '9.9.9' } }]);
   });
 
-  it('INIT posiciona o personagem pelo progress e guarda a cena', () => {
+  it('INIT positions the character by progress and stores the scene', () => {
     const { root, receive } = setup();
     receive({
       v: 1,
@@ -54,7 +54,7 @@ describe('controlador do banner', () => {
     expect(document.getElementById('hero')?.style.getPropertyValue('--hero-x')).toBe('0px');
   });
 
-  it('o banner só fica visível (data-ready) depois do primeiro INIT', () => {
+  it('the banner only becomes visible (data-ready) after the first INIT', () => {
     const { root, receive } = setup();
     expect(root.dataset.ready).toBeUndefined();
     receive({
@@ -65,7 +65,7 @@ describe('controlador do banner', () => {
     expect(root.dataset.ready).toBe('1');
   });
 
-  it('INIT com a cena QG responde ERROR (ainda não suportada)', () => {
+  it('INIT with the HQ scene answers ERROR (not supported yet)', () => {
     const { receive, sent } = setup();
     receive({
       v: 1,
@@ -75,7 +75,7 @@ describe('controlador do banner', () => {
     expect(sent[0]).toMatchObject({ type: 'ERROR', payload: { code: 'UNSUPPORTED_SCENE' } });
   });
 
-  it('ITEM_CHECKED liga a corrida e volta à caminhada depois de 5 s', () => {
+  it('ITEM_CHECKED starts the run and goes back to walking after 5 s', () => {
     const { root, receive } = setup();
     receive({ v: 1, type: 'ITEM_CHECKED', payload: { progress: 0.5 } });
     expect(root.classList.contains('running')).toBe(true);
@@ -83,7 +83,7 @@ describe('controlador do banner', () => {
     expect(root.classList.contains('running')).toBe(false);
   });
 
-  it('PAUSE e RESUME controlam a classe paused', () => {
+  it('PAUSE and RESUME control the paused class', () => {
     const { root, receive } = setup();
     receive({ v: 1, type: 'PAUSE' });
     expect(root.classList.contains('paused')).toBe(true);
@@ -91,7 +91,7 @@ describe('controlador do banner', () => {
     expect(root.classList.contains('paused')).toBe(false);
   });
 
-  it('CHAPTER_COMPLETED faz o fade e avisa CHAPTER_TRANSITION_DONE no fim', () => {
+  it('CHAPTER_COMPLETED fades and sends CHAPTER_TRANSITION_DONE at the end', () => {
     const { root, receive, sent } = setup();
     receive({ v: 1, type: 'CHAPTER_COMPLETED', payload: { nextSceneKey: 'forest-2' } });
     expect(root.dataset.sceneKey).toBe('forest-2');
@@ -103,7 +103,7 @@ describe('controlador do banner', () => {
     expect(sent).toEqual([{ v: 1, type: 'CHAPTER_TRANSITION_DONE' }]);
   });
 
-  it('mensagem inválida vira ERROR e não altera a cena', () => {
+  it('an invalid message becomes ERROR and does not change the scene', () => {
     const { root, receive, sent } = setup();
     receive({ v: 1, type: 'ITEM_CHECKED', payload: { progress: 7 } });
     receive('lixo');
@@ -112,9 +112,9 @@ describe('controlador do banner', () => {
     expect(root.classList.contains('running')).toBe(false);
   });
 
-  describe('cena QG (Home)', () => {
+  describe('HQ scene (Home)', () => {
     function setupQg() {
-      setup(); // só para montar o DOM
+      setup(); // only to build the DOM
       const calls: string[] = [];
       const qg = {
         show: () => calls.push('show'),
@@ -153,7 +153,7 @@ describe('controlador do banner', () => {
       payload: { scene: 'qg', character, sceneKey: 'castle', progress: 0, timeOfDay: 'night' },
     };
 
-    it('INIT qg configura cenário, hora e personagem e mostra o QG', () => {
+    it('INIT qg configures scenery, time and character and shows the HQ', () => {
       const { calls, root, receive, sent } = setupQg();
       receive(init);
       expect(calls).toEqual([
@@ -168,7 +168,7 @@ describe('controlador do banner', () => {
       expect(sent).toHaveLength(0);
     });
 
-    it('INIT journey liga a jornada (personagem anda e o cenário rola)', () => {
+    it('INIT journey starts the journey (character walks and the scenery scrolls)', () => {
       const { calls, receive } = setupQg();
       receive({ ...init, payload: { ...init.payload, scene: 'journey', sceneKey: 'beach' } });
       expect(calls).toEqual([
@@ -181,7 +181,7 @@ describe('controlador do banner', () => {
       ]);
     });
 
-    it('SET_TIME_OF_DAY e SET_CHARACTER chegam ao QG', () => {
+    it('SET_TIME_OF_DAY and SET_CHARACTER reach the HQ', () => {
       const { calls, receive } = setupQg();
       receive(init);
       calls.length = 0;
@@ -190,7 +190,7 @@ describe('controlador do banner', () => {
       expect(calls).toEqual(['time:morning', 'character']);
     });
 
-    it('ITEM_CHECKED no QG faz o personagem comemorar em vez de correr no Mapa', () => {
+    it('ITEM_CHECKED in the HQ makes the character celebrate instead of running on the Map', () => {
       const { calls, root, receive } = setupQg();
       receive(init);
       receive({ v: 1, type: 'ITEM_CHECKED', payload: { progress: 0.4 } });
@@ -198,7 +198,7 @@ describe('controlador do banner', () => {
       expect(root.classList.contains('running')).toBe(false);
     });
 
-    it('CHAPTER_COMPLETED no QG escurece, volta e avisa CHAPTER_TRANSITION_DONE', () => {
+    it('CHAPTER_COMPLETED in the HQ fades out, comes back and sends CHAPTER_TRANSITION_DONE', () => {
       const { calls, receive, sent } = setupQg();
       receive(init);
       receive({ v: 1, type: 'CHAPTER_COMPLETED', payload: { nextSceneKey: 'x' } });
@@ -210,14 +210,14 @@ describe('controlador do banner', () => {
       expect(sent).toEqual([{ v: 1, type: 'CHAPTER_TRANSITION_DONE' }]);
     });
 
-    it('PAUSE e RESUME também controlam o QG', () => {
+    it('PAUSE and RESUME also control the HQ', () => {
       const { calls, receive } = setupQg();
       receive({ v: 1, type: 'PAUSE' });
       receive({ v: 1, type: 'RESUME' });
       expect(calls).toEqual(['pause', 'resume']);
     });
 
-    it('voltar para o Mapa esconde o QG', () => {
+    it('going back to the Map hides the HQ', () => {
       const { calls, receive } = setupQg();
       receive(init);
       receive({

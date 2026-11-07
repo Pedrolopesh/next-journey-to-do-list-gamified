@@ -7,9 +7,9 @@ export const HERO_MOVE_MS = 600;
 export const FADE_MS = 500;
 
 export type MapScene = {
-  /** progress de 0 (borda direita) a 1 (borda esquerda). `animate: false` posiciona sem transição. */
+  /** progress from 0 (right edge) to 1 (left edge). `animate: false` positions without a transition. */
   setProgress: (progress: number, options?: { animate?: boolean }) => void;
-  /** Corrida de 5 s até a nova posição e volta para a caminhada (ITEM_CHECKED) */
+  /** 5 s run to the new position and back to walking (ITEM_CHECKED) */
   run: (progress: number) => void;
   pause: () => void;
   resume: () => void;
@@ -21,7 +21,7 @@ function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
 }
 
-/** Posição do personagem no eixo X (px, na arte nativa) para um progresso de 0 a 1. */
+/** Character position on the X axis (px, in native art) for a progress from 0 to 1. */
 export function heroX(progress: number): number {
   return (1 - clamp01(progress)) * (SCENE_WIDTH - HERO_FRAME_WIDTH);
 }
@@ -38,7 +38,7 @@ export function createMapScene(banner: HTMLElement): MapScene {
     hero.classList.toggle('instant', !animate);
     hero.style.setProperty('--hero-x', `${heroX(progress)}px`);
     if (!animate) {
-      // força o navegador a aplicar a posição antes de religar a transição
+      // forces the browser to apply the position before re-enabling the transition
       void hero.offsetWidth;
       hero.classList.remove('instant');
     }

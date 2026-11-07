@@ -25,7 +25,7 @@ const DIFFS: Difficulty[] = ['easy', 'medium', 'hard'];
 const EXP = DEFAULT_GAME_CONFIG.expByDifficulty;
 const COINS = DEFAULT_GAME_CONFIG.coinsByDifficulty;
 
-/** Monta os passos de uma pessoa: itens criados no dia 1 e uma rotina que se repete nos dias seguintes. */
+/** Builds a person's steps: items created on day 1 and a routine that repeats on the following days. */
 function build(config: {
   dailies: number;
   habits: number;
@@ -109,7 +109,7 @@ export type SimReport = {
   burstAction: ActionResult | null;
   multiActions: number;
   firstWeek: number;
-  /** Com "1 modal por ação": maior espera, em ações, até a conquista aparecer. */
+  /** With "1 modal per action": longest wait, in actions, until the achievement shows up. */
   maxDelay: number;
   backlogPeak: number;
 };
@@ -125,7 +125,7 @@ function expForLevel(level: number): number {
   return table[Math.min(level, table.length) - 1] as number;
 }
 
-/** Roda uma pessoa contra um conjunto de critérios e conta o que libera a cada ação. */
+/** Runs one person against a set of criteria and counts what unlocks on each action. */
 export function simulate(persona: Persona, criteria: Record<string, Criterion>): SimReport {
   const items: Item[] = [];
   const s: Record<Metric, number> = Object.fromEntries(
@@ -321,7 +321,7 @@ export function simulate(persona: Persona, criteria: Record<string, Criterion>):
     actions.push({ index, day: step.day, label: step.label, unlocked: evaluate() });
   });
 
-  // Com "1 modal por ação": a fila mostra a mais antiga, uma por ação
+  // With "1 modal per action": the queue shows the oldest one, one per action
   let queue: number[] = [];
   let maxDelay = 0;
   let backlogPeak = 0;
@@ -331,7 +331,7 @@ export function simulate(persona: Persona, criteria: Record<string, Criterion>):
     const shown = queue.shift();
     if (shown !== undefined) maxDelay = Math.max(maxDelay, i - shown);
   });
-  // o que sobrou aparece nas ações seguintes (uma por vez); conta o atraso até esvaziar
+  // what is left shows up on the following actions (one at a time); counts the delay until it empties
   let tail = 0;
   while (queue.length > 0) {
     tail += 1;

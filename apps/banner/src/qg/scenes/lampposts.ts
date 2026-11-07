@@ -4,40 +4,40 @@ import { SCENE_W } from './types';
 
 export type Lamp = {
   x: number;
-  /** Altura dos pés do poste. */
+  /** Height of the lamppost's feet. */
   baseY: number;
-  /** Altura do poste. */
+  /** Height of the lamppost. */
   h: number;
-  /** Para que lado o braço se curva: 1 = direita, -1 = esquerda (sempre para o personagem). */
+  /** Which way the arm curves: 1 = right, -1 = left (always toward the character). */
   dir: 1 | -1;
 };
 
 const OUT = '#1b1f17';
 const REACH = 9;
 
-/** Onde fica a lâmpada de um poste. */
+/** Where a lamppost's lamp is. */
 export function lampHead(lamp: Lamp): { x: number; y: number } {
   return { x: lamp.x + lamp.dir * REACH, y: lamp.baseY - lamp.h + 3 };
 }
 
-/** Poste de iluminação em pixel art. A lâmpada só acende à noite. */
+/** Pixel art street lamppost. The lamp only lights at night. */
 export function drawLampPost(env: SceneEnv, lamp: Lamp): void {
   const { x, baseY, h, dir } = lamp;
   const top = baseY - h;
-  // base e poste
+  // base and pole
   rect(env, x - 4, baseY - 4, 9, 5, OUT);
   rect(env, x - 3, baseY - 3, 7, 3, '#4d555d');
   rect(env, x - 3, baseY - 3, 7, 1, '#7a838c');
   rect(env, x - 2, top, 5, h - 3, OUT);
   rect(env, x - 1, top, 3, h - 3, '#5d656d');
   rect(env, x - 1, top, 1, h - 3, '#9099a2');
-  // braço curvo
+  // curved arm
   for (let i = 0; i <= REACH; i++) {
     const y = top + (i > REACH - 3 ? 2 : i > REACH - 6 ? 1 : 0);
     rect(env, x + dir * i - (dir < 0 ? 0 : 0), y - 1, 1, 4, OUT);
     rect(env, x + dir * i, y, 1, 2, '#5d656d');
   }
-  // cúpula e lâmpada
+  // shade and lamp
   const head = lampHead(lamp);
   rect(env, head.x - 4, head.y - 4, 9, 3, OUT);
   rect(env, head.x - 3, head.y - 3, 7, 1, '#7a838c');
@@ -45,7 +45,7 @@ export function drawLampPost(env: SceneEnv, lamp: Lamp): void {
   rect(env, head.x - 2, head.y - 1, 5, 2, env.time === 'night' ? '#fff3b8' : '#b8c0b0');
 }
 
-/** Cone de luz de cada poste caindo sobre o personagem (só de noite). */
+/** Cone of light from each lamppost falling on the character (night only). */
 export function drawLampCones(env: SceneEnv, lamps: Lamp[], targetX: number, feetY: number): void {
   if (env.time !== 'night') return;
   const { ctx } = env;
@@ -67,7 +67,7 @@ export function drawLampCones(env: SceneEnv, lamps: Lamp[], targetX: number, fee
   ctx.restore();
 }
 
-/** Brilhos dos postes e uma poça de luz em volta do personagem; só acendem à noite. */
+/** Lamppost glows and a pool of light around the character; they only light at night. */
 export function lampLights(lamps: Lamp[], targetX: number, feetY: number): Light[] {
   const out: Light[] = [];
   for (const lamp of lamps) {

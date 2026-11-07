@@ -17,7 +17,7 @@ import { clothesPage } from './pages/roupas-acessorios';
 import { scenesPage } from './pages/scenes';
 import { scoringPage } from './pages/scoring';
 
-/** Páginas do laboratório, na ordem do menu lateral. */
+/** Lab pages, in the order of the side menu. */
 const PAGES: LabPage[] = [
   dashPage,
   glowPage,
@@ -51,14 +51,14 @@ async function show(page: LabPage): Promise<void> {
     if (button.dataset.page === page.id) button.setAttribute('aria-current', 'page');
     else button.removeAttribute('aria-current');
   });
-  // A seção da página aberta fica aberta no menu
+  // The section of the open page stays open in the menu
   side?.querySelectorAll<HTMLDetailsElement>('details').forEach((group) => {
     if (group.dataset.section === page.section) group.open = true;
   });
   const host = h('div', 'page');
   view?.append(host);
   const result = await page.mount(host);
-  // Se o usuário já foi para outra página enquanto esta carregava, desfaz esta
+  // If the user already went to another page while this one was loading, undo this one
   if (mine !== token) result?.();
   else cleanup = result ?? undefined;
 }
@@ -73,7 +73,7 @@ function menuButton(page: LabPage): HTMLButtonElement {
   return button;
 }
 
-// Páginas da mesma seção viram sub-itens de um único item do menu, na posição da primeira
+// Pages of the same section become sub-items of a single menu item, at the position of the first one
 const groups = new Map<string, HTMLDetailsElement>();
 for (const page of PAGES) {
   if (!page.section) {
@@ -91,7 +91,7 @@ for (const page of PAGES) {
   group.append(menuButton(page));
 }
 
-// No celular o menu é uma barra de botões: todas as seções ficam abertas
+// On the phone the menu is a button bar: all sections stay open
 const phone = window.matchMedia('(max-width: 720px)');
 const openAllOnPhone = (): void => {
   if (phone.matches) groups.forEach((group) => (group.open = true));

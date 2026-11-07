@@ -76,7 +76,7 @@ type LayerOptions = {
   taperFrom?: number;
 };
 
-/** Janelas de um prédio: acesas à noite, com reflexo do céu de dia. */
+/** Windows of a building: lit at night, with sky reflection by day. */
 function windows(
   env: SceneEnv,
   random: () => number,
@@ -103,7 +103,7 @@ function windows(
   }
 }
 
-/** Uma faixa de prédios. Os da frente mostram uma lateral (perspectiva em direção ao centro). */
+/** A strip of buildings. The front ones show a side (perspective toward the center). */
 function layer(env: SceneEnv, o: LayerOptions, dx = 0): void {
   const random = rng(o.seed);
   let x = o.x0;
@@ -131,7 +131,7 @@ function layer(env: SceneEnv, o: LayerOptions, dx = 0): void {
   }
 }
 
-/** Névoa da distância: apaga um pouco as camadas de trás. */
+/** Distance haze: slightly fades the back layers. */
 function haze(env: SceneEnv, y0: number, y1: number, alpha: number): void {
   const { ctx } = env;
   const g = ctx.createLinearGradient(0, y0, 0, y1);
@@ -141,7 +141,7 @@ function haze(env: SceneEnv, y0: number, y1: number, alpha: number): void {
   ctx.fillRect(0, y0, SCENE_W, y1 - y0);
 }
 
-/** Lago à direita, com a outra margem arborizada, brilhos e o reflexo do astro. */
+/** Lake on the right, with the other bank wooded, glints and the reflection of the sun or moon. */
 function lake(env: SceneEnv, x0 = 216, span = 150): void {
   const { ctx } = env;
   const pal = PAL[env.time];
@@ -184,7 +184,7 @@ function lake(env: SceneEnv, x0 = 216, span = 150): void {
 
 const TOWER = { x: 146, w: 22, h: 96 };
 
-/** Torre alta de referência com antena e luz vermelha piscando. */
+/** Tall reference tower with an antenna and a blinking red light. */
 function tower(env: SceneEnv, dx = 0): void {
   const pal = PAL[env.time];
   const base = WALL_TOP + 4;
@@ -199,7 +199,7 @@ function tower(env: SceneEnv, dx = 0): void {
   if (Math.sin(env.t * 4) > 0) rect(env, TOWER.x + dx + 9, top - 24, 4, 3, '#ff3b30');
 }
 
-/** Camadas de prédios do fundo; a jornada repete as mesmas com sementes novas a cada volta. */
+/** Background building layers; the journey repeats the same ones with new seeds on every loop. */
 const FAR_LAYER: LayerOptions = {
   seed: 3,
   base: SHORE + 2,
@@ -254,7 +254,7 @@ function city(env: SceneEnv): void {
 
 type Point = [number, number];
 
-/** Preenche um polígono em pixels inteiros (sem serrilhado suave), linha a linha. */
+/** Fills a polygon in whole pixels (no soft jaggies), line by line. */
 function poly(ctx: CanvasRenderingContext2D, pts: Point[], color: string): void {
   ctx.fillStyle = color;
   const ys = pts.map((p) => p[1]);
@@ -286,7 +286,7 @@ const LOUNGER_OX = 32;
 const LOUNGER_OY = 52;
 let loungerSprite: HTMLCanvasElement | null = null;
 
-/** Desenha a espreguiçadeira uma vez (diagonal, vista de trás e de lado), com contorno de 1 px. */
+/** Draws the lounger once (diagonal, seen from behind and the side), with a 1 px outline. */
 function buildLounger(): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = LOUNGER_W;
@@ -295,7 +295,7 @@ function buildLounger(): HTMLCanvasElement {
   if (!ctx) return canvas;
   const L = 46;
   const W = 20;
-  /** Ponto do chão (l: comprimento, w: largura, z: altura) projetado na tela. */
+  /** Ground point (l: length, w: width, z: height) projected onto the screen. */
   const P = (l: number, w: number, z = 0): Point => [
     LOUNGER_OX + l + w * 0.55,
     LOUNGER_OY - l * 0.5 + w * 0.45 - z,
@@ -307,7 +307,7 @@ function buildLounger(): HTMLCanvasElement {
   const WOOD = '#c88a46';
   const seatZ = (l: number): number => (l <= 34 ? 8 : 8 + ((l - 34) * 6) / 12);
 
-  // topo do assento e do apoio de pés, em listras
+  // top of the seat and footrest, in stripes
   for (let k = 0; k * 4 < L; k++) {
     const a = k * 4;
     const b = a + 4;
@@ -317,7 +317,7 @@ function buildLounger(): HTMLCanvasElement {
       k % 2 ? BLUE : WHITE,
     );
   }
-  // lateral perto de nós
+  // side near us
   for (let k = 0; k * 4 < L; k++) {
     const a = k * 4;
     const b = a + 4;
@@ -327,9 +327,9 @@ function buildLounger(): HTMLCanvasElement {
       k % 2 ? BLUE_DARK : WHITE_DARK,
     );
   }
-  // travessa de madeira sob o assento
+  // wooden crosspiece under the seat
   poly(ctx, [P(0, W, 3), P(34, W, 3), P(L, W, 9), P(L, W, 7), P(34, W, 1), P(0, W, 1)], WOOD);
-  // encosto: borda lateral e a parte de trás, listrada na vertical
+  // backrest: side edge and the back, with vertical stripes
   poly(ctx, [P(0, W, 8), P(-10, W, 30), P(-5, W, 30), P(5, W, 8)], BLUE_DARK);
   for (let k = 0; k < 5; k++) {
     const w1 = k * 4;
@@ -337,10 +337,10 @@ function buildLounger(): HTMLCanvasElement {
     poly(ctx, [P(0, w1, 8), P(0, w2, 8), P(-10, w2, 30), P(-10, w1, 30)], k % 2 ? BLUE : WHITE);
   }
   poly(ctx, [P(0, W, 8), P(-10, W, 30), P(-10, W, 28), P(0, W, 6)], WOOD);
-  // topo do encosto com realce
+  // top of the backrest with a highlight
   poly(ctx, [P(-10, 0, 30), P(-10, W, 30), P(-5, W, 30), P(-5, 0, 30)], WHITE_DARK);
 
-  // mesinha com drink, ao lado da cabeceira
+  // little table with a drink, beside the headrest
   ctx.fillStyle = '#b9b4a8';
   ctx.fillRect(11, 43, 2, 9);
   ctx.fillRect(8, 51, 8, 1);
@@ -355,7 +355,7 @@ function buildLounger(): HTMLCanvasElement {
   ctx.fillStyle = '#e63946';
   ctx.fillRect(12, 31, 1, 5);
 
-  // contorno escuro em volta de tudo
+  // dark outline around everything
   const { data } = ctx.getImageData(0, 0, LOUNGER_W, LOUNGER_H);
   const solid = (x: number, y: number): boolean =>
     x >= 0 &&
@@ -374,7 +374,7 @@ function buildLounger(): HTMLCanvasElement {
   return canvas;
 }
 
-/** Espreguiçadeira em diagonal, de frente para o sol (dir 1: sol à direita; -1: à esquerda). */
+/** Diagonal lounger facing the sun (dir 1: sun on the right; -1: on the left). */
 function lounger(env: SceneEnv, cx: number, baseY: number, dir: 1 | -1): void {
   const { ctx } = env;
   loungerSprite ??= buildLounger();
@@ -391,7 +391,7 @@ function lounger(env: SceneEnv, cx: number, baseY: number, dir: 1 | -1): void {
 
 type LeafColors = { line: string; dark: string; mid: string; light: string; rib: string };
 
-/** Folha em pixel art: elipse girada com contorno, sombra embaixo e nervura central. */
+/** Pixel art leaf: rotated ellipse with outline, shadow underneath and central midrib. */
 function leaf(
   env: SceneEnv,
   cx: number,
@@ -440,7 +440,7 @@ const FERN: LeafColors = {
 
 type PotColors = { base: string; light: string; dark: string; band: string; rim: string };
 
-/** Vaso em pixel art: borda, faixa decorada com losangos, corpo que afina e pires. */
+/** Pixel art pot: rim, band decorated with diamonds, tapering body and saucer. */
 function pot(env: SceneEnv, cx: number, baseY: number, w: number, h: number, c: PotColors): void {
   const { ctx } = env;
   ctx.fillStyle = 'rgba(0,0,0,0.22)';
@@ -448,7 +448,7 @@ function pot(env: SceneEnv, cx: number, baseY: number, w: number, h: number, c: 
   ctx.ellipse(cx, baseY, w * 0.7, 3, 0, 0, Math.PI * 2);
   ctx.fill();
   const top = baseY - h;
-  // corpo que afina para baixo
+  // body tapering downward
   for (let r = 4; r < h - 2; r++) {
     const width = Math.round(w - ((r - 4) / (h - 6)) * (w * 0.32));
     const x = cx - Math.floor(width / 2);
@@ -457,24 +457,24 @@ function pot(env: SceneEnv, cx: number, baseY: number, w: number, h: number, c: 
     rect(env, x, top + r, 3, 1, c.light);
     rect(env, x + width - 4, top + r, 4, 1, c.dark);
   }
-  // faixa decorada
+  // decorated band
   for (let i = 0; i < w; i += 6) {
     const bx = cx - Math.floor(w / 2) + i + 2;
     rect(env, bx + 1, top + 7, 1, 1, c.band);
     rect(env, bx, top + 8, 3, 1, c.band);
     rect(env, bx + 1, top + 9, 1, 1, c.band);
   }
-  // borda
+  // rim
   rect(env, cx - Math.floor(w / 2) - 3, top - 1, w + 6, 6, OUT);
   rect(env, cx - Math.floor(w / 2) - 2, top, w + 4, 4, c.rim);
   rect(env, cx - Math.floor(w / 2) - 2, top, w + 4, 1, c.light);
   rect(env, cx - Math.floor(w / 2) - 2, top + 3, w + 4, 1, c.dark);
-  // pires
+  // saucer
   rect(env, cx - Math.floor(w / 3) - 1, baseY - 3, Math.floor((w * 2) / 3) + 2, 4, OUT);
   rect(env, cx - Math.floor(w / 3), baseY - 2, Math.floor((w * 2) / 3), 2, c.dark);
 }
 
-/** Planta grande de folhas largas, em leque, que balança de leve. */
+/** Large broad-leaved fan plant that sways gently. */
 function leafyPlant(env: SceneEnv, cx: number, potTop: number): void {
   const sway = Math.sin(env.t * 1.1) * 0.05;
   const leaves: [number, number, number, number][] = [
@@ -494,7 +494,7 @@ function leafyPlant(env: SceneEnv, cx: number, potTop: number): void {
   });
 }
 
-/** Moita de folhas finas e altas com flores rosas no topo. */
+/** Clump of thin, tall leaves with pink flowers on top. */
 function flowerPlant(env: SceneEnv, cx: number, potTop: number): void {
   const sway = Math.sin(env.t * 1.3 + 1) * 0.04;
   const stems: [number, number][] = [
@@ -541,7 +541,7 @@ const POLE_GAP = 48;
 const POLE_TOP = RAIL_TOP - 9;
 const SAG = 6;
 
-/** Corrimão de metal: balaústres finos, travessa de baixo, corrimão com realce e postes com tampa. */
+/** Metal railing: thin balusters, bottom rail, railing with highlight and capped posts. */
 function railing(env: SceneEnv): void {
   rect(env, 0, WALL_TOP - 2, SCENE_W, 3, '#b6bbc4');
   for (let x = 3; x < SCENE_W; x += 6)
@@ -562,7 +562,7 @@ function railing(env: SceneEnv): void {
   }
 }
 
-/** Ponto da curva do fio entre dois postes (t de 0 a 1). */
+/** Point on the wire's curve between two posts (t from 0 to 1). */
 function wirePoint(x0: number, t: number): { x: number; y: number } {
   const y0 = POLE_TOP - 1;
   const control = y0 + SAG * 2;
@@ -572,7 +572,7 @@ function wirePoint(x0: number, t: number): { x: number; y: number } {
   };
 }
 
-/** Lâmpadas do pisca-pisca: cinco por trecho de fio, penduradas entre os postes. */
+/** String light bulbs: five per stretch of wire, hanging between the posts. */
 const BULBS: { x: number; y: number }[] = [];
 for (let seg = 0; seg * POLE_GAP < SCENE_W; seg++) {
   for (let k = 1; k <= 5; k++) {
@@ -595,15 +595,15 @@ function stringLights(env: SceneEnv): void {
   }
   const lit = env.time === 'night';
   for (const b of BULBS) {
-    rect(env, b.x - 1, b.y, 2, 2, '#1f1f27'); // soquete
-    // lâmpada em formato de gota/cruz de pixels
+    rect(env, b.x - 1, b.y, 2, 2, '#1f1f27'); // socket
+    // drop/pixel-cross shaped bulb
     rect(env, b.x - 1, b.y + 3, 3, 2, lit ? '#ffd45e' : '#cfc9b2');
     rect(env, b.x, b.y + 2, 1, 4, lit ? '#ffd45e' : '#cfc9b2');
     rect(env, b.x, b.y + 3, 1, 2, lit ? '#fffbe6' : '#f4f0e0');
   }
 }
 
-/** Quanto cada camada de prédios anda em relação à calçada: o fundo passa devagar. */
+/** How much each building layer moves relative to the sidewalk: the background passes slowly. */
 const FAR_SPEED = 0.03;
 const MID_SPEED = 0.1;
 const NEAR_SPEED = 0.2;
@@ -614,8 +614,8 @@ const NEAR_PERIOD = 1500;
 type Tall = { x: number; w: number; h: number; tower: boolean };
 
 /**
- * Prédios de uma camada, em grupos que se alternam: três juntos, um vão para ver o lago, um prédio
- * sozinho, outro vão, dois juntos... Sem ritmo fixo, para a cidade não parecer carimbada.
+ * Buildings of a layer, in alternating groups: three together, a gap to see the lake, one building
+ * alone, another gap, two together... No fixed rhythm, so the city does not look stamped.
  */
 function skyline(
   seed: number,
@@ -646,7 +646,7 @@ function skyline(
 const MID_SKYLINE = skyline(21, MID_PERIOD, { minH: 14, maxH: 42, minW: 12, maxW: 22 }, false);
 const NEAR_SKYLINE = skyline(35, NEAR_PERIOD, { minH: 36, maxH: 78, minW: 20, maxW: 32 }, true);
 
-/** Um prédio da jornada, com a lateral em perspectiva e janelas fixas (a mesma semente por prédio). */
+/** A journey building, with the side in perspective and fixed windows (the same seed per building). */
 function building(
   env: SceneEnv,
   b: Tall,
@@ -676,7 +676,7 @@ function building(
 const wrapped = (env: SceneEnv, world: number, period: number, factor: number): number =>
   Math.round(scrolled(world, env.scroll, period, factor));
 
-/** Prédios do primeiro plano visíveis agora, para o desenho e para a luz da torre. */
+/** Foreground buildings visible now, for the drawing and for the tower light. */
 function nearVisible(env: SceneEnv): { b: Tall; x: number; index: number }[] {
   const out: { b: Tall; x: number; index: number }[] = [];
   NEAR_SKYLINE.forEach((b, index) => {
@@ -686,7 +686,7 @@ function nearVisible(env: SceneEnv): { b: Tall; x: number; index: number }[] {
   return out;
 }
 
-/** Cidade na jornada: o mesmo fundo do terraço, com os prédios passando devagar sobre o lago e a avenida embaixo. */
+/** City on the journey: the same terrace background, with the buildings slowly passing over the lake and the avenue below. */
 function journey(env: SceneEnv): void {
   const pal = PAL[env.time];
   sky(env, 0, 0, SCENE_W, SHORE + 8);
@@ -695,7 +695,7 @@ function journey(env: SceneEnv): void {
   layer(env, { ...FAR_LAYER, color: pal.far }, -farShift);
   layer(env, { ...FAR_LAYER, color: pal.far }, FAR_PERIOD - farShift);
   haze(env, 60, SHORE + 4, 0.35);
-  // O lago fica atrás dos prédios do meio e da frente, na frente do horizonte
+  // The lake sits behind the middle and front buildings, in front of the horizon
   lake(env, 0, 340);
   MID_SKYLINE.forEach((b, index) => {
     const x = wrapped(env, b.x, MID_PERIOD, MID_SPEED);
@@ -734,15 +734,15 @@ export const rooftop: SceneDef = {
   journey,
   back(env) {
     city(env);
-    // Muro, piso e corrimão baixo (deixa a vista aparecer)
+    // Wall, floor and low railing (lets the view show)
     bands(env, 0, WALL_TOP, SCENE_W, 22, ['#8a8f99', '#7b808b', '#6c717c']);
     tileArea(env, env.tiles.cement, 0, 160, 0, FLOOR, SCENE_W, 70);
     rect(env, 0, FLOOR, SCENE_W, 2, 'rgba(0,0,0,0.3)');
     railing(env);
     stringLights(env);
-    // Espreguiçadeira virada para o sol (manhã: à esquerda; tarde e noite: à direita)
+    // Lounger facing the sun (morning: on the left; afternoon and night: on the right)
     lounger(env, 104, 192, env.time === 'morning' ? -1 : 1);
-    // Vasos grandes com plantas
+    // Large pots with plants
     pot(env, 334, 192, 26, 24, {
       base: '#c8693a',
       light: '#e58f5a',

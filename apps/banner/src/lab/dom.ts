@@ -1,8 +1,8 @@
-/** Ajudantes de DOM do laboratório (só desenvolvimento). */
+/** DOM helpers for the lab (development only). */
 
 export type Choice<T extends string> = { value: T; label: string; color?: string };
 
-/** Cria um elemento com classe, texto e filhos. */
+/** Creates an element with class, text and children. */
 export function h<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   className = '',
@@ -14,21 +14,21 @@ export function h<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
-/** Cria uma seção `.panel` com título. */
+/** Creates a `.panel` section with a title. */
 export function panel(title: string, ...children: Node[]): HTMLElement {
   const section = h('section', 'panel');
   section.append(h('h2', '', title), ...children);
   return section;
 }
 
-/** Linha "rótulo + controles" dos painéis. */
+/** "label + controls" row of the panels. */
 export function row(label: string, ...children: Node[]): HTMLElement {
   return h('div', 'row', h('label', '', label), ...children);
 }
 
 /**
- * Grupo de botões de escolha (um marcado por vez). `current` é lido a cada clique, então o estado
- * pode morar fora do grupo. Devolve o `span` com os botões.
+ * Group of choice buttons (one selected at a time). `current` is read on every click, so the state
+ * can live outside the group. Returns the `span` with the buttons.
  */
 export function choiceGroup<T extends string>(
   choices: Choice<T>[],
@@ -60,7 +60,7 @@ export function choiceGroup<T extends string>(
   return host;
 }
 
-/** Seletor `<select>` com a opção "Nenhum". */
+/** `<select>` picker with the "Nenhum" option. */
 export function select(
   options: { id: string; name: string }[],
   current: string | null,

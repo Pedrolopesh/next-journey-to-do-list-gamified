@@ -1,4 +1,4 @@
-// Copia os assets do laboratório (catálogo e sprites) para o build do site de revisão.
+// Copies the lab assets (catalog and sprites) into the build of the review site.
 import { cpSync } from 'node:fs';
 
 cpSync(new URL('../lab', import.meta.url), new URL('../dist-lab/lab', import.meta.url), {

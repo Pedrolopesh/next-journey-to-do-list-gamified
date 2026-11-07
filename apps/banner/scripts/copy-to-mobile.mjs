@@ -1,4 +1,4 @@
-// Copia o index.html único do banner para dentro do app, que o carrega no WebView.
+// Copies the banner's single index.html into the app, which loads it in the WebView.
 import { copyFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';

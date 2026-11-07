@@ -1,7 +1,7 @@
 import type { LabPage } from '../page';
 import { inventoryPage } from './inventario';
 
-/** Todos os cabelos do gerador LPC, com licença e prévia. */
+/** All the hairstyles of the LPC generator, with license and preview. */
 export const hairPage: LabPage = inventoryPage({
   id: 'cabelos',
   label: 'Cabelos',

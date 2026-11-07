@@ -16,21 +16,21 @@ import { applyTint, drawLights, vignette } from './scenes/lighting';
 import { SCENE_H, SCENE_W, type SceneEnv, type TimeOfDay } from './scenes/types';
 
 const FPS: Record<AnimationName, number> = { idle: 2, walk: 9, run: 12 };
-/** Velocidade do cenário (px lógicos por segundo) quando o personagem anda ou corre na jornada. */
+/** Scenery speed (logical px per second) when the character walks or runs on the journey. */
 const JOURNEY_SPEED: Record<AnimationName, number> = { idle: 0, walk: 34, run: 80 };
-/** Paradas da jornada: o personagem chega ao fim depois deste número de corridas. */
+/** Journey stops: the character reaches the end after this number of runs. */
 export const JOURNEY_STOPS = 6;
 const JOURNEY_START_X = 64;
 const JOURNEY_END_X = 296;
-/** Velocidade do personagem pela tela durante uma corrida (px lógicos por segundo). */
+/** Character speed across the screen during a run (logical px per second). */
 const JOURNEY_RUN_SPEED = 18;
 
-/** Posição do personagem na tela em cada parada da jornada. */
+/** Character position on the screen at each journey stop. */
 export function journeyX(stop: number): number {
   const fraction = Math.min(1, Math.max(0, stop / JOURNEY_STOPS));
   return JOURNEY_START_X + (JOURNEY_END_X - JOURNEY_START_X) * fraction;
 }
-/** Folhas recoloridas guardadas em memória; passando disso, as mais antigas saem do cache. */
+/** Recolored sheets kept in memory; past this, the oldest ones leave the cache. */
 const MAX_CACHED_SHEETS = 64;
 
 export type QgState = {
@@ -39,39 +39,39 @@ export type QgState = {
   direction: Direction;
   sceneId: string;
   time: TimeOfDay;
-  /** Jornada: o personagem anda para a direita e o cenário rola para a esquerda atrás dele. */
+  /** Journey: the character walks to the right and the scenery scrolls left behind them. */
   journey: boolean;
-  /** Parada da jornada (0 a `JOURNEY_STOPS`); mudar o valor faz o personagem correr até lá. */
+  /** Journey stop (0 to `JOURNEY_STOPS`); changing the value makes the character run there. */
   stop: number;
-  /** Nível do cenário (1 a `SceneDef.levels`). */
+  /** Scenery level (1 to `SceneDef.levels`). */
   level: number;
 };
 
 export type QgEngineOptions = {
   canvas: HTMLCanvasElement;
   catalog: Catalog;
-  /** Tiles de cenário (grama, água, lava...) já carregados, por nome. */
+  /** Scenery tiles (grass, water, lava...) already loaded, by name. */
   tiles: Record<string, HTMLImageElement>;
-  /** Endereço da folha de sprites de uma camada e animação (arquivo ou data URL). */
+  /** Address of the sprite sheet for a layer and animation (file or data URL). */
   sheetSrc: (path: string, anim: AnimationName) => string;
   initial: QgState;
-  /** Limite de quadros por segundo (o WebView do app usa menos que o laboratório). */
+  /** Frames per second limit (the app WebView uses less than the lab). */
   maxFps?: number;
-  /** Maior fator inteiro de escala da resolução interna. */
+  /** Largest integer scale factor of the internal resolution. */
   maxScale?: number;
 };
 
 export type QgEngine = {
-  /** Estado mutável: o laboratório e o banner só mexem nestes campos. */
+  /** Mutable state: the lab and the banner only touch these fields. */
   state: QgState;
   start: () => void;
   pause: () => void;
   resume: () => void;
-  /** Põe o personagem direto numa parada da jornada, sem correr. */
+  /** Puts the character straight at a journey stop, without running. */
   placeHero: (stop: number) => void;
-  /** Recalcula a resolução interna (depois de mudar o tamanho do canvas). */
+  /** Recomputes the internal resolution (after changing the canvas size). */
   resize: () => void;
-  /** Resolve quando as folhas do estado atual estão prontas (útil para o primeiro quadro). */
+  /** Resolves when the sheets of the current state are ready (useful for the first frame). */
   ready: () => Promise<void>;
 };
 
@@ -107,7 +107,7 @@ function selectionKey(selection: Selection, anim: AnimationName): string {
   ].join('|');
 }
 
-/** Desenha o cenário do QG e o personagem LPC num canvas, em escala inteira e com limite de FPS. */
+/** Draws the HQ scenery and the LPC character on a canvas, at integer scale and with an FPS limit. */
 export function createQgEngine(options: QgEngineOptions): QgEngine {
   const { canvas, catalog, tiles, sheetSrc } = options;
   const maxFps = options.maxFps ?? 60;
@@ -117,7 +117,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
 
   const state: QgState = options.initial;
 
-  // ---- Folhas recoloridas (cache) ----
+  // ---- Recolored sheets (cache) ----
   const sheets = new Map<string, Promise<HTMLCanvasElement>>();
   const sheetFor = (spec: LayerSpec, anim: AnimationName): Promise<HTMLCanvasElement> => {
     const key = `${spec.path}|${anim}|${spec.material ?? ''}|${spec.color ?? ''}`;
@@ -141,8 +141,8 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
         return layer;
       });
       sheets.set(key, sheet);
-      // Cada folha recolorida ocupa cerca de 0,5 MB: sem limite, trocar a aparência muitas vezes
-      // (sorteio, cores) faria o WebView crescer sem parar
+      // Each recolored sheet takes about 0.5 MB: without a limit, changing the appearance many times
+      // (random draw, colors) would make the WebView grow endlessly
       if (sheets.size > MAX_CACHED_SHEETS) {
         const oldest = sheets.keys().next();
         if (!oldest.done) sheets.delete(oldest.value);
@@ -159,7 +159,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     return Promise.all(specs.map(async (spec) => ({ spec, sheet: await sheetFor(spec, anim) })));
   };
 
-  // ---- Camadas prontas do personagem e dos figurantes, atualizadas quando o estado muda ----
+  // ---- Ready-made layers of the character and the extras, updated when the state changes ----
   let hero: ResolvedLayer[] = [];
   let heroAnim: AnimationName = state.anim;
   let extras: { layers: ResolvedLayer[]; index: number }[] = [];
@@ -169,7 +169,7 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
   let heroX = journeyX(state.stop);
   const moving = (): boolean => Math.abs(journeyX(state.stop) - heroX) > 0.5;
   const arrived = (): boolean => state.stop >= JOURNEY_STOPS && !moving();
-  /** Animação em cena: na jornada, correr enquanto avança e parar ao chegar ao fim. */
+  /** Animation on stage: on the journey, run while advancing and stop on reaching the end. */
   const currentAnim = (): AnimationName => {
     if (!state.journey) return state.anim;
     if (moving()) return 'run';
@@ -180,8 +180,8 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     const def = SCENES.find((scene) => scene.id === state.sceneId) ?? SCENES[0];
     const anim = currentAnim();
     const walks = state.journey && def?.journey !== undefined;
-    // Os extras (guardas, magos, nobres) vêm da cena e do nível, que já estão na chave: o visual deles só
-    // muda trocando de cena ou nível. Mudar `extra.selection` sem isso deixaria camadas velhas.
+    // The extras (guards, wizards, nobles) come from the scene and level, which are already in the key: their look only
+    // changes when the scene or level changes. Changing `extra.selection` without that would leave stale layers.
     const key = `${state.sceneId}|${state.level}|${walks ? 'j' : 'q'}|${selectionKey(state.selection, anim)}`;
     if (key === resolvedKey) return resolving;
     resolvedKey = key;
@@ -190,14 +190,14 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
       const nextExtras = await Promise.all(
         (def ? extrasOf(def, state.level, walks) : []).map(async (extra, index) => ({
           index,
-          // Chapéu e braços do herói não passam para os extras: cada extra declara os seus
+          // The hero's hat and arms do not pass to the extras: each extra declares its own
           layers: await resolveLayers(
             { ...state.selection, hat: null, arms: null, ...extra.selection },
             extra.anim,
           ),
         })),
       );
-      // Só aplica se o estado não mudou de novo enquanto carregava
+      // Only applies if the state did not change again while loading
       if (resolvedKey === key) {
         hero = nextHero;
         heroAnim = anim;
@@ -206,19 +206,19 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     };
     resolving = run()
       .then(() => {
-        // Aquece a animação de correr (usada ao comemorar um check) sem travar o primeiro quadro
+        // Warms up the run animation (used when celebrating a check) without blocking the first frame
         if (anim !== 'run') void resolveLayers(state.selection, 'run').catch(() => undefined);
       })
       .catch(() => undefined);
     return resolving;
   };
 
-  // ---- Resolução interna: fator inteiro para sprites nítidos e o resto suave ----
+  // ---- Internal resolution: integer factor for crisp sprites and the rest smooth ----
   let scale = 1;
   const resize = (): void => {
     const wanted = (canvas.clientWidth || SCENE_W) * (window.devicePixelRatio || 1);
     scale = Math.min(maxScale, Math.max(2, Math.round(wanted / SCENE_W)));
-    // Redimensionar apaga o canvas: só mexe quando o tamanho realmente muda
+    // Resizing clears the canvas: only touch it when the size really changes
     if (canvas.width !== SCENE_W * scale) canvas.width = SCENE_W * scale;
     if (canvas.height !== SCENE_H * scale) canvas.height = SCENE_H * scale;
   };
@@ -234,14 +234,14 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
   ): void => {
     const index = Math.floor(clock * FPS[anim]) % catalog.animations[anim];
     const { sy } = frameRect(direction, 0);
-    // Sombra suave no chão, embaixo dos pés
+    // Soft shadow on the ground, under the feet
     ctx.save();
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     ctx.beginPath();
     ctx.ellipse(x, feetY - 1, 13, 3.6, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
-    // Nos quadros LPC os pés ficam perto da linha 60 de 64
+    // In the LPC frames the feet sit near line 60 of 64
     for (const { sheet } of layers) {
       ctx.drawImage(
         sheet,
@@ -272,12 +272,12 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
       level: state.level,
     };
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    ctx.imageSmoothingEnabled = false; // sprites e tiles continuam nítidos
+    ctx.imageSmoothingEnabled = false; // sprites and tiles stay crisp
     ctx.clearRect(0, 0, SCENE_W, SCENE_H);
     (walking ? def.journey : def.back)?.(env);
     const list = extrasOf(def, state.level, walking);
-    // Tudo que tem chão (objetos do nível, figurantes e o personagem) é desenhado na ordem da
-    // altura dos pés: quem está mais acima na tela fica atrás de quem está mais abaixo
+    // Everything that has a ground position (level objects, extras and the character) is drawn in the order of
+    // foot height: whatever is higher on the screen goes behind whatever is lower
     const drawables: { y: number; draw: () => void }[] = def.levelItems?.(env) ?? [];
     for (const { layers, index } of extras) {
       const extra = list[index];
@@ -307,14 +307,14 @@ export function createQgEngine(options: QgEngineOptions): QgEngine {
     vignette(env);
   };
 
-  // ---- Laço de animação ----
+  // ---- Animation loop ----
   let raf = 0;
   let running = false;
   let last = performance.now();
   let clock = 0;
   let lastDraw = 0;
   let scroll = 0;
-  /** 0 a 1: quanto os figurantes que correm junto do personagem já entraram em cena. */
+  /** 0 to 1: how far the extras running with the character have entered the scene. */
   let chase = 0;
   let arrivedAt = 0;
   let wasArrived = false;

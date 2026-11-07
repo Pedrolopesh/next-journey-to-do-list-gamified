@@ -1,4 +1,4 @@
-/* Conquistas v2: insígnias (glifo + moldura por classe) e catálogo da proposta */
+/* Achievements v2: badges (glyph + frame per class) and the proposal catalog */
 .insignia {
   --tc: 180 100 40;
   display: inline-flex;

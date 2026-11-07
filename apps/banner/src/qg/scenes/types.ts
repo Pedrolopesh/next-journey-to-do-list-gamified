@@ -10,20 +10,20 @@ export const TIMES: { value: TimeOfDay; label: string }[] = [
 export const SCENE_W = 390;
 export const SCENE_H = 220;
 
-/** Tudo que uma cena precisa para desenhar um quadro. */
+/** Everything a scene needs to draw a frame. */
 export type SceneEnv = {
   ctx: CanvasRenderingContext2D;
   time: TimeOfDay;
-  /** Segundos desde o início, para animações (chamas, ondas, estrelas). */
+  /** Seconds since the start, for animations (flames, waves, stars). */
   t: number;
-  /** Distância percorrida (px lógicos) na jornada; o cenário se desloca para a esquerda. */
+  /** Distance traveled (logical px) on the journey; the scenery shifts to the left. */
   scroll: number;
   tiles: Record<string, HTMLImageElement>;
-  /** Cena desenhada na jornada (personagem andando): as luzes seguem o cenário que rola. */
+  /** Scene drawn on the journey (character walking): the lights follow the scrolling scenery. */
   journey: boolean;
-  /** Segundos desde que o personagem chegou ao fim da jornada; `null` enquanto ainda anda. */
+  /** Seconds since the character reached the end of the journey; `null` while still walking. */
   arrivedFor: number | null;
-  /** Nível do cenário (1 a `SceneDef.levels`): o mesmo lugar com mais vida a cada nível. */
+  /** Scenery level (1 to `SceneDef.levels`): the same place with more life at each level. */
   level: number;
 };
 
@@ -32,40 +32,40 @@ export type Light = {
   y: number;
   radius: number;
   color: [number, number, number];
-  /** 0 a 1. */
+  /** 0 to 1. */
   intensity: number;
   flicker?: boolean;
-  /** Só acende nestas horas (padrão: noite). */
+  /** Only lights up at these hours (default: night). */
   at?: TimeOfDay[];
 };
 
 export type ExtraCharacter = {
   x: number;
-  /** Altura dos pés. */
+  /** Foot height. */
   feetY: number;
   anim: AnimationName;
   direction: Direction;
   selection: Partial<Selection>;
-  /** Vai e volta entre dois pontos (px) em vez de ficar parado; `anim` diz se anda ou corre. */
+  /** Goes back and forth between two points (px) instead of standing still; `anim` says whether they walk or run. */
   patrol?: { from: number; to: number; speed: number };
-  /** Na jornada, `x` é do mundo (que rola); `drift` é quanto o figurante anda nele (px/s, negativo = para a esquerda). */
+  /** On the journey, `x` is in the world (which scrolls); `drift` is how much the extra walks in it (px/s, negative = to the left). */
   drift?: number;
-  /** Ciclo próprio do mundo na jornada, para quem passa de tempos em tempos (padrão: o do cenário). */
+  /** Own world cycle on the journey, for whoever passes from time to time (default: the scenery's). */
   period?: number;
   /**
-   * Na jornada, fica na tela junto do personagem em vez de no mundo: `offset` px à frente dele
-   * (negativo = atrás), balançando `sway` px a `rate` rad/s. Some para o lado quando o cenário para.
+   * On the journey, stays on screen with the character instead of in the world: `offset` px ahead of them
+   * (negative = behind), swaying `sway` px at `rate` rad/s. Moves aside when the scenery stops.
    */
   follow?: { offset: number; sway: number; rate: number; phase: number };
 };
 
 export type Tint = { color: string; alpha: number };
 
-/** Texto de um nível do cenário, para o laboratório e para validar o desenho. */
+/** Text of a scenery level, for the lab and for validating the drawing. */
 export type LevelInfo = {
   name: string;
   blurb: string;
-  /** O que muda neste nível, em frases curtas. */
+  /** What changes in this level, in short sentences. */
   changes: string[];
 };
 
@@ -73,28 +73,28 @@ export type SceneDef = {
   id: string;
   name: string;
   blurb: string;
-  /** Linha dos pés do personagem principal. */
+  /** Foot line of the main character. */
   groundY: number;
   back: (env: SceneEnv) => void;
-  /** Versão da jornada: o cenário rola com `env.scroll`. Sem ela, a jornada usa `back` parado. */
+  /** Journey version: the scenery scrolls with `env.scroll`. Without it, the journey uses `back` still. */
   journey?: (env: SceneEnv) => void;
   front?: (env: SceneEnv) => void;
   lights?: (env: SceneEnv) => Light[];
   extras?: ExtraCharacter[];
-  /** Quantos níveis o cenário tem (padrão 1). */
+  /** How many levels the scenery has (default 1). */
   levels?: number;
-  /** Nome, descrição e mudanças de cada nível (mesmo tamanho de `levels`). */
+  /** Name, description and changes of each level (same size as `levels`). */
   levelInfo?: LevelInfo[];
-  /** Objetos do nível com a altura dos pés (`y`): o motor os mistura com figurantes e personagem. */
+  /** Level objects with foot height (`y`): the engine mixes them with extras and the character. */
   levelItems?: (env: SceneEnv) => { y: number; draw: () => void }[];
-  /** Luzes dos objetos do nível, somadas às do cenário. */
+  /** Lights of the level objects, added to the scenery's. */
   levelLights?: (env: SceneEnv) => Light[];
-  /** Figurantes de cada nível; quando existe, vale no lugar de `extras`. */
+  /** Extras of each level; when it exists, it applies in place of `extras`. */
   extrasFor?: (level: number) => ExtraCharacter[];
-  /** Figurantes da jornada de cada nível, em posições do mundo. Sem isso, a jornada não tem figurantes. */
+  /** Journey extras of each level, in world positions. Without it, the journey has no extras. */
   journeyExtrasFor?: (level: number) => ExtraCharacter[];
-  /** Tamanho do ciclo do mundo na jornada (px); precisa ser o mesmo do cenário que rola. */
+  /** Size of the world cycle on the journey (px); must be the same as the scrolling scenery's. */
   journeyPeriod?: number;
-  /** Cor aplicada sobre toda a cena por hora do dia (multiplicação). */
+  /** Color applied over the whole scene by time of day (multiply). */
   tint?: Partial<Record<TimeOfDay, Tint>>;
 };

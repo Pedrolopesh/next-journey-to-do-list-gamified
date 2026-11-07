@@ -13,7 +13,7 @@ function table(head: string[], rows: (string | HTMLElement)[][]): HTMLTableEleme
   return t;
 }
 
-/** Lista só as ações em que algo foi liberado; rajadas (2 ou mais de uma vez) ficam em vermelho. */
+/** Lists only the actions that unlocked something; bursts (2 or more at once) are shown in red. */
 function unlockLog(report: SimReport): HTMLElement {
   const box = h('div', 'pace-days');
   const hits = report.actions.filter((a) => a.unlocked.length > 0);
@@ -31,7 +31,7 @@ function unlockLog(report: SimReport): HTMLElement {
   return box;
 }
 
-/** Quanto menor, melhor: o lado melhor fica verde e o pior, vermelho. */
+/** Lower is better: the better side turns green and the worse one red. */
 function compare(label: string, antes: number, agora: number, lowerIsBetter = true) {
   const better = lowerIsBetter ? agora < antes : agora > antes;
   const worse = lowerIsBetter ? antes > agora : false;
@@ -69,7 +69,7 @@ const PRINCIPLES: [string, string][] = [
   ],
 ];
 
-/** Painel de ritmo: princípios e simulação de 30 dias, regras de antes contra as de agora. */
+/** Pace panel: principles and a 30-day simulation, the old rules against the current ones. */
 export function ritmoPanel(changedCount: number): HTMLElement {
   const sim = h('div');
   let current: Persona = PERSONAS[0] as Persona;

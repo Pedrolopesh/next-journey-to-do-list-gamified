@@ -1,18 +1,18 @@
 /**
- * Pets, montarias e veículos: o que existe fora do gerador de personagens LPC e a situação de
- * cada um. Pesquisa em 2026-10-19 na OpenGameArt; as licenças vêm da página de cada obra e
- * precisam ser conferidas de novo antes de importar.
+ * Pets, mounts and vehicles: what exists outside the LPC character generator and the status of
+ * each one. Researched on 2026-10-19 on OpenGameArt; the licenses come from each work's page and
+ * must be checked again before importing.
  */
 export type PlannedStatus = 'viavel' | 'despriorizado' | 'bloqueado';
 
-/** Uma animação de caminhada recortada de uma folha (`lab/pets/<sheet>`), em quadros de tamanho fixo. */
+/** A walk animation cropped from a sheet (`lab/pets/<sheet>`), in fixed-size frames. */
 export type SpritePreview = {
   label: string;
   sheet: string;
   frameWidth: number;
   frameHeight: number;
   sheetWidth: number;
-  /** Linha e coluna do primeiro quadro, contadas em quadros. */
+  /** Row and column of the first frame, counted in frames. */
   row: number;
   col: number;
   frames: number;
@@ -36,7 +36,7 @@ export const STATUS_LABEL: Record<PlannedStatus, string> = {
   bloqueado: 'Bloqueado pela licença',
 };
 
-/** Gatos e cães: quadros de 32 px, 16 colunas; cada cor ocupa 4 colunas (3 de caminhada). */
+/** Cats and dogs: 32 px frames, 16 columns; each color takes 4 columns (3 of walking). */
 const catDog = (sheet: string, colors: string[]): SpritePreview[] =>
   colors.map((label, index) => ({
     label,
@@ -50,7 +50,7 @@ const catDog = (sheet: string, colors: string[]): SpritePreview[] =>
     scale: 3,
   }));
 
-/** Cavalo: quadros de 128 px, linha 3 (galope para a direita), 4 quadros. */
+/** Horse: 128 px frames, row 3 (gallop to the right), 4 frames. */
 const horse = (color: string, label: string): SpritePreview => ({
   label,
   sheet: `cavalo-${color}.png`,
@@ -63,7 +63,7 @@ const horse = (color: string, label: string): SpritePreview => ({
   scale: 1,
 });
 
-/** Animação de caminhada recortada de uma folha, em quadros de `fw` x `fh` (linha `row`, a partir da coluna 0). */
+/** Walk animation cropped from a sheet, in `fw` x `fh` frames (row `row`, from column 0). */
 const sprite = (
   label: string,
   sheet: string,

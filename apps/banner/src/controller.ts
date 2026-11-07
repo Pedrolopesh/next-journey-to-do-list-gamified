@@ -10,7 +10,7 @@ import { FADE_MS, HERO_MOVE_MS, type MapScene } from './scene/map';
 
 type Options = {
   scene: MapScene;
-  /** Cena do QG (Home). Sem ela, INIT com a cena QG responde ERROR. */
+  /** HQ scene (Home). Without it, INIT with the HQ scene answers ERROR. */
   qg?: Pick<
     QgScene,
     | 'show'
@@ -31,7 +31,7 @@ type Options = {
   bannerVersion: string;
 };
 
-/** Máquina de mensagens do banner: recebe do app, atualiza a cena e responde. */
+/** Banner message machine: receives from the app, updates the scene and replies. */
 export function createBannerController({ scene, qg, root, send, bannerVersion }: Options) {
   let transitionTimers: ReturnType<typeof setTimeout>[] = [];
   let active: 'map' | 'qg' = 'map';
@@ -43,7 +43,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
   const chapterTransition = (): void => {
     transitionTimers.forEach(clearTimeout);
     transitionTimers = [];
-    // 1) personagem chega à borda esquerda, 2) fade para preto, 3) nova cena entra pela direita
+    // 1) character reaches the left edge, 2) fade to black, 3) new scene enters from the right
     scene.setProgress(1);
     later(() => {
       scene.fadeOut();
@@ -60,7 +60,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
     );
   };
 
-  /** No QG não há corrida: escurece, volta e avisa o app, com os mesmos tempos do Mapa. */
+  /** There is no race in the HQ: it fades out, comes back and notifies the app, with the same timings as the Map. */
   const qgChapterTransition = (): void => {
     transitionTimers.forEach(clearTimeout);
     transitionTimers = [];
@@ -75,7 +75,7 @@ export function createBannerController({ scene, qg, root, send, bannerVersion }:
   };
 
   return {
-    /** O app só envia INIT depois de receber este READY. */
+    /** The app only sends INIT after receiving this READY. */
     start(): void {
       send({ v: BANNER_PROTOCOL_VERSION, type: 'READY', payload: { bannerVersion } });
     },

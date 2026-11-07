@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/* Base do botão                                                       */
+/* Button base                                                         */
 /* ------------------------------------------------------------------ */
 .gb {
   --r: 14px;
@@ -45,7 +45,7 @@ body[data-size='g'] .gb {
   --r: 999px;
 }
 
-/* Carregando: o rótulo fica e entra um girador */
+/* Loading: the label stays and a spinner comes in */
 .gb.is-loading {
   pointer-events: none;
 }
@@ -88,7 +88,7 @@ body[data-size='g'] .gb {
 }
 
 /* ------------------------------------------------------------------ */
-/* 1. Brilho suave: gradiente com halo difuso                         */
+/* 1. Soft glow: gradient with a diffuse halo                         */
 /* ------------------------------------------------------------------ */
 .v-soft {
   background: linear-gradient(180deg, rgb(var(--c) / 1), rgb(var(--c) / 0.82));
@@ -113,7 +113,7 @@ body[data-size='g'] .gb {
 }
 
 /* ------------------------------------------------------------------ */
-/* 1b. Brilho suave contornado: o mesmo halo, só com a borda          */
+/* 1b. Soft outlined glow: the same halo, only with the border        */
 /* ------------------------------------------------------------------ */
 .v-soft-outline {
   color: color-mix(in srgb, rgb(var(--c)) 40%, white);
@@ -143,7 +143,7 @@ body[data-size='g'] .gb {
 }
 
 /* ------------------------------------------------------------------ */
-/* 2. Neon: contorno aceso, interior transparente                     */
+/* 2. Neon: lit outline, transparent interior                         */
 /* ------------------------------------------------------------------ */
 .v-neon {
   color: color-mix(in srgb, rgb(var(--c)) 45%, white);
@@ -169,7 +169,7 @@ body[data-size='g'] .gb {
 }
 
 /* ------------------------------------------------------------------ */
-/* 3. Respirando: o halo pulsa devagar                                */
+/* 3. Breathing: the halo pulses slowly                               */
 /* ------------------------------------------------------------------ */
 .v-breathe {
   background: linear-gradient(135deg, rgb(var(--c) / 1), rgb(var(--c) / 0.7));
@@ -203,7 +203,7 @@ body[data-size='g'] .gb {
 }
 
 /* ------------------------------------------------------------------ */
-/* 4. Órbita: uma luz que corre pela borda                            */
+/* 4. Orbit: a light that runs along the border                       */
 /* ------------------------------------------------------------------ */
 .v-orbit {
   background: #12122a;
@@ -226,7 +226,7 @@ body[data-size='g'] .gb {
   );
   animation: orbit 3.6s linear infinite;
 }
-/* anel: só a borda aparece (o miolo é coberto pelo fundo escuro) */
+/* ring: only the border shows (the core is covered by the dark background) */
 .v-orbit::before {
   padding: 1.5px;
   -webkit-mask:
@@ -237,7 +237,7 @@ body[data-size='g'] .gb {
   z-index: 1;
   pointer-events: none;
 }
-/* halo difuso do mesmo anel */
+/* diffuse halo of the same ring */
 .v-orbit::after {
   filter: blur(14px);
   opacity: 0.55;
@@ -260,7 +260,7 @@ body[data-size='g'] .gb {
 }
 
 /* ------------------------------------------------------------------ */
-/* 5. Varredura: um brilho diagonal cruza o botão                     */
+/* 5. Sweep: a diagonal glow crosses the button                       */
 /* ------------------------------------------------------------------ */
 .v-sheen {
   overflow: hidden;
@@ -295,7 +295,7 @@ body[data-size='g'] .gb {
 }
 
 /* ------------------------------------------------------------------ */
-/* 6. Vidro: translúcido, com luz que segue o toque                   */
+/* 6. Glass: translucent, with light that follows the touch           */
 /* ------------------------------------------------------------------ */
 .v-glass {
   --mx: 50%;

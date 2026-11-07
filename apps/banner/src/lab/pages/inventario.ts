@@ -8,20 +8,20 @@ export type { InventoryItem };
 
 let labData: Promise<[InventoryItem[], Catalog]> | undefined;
 
-/** Inventário e catálogo do laboratório, baixados uma única vez e compartilhados entre as páginas. */
+/** Inventory and catalog of the lab, downloaded once and shared across pages. */
 export function loadLabData(): Promise<[InventoryItem[], Catalog]> {
   labData ??= Promise.all([
     fetch('/lab/inventario-lpc.json').then((r) => r.json() as Promise<InventoryItem[]>),
     fetch('/lab/catalog.json').then((r) => r.json() as Promise<Catalog>),
   ]).catch((error: unknown) => {
-    // Falhou: a próxima página tenta de novo em vez de guardar o erro
+    // Failed: the next page tries again instead of keeping the error
     labData = undefined;
     throw error;
   });
   return labData;
 }
 
-/** Nome de cada pasta do gerador, para os títulos das seções. */
+/** Name of each generator folder, for the section titles. */
 const GROUP_NAMES: Record<string, string> = {
   '': 'Geral',
   'hats/athwart': 'Chapéus de lado',
@@ -136,7 +136,7 @@ const ROOT_NAMES: Record<string, string> = {
   mods: 'Modificadores',
 };
 
-/** Pasta (grupo) de cada peça: tira o prefixo `headwear/` etc. e usa o nome em português. */
+/** Folder (group) of each piece: strips the `headwear/` etc. prefix and uses the Portuguese name. */
 const groupTitle = (item: InventoryItem): string =>
   `${ROOT_NAMES[item.root] ?? item.root} · ${GROUP_NAMES[item.group] ?? item.group}`;
 
@@ -146,13 +146,13 @@ export type InventoryPageOptions = {
   section?: string;
   title: string;
   intro: string;
-  /** Chave de `PAGE_RULES`: decide quais peças a página mostra. */
+  /** Key of `PAGE_RULES`: decides which pieces the page shows. */
   rule: keyof typeof PAGE_RULES;
-  /** Conteúdo extra no fim da página (ex.: itens planejados). */
+  /** Extra content at the end of the page (e.g. planned items). */
   extra?: () => HTMLElement[];
 };
 
-/** Página do laboratório que lista as peças do gerador LPC, com licença e miniatura. */
+/** Lab page that lists the pieces of the LPC generator, with license and thumbnail. */
 export function inventoryPage(options: InventoryPageOptions) {
   return {
     id: options.id,
@@ -206,7 +206,7 @@ export function inventoryPage(options: InventoryPageOptions) {
   };
 }
 
-/** Tabela simples das peças removidas da galeria: nome, pasta, licença e motivo. */
+/** Simple table of the pieces removed from the gallery: name, folder, license and reason. */
 function blockedTable(blocked: InventoryItem[]): HTMLElement {
   const table = h('table', 'inv-table');
   table.append(
@@ -265,7 +265,7 @@ function card(item: InventoryItem, inGame: Set<string>): HTMLElement {
     img.loading = 'lazy';
     thumb.append(img);
   } else {
-    // Sem arquivo para mostrar: corpo base esmaecido e o motivo, em vez de um quadro vazio
+    // No file to show: faded base body and the reason, instead of an empty frame
     const body = document.createElement('img');
     body.src = '/lab/inventory/_corpo.png';
     body.alt = '';

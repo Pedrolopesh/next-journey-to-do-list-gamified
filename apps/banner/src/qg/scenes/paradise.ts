@@ -64,7 +64,7 @@ function mountains(env: SceneEnv): void {
   }
   ctx.lineTo(SCENE_W + 10, HORIZON + 6);
   ctx.fill();
-  // neve no topo e sombra do lado direito
+  // snow on top and shadow on the right side
   for (const [x, h] of peaks) {
     ctx.fillStyle = snow;
     ctx.beginPath();
@@ -114,13 +114,13 @@ function cabin(env: SceneEnv, cx: number, base: number): void {
   const h = 22;
   const x = cx - w / 2;
   const top = base - h;
-  // chaminé de pedra (atrás do telhado)
+  // stone chimney (behind the roof)
   rect(env, cx + 12, top - 20, 9, 24, OUT);
   rect(env, cx + 13, top - 19, 7, 22, '#8d8f98');
   rect(env, cx + 13, top - 19, 2, 22, '#b4b6bf');
   rect(env, cx + 11, top - 22, 11, 4, OUT);
   rect(env, cx + 12, top - 21, 9, 2, '#6b6e78');
-  // paredes de toras
+  // log walls
   rect(env, x - 1, top - 1, w + 2, h + 2, OUT);
   for (let i = 0; i < h; i += 4) {
     rect(env, x, top + i, w, 4, wood);
@@ -129,18 +129,18 @@ function cabin(env: SceneEnv, cx: number, base: number): void {
     rect(env, x, top + i, 2, 4, woodDark);
     rect(env, x + w - 2, top + i, 2, 4, woodDark);
   }
-  // porta
+  // door
   rect(env, x + 8, base - 14, 10, 14, OUT);
   rect(env, x + 9, base - 13, 8, 13, '#5a3412');
   rect(env, x + 9, base - 13, 1, 13, '#7a4a22');
   rect(env, x + 15, base - 7, 1, 2, '#ffd35a');
-  // janela com luz
+  // window with light
   rect(env, x + 28, top + 5, 13, 11, OUT);
   rect(env, x + 29, top + 6, 11, 9, night ? '#ffd980' : '#bfe6f0');
   rect(env, x + 34, top + 6, 1, 9, OUT);
   rect(env, x + 29, top + 10, 11, 1, OUT);
   rect(env, x + 27, top + 15, 15, 2, woodDark);
-  // telhado
+  // roof
   ctx.fillStyle = OUT;
   ctx.beginPath();
   ctx.moveTo(x - 6, top + 1);
@@ -166,7 +166,7 @@ function cabin(env: SceneEnv, cx: number, base: number): void {
   ctx.lineTo(cx - 3, top - 17);
   ctx.lineTo(x - 4, top);
   ctx.fill();
-  // fumaça subindo da chaminé
+  // smoke rising from the chimney
   const smoke = by(env.time, 'rgba(240,240,244,', 'rgba(250,250,252,', 'rgba(190,200,230,');
   for (let i = 0; i < 6; i++) {
     const age = (((env.t * 0.35 + i / 6) % 1) + 1) % 1;
@@ -179,28 +179,28 @@ function cabin(env: SceneEnv, cx: number, base: number): void {
   }
 }
 
-/** Lago ao lado da cabana, na altura do chão dela (no QG, à esquerda da cabana em 222). */
+/** Lake next to the cabin, at the height of its ground (in the HQ, left of the cabin at 222). */
 const LAKE = { cx: 126, cy: 141, rx: 46, ry: 10 };
 
 type LakeBox = { cx: number; cy: number; rx: number; ry: number };
 
 function lake(env: SceneEnv, L: LakeBox = LAKE): void {
   const { ctx } = env;
-  // os detalhes foram desenhados para um lago de 62 x 24; aqui acompanham o tamanho dele
+  // the details were drawn for a 62 x 24 lake; here they follow its size
   const sx = L.rx / 62;
   const sy = L.ry / 24;
   const path = (grow = 0): void => {
     ctx.beginPath();
     ctx.ellipse(L.cx, L.cy, L.rx + grow, L.ry + grow * 0.6, 0, 0, Math.PI * 2);
   };
-  // margem de terra e pedras
+  // dirt and stone bank
   path(3);
   ctx.fillStyle = '#7a5a34';
   ctx.fill();
   path(1);
   ctx.fillStyle = '#c9b27a';
   ctx.fill();
-  // água
+  // water
   ctx.save();
   path();
   ctx.clip();
@@ -217,7 +217,7 @@ function lake(env: SceneEnv, L: LakeBox = LAKE): void {
     'rgba(255,255,255,0.35)',
     'rgba(255,255,255,0)',
   ]);
-  // brilhos
+  // glints
   const random = rng(4);
   for (let i = 0; i < 9; i++) {
     const phase = Math.sin(env.t * 2 + i * 1.3);
@@ -232,7 +232,7 @@ function lake(env: SceneEnv, L: LakeBox = LAKE): void {
       );
   }
   ctx.restore();
-  // vitórias-régias com flor de lótus
+  // water lilies with lotus flowers
   for (const [dx, dy, flower] of [
     [-30, -4, true],
     [-8, 8, false],
@@ -257,7 +257,7 @@ function lake(env: SceneEnv, L: LakeBox = LAKE): void {
       rect(env, lx, ly + bob - 4, 1, 2, '#ffe14a');
     }
   }
-  // juncos na margem
+  // reeds on the bank
   for (const [dx, dy] of [
     [-58, 10],
     [-55, 14],
@@ -290,7 +290,7 @@ function flowers(env: SceneEnv): void {
     rect(env, x + sway, y - 1, 1, 3, color);
     rect(env, x + sway, y, 1, 1, '#ffe14a');
   }
-  // tufos de grama alta
+  // tufts of tall grass
   for (let i = 0; i < 40; i++) {
     const x = random() * SCENE_W;
     const y = HORIZON + 24 + random() * 90;
@@ -327,7 +327,7 @@ function birds(env: SceneEnv): void {
   }
 }
 
-/** Vaga-lumes: mesma posição para o desenho e para o brilho. */
+/** Fireflies: same position for the drawing and for the glow. */
 function fireflyPos(i: number, t: number): { x: number; y: number; on: boolean } {
   const random = rng(31 + i * 7);
   const bx = random() * SCENE_W;
@@ -351,7 +351,7 @@ function fireflies(env: SceneEnv): void {
 }
 
 const FOREST_PERIOD = 1400;
-/** Cabana, lago, árvores e arbustos andam juntos com o chão: é uma floresta só. */
+/** Cabin, lake, trees and bushes move together with the ground: it is a single forest. */
 const HOUSE_FACTOR = 1;
 const HOUSE_X = 190;
 const PATH_TOP = 172;
@@ -360,7 +360,7 @@ const PATH_BOTTOM = 196;
 type TreeKind = 'pineA' | 'pineB' | 'bushA' | 'bushB';
 type Tree = { x: number; kind: TreeKind };
 
-/** Recortes da folha de árvores: [x, y, largura, altura]. */
+/** Cutouts of the tree sheet: [x, y, width, height]. */
 const TREE_SHEET: Record<TreeKind, [number, number, number, number]> = {
   pineA: [4, 101, 85, 107],
   pineB: [102, 101, 85, 107],
@@ -379,7 +379,7 @@ function tree(env: SceneEnv, kind: TreeKind, x: number, baseY: number, scale: nu
   env.ctx.drawImage(image, sx, sy, sw, sh, left, Math.round(baseY - h), w, h);
 }
 
-/** Árvores e arbustos espalhados com espaços irregulares, mas sem amontoar. */
+/** Trees and bushes scattered with irregular gaps, but without crowding. */
 function scatter(
   seed: number,
   from: number,
@@ -421,7 +421,7 @@ const lakeBox = (env: SceneEnv): LakeBox => ({
   ry: 10,
 });
 
-/** Flores e grama alta presas ao chão: passam sob os pés, sem poças d'água no caminho. */
+/** Flowers and tall grass attached to the ground: they pass under the feet, with no puddles in the way. */
 function journeyFlowers(env: SceneEnv): void {
   const random = rng(17);
   const colors = ['#ff6fa8', '#ffd23f', '#ffffff', '#b08aff', '#ff8a3d', '#6fd3ff'];
@@ -444,7 +444,7 @@ function journeyFlowers(env: SceneEnv): void {
   }
 }
 
-/** Árvores e arbustos da jornada, na lista por altura dos pés: quem passa por trás ou pela frente é certo. */
+/** Trees and bushes of the journey, in the list by foot height: what passes behind or in front is certain. */
 function treeItems(env: SceneEnv): { y: number; draw: () => void }[] {
   const out: { y: number; draw: () => void }[] = [];
   for (const layer of TREE_LAYERS) {
@@ -458,7 +458,7 @@ function treeItems(env: SceneEnv): { y: number; draw: () => void }[] {
   return out;
 }
 
-/** Floresta na jornada: a casa com o lago passa devagar ao fundo, as árvores em três profundidades. */
+/** Forest on the journey: the house with the lake passes slowly in the background, the trees at three depths. */
 function journey(env: SceneEnv): void {
   sky(env, 0, 0, SCENE_W, HORIZON + 8);
   forestSky(env);
@@ -493,7 +493,7 @@ function journey(env: SceneEnv): void {
     'rgba(255,255,255,0)',
   ]);
   lake(env, lakeBox(env));
-  // Caminho de terra batida sob os pés
+  // Packed dirt path under the feet
   rect(
     env,
     0,
@@ -544,19 +544,19 @@ export const paradise: SceneDef = {
     rainbow(env);
     birds(env);
     mountains(env);
-    // raios de sol
+    // sun rays
     if (env.time !== 'night') {
       for (let i = 0; i < 4; i++) rect(env, 70 + i * 70, 0, 12, HORIZON, 'rgba(255,255,220,0.08)');
     }
     hills(env);
     cabin(env, 222, HORIZON + 24);
-    // campo e névoa suave no horizonte
+    // field and soft haze on the horizon
     tileArea(env, env.tiles.grass, 0, 160, 0, HORIZON + 24, SCENE_W, SCENE_H - HORIZON - 24);
     gradientRect(env, 0, HORIZON + 22, SCENE_W, 36, [
       by(env.time, 'rgba(255,240,220,0.35)', 'rgba(255,255,240,0.28)', 'rgba(120,150,220,0.18)'),
       'rgba(255,255,255,0)',
     ]);
-    // Árvores (pinheiros e arbustos do pacote)
+    // Trees (pines and bushes from the pack)
     sprite(env, env.tiles.treetop, 4, 101, 85, 107, 276, 52);
     sprite(env, env.tiles.treetop, 102, 101, 85, 107, 332, 78);
     sprite(env, env.tiles.treetop, 1, 0, 94, 96, 290, 128);

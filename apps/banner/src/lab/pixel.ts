@@ -6,7 +6,7 @@ import {
   type PixelArtName,
 } from '../../../mobile/src/components/pixel-art-data';
 
-/** SVG da pixel art do app (os mesmos dados do componente `PixelArt` do app). */
+/** SVG of the app's pixel art (the same data as the app's `PixelArt` component). */
 export function pixelSvg(name: PixelArtName): string {
   const rects = PIXEL_ART[name].flatMap((row, y) =>
     [...row].flatMap((char, x) => {
@@ -17,7 +17,7 @@ export function pixelSvg(name: PixelArtName): string {
   return `<svg class="pix" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true">${rects.join('')}</svg>`;
 }
 
-/** SVG de uma insígnia de conquista (pixel art 24x24, com contorno e sombreado próprios). */
+/** SVG of an achievement badge (24x24 pixel art, with its own outline and shading). */
 export function insigniaSvg(name: InsigniaName): string {
   const rects = INSIGNIAS[name].flatMap((row, y) =>
     [...row].flatMap((char, x) => {

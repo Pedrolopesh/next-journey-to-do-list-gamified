@@ -1,6 +1,6 @@
-// Importa para o laboratório SÓ as camadas LPC com licença permissiva (CC0, OGA-BY, CC-BY).
-// Uso: LPC_GENERATOR=/caminho/Universal-LPC-Spritesheet-Character-Generator node scripts/import-lpc.mjs
-// Gera lab/assets/lpc/** (PNGs) e lab/catalog.json (camadas, paletas e créditos com a licença usada).
+// Imports into the lab ONLY the LPC layers with a permissive license (CC0, OGA-BY, CC-BY).
+// Usage: LPC_GENERATOR=/path/Universal-LPC-Spritesheet-Character-Generator node scripts/import-lpc.mjs
+// Generates lab/assets/lpc/** (PNGs) and lab/catalog.json (layers, palettes and credits with the license used).
 import {
   copyFileSync,
   existsSync,
@@ -24,12 +24,12 @@ if (!src || !existsSync(join(src, 'sheet_definitions'))) {
 }
 const outDir = join(root, 'lab', 'assets', 'lpc');
 
-/** Licenças aceitas, da mais livre para a menos (a primeira que a camada oferecer é a usada). */
+/** Accepted licenses, from the most free to the least (the first one the layer offers is the one used). */
 const ALLOWED = ['CC0', 'OGA-BY 4.0', 'OGA-BY 3.0', 'CC-BY 4.0', 'CC-BY 3.0'];
 const ANIMATIONS = { idle: 2, walk: 9, run: 8 };
 const BODY_TYPES = ['male', 'female'];
 
-/** O que entra no laboratório (nomes como aparecem no gerador). */
+/** What goes into the lab (names as they appear in the generator). */
 const WANTED = {
   hair: ['Buzzcut', 'Bob', 'Curly short', 'Bangs bun', 'Half up', 'Natural'],
   torso: ['TShirt', 'Longsleeve 2', 'Cardigan', 'Sleeveless 2'],
@@ -52,9 +52,9 @@ function pickLicense(licenses) {
   return ALLOWED.find((allowed) => licenses.includes(allowed)) ?? null;
 }
 
-/** Retorna os créditos com a licença usada, ou null se alguma parte não for permissiva. */
+/** Returns the credits with the license used, or null if any part is not permissive. */
 function resolveCredits(allCredits, bases) {
-  // Só valem os créditos dos arquivos realmente usados (ex.: corpo masculino, não o "musculoso")
+  // Only the credits of the files actually used count (e.g. male body, not the "musculoso" one)
   const norm = (path) => path.replace(/\/+$/, '');
   const relevant = allCredits.filter((credit) =>
     bases.some(
@@ -98,7 +98,7 @@ function addPart({ id, slot, name, def, material }) {
     const layer = def[key];
     const paths = {};
     for (const type of BODY_TYPES) {
-      // Rostos usam ${head} no caminho: aqui a cabeça é a humana masculina ou feminina
+      // Faces use ${head} in the path: here the head is the male or female human one
       const base = layer[type]?.replace('${head}', type);
       if (!base) continue;
       const ok = Object.keys(ANIMATIONS).every((anim) =>
@@ -146,7 +146,7 @@ function addPart({ id, slot, name, def, material }) {
   });
 }
 
-// Corpo, cabeça e olhos: sempre presentes (pele recolorível)
+// Body, head and eyes: always present (recolorable skin)
 const byFile = (suffix) => definitions.find(({ file }) => file.endsWith(suffix));
 addPart({
   id: 'body',
@@ -198,7 +198,7 @@ for (const [slot, names] of Object.entries(WANTED)) {
   }
 }
 
-// Cenários: tiles de Lanea Zimmerman (Sharm), que ela libera também em CC-BY (página do pacote no OpenGameArt)
+// Scenery: tiles by Lanea Zimmerman (Sharm), which she also releases under CC-BY (package page on OpenGameArt)
 const scenery = [];
 const base = process.env.LPC_BASE;
 if (base && existsSync(join(base, 'tileset'))) {
@@ -210,7 +210,7 @@ if (base && existsSync(join(base, 'tileset'))) {
     cabinets: 'building-interior/cabinets.png',
     kitchen: 'building-interior/kitchen.png',
     chests: 'object/chests.png',
-    // Terreno e vegetação (Sharm) para os cenários externos
+    // Terrain and vegetation (Sharm) for the outdoor scenes
     grass: 'outdoor/PNG/grass.png',
     water: 'outdoor/PNG/water.png',
     treetop: 'outdoor/PNG/treetop.png',
@@ -237,7 +237,7 @@ writeFileSync(
   join(root, 'lab', 'catalog.json'),
   `${JSON.stringify({ animations: ANIMATIONS, bodyTypes: BODY_TYPES, palettes, parts, scenery, credits }, null, 1)}\n`,
 );
-// Lista de créditos legível (exigida por OGA-BY 3.0 e CC-BY): quem fez, de onde veio e a licença usada
+// Readable credits list (required by OGA-BY 3.0 and CC-BY): who made it, where it came from and the license used
 const table = credits
   .map(
     (credit) =>

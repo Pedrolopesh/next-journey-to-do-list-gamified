@@ -1,7 +1,7 @@
 import type { LabPage } from '../page';
 import { inventoryPage } from './inventario';
 
-/** Armas, escudos e ferramentas do gerador LPC, com a licença de cada peça. */
+/** Weapons, shields and tools of the LPC generator, with the license of each piece. */
 export const weaponsPage: LabPage = inventoryPage({
   id: 'armas',
   label: 'Armas e ferramentas',

@@ -8,10 +8,10 @@ const SKIN_KEYS = ['light', 'tan', 'brown', 'dark'];
 const HAIR_KEYS = ['short-brown', 'long-black', 'curly-red', 'bald'];
 const OUTFIT_KEYS = ['tunic-purple', 'tunic-green', 'armor-iron'];
 
-describe('seleção LPC a partir das camadas do app', () => {
+describe('LPC selection from the app layers', () => {
   const data = catalog as unknown as Catalog;
 
-  it('toda combinação de chaves do app vira camadas e cores que existem no catálogo', () => {
+  it('every combination of app keys becomes layers and colors that exist in the catalog', () => {
     for (const skin of SKIN_KEYS)
       for (const hair of HAIR_KEYS)
         for (const outfit of OUTFIT_KEYS) {
@@ -29,19 +29,19 @@ describe('seleção LPC a partir das camadas do app', () => {
         }
   });
 
-  it('careca não tem peça de cabelo', () => {
+  it('bald has no hair piece', () => {
     expect(
       selectionFromLayers({ skin: 'light', hair: 'bald', outfit: 'tunic-green' }).hair,
     ).toBeNull();
   });
 
-  it('chave desconhecida cai no padrão sem quebrar', () => {
+  it('an unknown key falls back to the default without breaking', () => {
     const selection = selectionFromLayers({ skin: '???', hair: '???', outfit: '???' });
     expect(selection.skin).toBe('light');
     expect(selection.torso).toBe('torso-longsleeve-2');
   });
 
-  it('a aparência detalhada (look) vale mais que as chaves simples', () => {
+  it('the detailed appearance (look) takes precedence over the simple keys', () => {
     const look = {
       bodyType: 'female' as const,
       skin: 'olive',

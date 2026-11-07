@@ -3,7 +3,7 @@ import { drawLampPost, type Lamp, lampHead } from './lampposts';
 import type { Light, SceneEnv } from './types';
 import { SCENE_W } from './types';
 
-/** Linhas da avenida (y de tela). O personagem anda na calçada, com os pés em `groundY` da cena. */
+/** Avenue lines (screen y). The character walks on the sidewalk, with feet at the scene's `groundY`. */
 export const FAR_SIDEWALK = 140;
 export const ROAD_TOP = 146;
 export const ROAD_MID = 163;
@@ -13,7 +13,7 @@ const LAMP_BASE = 188;
 const STOP_BASE = 188;
 const OUT = '#14161c';
 
-/** Período (px de distância) em que postes e ponto de ônibus se repetem. */
+/** Period (px of distance) at which lampposts and the bus stop repeat. */
 export const STREET_PERIOD = 900;
 export const LAMP_WORLD = [80, 380, 680];
 const BUS_STOP_WORLD = 520;
@@ -26,18 +26,18 @@ const LAMPS_SCREEN = (env: SceneEnv): Lamp[] =>
     dir: 1 as const,
   })).filter((lamp) => lamp.x > -30 && lamp.x < SCENE_W + 30);
 
-/** Asfalto de duas faixas, meio-fio e calçada com juntas que passam sob os pés. */
+/** Two-lane asphalt, curb and sidewalk with joints that pass under the feet. */
 export function ground(env: SceneEnv): void {
   const night = env.time === 'night';
   rect(env, 0, FAR_SIDEWALK, SCENE_W, ROAD_TOP - FAR_SIDEWALK, night ? '#5a5d66' : '#a8a59f');
   rect(env, 0, ROAD_TOP - 1, SCENE_W, 1, 'rgba(0,0,0,0.3)');
   rect(env, 0, ROAD_TOP, SCENE_W, CURB - ROAD_TOP, night ? '#34363d' : '#4c4f57');
   rect(env, 0, ROAD_TOP + 1, SCENE_W, 1, 'rgba(255,255,255,0.08)');
-  // Faixa tracejada: anda com a calçada
+  // Dashed lane marking: moves with the sidewalk
   const dash = 24;
   const start = -(((env.scroll % dash) + dash) % dash);
   for (let x = start; x < SCENE_W; x += dash) rect(env, x, ROAD_MID, 12, 1, '#e6dfae');
-  // Meio-fio e calçada
+  // Curb and sidewalk
   rect(env, 0, CURB, SCENE_W, 3, '#d2cfc6');
   rect(env, 0, CURB, SCENE_W, 1, '#ece9e0');
   rect(env, 0, CURB + 3, SCENE_W, 1, 'rgba(0,0,0,0.3)');
@@ -62,7 +62,7 @@ type Car = {
   dir: 1 | -1;
   model: Model;
   color: string;
-  /** Tamanho do desenho: a faixa de trás é um pouco menor, para dar profundidade. */
+  /** Drawing size: the back lane is a bit smaller, to give depth. */
   scale: number;
 };
 
@@ -79,10 +79,10 @@ const CAR_COLORS = [
   '#b8bec9',
   '#17a2b8',
 ];
-/** Comprimento de cada modelo em unidades (multiplicado pela escala da faixa). */
+/** Length of each model in units (multiplied by the lane scale). */
 const LENGTH: Record<Model, number> = { hatch: 28, sedan: 34, van: 34 };
 
-/** Faixa da avenida: a de cima vai com o personagem; a de baixo vem contra. */
+/** Avenue lane: the upper one goes with the character; the lower one comes against. */
 const LANES = [
   { y: ROAD_MID - 2, dir: 1 as const, speed: 110, offset: 0, scale: 2.3 },
   { y: CURB - 6, dir: -1 as const, speed: 130, offset: 700, scale: 2.8 },
@@ -90,7 +90,7 @@ const LANES = [
 const TRAFFIC_PERIOD = 1700;
 const SLOTS = 3;
 
-/** Número fixo entre 0 e 1 para a mesma entrada: modelo, cor e ausência do carro sem sortear a cada quadro. */
+/** Fixed number between 0 and 1 for the same entry: model, color and absence of the car without drawing lots every frame. */
 function hash(a: number, b: number, c: number): number {
   let h = Math.imul((a * 73856093) ^ (b * 19349663) ^ (c * 83492791), 2654435761);
   h ^= h >>> 15;
@@ -99,7 +99,7 @@ function hash(a: number, b: number, c: number): number {
   return (h >>> 0) / 4294967296;
 }
 
-/** Carros visíveis agora. A posição soma o movimento do carro e o deslocamento do cenário. */
+/** Cars visible now. The position adds the car's movement and the scenery offset. */
 export function traffic(env: SceneEnv): Car[] {
   const out: Car[] = [];
   LANES.forEach((lane, laneIndex) => {
@@ -133,7 +133,7 @@ function mix(hex: string, amount: number): string {
 
 type Part = [dx: number, dy: number, w: number, h: number, kind: 'body' | 'glass'];
 
-/** Peças de cada modelo, de lado e virado para a direita; y sobe a partir das rodas (em unidades). */
+/** Pieces of each model, from the side and facing right; y rises from the wheels (in units). */
 const SHAPES: Record<Model, Part[]> = {
   hatch: [
     [0, -8, 28, 5, 'body'],
@@ -157,7 +157,7 @@ const SHAPES: Record<Model, Part[]> = {
 };
 const WHEELS: Record<Model, [number, number]> = { hatch: [6, 22], sedan: [7, 27], van: [7, 27] };
 
-/** Roda redonda com pneu, aro e cubo. */
+/** Round wheel with tire, rim and hub. */
 function wheel(env: SceneEnv, cx: number, cy: number, radius: number): void {
   const { ctx } = env;
   ctx.fillStyle = OUT;
@@ -184,7 +184,7 @@ function drawCar(env: SceneEnv, car: Car): void {
   const flip = (dx: number, w: number): number =>
     Math.round(car.x + (car.dir > 0 ? dx * S : length - (dx + w) * S));
   const shape = SHAPES[car.model];
-  // sombra no asfalto
+  // shadow on the asphalt
   rect(env, car.x + 3, car.y - 1, length - 6, 3, 'rgba(0,0,0,0.28)');
   for (const [dx, dy, w, h, kind] of shape) {
     if (kind === 'body') rect(env, flip(dx, w) - 1, car.y + dy * S - 1, w * S + 2, h * S + 2, OUT);
@@ -192,7 +192,7 @@ function drawCar(env: SceneEnv, car: Car): void {
   const wheelR = Math.round(2.6 * S);
   const wheelY = car.y - wheelR;
   for (const wx of WHEELS[car.model]) {
-    // cava da roda escura por baixo da carroceria
+    // dark wheel well under the body
     rect(env, flip(wx - 3.2, 6.4), wheelY - wheelR - 2, Math.round(6.4 * S), wheelR + 6, OUT);
   }
   for (const [dx, dy, w, h, kind] of shape) {
@@ -205,7 +205,7 @@ function drawCar(env: SceneEnv, car: Car): void {
       rect(env, flip(dx, w), car.y + dy * S + h * S - 2, w * S, 2, '#6aa6c8');
     }
   }
-  // faixa escura da parte de baixo, soleira e linhas das portas
+  // dark band at the bottom, sill and door lines
   const lowerTop = car.model === 'van' ? -15 : -8;
   const lowerH = car.model === 'van' ? 12 : 5;
   rect(env, flip(0, LENGTH[car.model]), car.y - 3.2 * S, length, 2, mix(car.color, -0.35));
@@ -238,10 +238,10 @@ function drawCar(env: SceneEnv, car: Car): void {
   }
   for (const wx of WHEELS[car.model])
     wheel(env, flip(wx - 0.2, 0) + Math.round(wheelR * 0.0), wheelY, wheelR);
-  // faróis e lanternas, para-choques
+  // headlights and taillights, bumpers
   const frontX = car.dir > 0 ? car.x + length - 5 : car.x;
   const rearX = car.dir > 0 ? car.x : car.x + length - 3;
-  // na altura do capô/porta-malas de todos os modelos (a carroceria baixa vai de -8 a -3 unidades)
+  // at the height of the hood/trunk of all models (the low body goes from -8 to -3 units)
   const lampY = Math.round(car.y - 6.6 * S);
   const lampH = Math.max(3, Math.round(1.6 * S));
   rect(env, frontX, lampY, 4, lampH, '#fff2b0');
@@ -256,7 +256,7 @@ export function drawTraffic(env: SceneEnv, lane: 'far' | 'near'): void {
   for (const car of traffic(env)) if (car.y === y) drawCar(env, car);
 }
 
-/** Onde o ônibus fica parado: no meio-fio, junto do ponto (anda com a calçada). */
+/** Where the bus stands: at the curb, next to the stop (moves with the sidewalk). */
 const BUS_LENGTH = 124;
 const BUS_BASE = CURB - 2;
 
@@ -268,7 +268,7 @@ function busLeft(env: SceneEnv): number {
   return Math.round(center - BUS_LENGTH / 2);
 }
 
-/** Roda de ônibus: cava escura (só acima do chão), pneu, aro e cubo. */
+/** Bus wheel: dark well (only above the ground), tire, rim and hub. */
 function busWheel(env: SceneEnv, cx: number, y: number): void {
   for (let dy = -9; dy <= 0; dy++) {
     const half = Math.round(Math.sqrt(81 - dy * dy));
@@ -287,9 +287,9 @@ function busWheel(env: SceneEnv, cx: number, y: number): void {
 }
 
 /**
- * Ônibus parado no ponto, virado para a esquerda (mão da faixa de baixo): carroceria longa com
- * para-brisa, porta da frente, fileira de janelas, listra, letreiro e duas rodas nas cavas.
- * Desenhado por último na rua: os carros passam atrás.
+ * Bus stopped at the stop, facing left (the lower lane's side): long body with
+ * windshield, front door, row of windows, stripe, sign and two wheels in the wells.
+ * Drawn last on the street: the cars pass behind.
  */
 export function drawBus(env: SceneEnv): void {
   const x = busLeft(env);
@@ -301,22 +301,22 @@ export function drawBus(env: SceneEnv): void {
   const y = BUS_BASE;
   const L = BUS_LENGTH;
   rect(env, x + 6, y - 1, L - 12, 3, 'rgba(0,0,0,0.3)');
-  // carroceria com contorno, teto mais claro e saia escura
+  // body with outline, lighter roof and dark skirt
   rect(env, x - 1, y - 49, L + 2, 44, OUT);
   rect(env, x, y - 48, L, 42, body);
   rect(env, x + 2, y - 48, L - 4, 2, mix(body, 0.4));
   rect(env, x, y - 17, L, 3, '#f4f4f6');
   rect(env, x, y - 12, L, 6, mix(body, -0.4));
-  // ar-condicionado no teto
+  // air conditioner on the roof
   rect(env, x + 56, y - 53, 38, 5, OUT);
   rect(env, x + 57, y - 52, 36, 3, '#c9ced6');
-  // para-brisa grande na frente e letreiro do destino
+  // large windshield at the front and destination sign
   rect(env, x + 2, y - 43, 15, 26, glass);
   rect(env, x + 2, y - 43, 15, 2, glassTop);
   rect(env, x + 9, y - 43, 1, 26, body);
   rect(env, x + 3, y - 47, 13, 4, OUT);
   for (let k = 0; k < 4; k++) rect(env, x + 4 + k * 3, y - 46, 2, 2, '#ffb000');
-  // porta da frente (duas folhas) e janelas laterais
+  // front door (two leaves) and side windows
   rect(env, x + 19, y - 43, 12, 36, OUT);
   rect(env, x + 20, y - 42, 5, 34, glass);
   rect(env, x + 26, y - 42, 4, 34, glass);
@@ -326,7 +326,7 @@ export function drawBus(env: SceneEnv): void {
     rect(env, wx, y - 42, 11, 19, glass);
     rect(env, wx, y - 42, 11, 2, glassTop);
   }
-  // rodas nas cavas, faróis, lanterna e para-choque
+  // wheels in the wells, headlights, taillight and bumper
   busWheel(env, x + 24, y);
   busWheel(env, x + L - 26, y);
   rect(env, x - 2, y - 9, 3, 3, '#2a2d36');
@@ -334,7 +334,7 @@ export function drawBus(env: SceneEnv): void {
   rect(env, x + L - 3, y - 15, 3, 5, '#e0302c');
 }
 
-/** Ponto de ônibus: abrigo com vidro, banco e placa azul com o ônibus desenhado. */
+/** Bus stop: shelter with glass, bench and a blue sign with the bus drawn on it. */
 function busStop(env: SceneEnv, x: number): void {
   const night = env.time === 'night';
   const top = STOP_BASE - 38;
@@ -351,7 +351,7 @@ function busStop(env: SceneEnv, x: number): void {
   rect(env, x + 11, STOP_BASE - 12, 36, 2, '#b07a44');
   rect(env, x + 13, STOP_BASE - 9, 2, 9, '#4c525e');
   rect(env, x + 43, STOP_BASE - 9, 2, 9, '#4c525e');
-  // placa
+  // sign
   rect(env, x + 63, STOP_BASE - 52, 3, 52, OUT);
   rect(env, x + 64, STOP_BASE - 52, 1, 52, '#8a909c');
   rect(env, x + 56, STOP_BASE - 62, 18, 15, OUT);
@@ -364,13 +364,13 @@ function busStop(env: SceneEnv, x: number): void {
   if (night) rect(env, x + 4, top + 1, 48, 1, '#fff3b8');
 }
 
-/** Calçada: postes e ponto de ônibus, desenhados atrás do personagem. */
+/** Sidewalk: lampposts and bus stop, drawn behind the character. */
 export function sidewalkProps(env: SceneEnv): void {
   busStop(env, Math.round(scrolled(BUS_STOP_WORLD, env.scroll, STREET_PERIOD)) - 28);
   for (const lamp of LAMPS_SCREEN(env)) drawLampPost(env, lamp);
 }
 
-/** Luzes da noite: postes, o ponto de ônibus e os faróis dos carros. */
+/** Night lights: lampposts, the bus stop and the cars' headlights. */
 export function streetLights(env: SceneEnv): Light[] {
   const out: Light[] = [];
   for (const lamp of LAMPS_SCREEN(env)) {

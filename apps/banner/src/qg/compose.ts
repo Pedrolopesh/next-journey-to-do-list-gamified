@@ -1,9 +1,9 @@
-/** Lógica pura do laboratório do personagem LPC: catálogo, recolorização e montagem de camadas. */
+/** Pure logic of the LPC character lab: catalog, recoloring and layer assembly. */
 
 export type Material = 'body' | 'hair' | 'cloth' | 'eye';
 export type BodyType = 'male' | 'female';
 export type AnimationName = 'idle' | 'walk' | 'run';
-/** Ordem das linhas nas folhas LPC. */
+/** Order of the rows in the LPC sheets. */
 export type Direction = 'up' | 'left' | 'down' | 'right';
 
 export type Credit = {
@@ -45,7 +45,7 @@ export type Selection = {
   legsColor: string;
   feet: string | null;
   feetColor: string;
-  /** Peças prontas sem recolorir (id do catálogo): chapéu/viseira e proteção dos braços. */
+  /** Ready-made pieces without recoloring (catalog id): hat/visor and arm protection. */
   hat?: string | null;
   arms?: string | null;
 };
@@ -53,7 +53,7 @@ export type Selection = {
 export const FRAME = 64;
 const DIRECTION_ROW: Record<Direction, number> = { up: 0, left: 1, down: 2, right: 3 };
 
-/** Retângulo do quadro na folha: coluna = quadro da animação, linha = direção. */
+/** Rectangle of the frame in the sheet: column = animation frame, row = direction. */
 export function frameRect(direction: Direction, frame: number): { sx: number; sy: number } {
   return { sx: frame * FRAME, sy: DIRECTION_ROW[direction] * FRAME };
 }
@@ -69,7 +69,7 @@ export function hexToRgb(hex: string): Rgb {
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
 }
 
-/** Troca cada cor da paleta-base pela cor de mesma posição na paleta de destino. */
+/** Replaces each base palette color with the color at the same position in the target palette. */
 export function buildRecolorMap(source: string[], target: string[]): Map<number, Rgb> {
   const map = new Map<number, Rgb>();
   const count = Math.min(source.length, target.length);
@@ -80,7 +80,7 @@ export function buildRecolorMap(source: string[], target: string[]): Map<number,
   return map;
 }
 
-/** Recolore os pixels opacos (RGBA) in-place. Pixels fora da paleta ficam como estão. */
+/** Recolors the opaque pixels (RGBA) in place. Pixels outside the palette stay as they are. */
 export function recolorPixels(pixels: Uint8ClampedArray, map: Map<number, Rgb>): void {
   for (let i = 0; i < pixels.length; i += 4) {
     if ((pixels[i + 3] ?? 0) === 0) continue;
@@ -94,16 +94,16 @@ export function recolorPixels(pixels: Uint8ClampedArray, map: Map<number, Rgb>):
 }
 
 export type LayerSpec = {
-  /** Caminho da pasta da camada dentro de assets/lpc (termina com "/"). */
+  /** Path of the layer folder inside assets/lpc (ends with "/"). */
   path: string;
   z: number;
   material: Material | null;
-  /** Nome da cor na paleta do material (ex.: "brown"). */
+  /** Name of the color in the material palette (e.g. "brown"). */
   color: string | null;
   partId: string;
 };
 
-/** Camadas a desenhar para a seleção atual, da mais ao fundo para a mais à frente. */
+/** Layers to draw for the current selection, from the farthest back to the front. */
 export function layersFor(catalog: Catalog, selection: Selection): LayerSpec[] {
   const chosen: { id: string; color: string | null }[] = [
     { id: 'body', color: selection.skin },
@@ -128,7 +128,7 @@ export function layersFor(catalog: Catalog, selection: Selection): LayerSpec[] {
   return specs.sort((a, b) => a.z - b.z);
 }
 
-/** Licenças dos itens escolhidos, sem repetir, com a licença que de fato usamos. */
+/** Licenses of the chosen items, without repeats, with the license we actually use. */
 export function creditsFor(catalog: Catalog, partIds: string[]): Credit[] {
   const indexes = new Set<number>();
   for (const id of partIds) {

@@ -27,7 +27,7 @@ const BRAZIERS = [124, 266] as const;
 const BRAZIER_BASE = 162;
 const CX = SCENE_W / 2;
 const DAIS_TOP = 146;
-/** Rio de lava que corre atrás do trono, de ponta a ponta. */
+/** River of lava that runs behind the throne, from end to end. */
 const LAKE = { x0: -10, top: HORIZON, bottom: 158 };
 const GEYSERS = [
   { x: 58, phase: 0 },
@@ -36,7 +36,7 @@ const GEYSERS = [
 const GEYSER_BASE = 148;
 const VOLCANO = { x: 112, peak: 62 };
 
-/** Altura atual do gêiser (0 quando está quieto). */
+/** Current height of the geyser (0 when quiet). */
 function geyserHeight(t: number, phase: number): number {
   const a = ((t + phase) % 6) / 6;
   return a < 0.35 ? Math.sin((a / 0.35) * Math.PI) * 44 : 0;
@@ -53,7 +53,7 @@ function embers(env: SceneEnv): void {
   }
 }
 
-/** Faixas de fumaça escura que derivam pelo céu. */
+/** Bands of dark smoke that drift across the sky. */
 function smokeBanks(env: SceneEnv): void {
   const { ctx } = env;
   const color = by(env.time, '40,10,12', '12,4,6');
@@ -96,7 +96,7 @@ function mountainLayer(
     ctx.lineTo(x + 31, base - h * 0.6);
     ctx.lineTo(x + 46, base);
     ctx.fill();
-    // brilho de lava na aresta que olha para o rio
+    // lava glow on the edge facing the river
     ctx.strokeStyle = rim;
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -119,7 +119,7 @@ function volcano(env: SceneEnv, x: number = VOLCANO.x): void {
   ctx.lineTo(x + 14, peak + 4);
   ctx.lineTo(x + 70, HORIZON);
   ctx.fill();
-  // lava escorrendo pelas encostas
+  // lava flowing down the slopes
   ctx.strokeStyle = '#ff7a1a';
   ctx.lineWidth = 1.4;
   for (const [dx, len] of [
@@ -132,11 +132,11 @@ function volcano(env: SceneEnv, x: number = VOLCANO.x): void {
     ctx.lineTo(x + dx * 3 + (dx < 0 ? -4 : 4), peak + len);
     ctx.stroke();
   }
-  // cratera incandescente
+  // glowing crater
   ctx.fillStyle = '#ffb347';
   ctx.fillRect(x - 8, peak - 1, 16, 3);
   glow(env, x, peak, 60, [255, 120, 40], 0.7);
-  // coluna de fumaça e cinzas
+  // column of smoke and ash
   for (let i = 0; i < 7; i++) {
     const age = (env.t * 0.18 + i / 7) % 1;
     const sx = x + age * 46 + Math.sin(env.t + i) * 3;
@@ -154,7 +154,7 @@ function lavaLake(
   geyserXs: readonly number[] = GEYSERS.map((g) => g.x),
 ): void {
   const { ctx } = env;
-  // margem inferior ondulada, de ponta a ponta
+  // wavy lower edge, from end to end
   const shore: [number, number][] = [[LAKE.x0, LAKE.top]];
   for (let x = LAKE.x0; x <= SCENE_W + 10; x += 20)
     shore.push([x, LAKE.bottom + Math.round(Math.sin((x + shift) / 37) * 2)]);
@@ -164,7 +164,7 @@ function lavaLake(
     shore.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
     ctx.closePath();
   };
-  // margem de rocha escura com brilho
+  // dark rock edge with a glow
   path();
   ctx.lineJoin = 'round';
   ctx.strokeStyle = OUT;
@@ -192,7 +192,7 @@ function lavaLake(
     'rgba(120,20,6,0.45)',
     'rgba(255,220,120,0.18)',
   ]);
-  // reflexo do sol/lua sobre a lava
+  // reflection of the sun/moon on the lava
   const rx = 300;
   for (let i = 0; i < 6; i++) {
     const wobble = Math.round(Math.sin(env.t * 2 + i) * 3);
@@ -205,7 +205,7 @@ function lavaLake(
       by(env.time, '#fff0b0', '#ff6a4a'),
     );
   }
-  // bolhas que crescem e estouram
+  // bubbles that grow and burst
   const random = rng(12);
   for (let i = 0; i < 11; i++) {
     const x = LAKE.x0 + 14 + random() * (SCENE_W - LAKE.x0 - 24);
@@ -218,7 +218,7 @@ function lavaLake(
     ctx.stroke();
   }
   ctx.restore();
-  // gêiseres de lava
+  // lava geysers
   for (const [gi, g0] of GEYSERS.entries()) {
     const g = { x: geyserXs[gi] ?? g0.x, phase: g0.phase };
     const h = geyserHeight(env.t, g.phase);
@@ -247,11 +247,11 @@ function dais(env: SceneEnv): void {
     rect(env, x, y, w, h, rock);
     rect(env, x, y, w, 1, rockLight);
     rect(env, x, y + h - 1, w, 1, rockDark);
-    // veios de lava na face do degrau
+    // lava veins on the face of the step
     rect(env, x + 6, y + h - 3, 14, 1, '#ff7a1a');
     rect(env, x + w - 24, y + h - 4, 18, 1, '#ff7a1a');
   }
-  // tapete de brasa que desce pelos degraus
+  // ember carpet that goes down the steps
   rect(env, CX - 18, DAIS_TOP + 1, 36, 8, '#6a1018');
   rect(env, CX - 18, 155, 36, 8, '#6a1018');
   rect(env, CX - 18, 163, 36, 9, '#6a1018');
@@ -260,7 +260,7 @@ function dais(env: SceneEnv): void {
   rect(env, CX + 18, 172, 2, 48, '#ff7a1a');
 }
 
-/** Trono do rei demônio; `cx` e `base` dizem onde ele fica (padrão: o tablado do salão). */
+/** Demon king's throne; `cx` and `base` say where it stands (default: the hall's dais). */
 function throne(env: SceneEnv, cx: number = CX, base: number = DAIS_TOP): void {
   const { ctx } = env;
   const top = base - 84;
@@ -269,7 +269,7 @@ function throne(env: SceneEnv, cx: number = CX, base: number = DAIS_TOP): void {
   const bone = '#e8dcc0';
   const glowColor = Math.sin(env.t * 2) > -0.3 ? '#ff4a2a' : '#ff8a3a';
 
-  // chifres curvos nas laterais
+  // curved horns on the sides
   for (const side of [-1, 1]) {
     for (const [color, width] of [
       [OUT, 6],
@@ -284,7 +284,7 @@ function throne(env: SceneEnv, cx: number = CX, base: number = DAIS_TOP): void {
       ctx.stroke();
     }
   }
-  // costas pontiagudas
+  // pointed back
   const outline: [number, number][] = [
     [-22, base - 16],
     [-27, base - 50],
@@ -318,16 +318,16 @@ function throne(env: SceneEnv, cx: number = CX, base: number = DAIS_TOP): void {
   trace(0);
   ctx.fillStyle = body;
   ctx.fill();
-  // painel interno com runa brilhante
+  // inner panel with a glowing rune
   rect(env, cx - 12, top + 30, 24, base - top - 64, '#4a1420');
   rect(env, cx - 12, top + 30, 2, base - top - 64, '#7a2030');
   rect(env, cx - 1, top + 36, 2, 26, glowColor);
   rect(env, cx - 7, top + 44, 14, 2, glowColor);
   rect(env, cx - 5, top + 52, 10, 2, glowColor);
   rect(env, cx - 3, top + 58, 6, 2, glowColor);
-  // crânio no topo
+  // skull on top
   skull(env, cx - 6, top - 12);
-  // colunas de ossos nas laterais
+  // columns of bones on the sides
   for (const side of [-1, 1]) {
     const x = side < 0 ? cx - 30 : cx + 24;
     rect(env, x - 1, top + 32, 8, base - top - 50, OUT);
@@ -335,7 +335,7 @@ function throne(env: SceneEnv, cx: number = CX, base: number = DAIS_TOP): void {
     rect(env, x, top + 33, 1, base - top - 52, '#c0485a');
     for (let k = 0; k < 3; k++) rect(env, x + 1, top + 42 + k * 12, 4, 2, bone);
   }
-  // braços com crânios nas pontas
+  // arms with skulls at the tips
   for (const side of [-1, 1]) {
     const x = side < 0 ? cx - 32 : cx + 23;
     rect(env, x - 1, base - 30, 12, 9, OUT);
@@ -346,7 +346,7 @@ function throne(env: SceneEnv, cx: number = CX, base: number = DAIS_TOP): void {
     rect(env, x + (side < 0 ? 2 : 5), base - 33, 1, 1, glowColor);
     rect(env, x + (side < 0 ? 4 : 7), base - 33, 1, 1, glowColor);
   }
-  // assento de couro sangue e base
+  // blood-leather seat and base
   rect(env, cx - 21, base - 23, 42, 8, OUT);
   rect(env, cx - 20, base - 22, 40, 6, '#7a1420');
   rect(env, cx - 20, base - 22, 40, 1, '#c0303c');
@@ -444,13 +444,13 @@ function trident(env: SceneEnv, x: number, base: number): void {
   rect(env, x, base - 93, 3, 26, iron);
   rect(env, x - 9, base - 70, 21, 4, OUT);
   rect(env, x - 8, base - 69, 19, 2, iron);
-  // pontas incandescentes
+  // glowing tips
   for (const dx of [-8, 0, 8]) rect(env, x + dx, base - (dx === 0 ? 96 : 90), 3, 3, '#ff7a1a');
 }
 
 function brazier(env: SceneEnv, x: number): void {
   const iron = '#2a2a33';
-  // tripé
+  // tripod
   for (const [dx, dir] of [
     [-7, -1],
     [7, 1],
@@ -462,7 +462,7 @@ function brazier(env: SceneEnv, x: number): void {
   }
   rect(env, x - 1, BRAZIER_BASE - 14, 3, 14, OUT);
   rect(env, x, BRAZIER_BASE - 13, 1, 13, '#4a4a58');
-  // bacia
+  // bowl
   rect(env, x - 12, BRAZIER_BASE - 22, 24, 9, OUT);
   rect(env, x - 11, BRAZIER_BASE - 21, 22, 7, iron);
   rect(env, x - 11, BRAZIER_BASE - 21, 22, 1, '#6a6a7c');
@@ -502,13 +502,13 @@ function passingThrone(env: SceneEnv): { y: number; draw: () => void } {
 }
 const MOUNTAIN_PERIOD = 900;
 
-/** Número fixo entre 0 e 1 por posição, para as montanhas não mudarem de forma enquanto rolam. */
+/** Fixed number between 0 and 1 per position, so the mountains do not change shape while scrolling. */
 function noise(a: number, b: number): number {
   const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
   return v - Math.floor(v);
 }
 
-/** Faixa de montanhas que rola devagar; cada pico mantém a forma ao passar. */
+/** Band of mountains that scrolls slowly; each peak keeps its shape as it passes. */
 function journeyMountains(
   env: SceneEnv,
   seed: number,
@@ -549,7 +549,7 @@ const routeX = (env: SceneEnv, world: number): number =>
 const farX = (env: SceneEnv, world: number, factor: number, period: number): number =>
   Math.round(scrolled(world, env.scroll, period, factor));
 
-/** Peças do caminho, espalhadas sem ritmo fixo. */
+/** Path pieces, scattered with no fixed rhythm. */
 const ROUTE: {
   kind: 'brazier' | 'stalagmite' | 'skull' | 'ribcage' | 'trident' | 'pike';
   x: number;
@@ -571,7 +571,7 @@ function geyserScreenXs(env: SceneEnv): number[] {
   return GEYSERS.map((_, i) => farX(env, GEYSER_WORLD[i] ?? 60, 0.5, 900));
 }
 
-/** Inferno na jornada: lava, vulcão e montanhas passam ao fundo; ossos, braseiros e tridentes pelo caminho. */
+/** Hell on the journey: lava, volcano and mountains pass in the background; bones, braziers and tridents along the way. */
 function journey(env: SceneEnv): void {
   gradientRect(env, 0, 0, SCENE_W, HORIZON, [...SKY_BY_TIME[env.time]]);
   const sunY = env.time === 'morning' ? 96 : 40;
@@ -649,7 +649,7 @@ export const hell: SceneDef = {
   levels: HELL_LEVEL_COUNT,
   levelInfo: HELL_LEVELS,
   ...hellLevelLayers,
-  // na corte do rei demônio um trono passa ao fundo da jornada, no mesmo ritmo do chão
+  // in the demon king's court a throne passes in the background of the journey, at the same pace as the ground
   levelItems: (env) => [
     ...(hellLevelLayers.levelItems?.(env) ?? []),
     ...(env.journey && env.level === 5 ? [passingThrone(env)] : []),
@@ -691,7 +691,7 @@ export const hell: SceneDef = {
       'rgba(255,100,30,0.6)',
     );
 
-    // Chão de rocha até o horizonte, com névoa avermelhada na base das montanhas
+    // Rock ground to the horizon, with reddish haze at the base of the mountains
     tileArea(env, env.tiles.lavarock, 0, 160, 0, HORIZON, SCENE_W, SCENE_H - HORIZON);
     gradientRect(env, 0, HORIZON, SCENE_W, 26, ['rgba(255,90,30,0.4)', 'rgba(255,90,30,0)']);
     rect(env, 0, HORIZON - 1, SCENE_W, 2, 'rgba(0,0,0,0.5)');

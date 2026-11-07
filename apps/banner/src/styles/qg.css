@@ -1,5 +1,5 @@
 /*
- * Cena "QG" (Home): canvas 390x220 desenhado por src/qg. Fica escondida enquanto a cena Mapa está ativa.
+ * "QG" scene (Home): 390x220 canvas drawn by src/qg. Hidden while the Map scene is active.
  */
 .qg {
   position: absolute;

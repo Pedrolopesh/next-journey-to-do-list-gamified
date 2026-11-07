@@ -3,8 +3,8 @@ import type { AnimationName, Catalog } from './compose';
 import { loadImage } from './engine';
 
 /**
- * Arte do QG embutida no bundle único do banner (data URLs): só as animações usadas no app
- * (parado, andando e correndo) e os tiles que os cenários desenham. O banner nunca baixa nada.
+ * HQ art embedded in the banner's single bundle (data URLs): only the animations used in the app
+ * (idle, walking and running) and the tiles the scenes draw. The banner never downloads anything.
  */
 const sheets = import.meta.glob<string>('../../lab/assets/lpc/**/{idle,walk,run}.png', {
   eager: true,
@@ -24,7 +24,7 @@ export function sheetSrc(path: string, anim: AnimationName): string {
   return sheets[`../../lab/assets/lpc/${path}${anim}.png`] ?? '';
 }
 
-/** Carrega os tiles de cenário por nome (grama, água, lava...). */
+/** Loads the scenery tiles by name (grass, water, lava...). */
 export async function loadTiles(): Promise<Record<string, HTMLImageElement>> {
   const entries = await Promise.all(
     Object.entries(tileFiles).map(

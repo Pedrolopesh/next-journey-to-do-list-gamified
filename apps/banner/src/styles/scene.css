@@ -1,20 +1,20 @@
 /*
- * Cena "Mapa" (abas): arte nativa em 195x90, exibida a 2x (390x180).
- * Toda a animação é CSS e só usa transform e opacity (roda na GPU). Sem canvas, sem loop em JS.
- * Quando a arte LPC final chegar, basta trocar os SVGs de src/assets e os valores de --hero-*.
+ * "Mapa" scene (tabs): native art at 195x90, shown at 2x (390x180).
+ * All animation is CSS and only uses transform and opacity (runs on the GPU). No canvas, no JS loop.
+ * When the final LPC art arrives, just swap the SVGs in src/assets and the --hero-* values.
  */
 :root {
   --scene-w: 195px;
   --scene-h: 90px;
   --scale: 2;
 
-  /* Personagem: tamanho de cada frame e quantidade de frames (ciclo de caminhada) */
+  /* Character: size of each frame and number of frames (walk cycle) */
   --hero-frame-w: 24px;
   --hero-frame-h: 32px;
   --hero-frames: 9;
   --walk-duration: 0.9s;
 
-  /* Velocidade do parallax: período do tile (px) / duração (s) */
+  /* Parallax speed: tile period (px) / duration (s) */
   --far-period: 64px;
   --far-duration: 12.8s;
   --mid-period: 48px;
@@ -22,7 +22,7 @@
   --ground-period: 16px;
   --ground-duration: 1.6s;
 
-  --run-factor: 0.35; /* durante a corrida, durações viram duração * fator */
+  --run-factor: 0.35; /* during the run, durations become duration * factor */
 }
 
 * {
@@ -48,7 +48,7 @@ body {
   transition: opacity 0.3s ease;
 }
 
-/* Antes do primeiro INIT o banner fica invisível: nunca mostra a cena antiga (Mapa em CSS) */
+/* Before the first INIT the banner is invisible: it never shows the old scene (CSS Map) */
 .banner:not([data-ready]) {
   opacity: 0;
 }
@@ -120,8 +120,8 @@ body {
 }
 
 /*
- * Personagem. A posição horizontal é o progresso do capítulo: 0 na borda direita, 1 na esquerda.
- * --hero-x vem do JS (setProgress) e é aplicado por transform, com transição de 600 ms.
+ * Character. The horizontal position is the chapter progress: 0 at the right edge, 1 at the left.
+ * --hero-x comes from JS (setProgress) and is applied by transform, with a 600 ms transition.
  */
 .hero {
   position: absolute;
@@ -150,7 +150,7 @@ body {
   }
 }
 
-/* Corrida (ITEM_CHECKED): mesmas animações, mais rápidas */
+/* Run (ITEM_CHECKED): same animations, faster */
 .banner.running .layer-far {
   animation-duration: calc(var(--far-duration) * var(--run-factor));
 }
@@ -164,13 +164,13 @@ body {
   animation-duration: calc(var(--walk-duration) * var(--run-factor));
 }
 
-/* PAUSE: congela tudo (aba fora de foco ou app em segundo plano) */
+/* PAUSE: freezes everything (tab out of focus or app in the background) */
 .banner.paused .layer,
 .banner.paused .hero-strip {
   animation-play-state: paused;
 }
 
-/* Quem prefere menos movimento recebe a cena parada */
+/* Whoever prefers less motion gets the still scene */
 @media (prefers-reduced-motion: reduce) {
   .layer,
   .hero-strip {
@@ -178,7 +178,7 @@ body {
   }
 }
 
-/* Troca de capítulo: fade para preto e de volta */
+/* Chapter change: fade to black and back */
 .fade {
   position: absolute;
   inset: 0;
@@ -191,7 +191,7 @@ body {
   opacity: 1;
 }
 
-/* Posicionamento sem animação (INIT) */
+/* Positioning without animation (INIT) */
 .hero.instant {
   transition: none;
 }

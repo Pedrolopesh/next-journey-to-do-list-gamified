@@ -20,23 +20,23 @@ function setup(files: Record<string, string>, bundle: string | null) {
 }
 
 describe('validate-assets', () => {
-  it('conta cores distintas, igualando #fff e #FFFFFF', () => {
+  it('counts distinct colors, treating #fff and #FFFFFF as equal', () => {
     const svg = '<rect fill="#fff"/><rect fill="#FFFFFF"/><rect fill="#123456"/>';
     expect(distinctColors(svg).size).toBe(2);
   });
 
-  it('aceita arte e bundle dentro dos limites', () => {
+  it('accepts art and bundle within the limits', () => {
     const args = setup({ 'a.svg': '<rect fill="#111111"/>' }, 'ok');
     expect(validate(args)).toEqual([]);
   });
 
-  it('acusa paleta grande, arquivo pesado e bundle acima do limite', () => {
+  it('flags a large palette, a heavy file and a bundle over the limit', () => {
     const svg = '<g fill="#111111"/><g fill="#222222"/><g fill="#333333"/>' + ' '.repeat(200);
     const problems = validate(setup({ 'big.svg': svg }, 'x'.repeat(101)));
     expect(problems).toHaveLength(3);
   });
 
-  it('acusa bundle ausente', () => {
+  it('flags a missing bundle', () => {
     expect(validate(setup({}, null))[0]).toMatch(/não existe/);
   });
 });

@@ -1,6 +1,6 @@
 import type { SceneEnv, TimeOfDay } from './types';
 
-/** Gerador pseudoaleatório fixo: a mesma semente sempre desenha a mesma cena. */
+/** Fixed pseudo-random generator: the same seed always draws the same scene. */
 export function rng(seed: number): () => number {
   let a = seed;
   return () => {
@@ -23,7 +23,7 @@ export function rect(
   env.ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
 }
 
-/** Bloco em pixel art: contorno de 1 px, cor, realce em cima e sombra embaixo. */
+/** Pixel art block: 1 px outline, color, highlight on top and shadow below. */
 export function shadedBlock(
   env: SceneEnv,
   x: number,
@@ -42,20 +42,20 @@ export function shadedBlock(
 }
 
 /**
- * Posição na tela de um objeto do cenário que rola: o cenário passa da direita para a esquerda e
- * recomeça a cada `period` px. `factor` menor que 1 faz camadas distantes andarem mais devagar.
+ * Screen position of a scrolling scenery object: the scenery passes from right to left and
+ * restarts every `period` px. A `factor` below 1 makes distant layers move slower.
  */
 export function scrolled(world: number, scroll: number, period: number, factor = 1): number {
   const margin = 100;
   return ((((world - scroll * factor + margin) % period) + period) % period) - margin;
 }
 
-/** Escolhe um valor conforme a hora do dia. */
+/** Picks a value according to the time of day. */
 export function byTime<T>(time: TimeOfDay, morning: T, afternoon: T, night: T): T {
   return time === 'morning' ? morning : time === 'afternoon' ? afternoon : night;
 }
 
-/** Faixas horizontais de cor (degradê em "degraus", como em pixel art). */
+/** Horizontal color bands (gradient in "steps", as in pixel art). */
 export function bands(
   env: SceneEnv,
   x: number,
@@ -70,7 +70,7 @@ export function bands(
   });
 }
 
-/** Nuvem macia: vários "bofes" com sombra embaixo (vetor, sem serrilhado). */
+/** Soft cloud: several "puffs" with a shadow underneath (vector, no jaggies). */
 function cloud(env: SceneEnv, x: number, y: number, size: number, color: string): void {
   const { ctx } = env;
   const puffs: [number, number, number][] = [
@@ -98,7 +98,7 @@ function cloud(env: SceneEnv, x: number, y: number, size: number, color: string)
   ctx.restore();
 }
 
-/** Brilho suave (radial) em volta de um ponto, somando luz. */
+/** Soft (radial) glow around a point, adding light. */
 export function glow(
   env: SceneEnv,
   x: number,
@@ -120,7 +120,7 @@ export function glow(
   ctx.restore();
 }
 
-/** Repete um tile de 32x32 numa área, com deslocamento horizontal opcional. */
+/** Repeats a 32x32 tile over an area, with an optional horizontal offset. */
 export function tileArea(
   env: SceneEnv,
   image: HTMLImageElement | undefined,
@@ -159,7 +159,7 @@ export function sprite(
   if (image) env.ctx.drawImage(image, sx, sy, sw, sh, Math.round(dx), Math.round(dy), sw, sh);
 }
 
-/** Degradê contínuo vertical (céu, névoa) a partir da lista de cores. */
+/** Continuous vertical gradient (sky, haze) from the list of colors. */
 export function gradientRect(
   env: SceneEnv,
   x: number,
@@ -174,7 +174,7 @@ export function gradientRect(
   env.ctx.fillRect(x, y, w, h);
 }
 
-/** Estrelas que piscam, só de noite. */
+/** Twinkling stars, only at night. */
 export function stars(
   env: SceneEnv,
   x: number,
@@ -200,7 +200,7 @@ export function stars(
   }
 }
 
-/** Sol (manhã baixo, tarde alto) ou lua cheia (noite) com brilho em volta. */
+/** Sun (morning low, afternoon high) or full moon (night) with a glow around it. */
 export function celestial(env: SceneEnv, x: number, y: number, w: number, h: number): void {
   const { ctx } = env;
   if (env.time === 'night') {
@@ -243,7 +243,7 @@ const SKY_STOPS: Record<TimeOfDay, string[]> = {
   night: ['#03061a', '#0a1236', '#14214f', '#22356b'],
 };
 
-/** Céu completo de uma área: degradê, estrelas, astro e nuvens que derivam devagar. */
+/** Complete sky of an area: gradient, stars, celestial body and slowly drifting clouds. */
 export function sky(
   env: SceneEnv,
   x: number,
@@ -271,7 +271,7 @@ export function sky(
   ctx.restore();
 }
 
-/** Chama pequena (tochas, lareira, fogueira) que dança. */
+/** Small flame (torches, fireplace, bonfire) that dances. */
 export function flame(env: SceneEnv, x: number, y: number, size = 1): void {
   const wobble = Math.sin(env.t * 11 + x) > 0 ? 1 : 0;
   rect(env, x - 2 * size, y - 3 * size, 4 * size, 4 * size, '#d9480f');
@@ -279,7 +279,7 @@ export function flame(env: SceneEnv, x: number, y: number, size = 1): void {
   rect(env, x - 1 * size + wobble, y - (7 + wobble) * size, 1 * size + 1, 4 * size, '#ffd43b');
 }
 
-/** Portal no fim da jornada: abre aos poucos, com anel azul e roxo e um miolo que gira. */
+/** Portal at the end of the journey: opens gradually, with a blue and purple ring and a spinning core. */
 export function portal(env: SceneEnv, since: number, baseY: number): void {
   const { ctx } = env;
   const open = Math.min(1, since / 0.9);

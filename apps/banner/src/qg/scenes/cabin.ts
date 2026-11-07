@@ -19,7 +19,7 @@ const block = (
   shadedBlock(env, x, y, w, h, fill, dark, light, OUTLINE);
 };
 
-/** Tapete trançado em frente à lareira: borda, listra dourada, losangos e franjas. */
+/** Braided rug in front of the fireplace: border, golden stripe, diamonds and fringes. */
 function rug(env: SceneEnv, x: number, y: number, w: number, h: number): void {
   rect(env, x - 1, y - 1, w + 2, h + 2, '#2e1010');
   rect(env, x, y, w, h, '#7d2323');
@@ -40,7 +40,7 @@ function rug(env: SceneEnv, x: number, y: number, w: number, h: number): void {
   }
 }
 
-/** Poltrona vista por trás (de frente para a lareira): encosto alto, braços e pés. */
+/** Armchair seen from behind (facing the fireplace): tall back, arms and feet. */
 function armchair(env: SceneEnv, cx: number, baseY: number): void {
   const x0 = cx - 12;
   rect(env, x0 + 1, baseY - 2, 3, 2, '#2a170a');
@@ -51,24 +51,24 @@ function armchair(env: SceneEnv, cx: number, baseY: number): void {
   block(env, x0 + 2, baseY - 34, 20, 24, '#378489', '#235a5e', '#59a8ac');
   rect(env, x0 + 2, baseY - 34, 1, 1, OUTLINE);
   rect(env, x0 + 21, baseY - 34, 1, 1, OUTLINE);
-  rect(env, x0 + 5, baseY - 24, 14, 1, '#235a5e'); // costura do encosto
+  rect(env, x0 + 5, baseY - 24, 14, 1, '#235a5e'); // backrest seam
   rect(env, x0 + 5, baseY - 23, 14, 1, '#59a8ac');
 }
 
-/** Criado-mudo de madeira com gaveta e puxador. */
+/** Wooden nightstand with a drawer and a pull. */
 function nightstand(env: SceneEnv, x: number, y: number): void {
-  block(env, x, y, 24, 6, '#b27a3c', '#8a5a2a', '#d09a58'); // tampo
-  block(env, x + 1, y + 6, 22, 22, '#8f5d2b', '#6b4119', '#a8723a'); // corpo
+  block(env, x, y, 24, 6, '#b27a3c', '#8a5a2a', '#d09a58'); // top
+  block(env, x + 1, y + 6, 22, 22, '#8f5d2b', '#6b4119', '#a8723a'); // body
   rect(env, x + 3, y + 9, 18, 8, '#7d4f23');
   rect(env, x + 3, y + 9, 18, 1, '#a8723a');
-  rect(env, x + 10, y + 12, 4, 2, '#e8c46a'); // puxador
+  rect(env, x + 10, y + 12, 4, 2, '#e8c46a'); // pull
   rect(env, x + 3, y + 20, 18, 5, '#7d4f23');
   rect(env, x + 10, y + 22, 4, 2, '#e8c46a');
-  rect(env, x + 2, y + 28, 3, 3, OUTLINE); // pés
+  rect(env, x + 2, y + 28, 3, 3, OUTLINE); // feet
   rect(env, x + 19, y + 28, 3, 3, OUTLINE);
 }
 
-/** Luminária de mesa: base, haste e cúpula; acesa à noite. */
+/** Table lamp: base, stem and shade; lit at night. */
 function lamp(env: SceneEnv, cx: number, baseY: number, lit: boolean): void {
   block(env, cx - 4, baseY - 4, 8, 4, '#6b4119', '#4a2c0e', '#8a5a2a');
   rect(env, cx - 1, baseY - 12, 2, 8, OUTLINE);
@@ -96,7 +96,7 @@ export const cabin: SceneDef = {
     rect(env, 0, WALL - 6, SCENE_W, 6, '#2a1608');
     rect(env, 0, 0, SCENE_W, 6, '#1a0d04');
 
-    // Janela com céu
+    // Window with sky
     sky(env, 168, 24, 54, 52);
     ctx.fillStyle = '#4a2a10';
     ctx.fillRect(163, 19, 64, 5);
@@ -109,15 +109,15 @@ export const cabin: SceneDef = {
     sprite(env, tiles.cabinets, 32, 0, 64, 72, 250, WALL - 72);
     sprite(env, tiles.kitchen, 0, 0, 32, 124, 340, WALL + 12 - 124);
     sprite(env, tiles.country, 0, 0, 64, 96, 16, 62);
-    // Criado-mudo com luminária ao lado da cama
+    // Nightstand with a lamp beside the bed
     nightstand(env, 80, 112);
     lamp(env, 92, 112, env.time === 'night');
-    // Tapete na frente da lareira, com duas poltronas viradas para o fogo
+    // Rug in front of the fireplace, with two armchairs facing the fire
     rug(env, 306, 134, 80, 40);
     armchair(env, 328, 164);
     armchair(env, 366, 164);
 
-    // Lareira acesa dentro do fogão
+    // Fireplace lit inside the stove
     if (env.time === 'night') flame(env, 357, WALL + 2, 1);
   },
   lights: () => [

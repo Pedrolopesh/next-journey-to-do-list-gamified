@@ -7,8 +7,8 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
   version: string;
 };
 
-// Build só do laboratório (lab.html), para publicar como site estático de revisão.
-// Não afeta o build do banner que vai para o app.
+// Lab-only build (lab.html), to publish as a static review site.
+// Does not affect the banner build that goes to the app.
 export default defineConfig({
   plugins: [viteSingleFile()],
   define: { __BANNER_VERSION__: JSON.stringify(pkg.version) },

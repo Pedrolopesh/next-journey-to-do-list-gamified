@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { SCENES } from './index';
 import { TIMES } from './types';
 
-describe('cenários do QG', () => {
-  it('há pelo menos 5 opções, com ids únicos e linha dos pés dentro da cena', () => {
+describe('HQ scenes', () => {
+  it('there are at least 5 options, with unique ids and the foot line inside the scene', () => {
     expect(SCENES.length).toBeGreaterThanOrEqual(5);
     expect(new Set(SCENES.map((scene) => scene.id)).size).toBe(SCENES.length);
     for (const scene of SCENES) {
@@ -15,13 +15,13 @@ describe('cenários do QG', () => {
     }
   });
 
-  it('manhã, tarde e noite estão definidas', () => {
+  it('morning, afternoon and night are defined', () => {
     expect(TIMES.map((time) => time.value)).toEqual(['morning', 'afternoon', 'night']);
   });
 });
 
-describe('níveis dos cenários', () => {
-  it('cenário com níveis tem nome, descrição e mudanças de cada um', () => {
+describe('scenery levels', () => {
+  it('a scenery with levels has a name, description and changes for each one', () => {
     for (const scene of SCENES.filter((s) => (s.levels ?? 1) > 1)) {
       expect(scene.levelInfo?.length, scene.id).toBe(scene.levels);
       for (const info of scene.levelInfo ?? []) {
@@ -32,7 +32,7 @@ describe('níveis dos cenários', () => {
     }
   });
 
-  it('figurantes de cada nível ficam dentro do quadro e têm os pés abaixo do horizonte', () => {
+  it('extras of each level stay inside the frame and have their feet below the horizon', () => {
     for (const scene of SCENES.filter((s) => (s.levels ?? 1) > 1)) {
       for (let level = 1; level <= (scene.levels ?? 1); level++) {
         const lists = [scene.extrasFor?.(level) ?? [], scene.journeyExtrasFor?.(level) ?? []];

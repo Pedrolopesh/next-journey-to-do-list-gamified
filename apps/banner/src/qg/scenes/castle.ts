@@ -13,7 +13,7 @@ import { SCENE_W } from './types';
 
 const FLOOR = 124;
 const CX = SCENE_W / 2;
-/** Altura do chão do tablado, onde o trono se apoia. */
+/** Height of the dais floor, where the throne rests. */
 const DAIS_TOP = 146;
 
 const OUT = '#14161c';
@@ -56,14 +56,14 @@ function banner(env: SceneEnv, x: number): void {
   rect(env, x, 21, w, 56, '#9a1b1b');
   rect(env, x, 21, 2, 56, '#c0302f');
   rect(env, x + w - 3, 21, 3, 56, '#7a1414');
-  // ponta de andorinha
+  // swallowtail end
   for (let i = 0; i < 6; i++) {
     rect(env, x + i, 77 + i, 1, 1, OUT);
     rect(env, x + w - 1 - i, 77 + i, 1, 1, OUT);
     rect(env, x + i + 1, 77, w / 2 - i - 1, i + 1, '#9a1b1b');
     rect(env, x + w / 2, 77, w / 2 - i - 1, i + 1, '#9a1b1b');
   }
-  // brasão: coroa dourada
+  // crest: golden crown
   rect(env, x + 6, 34, 10, 8, GOLD);
   rect(env, x + 6, 30, 2, 4, GOLD);
   rect(env, x + 10, 28, 2, 6, GOLD);
@@ -89,11 +89,11 @@ function pillar(env: SceneEnv, cx: number): void {
 }
 
 function dais(env: SceneEnv): void {
-  // três degraus de pedra
+  // three stone steps
   block(env, 118, 162, 154, 10, '#7b8290', '#4b5160', '#a0a8b6');
   block(env, 130, 154, 130, 9, '#818897', '#4f5565', '#a9b1bf');
   block(env, 142, DAIS_TOP, 106, 9, '#8a91a1', '#555b6b', '#b3bbc9');
-  // tapete real que desce pelos degraus
+  // royal carpet that goes down the steps
   rect(env, CX - 22, DAIS_TOP + 1, 44, 8, '#8f1d1d');
   rect(env, CX - 22, 155, 44, 8, '#8f1d1d');
   rect(env, CX - 22, 163, 44, 9, '#8f1d1d');
@@ -119,7 +119,7 @@ function armor(
 ): void {
   // pedestal
   block(env, cx - 10, base - 4, 20, 4, '#6b7280', '#3f4552', '#8d95a4');
-  // lança de enfeite
+  // decorative spear
   if (armed) {
     rect(env, cx + 13, base - 54, 2, 50, OUT);
     rect(env, cx + 13, base - 53, 1, 48, '#8a6a3a');
@@ -127,18 +127,18 @@ function armor(
     rect(env, cx + 12, base - 60, 4, 7, STEEL_LIGHT);
     rect(env, cx + 13, base - 62, 2, 2, STEEL_LIGHT);
   }
-  // pernas
+  // legs
   block(env, cx - 6, base - 18, 5, 14, STEEL, STEEL_DARK, STEEL_LIGHT);
   block(env, cx + 1, base - 18, 5, 14, STEEL, STEEL_DARK, STEEL_LIGHT);
-  // braços
+  // arms
   block(env, cx - 12, base - 34, 4, 16, STEEL, STEEL_DARK, STEEL_LIGHT);
   block(env, cx + 8, base - 34, 4, 16, STEEL, STEEL_DARK, STEEL_LIGHT);
-  // tronco
+  // torso
   block(env, cx - 8, base - 36, 16, 18, STEEL, STEEL_DARK, STEEL_LIGHT);
   rect(env, cx - 1, base - 35, 2, 16, STEEL_DARK);
   rect(env, cx - 7, base - 34, 3, 12, STEEL_LIGHT);
   rect(env, cx - 8, base - 22, 16, 1, STEEL_DARK);
-  // elmo com viseira e pluma
+  // helmet with visor and plume
   block(env, cx - 6, base - 47, 12, 12, STEEL, STEEL_DARK, STEEL_LIGHT);
   rect(env, cx - 4, base - 43, 8, 2, OUT);
   rect(env, cx - 1, base - 41, 2, 4, STEEL_DARK);
@@ -164,10 +164,10 @@ function weaponRack(env: SceneEnv, x: number, base: number): void {
   const wood = '#7a4a22';
   const woodDark = '#4a2c12';
   const woodLight = '#a0693a';
-  // armas apoiadas, de trás para a frente (levantadas para as pontas aparecerem)
+  // leaning weapons, from back to front (raised so the tips show)
   env.ctx.save();
   env.ctx.translate(0, -10);
-  // espada
+  // sword
   rect(env, x + 6, base - 46, 4, 30, OUT);
   rect(env, x + 7, base - 45, 2, 28, STEEL_LIGHT);
   rect(env, x + 8, base - 45, 1, 28, STEEL_DARK);
@@ -176,14 +176,14 @@ function weaponRack(env: SceneEnv, x: number, base: number): void {
   rect(env, x + 7, base - 15, 2, 8, OUT);
   rect(env, x + 7, base - 14, 2, 6, '#5a3412');
   rect(env, x + 6, base - 8, 4, 3, GOLD_DARK);
-  // lança
+  // spear
   rect(env, x + 15, base - 6, 4, -46, OUT);
   rect(env, x + 16, base - 6, 2, -44, '#8a6a3a');
   rect(env, x + 14, base - 60, 6, 9, OUT);
   rect(env, x + 15, base - 59, 4, 7, STEEL_LIGHT);
   rect(env, x + 16, base - 62, 2, 3, STEEL_LIGHT);
   rect(env, x + 17, base - 59, 1, 7, STEEL_DARK);
-  // machado de duas lâminas
+  // double-bladed axe
   rect(env, x + 24, base - 6, 4, -40, OUT);
   rect(env, x + 25, base - 6, 2, -38, '#8a6a3a');
   rect(env, x + 19, base - 47, 14, 10, OUT);
@@ -192,7 +192,7 @@ function weaponRack(env: SceneEnv, x: number, base: number): void {
   rect(env, x + 20, base - 46, 5, 1, STEEL_LIGHT);
   rect(env, x + 27, base - 46, 5, 1, STEEL_LIGHT);
   rect(env, x + 25, base - 46, 2, 8, STEEL_DARK);
-  // maça com cabeça de espinhos
+  // mace with a spiked head
   rect(env, x + 34, base - 6, 4, -34, OUT);
   rect(env, x + 35, base - 6, 2, -32, '#8a6a3a');
   rect(env, x + 31, base - 46, 10, 10, OUT);
@@ -202,7 +202,7 @@ function weaponRack(env: SceneEnv, x: number, base: number): void {
   rect(env, x + 29, base - 42, 2, 2, STEEL);
   rect(env, x + 41, base - 42, 2, 2, STEEL);
   env.ctx.restore();
-  // suporte de madeira por cima das armas
+  // wooden support over the weapons
   rect(env, x - 1, base - 36, 4, 36, OUT);
   rect(env, x, base - 35, 2, 34, wood);
   rect(env, x + 40, base - 36, 4, 36, OUT);
@@ -237,23 +237,23 @@ function chest(env: SceneEnv, x: number, base: number): void {
   rect(env, x, base - 18, w, 1, '#a0693a');
   rect(env, x, base - 2, w, 1, '#4a2c12');
   for (let i = 2; i < w; i += 5) rect(env, x + i, base - 17, 1, 15, 'rgba(0,0,0,0.25)');
-  // tampa arredondada
+  // rounded lid
   rect(env, x - 1, base - 27, w + 2, 9, OUT);
   rect(env, x + 1, base - 26, w - 2, 8, '#8d5a2c');
   rect(env, x + 1, base - 26, w - 2, 1, '#b57a42');
   rect(env, x + 1, base - 19, w - 2, 1, '#4a2c12');
-  // ferragens e fechadura
+  // hardware and lock
   for (const dx of [3, w - 7]) {
     rect(env, x + dx, base - 27, 4, 26, '#3a3d46');
     rect(env, x + dx, base - 27, 1, 26, '#6b7280');
   }
   block(env, x + w / 2 - 3, base - 22, 6, 7, GOLD, GOLD_DARK, GOLD_LIGHT);
   rect(env, x + w / 2 - 1, base - 20, 2, 3, OUT);
-  // brilho de ouro que pisca
+  // blinking gold glint
   if (Math.sin(env.t * 3) > 0.4) rect(env, x + 10, base - 30, 2, 2, GOLD_LIGHT);
 }
 
-/** Janela em arco com o céu da hora do dia (noite: estrelas e lua). `r` é o raio do arco. */
+/** Arched window with the sky of the time of day (night: stars and moon). `r` is the arch radius. */
 function windowAt(env: SceneEnv, cx: number, r: number, archY: number, bottom: number): void {
   const { ctx } = env;
   const path = (): void => {
@@ -294,13 +294,13 @@ const FLOOR_PERIOD = 1000;
 const CARPET_TOP = 168;
 const CARPET_BOTTOM = 197;
 
-/** Número fixo entre 0 e 1 por posição, para a parede não cintilar enquanto rola. */
+/** Fixed number between 0 and 1 per position, so the wall does not flicker while scrolling. */
 function noise(a: number, b: number): number {
   const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
   return v - Math.floor(v);
 }
 
-/** Espada pendurada na horizontal, presa por dois suportes. */
+/** Sword hung horizontally, held by two brackets. */
 function wallSword(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 19, y - 1, 36, 5, OUT);
   rect(env, x - 18, y, 30, 3, STEEL_LIGHT);
@@ -315,7 +315,7 @@ function wallSword(env: SceneEnv, x: number, y: number): void {
   }
 }
 
-/** Sequências espalhadas, de propósito sem ritmo fixo. */
+/** Scattered sequences, deliberately with no fixed rhythm. */
 const WALL_SET: {
   kind: 'banner' | 'torch' | 'bigWindow' | 'window' | 'sword' | 'pillar';
   x: number;
@@ -350,9 +350,9 @@ const wallX = (env: SceneEnv, world: number): number =>
 const floorX = (env: SceneEnv, world: number): number =>
   Math.round(scrolled(world, env.scroll, FLOOR_PERIOD));
 
-/** Castelo na jornada: o personagem anda sobre o tapete real e o salão passa com peças espalhadas. */
+/** Castle on the journey: the character walks on the royal carpet and the hall passes by with scattered pieces. */
 function journey(env: SceneEnv): void {
-  // banquete e coroação: sem armas penduradas ou apoiadas
+  // banquet and coronation: no hanging or leaning weapons
   const bare = env.level === 3 || env.level === 5;
   const shift = env.scroll * WALL_FACTOR;
   bands(env, 0, 0, SCENE_W, FLOOR, ['#6b7280', '#656b78', '#5f6572']);
@@ -391,7 +391,7 @@ function journey(env: SceneEnv): void {
   const rack = wallX(env, RACK_X);
   if (env.level < 3 && rack > -60 && rack < SCENE_W + 20) weaponRack(env, rack - 20, 152);
 
-  // Tapete real por todo o caminho
+  // Royal carpet along the whole path
   rect(env, 0, CARPET_TOP, SCENE_W, CARPET_BOTTOM - CARPET_TOP, '#8f1d1d');
   rect(env, 0, CARPET_TOP, SCENE_W, 1, 'rgba(0,0,0,0.3)');
   rect(env, 0, CARPET_TOP + 1, SCENE_W, 3, GOLD);
@@ -408,7 +408,7 @@ function journey(env: SceneEnv): void {
 
   for (const world of CANDLES) candelabra(env, floorX(env, world));
   if (env.arrivedFor !== null) {
-    // O baú só aparece no fim do caminho, ao lado do portal
+    // The chest only shows at the end of the path, next to the portal
     env.ctx.save();
     env.ctx.globalAlpha = Math.min(1, env.arrivedFor / 0.6);
     chest(env, 300, 166);
@@ -417,7 +417,7 @@ function journey(env: SceneEnv): void {
   }
 }
 
-/** Luzes da jornada: tochas e velas que passam e o luar. */
+/** Journey lights: passing torches and candles and the moonlight. */
 function journeyLights(env: SceneEnv): Light[] {
   const glow = (x: number, y: number, radius: number, intensity: number): Light => ({
     x,
@@ -456,7 +456,7 @@ export const castle: SceneDef = {
   journeyPeriod: FLOOR_PERIOD,
   journey,
   back(env) {
-    // Parede de blocos de pedra
+    // Wall of stone blocks
     bands(env, 0, 0, SCENE_W, FLOOR, ['#6b7280', '#656b78', '#5f6572']);
     const random = rng(2);
     for (let y = 0; y < FLOOR; y += 12) {
@@ -467,7 +467,7 @@ export const castle: SceneDef = {
       }
       rect(env, 0, y + 11, SCENE_W, 1, 'rgba(0,0,0,0.25)');
     }
-    // Piso de lajes
+    // Flagstone floor
     bands(env, 0, FLOOR, SCENE_W, 100, ['#4a4f58', '#434852', '#3c414a']);
     for (let y = FLOOR; y < 220; y += 24) rect(env, 0, y, SCENE_W, 1, 'rgba(0,0,0,0.3)');
     for (let x = 0; x < SCENE_W; x += 48) rect(env, x, FLOOR, 1, 100, 'rgba(0,0,0,0.2)');
@@ -481,7 +481,7 @@ export const castle: SceneDef = {
     pillar(env, SCENE_W - 22);
     const bare = env.level === 3 || env.level === 5;
     if (env.level < 3) weaponRack(env, 40, 152);
-    // na torre do mago as estantes ocupam o lugar das armaduras
+    // in the wizard tower the bookshelves take the place of the armors
     if (env.level !== 4) {
       armor(env, 100, 150, 'spear', !bare);
       armor(env, 290, 150, 'spear', !bare);

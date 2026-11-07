@@ -73,7 +73,7 @@ export const FOREST_LEVELS: LevelInfo[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------
-// Gente
+// People
 // ---------------------------------------------------------------------------------------------
 
 const HIKER: Look[] = [
@@ -150,7 +150,7 @@ const GUIDE: Look = {
 };
 const hiker = (i: number): Look => HIKER[i % HIKER.length] ?? {};
 
-/** Gente de vários tons de pele e jeitos, para a floresta encantada e o festival. */
+/** People of various skin tones and styles, for the enchanted forest and the festival. */
 const FOLK: Look[] = [
   {
     bodyType: 'female',
@@ -246,7 +246,7 @@ const FOLK: Look[] = [
 const folk = (i: number): Look => FOLK[i % FOLK.length] ?? {};
 
 // ---------------------------------------------------------------------------------------------
-// Objetos
+// Objects
 // ---------------------------------------------------------------------------------------------
 
 type Prop =
@@ -294,8 +294,8 @@ function stump(env: SceneEnv, x: number, y: number): void {
 }
 
 /**
- * Cogumelo: haste clara que alarga na base e chapéu em cúpula bem mais largo que ela, com borda
- * escura por baixo (as lamelas) e pintas. Os brilhantes têm um halo que pulsa.
+ * Mushroom: light stem that widens at the base and a dome cap much wider than it, with a dark
+ * underside (the gills) and spots. The bright ones have a pulsing halo.
  */
 function shroom(
   env: SceneEnv,
@@ -316,7 +316,7 @@ function shroom(
     disc(env, x, y - stemH - capH / 2, capW + 3 * s, color);
     env.ctx.globalAlpha = 1;
   }
-  // haste: mais fina no alto e aberta na base
+  // stem: thinner at the top and open at the base
   for (let r = 0; r < stemH; r++) {
     const half = Math.round(1.5 * s + (r / stemH) * 1.2 * s);
     rect(env, x - half - 1, y - stemH + r, half * 2 + 3, 1, OUT);
@@ -326,19 +326,19 @@ function shroom(
     rect(env, x - half, y - stemH + r, half * 2 + 1, 1, '#f2e9d0');
     rect(env, x - half, y - stemH + r, Math.max(1, s), 1, '#ffffff');
   }
-  // chapéu: meia elipse larga
+  // cap: wide half ellipse
   const half = (r: number): number => Math.round(capW * Math.sqrt(1 - ((capH - r) / capH) ** 2));
   for (let r = 0; r <= capH; r++) rect(env, x - half(r) - 1, capTop + r, half(r) * 2 + 3, 1, OUT);
   for (let r = 0; r <= capH; r++) rect(env, x - half(r), capTop + r, half(r) * 2 + 1, 1, color);
-  // sombra do lado direito e brilho do lado esquerdo
+  // shadow on the right side and glow on the left side
   for (let r = 1; r <= capH; r++) {
     rect(env, x + half(r) - Math.max(1, s), capTop + r, Math.max(1, s), 1, 'rgba(0,0,0,0.22)');
   }
   rect(env, x - capW + 2 * s, capTop + s, 3 * s, s, 'rgba(255,255,255,0.5)');
-  // lamelas por baixo do chapéu
+  // gills under the cap
   rect(env, x - capW, capTop + capH, capW * 2 + 1, Math.max(1, s), '#caa77a');
   rect(env, x - capW, capTop + capH + Math.max(1, s), capW * 2 + 1, 1, OUT);
-  // pintas
+  // spots
   const lit = glow && Math.sin(env.t * 1.6) > 0;
   for (const [dx, dy, r] of [
     [-4, 2, 1],
@@ -358,7 +358,7 @@ function shroom(
   }
 }
 
-/** Veado de lado: corpo, pescoço, cabeça com chifres e quatro pernas finas. */
+/** Deer from the side: body, neck, head with antlers and four thin legs. */
 function deer(env: SceneEnv, x: number, y: number, dir: 1 | -1): void {
   const fx = (dx: number, w: number): number => (dir > 0 ? x + dx : x - dx - w);
   rect(env, x - 16, y, 33, 3, 'rgba(0,0,0,0.2)');
@@ -384,7 +384,7 @@ function deer(env: SceneEnv, x: number, y: number, dir: 1 | -1): void {
   rect(env, fx(10, 2), y - 40 + hy, 2, 2, '#d9d2c0');
 }
 
-/** Coelho: pula no lugar de tempos em tempos (fase fixa por coelho). */
+/** Rabbit: hops in place from time to time (fixed phase per rabbit). */
 function rabbit(env: SceneEnv, x: number, y: number, ph: number): void {
   const cycle = (env.t * 0.5 + ph) % 1;
   const hop = cycle < 0.25 ? Math.round(Math.sin((cycle / 0.25) * Math.PI) * 6) : 0;
@@ -422,7 +422,7 @@ function tent(env: SceneEnv, x: number, y: number, color: string): void {
   rect(env, x + 23, y, 2, 2, '#cfd2d8');
 }
 
-/** Fogueira de acampamento: pedras em volta, troncos cruzados e chama; faíscas e fumaça sobem. */
+/** Campfire: stones around, crossed logs and flame; sparks and smoke rise. */
 function camp(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 16, y + 1, 33, 4, 'rgba(0,0,0,0.22)');
   for (let i = 0; i < 9; i++) {
@@ -465,7 +465,7 @@ function log(env: SceneEnv, x: number, y: number, w: number): void {
   rect(env, x + w - 1, y - 7, 3, 8, '#d9a566');
 }
 
-/** Fada: luz que flutua em círculos suaves (fase fixa por fada, nunca pela posição). */
+/** Fairy: light that floats in soft circles (fixed phase per fairy, never by position). */
 function wisp(env: SceneEnv, x: number, y: number, ph: number): void {
   const wx = Math.round(x + Math.sin(env.t * 0.7 + ph) * 6);
   const wy = Math.round(y + Math.sin(env.t * 1.1 + ph * 1.7) * 4);
@@ -512,7 +512,7 @@ function picnic(env: SceneEnv, x: number, y: number): void {
   rect(env, x + 14, y - 33, 7, 2, '#7a4a22');
 }
 
-/** Lanternas de papel penduradas num cordão entre dois postes (a ponta é o topo de cada poste). */
+/** Paper lanterns hung on a string between two posts (the end is the top of each post). */
 function lanterns(env: SceneEnv, x: number, y: number, len: number): void {
   const colors = ['#e63946', '#ffc93c', '#ff7a2e', '#ff6fa8', '#6aa8e0'];
   const steps = Math.max(2, Math.round(len / 12));
@@ -614,7 +614,7 @@ const QG_PROPS: Record<number, Prop[]> = {
   ],
 };
 
-/** Na jornada o acampamento e o festival são raros: um grupo por ciclo longo, com tudo junto. */
+/** On the journey the camp and the festival are rare: one group per long cycle, with everything together. */
 const JOURNEY_PROPS: Record<number, Prop[]> = {
   1: [],
   2: [
@@ -730,7 +730,7 @@ const kit: PropKit<Prop> = {
 
 export const forestLevelLayers = propLayers(kit, FOREST_LEVEL_COUNT);
 
-/** Fogos do festival (céu da noite), chamados pelo cenário logo depois do céu. */
+/** Festival fireworks (night sky), called by the scenery right after the sky. */
 export function forestSky(env: SceneEnv): void {
   if (env.level !== 5) return;
   fireworks(env, [
@@ -741,7 +741,7 @@ export function forestSky(env: SceneEnv): void {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Figurantes
+// Extras
 // ---------------------------------------------------------------------------------------------
 
 const lv = (n: number): number => Math.min(FOREST_LEVEL_COUNT, Math.max(1, n));
@@ -760,7 +760,7 @@ export function forestExtras(n: number): ExtraCharacter[] {
       return [
         stand(GUIDE, 142, 194, 'right'),
         roamer(hiker(0), 'walk', 150, 340, 11, 214),
-        // ao lado da cabana e do lago
+        // next to the cabin and the lake
         stand(folk(0), 236, 148, 'down'),
         stand(folk(1), 262, 152, 'left'),
         stand(folk(2), 96, 158, 'right'),
@@ -785,7 +785,7 @@ export function forestExtras(n: number): ExtraCharacter[] {
   }
 }
 
-/** Gente ao lado da cabana (mundo 190) e do lago (mundo 90), parada no gramado ao fundo. */
+/** People next to the cabin (world 190) and the lake (world 90), standing on the lawn in the background. */
 const cabinFolk = (): ExtraCharacter[] => [
   stander(folk(0), 178, 150, 'down'),
   stander(folk(1), 214, 152, 'left'),
