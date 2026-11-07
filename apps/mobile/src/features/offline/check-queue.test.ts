@@ -17,14 +17,14 @@ const entry = (checkId: string): QueuedCheck => ({
 });
 const statusOf = (error: unknown) => (error as { status?: number }).status;
 
-describe('fila offline de checks', () => {
-  it('não duplica o mesmo checkId e remove por checkId', () => {
+describe('offline check queue', () => {
+  it('does not duplicate the same checkId and removes by checkId', () => {
     const queue = enqueue(enqueue([], entry('a')), entry('a'));
     expect(queue).toHaveLength(1);
     expect(removeByCheckId(enqueue(queue, entry('b')), 'a').map((q) => q.checkId)).toEqual(['b']);
   });
 
-  it('classifica o que vale repetir', () => {
+  it('classifies what is worth retrying', () => {
     expect(isRetryableStatus(undefined)).toBe(true);
     expect(isRetryableStatus(503)).toBe(true);
     expect(isRetryableStatus(429)).toBe(true);
@@ -32,12 +32,12 @@ describe('fila offline de checks', () => {
     expect(isRetryableStatus(404)).toBe(false);
   });
 
-  it('backoff dobra até o teto de 60 s', () => {
+  it('backoff doubles up to the 60 s cap', () => {
     expect([0, 1, 2, 3].map(backoffMs)).toEqual([1000, 2000, 4000, 8000]);
     expect(backoffMs(20)).toBe(60_000);
   });
 
-  it('envia tudo em ordem quando há rede', async () => {
+  it('sends everything in order when there is network', async () => {
     const order: string[] = [];
     const result = await flushQueue(
       [entry('a'), entry('b')],
@@ -52,7 +52,7 @@ describe('fila offline de checks', () => {
     expect(result.sent).toHaveLength(2);
   });
 
-  it('para no primeiro erro de rede e mantém a ordem do restante', async () => {
+  it('stops at the first network error and keeps the order of the rest', async () => {
     const result = await flushQueue(
       [entry('a'), entry('b'), entry('c')],
       (e) => (e.checkId === 'b' ? Promise.reject({}) : Promise.resolve()),
@@ -62,7 +62,7 @@ describe('fila offline de checks', () => {
     expect(result.remaining.map((q) => q.checkId)).toEqual(['b', 'c']);
   });
 
-  it('descarta o item que o servidor rejeitou de vez e continua', async () => {
+  it('discards the item the server rejected for good and carries on', async () => {
     const result = await flushQueue(
       [entry('a'), entry('b')],
       (e) => (e.checkId === 'a' ? Promise.reject({ status: 409 }) : Promise.resolve()),

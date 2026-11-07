@@ -4,19 +4,19 @@ type PlayerLevelState = {
   level: number;
   expInLevel: number;
   expForNextLevel: number;
-  /** Capítulo 5 concluído: o personagem fica no fim do cenário, sem portal. */
+  /** Chapter 5 completed: the character stays at the end of the scenery, with no portal. */
   story?: { completed: boolean };
 };
 
-/** Último cenário da história (capítulo 5): o nível sobe além disso, mas a cena não avança. */
+/** Last scene of the story (chapter 5): the level goes up beyond that, but the scene does not advance. */
 export const MAX_SCENE_LEVEL = DEFAULT_GAME_CONFIG.chaptersPerStory;
 
-/** Nível da cena para um nível do jogador (limitado ao último capítulo). */
+/** Scene level for a player level (capped at the last chapter). */
 export function sceneLevel(level: number): number {
   return Math.min(level, MAX_SCENE_LEVEL);
 }
 
-/** Quanto do nível atual já foi percorrido (0 a 1), pela EXP. O servidor decide a EXP; aqui só se lê. */
+/** How much of the current level was covered (0 to 1), by EXP. The server decides the EXP; here it is only read. */
 export function levelProgress(player: PlayerLevelState): number {
   if (player.story?.completed) return 1;
   if (player.expForNextLevel <= 0) return 0;
@@ -24,9 +24,9 @@ export function levelProgress(player: PlayerLevelState): number {
 }
 
 /**
- * O que a jornada mostra. `shownLevel` é o nível da cena em exibição: se o jogador já subiu de nível
- * mas a cena ainda não trocou, o personagem fica no portal (progresso 1) até o próximo check. Com a
- * história concluída o personagem fica no fim da cena do capítulo 5, sem portal.
+ * What the journey shows. `shownLevel` is the level of the scene on display: if the player already leveled up
+ * but the scene has not switched yet, the character stays at the portal (progress 1) until the next check. With the
+ * story complete the character stays at the end of the chapter 5 scene, with no portal.
  */
 export function journeyView(
   player: PlayerLevelState,

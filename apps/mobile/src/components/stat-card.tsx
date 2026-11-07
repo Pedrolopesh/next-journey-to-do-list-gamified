@@ -8,13 +8,13 @@ type Props = {
   art: PixelArtName;
   value: number;
   label: string;
-  /** Cor do contorno e do número. */
+  /** Color of the outline and of the number. */
   tone?: string;
   /** Makes the card a button (go to a list, open an explanation). */
   onPress?: () => void;
 };
 
-/** Indicador da Home: pixel art com o rótulo embaixo e o número grande ao lado, com contorno na cor do tom. */
+/** Home indicator: pixel art with the label below and the big number beside it, outlined in the tone color. */
 export function StatCard({ art, value, label, tone = colors.brand.primary, onPress }: Props) {
   const Root = onPress ? Pressable : View;
   return (

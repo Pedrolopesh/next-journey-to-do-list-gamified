@@ -17,7 +17,7 @@ const BACKGROUND: Record<ToastKind, string> = {
   error: colors.status.danger,
   warning: colors.status.warning,
 };
-// Amarelo pede texto escuro para ter contraste
+// Yellow needs dark text for contrast
 const TEXT: Record<ToastKind, string> = {
   success: colors.text.onPrimary,
   info: colors.text.onPrimary,
@@ -25,7 +25,7 @@ const TEXT: Record<ToastKind, string> = {
   warning: colors.bg.base,
 };
 
-/** Mostra o toast atual no topo de qualquer tela, por cima de tudo. Erros ficam mais tempo. */
+/** Shows the current toast at the top of any screen, above everything. Errors stay longer. */
 export function ToastHost() {
   const current = useToastStore((state) => state.current);
   const hide = useToastStore((state) => state.hide);

@@ -22,14 +22,14 @@ import { journeyView, levelProgress, sceneLevel } from '@/features/qg/journey-pr
 import { useJourneyStore } from '@/features/qg/journey-store';
 import { log } from '@/logging';
 
-/** Se o banner não confirmar a troca de cena, o personagem é reposicionado mesmo assim depois deste prazo. */
+/** If the banner does not confirm the scene change, the character is repositioned anyway after this deadline. */
 const TRANSITION_FALLBACK_MS = 3500;
 
 type Options = { type: ItemType; bannerRef: RefObject<BannerViewHandle | null> };
 
 /**
- * Fluxo completo de um check (diário, tarefa ou hábito): vibração, banner na hora com o progresso
- * ESTIMADO, chamada à API, toast de EXP, fila de modais e desfazer. O app não calcula EXP.
+ * Complete flow of a check (daily, task or habit): vibration, banner right away with the ESTIMATED
+ * progress, API call, EXP toast, modal queue and undo. The app does not compute EXP.
  */
 export function useCheckFlow({ type, bannerRef }: Options) {
   const { t } = useTranslation();
@@ -39,14 +39,14 @@ export function useCheckFlow({ type, bannerRef }: Options) {
   const undo = useUndoCheck();
   const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // Todo erro de check/desfazer também vira toast (a mensagem inline continua na lista)
+  // Every check/undo error also becomes a toast (the inline message stays on the list)
   useEffect(() => {
     if (error) showToast.error(error);
   }, [error]);
   const afterTransition = useRef<(() => void) | null>(null);
   const fallbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  /** Fim da troca de cena: o personagem recomeça no novo nível, na posição da EXP. */
+  /** End of the scene change: the character restarts at the new level, at the EXP position. */
   const runAfterTransition = useCallback(() => {
     clearTimeout(fallbackTimer.current);
     const next = afterTransition.current;
@@ -66,8 +66,8 @@ export function useCheckFlow({ type, bannerRef }: Options) {
   }, [bannerRef]);
 
   /**
-   * Posição do personagem pela EXP do nível. Subiu de nível: corre até o portal e espera. Se o portal
-   * já estava esperando, este check troca a cena (fade) e o personagem recomeça no nível novo.
+   * Character position from the level's EXP. Leveled up: runs to the portal and waits. If the portal
+   * was already waiting, this check switches the scene (fade) and the character restarts on the new level.
    */
   const moveHero = useCallback(
     async (result: CheckResult, userId: string | undefined, portalWasPending: boolean) => {
@@ -91,7 +91,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
         fallbackTimer.current = setTimeout(runAfterTransition, TRANSITION_FALLBACK_MS);
         return;
       }
-      send(result.leveledUp ? 1 : levelProgress(fresh.player)); // história concluída: sempre 1
+      send(result.leveledUp ? 1 : levelProgress(fresh.player)); // story complete: always 1
     },
     [bannerRef, queryClient, runAfterTransition],
   );
@@ -101,8 +101,8 @@ export function useCheckFlow({ type, bannerRef }: Options) {
       setError(null);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-      // 1) Banner na hora: o personagem comemora na posição atual (a posição nova vem com a resposta).
-      // Com o portal esperando, nada se mexe agora: a troca de cena só acontece com o check confirmado.
+      // 1) Banner right away: the character celebrates at the current position (the new position comes with the response).
+      // With the portal waiting, nothing moves now: the scene change only happens with the check confirmed.
       const userId = me?.user.id;
       const shown = userId ? useJourneyStore.getState().shownLevel[userId] : undefined;
       const view = me ? journeyView(me.player, shown) : null;
@@ -115,7 +115,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
         });
       }
 
-      // 2) API: o servidor decide EXP, nível, capítulo e conquistas
+      // 2) API: the server decides EXP, level, chapter and achievements
       const checkId = randomUUID();
       log.info('check.start', { itemId: item.id, type, checkId });
       check.mutate(
@@ -137,7 +137,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
             void moveHero(result, userId, portalWasPending);
           },
           onError: (cause) => {
-            // Sem rede: guarda na fila e segue (sincroniza sozinho ao voltar a conexão)
+            // No network: stores in the queue and goes on (syncs by itself when the connection returns)
             log.warn('check.error', {
               itemId: item.id,
               checkId,
@@ -170,7 +170,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
     (item: Item, checkId: string) => {
       setError(null);
       log.info('check.undo', { itemId: item.id, checkId });
-      // Check ainda na fila (nunca chegou ao servidor): basta tirar da fila
+      // Check still in the queue (never reached the server): just take it out of the queue
       if (useOfflineStore.getState().queue.some((queued) => queued.checkId === checkId)) {
         useOfflineStore.getState().remove([checkId]);
         useFeedbackStore.getState().forgetCheck(item.id, checkId);
@@ -181,7 +181,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
       undo.mutate(
         { itemId: item.id, checkId },
         {
-          // O EXP nunca volta: o personagem fica onde está e só as moedas diminuem (aviso amarelo)
+          // EXP never goes back: the character stays where it is and only the coins decrease (yellow notice)
           onSuccess: (result) => {
             useFeedbackStore.getState().forgetCheck(item.id, checkId);
             const lost = Math.max(0, -result.coinsGained);
@@ -190,7 +190,7 @@ export function useCheckFlow({ type, bannerRef }: Options) {
           },
           onError: (cause) => {
             useFeedbackStore.getState().forgetCheck(item.id, checkId);
-            // Já estava desmarcado (toque repetido): o resultado é o esperado, não é erro
+            // Already unchecked (repeated tap): the result is the expected one, not an error
             if (toApiError(cause)?.code === 'CHECK_ALREADY_REVERTED')
               showToast.info(t('feedback.undone'));
             else setError(t('feedback.undoFailed'));

@@ -5,7 +5,7 @@ import { Pills } from '../pills';
 import { EmptyState, ErrorState } from '../states';
 
 describe('Pills', () => {
-  it('seleciona uma opção e ignora as bloqueadas', async () => {
+  it('selects an option and ignores the locked ones', async () => {
     const onChange = jest.fn();
     await render(
       <Pills
@@ -26,8 +26,8 @@ describe('Pills', () => {
   });
 });
 
-describe('estados de lista', () => {
-  it('vazio mostra título e dica; erro oferece tentar de novo', async () => {
+describe('list states', () => {
+  it('empty shows a title and a hint; error offers a retry', async () => {
     const onRetry = jest.fn();
     await render(
       <>

@@ -9,9 +9,9 @@ import { splitTime } from './notify-time';
 const CHANNEL_ID = 'daily-reminder';
 
 /**
- * Agenda (ou cancela) o lembrete diário local. A permissão só é pedida aqui, quando a pessoa
- * escolhe um horário, nunca na abertura do app. Devolve false se a permissão foi negada.
- * O horário vale no relógio do aparelho.
+ * Schedules (or cancels) the local daily reminder. The permission is only asked here, when the person
+ * picks a time, never on app open. Returns false if the permission was denied.
+ * The time applies to the device clock.
  */
 export async function syncDailyReminder(
   notifyAt: string | null,

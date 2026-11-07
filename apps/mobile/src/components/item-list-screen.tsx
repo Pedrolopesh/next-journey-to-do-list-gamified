@@ -34,24 +34,24 @@ type Props = {
   title: string;
   emptyTitle: string;
   emptyHint: string;
-  /** Ícone do estado vazio (página sem itens). */
+  /** Empty state icon (page without items). */
   emptyIcon?: Icon;
-  /** Agrupa por categoria e mostra filtro por pills (tarefas). */
+  /** Groups by category and shows a pill filter (tasks). */
   groupByCategory?: boolean;
-  /** Mostra contadores de hoje e da semana (hábitos). */
+  /** Shows today and week counters (habits). */
   counters?: boolean;
-  /** Aviso no rodapé (tarefas): onde foram parar as concluídas. Toque abre o histórico. */
+  /** Footer notice (tasks): where the completed ones went. Tapping opens the history. */
   historyNotice?: string;
 };
 
-/** Atrasados no topo, depois os pendentes e, por último, os feitos hoje (RF-19, RF-20). */
+/** Overdue on top, then pending and, last, those done today (RF-19, RF-20). */
 function sortItems(items: Item[]): Item[] {
   const rank = (item: Item): number =>
     item.doneToday && item.type !== 'habit' ? 2 : item.overdue ? 0 : 1;
   return [...items].sort((a, b) => rank(a) - rank(b));
 }
 
-/** Lista de itens de um tipo (diários, tarefas ou hábitos) com check, desfazer, estados e criar. */
+/** List of items of one kind (dailies, tasks or habits) with check, undo, states and create. */
 export function ItemListScreen({
   type,
   title,
@@ -70,15 +70,15 @@ export function ItemListScreen({
   const categories = useCategories();
   const checks = useFeedbackStore((state) => state.checks);
   const [filter, setFilter] = useState<string | null>(null);
-  // O cartão do capítulo rola junto com os itens; quando some, aparece o resumo fixo
+  // The chapter card scrolls with the items; when it goes away, the pinned summary shows up
   const [showMini, setShowMini] = useState(false);
   const cardBottom = useRef(Infinity);
   const onCardLayout = useCallback((event: LayoutChangeEvent) => {
     const { y, height } = event.nativeEvent.layout;
     cardBottom.current = y + height;
   }, []);
-  // Carregando ou erro: a lista some e o cartão volta ao topo, então o resumo fixo sai também
-  // (ajuste de estado durante a renderização, o padrão recomendado em vez de um efeito)
+  // Loading or error: the list goes away and the card goes back to the top, so the pinned summary leaves too
+  // (state adjustment during render, the recommended pattern instead of an effect)
   const [wasLoaded, setWasLoaded] = useState(items.isSuccess);
   if (wasLoaded !== items.isSuccess) {
     setWasLoaded(items.isSuccess);
@@ -180,7 +180,7 @@ export function ItemListScreen({
             section.title ? <Text style={styles.section}>{section.title}</Text> : null
           }
           renderItem={({ item }) => {
-            // O check desta sessão é o mais recente (e cobre a fila offline); o do servidor vale ao reabrir o app
+            // This session's check is the most recent (and covers the offline queue); the server's applies when the app reopens
             const undoId = lastUndoableCheck(checks, item.id) ?? item.lastCheckId;
             return (
               <ItemRow
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   header: { gap: space[8] },
   // lists without the category filter: same room under the heading as the filtered one
   headerFlat: { paddingBottom: space[12] },
-  // colado ao banner: a tela tem margem de 16 em volta, o resumo ocupa a largura toda
+  // flush with the banner: the screen has a 16 margin around it, the summary takes the full width
   mini: { position: 'absolute', top: 0, left: 0, right: 0 },
   heading: {
     color: colors.text.primary,

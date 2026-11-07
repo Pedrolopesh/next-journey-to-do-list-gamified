@@ -1,27 +1,27 @@
 type Options = {
-  /** Valor de EXPO_PUBLIC_API_URL, se houver. */
+  /** Value of EXPO_PUBLIC_API_URL, if set. */
   configured: string | undefined;
-  /** Build de produção (variante `production` do app). */
+  /** Production build (the app's `production` variant). */
   isProduction: boolean;
   platform: string;
 };
 
-// Emulador Android enxerga o localhost do computador em 10.0.2.2
+// Android emulator reaches the computer's localhost at 10.0.2.2
 const LOCAL_ANDROID = 'http://10.0.2.2:3000';
 const LOCAL_DEFAULT = 'http://localhost:3000';
-// https com host (esquema sem diferenciar maiúscula); "https://" sozinho não vale
+// https with a host (scheme is case-insensitive); a bare "https://" does not count
 const HTTPS_WITH_HOST = /^https:\/\/[^\s/?#]+/i;
 
 /**
- * Escolhe a URL base da API. Em desenvolvimento cai no servidor local quando nada foi configurado.
- * Em produção não há padrão: sem URL, ou sem https, o app se recusa a iniciar em vez de falar com
- * o lugar errado ou trafegar token em texto puro.
+ * Picks the API base URL. In development it falls back to the local server when nothing is set.
+ * In production there is no default: without a URL, or without https, the app refuses to start instead of
+ * talking to the wrong place or sending the token in plain text.
  */
 export function resolveApiUrl({ configured, isProduction, platform }: Options): string {
   const value = configured?.trim();
   if (isProduction) {
     if (!value || !HTTPS_WITH_HOST.test(value)) {
-      throw new Error('EXPO_PUBLIC_API_URL precisa ser uma URL https no build de produção');
+      throw new Error('EXPO_PUBLIC_API_URL must be an https URL in the production build');
     }
     return value.replace(/\/+$/, '');
   }

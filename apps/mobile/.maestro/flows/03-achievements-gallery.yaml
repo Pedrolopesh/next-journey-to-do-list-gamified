@@ -1,13 +1,13 @@
-# Galeria: trilhas, metas novas (ritmo) e o detalhe de uma conquista.
+# Gallery: tracks, new goals (rhythm) and the detail of an achievement.
 appId: br.com.wetechhub.app.dev
 ---
-- runFlow: ../subflows/inicio.yaml
+- runFlow: ../subflows/start.yaml
 - tapOn: 'Perfil(, tab.*)?'
 - tapOn: 'Conquistas'
-# Título e contador são um texto só; a conta tem 3 conquistas (Primeiro passo, tarefa e hábito)
+# Title and counter are a single text; the account has 3 achievements (Primeiro passo, task and habit)
 - assertVisible: 'Primeiros passos.*3/12'
-# Metas novas do ritmo, com o progresso vindo do servidor
-# Android lê o contador da meta como texto; no iOS o cartão é um rótulo só, sem o contador
+# New rhythm goals, with the progress coming from the server
+# Android reads the goal counter as text; on iOS the card is a single label, without the counter
 - runFlow:
     when:
       platform: Android
@@ -21,12 +21,12 @@ appId: br.com.wetechhub.app.dev
 - tapOn: 'Dia perfeito.*'
 - assertVisible: 'Conclua todos os diários.*em 8 dias diferentes'
 - assertVisible: '0 de 8'
-# No Android há dois "Fechar" (o fundo da folha e o botão); o botão é o que está abaixo do título
+# On Android there are two "Fechar" (the sheet backdrop and the button); the button is the one below the title
 - tapOn:
     text: 'Fechar'
     below: 'Dia perfeito'
 - scrollUntilVisible:
     element: 'Hábito de 100 dias.*'
 - assertVisible: 'Hábito de 100 dias.*'
-# volta ao Perfil
-- runFlow: ../subflows/voltar.yaml
+# back to the Profile
+- runFlow: ../subflows/back.yaml

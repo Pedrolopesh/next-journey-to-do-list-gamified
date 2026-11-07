@@ -15,7 +15,7 @@ function respond(config: InternalAxiosRequestConfig, status: number, data: unkno
   return { data, status, statusText: String(status), headers: {}, config };
 }
 
-/** Servidor falso: /items exige o token "novo"; /auth/refresh devolve o token novo. */
+/** Fake server: /items requires the "new" token; /auth/refresh returns the new token. */
 function fakeServer(options: { refreshFails?: boolean } = {}) {
   const calls: { url: string; auth?: string }[] = [];
   const adapter: AxiosAdapter = (config) => {
@@ -58,15 +58,15 @@ function setup(server: ReturnType<typeof fakeServer>, hasRefresh = true) {
   return { client, onSessionExpired };
 }
 
-describe('cliente http com refresh automático', () => {
-  it('injeta o access token', async () => {
+describe('http client with automatic refresh', () => {
+  it('injects the access token', async () => {
     const server = fakeServer();
     const { client } = setup(server);
     await client.get('/items').catch(() => undefined);
     expect(server.calls[0]).toEqual({ url: '/items', auth: 'Bearer velho' });
   });
 
-  it('num 401 renova uma vez e refaz a chamada com o token novo', async () => {
+  it('on a 401 renews once and repeats the call with the new token', async () => {
     const server = fakeServer();
     const { client } = setup(server);
     const response = await client.get('/items');
@@ -75,9 +75,9 @@ describe('cliente http com refresh automático', () => {
     expect(server.calls[2]?.auth).toBe('Bearer novo');
   });
 
-  it('a repetição usa o token novo mesmo se a sessão ainda não o gravou (POST com corpo)', async () => {
+  it('the retry uses the new token even if the session has not saved it yet (POST with body)', async () => {
     const server = fakeServer();
-    // onRefreshed atrasado: getAccess continua devolvendo o token velho durante a repetição
+    // delayed onRefreshed: getAccess still returns the old token during the retry
     const client = createHttpClient({
       baseURL: 'http://api.test',
       adapter: server.adapter,
@@ -93,7 +93,7 @@ describe('cliente http com refresh automático', () => {
     expect(server.calls.at(-1)?.auth).toBe('Bearer novo');
   });
 
-  it('requisições concorrentes com 401 compartilham uma única renovação (fila)', async () => {
+  it('concurrent requests with a 401 share a single renewal (queue)', async () => {
     const server = fakeServer();
     const { client } = setup(server);
     const results = await Promise.all([client.get('/a'), client.get('/b'), client.get('/c')]);
@@ -101,7 +101,7 @@ describe('cliente http com refresh automático', () => {
     expect(server.calls.filter((c) => c.url === '/auth/refresh')).toHaveLength(1);
   });
 
-  it('se o refresh falha, encerra a sessão e propaga o erro (sem laço)', async () => {
+  it('if the refresh fails, ends the session and propagates the error (no loop)', async () => {
     const server = fakeServer({ refreshFails: true });
     const { client, onSessionExpired } = setup(server);
     await expect(client.get('/items')).rejects.toBeTruthy();
@@ -109,14 +109,14 @@ describe('cliente http com refresh automático', () => {
     expect(server.calls.filter((c) => c.url === '/auth/refresh')).toHaveLength(1);
   });
 
-  it('sem refresh token não tenta renovar', async () => {
+  it('without a refresh token it does not try to renew', async () => {
     const server = fakeServer();
     const { client } = setup(server, false);
     await expect(client.get('/items')).rejects.toBeTruthy();
     expect(server.calls.some((c) => c.url === '/auth/refresh')).toBe(false);
   });
 
-  it('o token não é enviado às rotas de auth', async () => {
+  it('the token is not sent to the auth routes', async () => {
     const server = fakeServer();
     const { client } = setup(server);
     await client.post('/auth/email/start', {}).catch(() => undefined);
@@ -124,7 +124,7 @@ describe('cliente http com refresh automático', () => {
   });
 });
 
-describe('limite de requisições (429)', () => {
+describe('rate limit (429)', () => {
   const limited = (config: InternalAxiosRequestConfig) =>
     new AxiosError('x', '429', config, undefined, {
       ...respond(config, 429, '<html>429</html>'),
@@ -143,7 +143,7 @@ describe('limite de requisições (429)', () => {
       },
     });
 
-  it('repete a chamada depois da espera e entrega o resultado', async () => {
+  it('repeats the call after the wait and delivers the result', async () => {
     let calls = 0;
     const client = clientWith((config) =>
       ++calls < 2 ? Promise.reject(limited(config)) : Promise.resolve(respond(config, 200, 'ok')),
@@ -152,7 +152,7 @@ describe('limite de requisições (429)', () => {
     expect(calls).toBe(2);
   });
 
-  it('desiste depois de 2 repetições e devolve o 429', async () => {
+  it('gives up after 2 retries and returns the 429', async () => {
     let calls = 0;
     const client = clientWith((config) => {
       calls++;
@@ -162,7 +162,7 @@ describe('limite de requisições (429)', () => {
     expect(calls).toBe(3);
   });
 
-  it('não repete o 429 da própria API (JSON com código)', async () => {
+  it('does not repeat the API own 429 (JSON with code)', async () => {
     let calls = 0;
     const client = clientWith((config) => {
       calls++;
@@ -180,7 +180,7 @@ describe('limite de requisições (429)', () => {
     expect(calls).toBe(1);
   });
 
-  it('usa o Retry-After (segundos ou data) e desiste se passar do teto', () => {
+  it('uses Retry-After (seconds or date) and gives up past the cap', () => {
     expect(rateLimitWait('2', 1)).toBe(2000);
     expect(rateLimitWait('999', 1)).toBeNull();
     expect(rateLimitWait(undefined, 2)).toBe(1000);

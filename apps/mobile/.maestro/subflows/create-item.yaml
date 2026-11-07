@@ -1,0 +1,12 @@
+# Taps "Criar item". On a small screen (1280 px Android emulator) the button sits below the
+# form fold, so it scrolls to it and centers it (flush with the edge, the tap lands on the navigation bar); on iOS the button already shows.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - scrollUntilVisible:
+          element: 'Criar item'
+          centerElement: true
+- tapOn: 'Criar item'

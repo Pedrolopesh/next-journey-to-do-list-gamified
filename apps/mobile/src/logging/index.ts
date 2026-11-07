@@ -1,7 +1,7 @@
-/* eslint-disable no-console -- este arquivo é o único ponto que escreve no console */
+/* eslint-disable no-console -- this file is the only place that writes to the console */
 import { createLogger, type LogEntry } from './logger';
 
-/** No console do Metro: `[hora] nivel evento {dados}`. Em produção só warn e error saem. */
+/** In the Metro console: `[time] level event {data}`. In production only warn and error come out. */
 function toConsole(entry: LogEntry): void {
   const line = `${entry.at.slice(11, 23)} ${entry.level.toUpperCase()} ${entry.event}`;
   const method = entry.level === 'debug' ? 'log' : entry.level;

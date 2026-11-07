@@ -1,4 +1,4 @@
-/** Fusos mais comuns para a lista de configurações; o fuso do aparelho é sempre incluído no topo. */
+/** Most common time zones for the settings list; the device time zone is always included at the top. */
 export const COMMON_TIMEZONES = [
   'America/Sao_Paulo',
   'America/Manaus',

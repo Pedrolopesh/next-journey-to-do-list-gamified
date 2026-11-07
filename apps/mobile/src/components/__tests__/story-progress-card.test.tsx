@@ -26,7 +26,7 @@ jest.mock('@/api/queries', () => ({
 }));
 
 describe('StoryProgressCard', () => {
-  it('mostra nome, capítulo, nível, moedas e a EXP do nível', async () => {
+  it('shows name, chapter, level, coins and the level EXP', async () => {
     mockMe = base;
     await render(<StoryProgressCard showCoins />);
     expect(screen.getByText('Praia')).toBeTruthy();
@@ -37,20 +37,20 @@ describe('StoryProgressCard', () => {
     expect(screen.getByRole('progressbar').props.accessibilityValue).toMatchObject({ now: 25 });
   });
 
-  it('sem showCoins não mostra o saldo (a Home já tem o indicador)', async () => {
+  it('without showCoins it does not show the balance (the Home already has the indicator)', async () => {
     mockMe = base;
     await render(<StoryProgressCard />);
     expect(screen.queryByText('42')).toBeNull();
   });
 
-  it('história concluída mostra a barra cheia', async () => {
+  it('a completed story shows the full bar', async () => {
     mockMe = { ...base, player: { ...base.player, story: { chapter: 5, completed: true } } };
     await render(<StoryProgressCard />);
     expect(screen.getByText('História concluída')).toBeTruthy();
     expect(screen.getByRole('progressbar').props.accessibilityValue).toMatchObject({ now: 100 });
   });
 
-  it('sem dados não desenha nada', async () => {
+  it('without data it draws nothing', async () => {
     mockMe = undefined;
     await render(<StoryProgressCard />);
     expect(screen.queryByRole('progressbar')).toBeNull();

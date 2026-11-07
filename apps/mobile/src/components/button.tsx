@@ -8,7 +8,7 @@ type Props = {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   loading?: boolean;
   disabled?: boolean;
-  /** Cor sólida de trás do botão contornado: impede o brilho de outro botão de atravessar o fundo translúcido. */
+  /** Solid color behind the outlined button: stops another button's glow from showing through the translucent background. */
   backdrop?: string;
 };
 
@@ -31,14 +31,14 @@ export function Button({
       style={({ pressed }) => [
         styles.base,
         styles[variant],
-        // Brilho suave: principal cheio, secundário contornado; ghost (só texto) não brilha.
-        // Desabilitado ou carregando perde o brilho (o contorno continua).
+        // Soft glow: filled primary, outlined secondary; ghost (text only) does not glow.
+        // Disabled or loading loses the glow (the outline stays).
         !inactive && variant === 'primary' && softGlow(colors.brand.primary, { pressed }),
         variant === 'secondary' &&
           (inactive
             ? styles.secondaryInactive
             : softGlowOutline(colors.brand.primary, { pressed })),
-        // Sair e ações destrutivas: preenchido em vermelho, como o principal
+        // Sign out and destructive actions: filled in red, like the primary
         !inactive && variant === 'danger' && softGlow(colors.status.danger, { pressed }),
         variant === 'secondary' && { backgroundColor: backdrop },
         pressed && styles.pressed,

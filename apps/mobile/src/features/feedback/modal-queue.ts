@@ -6,8 +6,8 @@ export type ModalEntry =
   | { kind: 'chapter'; number: number; title: string; text: string; storyCompleted: boolean };
 
 /**
- * Modais de um check, na ordem em que aparecem (um de cada vez): nível, conquistas e, por último,
- * o capítulo. O capítulo só é liberado quando o banner termina a transição (ver use-check-flow).
+ * Modals of a check, in the order they appear (one at a time): level, achievements and, last,
+ * the chapter. The chapter is only released when the banner finishes the transition (see use-check-flow).
  */
 export function buildModalQueue(result: CheckResult): {
   now: ModalEntry[];

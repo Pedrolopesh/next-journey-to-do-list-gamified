@@ -4,7 +4,7 @@ import { addDaysLocal } from './local-date';
 
 export type DuePreset = 'none' | 'today' | 'tomorrow' | 'week';
 
-/** Prazo rápido da tarefa → data local (AAAA-MM-DD) ou nula. O horário padrão é o fim do dia. */
+/** Quick task deadline → local date (YYYY-MM-DD) or null. The default time is the end of the day. */
 export function dueDateFor(preset: DuePreset, today: LocalDate): LocalDate | null {
   switch (preset) {
     case 'none':
@@ -18,7 +18,7 @@ export function dueDateFor(preset: DuePreset, today: LocalDate): LocalDate | nul
   }
 }
 
-/** ISO com o fim do dia local (23:59) e o deslocamento do fuso (getTimezoneOffset: UTC-3 => 180). */
+/** ISO with the end of the local day (23:59) and the time zone offset (getTimezoneOffset: UTC-3 => 180). */
 export function endOfDayIso(date: LocalDate, timezoneOffsetMinutes: number): string {
   const sign = timezoneOffsetMinutes <= 0 ? '+' : '-';
   const abs = Math.abs(timezoneOffsetMinutes);

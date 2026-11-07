@@ -12,9 +12,9 @@ type Options = {
 };
 
 /**
- * Regra de feedback do app: toda ação do usuário mostra o botão carregando e termina com um
- * toast de sucesso ou de erro. Ignora toques repetidos enquanto a ação roda.
- * Use `loading` no `<Button loading>` e chame `run(() => ...)` no `onPress`.
+ * The app's feedback rule: every user action shows the button loading and ends with a
+ * success or error toast. Ignores repeated taps while the action runs.
+ * Use `loading` in `<Button loading>` and call `run(() => ...)` in `onPress`.
  */
 export function useAction({ name, success, error }: Options) {
   const [loading, setLoading] = useState(false);

@@ -5,7 +5,7 @@ import { ScreenFrame } from '@/components/screen-frame';
 import { CREDITS } from '@/features/credits/credits';
 import { colors, fontSize, radius, space } from '@/theme';
 
-/** Créditos de arte e licenças (Fase 6). A lista vive em features/credits e no CREDITS.md. */
+/** Art credits and licenses (Phase 6). The list lives in features/credits and in CREDITS.md. */
 export default function CreditsScreen() {
   const { t } = useTranslation();
   return (

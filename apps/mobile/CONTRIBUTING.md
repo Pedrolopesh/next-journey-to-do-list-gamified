@@ -1,15 +1,15 @@
-# apps/mobile — Next Journey (app Expo)
+# apps/mobile — Next Journey (Expo app)
 
-Regras do monorepo em `../../CONTRIBUTING.md` (leia primeiro). Aqui ficam as regras específicas do app.
+Monorepo rules live in `../../CONTRIBUTING.md` (read it first). Only the app-specific rules are kept here.
 
-- Pacote: `@nextjourney/mobile`. Rotas em `src/app/` (padrão do Expo SDK 58). Código que não é rota fica fora dela (`src/components`, `src/api`, `src/theme`...).
-- Comandos: `pnpm --filter @nextjourney/mobile start | lint | typecheck`. Dependências nativas só com `npx expo install`.
-- Tokens só no SecureStore; nada sensível em `EXPO_PUBLIC_*`; textos só via i18n; cores e tamanhos só pelos tokens do design system.
-- O app não calcula EXP: marca o item na hora (otimista) e mostra o `CheckResult` da API. O banner só recebe mensagens validadas pelo contrato.
-- **Alerta de conquista nova: um só modal.** Toda conquista desbloqueada abre `AchievementUnlockedModal` (`src/components/achievement-unlocked-modal.tsx`), nunca um modal próprio. Estilo: topo na cor da **classe** da conquista (bronze, prata, ouro ou diamante; tokens em `colors.tier`) com raios e brilhos, a insígnia num círculo branco no centro, "Conquista desbloqueada!", nome e critério da conquista, um incentivo para desbloquear mais e dois botões: **Continuar** (fecha) e **Ver todas as conquistas** (abre `/achievements`). Quem enfileira é o `ProgressionModalHost` (fila em `features/feedback`): entram as conquistas do resultado do check e as **pendentes** de `GET /achievements` (`pending`), sem repetir; ao fechar, o app confirma em `POST /achievements/ack`, e **Ver todas** confirma e fecha todas as da fila. A classe (`tier` 1 a 4, cor em `features/achievements/tier.ts`) e a insígnia (`glyph`, componente `Insignia`, arte de `@nextjourney/insignias`) vêm do servidor. Textos em `feedback.*` no `pt-BR.json`. Para ver o modal no emulador, enfileire uma entrada `{ kind: 'achievement', ... }` no `useFeedbackStore` (sem commitar).
-- **Testes de interface (Maestro):** `pnpm --filter @nextjourney/mobile test:ui` (fluxos em `.maestro/`, como rodar em `docs/TESTES.md`). Mexeu em texto, rótulo ou fluxo de tela? Ajuste os fluxos junto. Aviso que some em segundos não se confere na tela: confira o estado na API (`.maestro/scripts/`).
-- Metro em `CI=1` não relê arquivos: para o Fast Refresh funcionar, suba o Metro sem essa variável.
-- Lint: `eslint-config-expo` + regras comuns do monorepo (`@nextjourney/eslint-config/common`).
+- Package: `@nextjourney/mobile`. Routes live in `src/app/` (Expo SDK 58 standard). Code that is not a route stays outside it (`src/components`, `src/api`, `src/theme`...).
+- Commands: `pnpm --filter @nextjourney/mobile start | lint | typecheck`. Native dependencies only with `npx expo install`.
+- Tokens only in SecureStore; nothing sensitive in `EXPO_PUBLIC_*`; texts only through i18n; colors and sizes only through the design system tokens.
+- The app does not compute EXP: it checks the item right away (optimistic) and shows the API's `CheckResult`. The banner only receives messages validated by the contract.
+- **New achievement alert: a single modal.** Every unlocked achievement opens `AchievementUnlockedModal` (`src/components/achievement-unlocked-modal.tsx`), never a modal of its own. Style: top in the achievement **class** color (bronze, silver, gold or diamond; tokens in `colors.tier`) with rays and sparkles, the badge in a white circle at the center, "Conquista desbloqueada!", the achievement name and criterion, an encouragement to unlock more and two buttons: **Continuar** (closes) and **Ver todas as conquistas** (opens `/achievements`). `ProgressionModalHost` does the queueing (queue in `features/feedback`): the achievements from the check result and the **pending** ones from `GET /achievements` (`pending`) enter without repeating; on close, the app confirms with `POST /achievements/ack`, and **Ver todas** confirms and closes all the queued ones. The class (`tier` 1 to 4, color in `features/achievements/tier.ts`) and the badge (`glyph`, `Insignia` component, art from `@nextjourney/insignias`) come from the server. Texts in `feedback.*` in `pt-BR.json`. To see the modal on the emulator, enqueue an entry `{ kind: 'achievement', ... }` in `useFeedbackStore` (without committing it).
+- **UI tests (Maestro):** `pnpm --filter @nextjourney/mobile test:ui` (flows in `.maestro/`, how to run in `docs/TESTES.md`). Changed a text, label or screen flow? Update the flows together. A notice that disappears in seconds is not checked on screen: check the state on the API (`.maestro/scripts/`).
+- Metro with `CI=1` does not reread files: for Fast Refresh to work, start Metro without that variable.
+- Lint: `eslint-config-expo` + the monorepo common rules (`@nextjourney/eslint-config/common`).
 
 ---
 

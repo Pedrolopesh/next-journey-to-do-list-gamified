@@ -39,7 +39,7 @@ import { z } from 'zod';
 
 import { http } from './client';
 
-// Toda resposta é validada com o schema do contrato: não confiamos no que chega pela rede.
+// Every response is validated with the contract schema: we do not trust what comes over the network.
 
 // --- auth
 /** Passwordless entry: asks for the 6-digit code (always 202, whether or not the account exists). */
@@ -60,7 +60,7 @@ export async function socialLogin(
   return authResponseSchema.parse(data);
 }
 
-// --- sessões da conta (aparelhos)
+// --- account sessions (devices)
 export async function fetchSessions(): Promise<Session[]> {
   const { data } = await http.get<unknown>('/me/sessions');
   return sessionsResponseSchema.parse(data).sessions;
@@ -74,9 +74,9 @@ export async function revokeAllSessions(): Promise<void> {
   await http.delete('/me/sessions');
 }
 
-/** Exportação dos dados da própria conta (LGPD). */
+/** Export of the account's own data (LGPD). */
 export async function fetchDataExport(): Promise<DataExport> {
-  // Sem validar no cliente: o app só repassa o arquivo e um campo novo da API não pode impedir a exportação
+  // Not validated on the client: the app only passes the file along, and a new API field must not block the export
   const { data } = await http.get<DataExport>('/me/export');
   return data;
 }
@@ -85,13 +85,13 @@ export async function logout(refreshToken: string): Promise<void> {
   await http.post('/auth/logout', { refreshToken });
 }
 
-// --- perfil e onboarding
+// --- profile and onboarding
 export async function fetchMe(): Promise<MeResponse> {
   const { data } = await http.get<unknown>('/me');
   return meResponseSchema.parse(data);
 }
 
-/** Exclui a conta (anonimiza agora, apaga de vez depois do prazo de retenção). */
+/** Deletes the account (anonymizes now, erases for good after the retention period). */
 export async function deleteAccount(proof: DeleteAccountRequest): Promise<void> {
   await http.delete('/me', { data: proof });
 }
@@ -105,12 +105,12 @@ export async function putCharacter(body: Character): Promise<void> {
   await http.put('/me/character', body);
 }
 
-/** Confirma que o aviso (modal) destas conquistas foi mostrado. */
+/** Confirms that the notice (modal) for these achievements was shown. */
 export async function ackAchievements(slugs: string[]): Promise<void> {
   await http.post('/achievements/ack', { slugs });
 }
 
-/** Informa um fato do aparelho que o servidor não observa (ex.: lembrete diário ativado). */
+/** Reports a fact about the device that the server does not observe (e.g. daily reminder turned on). */
 export async function sendAppEvent(type: AppEvent['type']): Promise<void> {
   await http.post('/me/events', { type });
 }
@@ -120,7 +120,7 @@ export async function fetchCosmetics(): Promise<string[]> {
   return z.object({ cosmetics: z.array(z.string()) }).parse(data).cosmetics;
 }
 
-// --- histórias
+// --- stories
 export async function fetchStories(): Promise<StorySummary[]> {
   const { data } = await http.get<unknown>('/stories');
   return z.array(storySummarySchema).parse(data);
@@ -141,13 +141,13 @@ export async function fetchTimeline(): Promise<Timeline> {
   return timelineSchema.parse(data);
 }
 
-// --- itens
+// --- items
 export async function fetchItems(type: ItemType): Promise<Item[]> {
   const { data } = await http.get<unknown>('/items', { params: { type } });
   return z.array(itemSchema).parse(data);
 }
 
-/** Tarefas concluídas (histórico do perfil), da mais recente para a mais antiga, por página. */
+/** Completed tasks (profile history), most recent first, paged. */
 export async function fetchHistory(before?: string): Promise<HistoryResponse> {
   const { data } = await http.get<unknown>('/items/history', {
     params: before ? { before } : {},
@@ -179,7 +179,7 @@ export async function undoCheck(itemId: string, checkId: string): Promise<CheckR
   return checkResultSchema.parse(data);
 }
 
-// --- categorias
+// --- categories
 export async function fetchCategories(): Promise<Category[]> {
   const { data } = await http.get<unknown>('/categories');
   return z.array(categorySchema).parse(data);
@@ -199,7 +199,7 @@ export async function deleteCategory(id: string, moveTo?: string): Promise<void>
   await http.delete(`/categories/${id}`, { params: moveTo ? { moveTo } : {} });
 }
 
-// --- home e conquistas
+// --- home and achievements
 export async function fetchHome(): Promise<HomeResponse> {
   const { data } = await http.get<unknown>('/home');
   return homeResponseSchema.parse(data);

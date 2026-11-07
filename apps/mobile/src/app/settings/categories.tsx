@@ -13,7 +13,7 @@ import { TextField } from '@/components/text-field';
 import { toast } from '@/features/feedback/toast-store';
 import { colors, fontSize, radius, space } from '@/theme';
 
-/** Categorias (RF-23): renomear, criar e excluir até 10, com cor da paleta. */
+/** Categories (RF-23): rename, create and delete up to 10, with a palette color. */
 export default function CategoriesScreen() {
   const { t } = useTranslation();
   const categories = useCategories();

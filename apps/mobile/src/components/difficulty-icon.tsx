@@ -10,8 +10,8 @@ const LEVELS: Record<Difficulty, { filled: number; color: string }> = {
 };
 
 /**
- * Dificuldade em três barras crescentes (vetor): fácil 1 preenchida, médio 2, difícil 3. As vazias
- * ficam apagadas. A cor reforça o nível, mas o número de barras é que diz qual é.
+ * Difficulty as three growing bars (vector): easy fills 1, medium 2, hard 3. The empty ones
+ * are dimmed. The color reinforces the level, but the number of bars is what tells which one it is.
  */
 export function DifficultyIcon({
   difficulty,

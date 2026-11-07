@@ -1,0 +1,12 @@
+# Common starting point: closes the achievement modal, the item form and inner screens
+# (gallery, history) that a previous run may have left open.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow: close-achievement.yaml
+- runFlow: close-form.yaml
+- runFlow:
+    when:
+      visible: 'Voltar'
+    commands:
+      # Android: the screen Back is covered by the development button, so it uses the system one
+      - runFlow: back.yaml

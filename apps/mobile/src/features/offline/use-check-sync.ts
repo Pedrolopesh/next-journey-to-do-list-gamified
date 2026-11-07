@@ -16,15 +16,15 @@ const statusOf = (error: unknown): number | undefined =>
   isAxiosError(error) ? error.response?.status : undefined;
 
 /**
- * Reenvia os checks guardados sem rede: ao abrir o app, quando a conexão volta, quando o app volta
- * ao primeiro plano e, enquanto sobrar fila, com espera crescente entre as tentativas.
+ * Resends the checks stored without network: on app open, when the connection returns, when the app returns
+ * to the foreground and, while a queue remains, with a growing wait between attempts.
  */
 export function useCheckSync(): void {
   const queryClient = useQueryClient();
   const signedIn = useSessionStore((state) => state.status === 'signedIn');
   const queueLength = useOfflineStore((state) => state.queue.length);
   const loaded = useOfflineStore((state) => state.loaded);
-  // Muda a cada tentativa que deixou fila, para o efeito agendar a próxima com mais espera
+  // Changes on every attempt that left a queue, so the effect schedules the next one with a longer wait
   const [retry, setRetry] = useState(0);
   const busy = useRef(false);
   const attempt = useRef(0);
@@ -57,13 +57,13 @@ export function useCheckSync(): void {
     }
   }, [queryClient]);
 
-  // Carrega a fila salva ao entrar; ao sair da conta, descarta (checks são de outro usuário)
+  // Loads the saved queue on entry; on sign-out, discards it (the checks belong to another user)
   useEffect(() => {
     if (signedIn) void useOfflineStore.getState().load();
     else useOfflineStore.getState().clear();
   }, [signedIn]);
 
-  // Enquanto houver fila, tenta enviar com espera crescente entre as tentativas
+  // While there is a queue, tries to send with a growing wait between attempts
   useEffect(() => {
     if (!signedIn || !loaded || queueLength === 0) return;
     timer.current = setTimeout(() => void flush(), backoffMs(attempt.current));
@@ -72,7 +72,7 @@ export function useCheckSync(): void {
     };
   }, [signedIn, loaded, queueLength, retry, flush]);
 
-  // Conexão voltou ou app voltou ao primeiro plano: tenta já
+  // Connection or app returned to the foreground: tries right away
   useEffect(() => {
     if (!signedIn) return;
     const retryNow = (): void => {

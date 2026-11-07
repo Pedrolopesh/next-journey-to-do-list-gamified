@@ -17,7 +17,7 @@ export function rgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-/** Mistura `hex` com `base` (0 = só `hex`, 1 = só `base`); devolve "#rrggbb". */
+/** Mixes `hex` with `base` (0 = only `hex`, 1 = only `base`); returns "#rrggbb". */
 export function mix(hex: string, base: string, amount: number): string {
   const a = parse(hex);
   const b = parse(base);
@@ -29,18 +29,18 @@ export function mix(hex: string, base: string, amount: number): string {
 }
 
 type Options = {
-  /** Botão apertado: brilho mais curto e sem subir. */
+  /** Pressed button: shorter glow and no lift. */
   pressed?: boolean;
-  /** 0 a 1: quanto do brilho aparece (secundários e chips usam menos). */
+  /** 0 to 1: how much of the glow shows (secondaries and chips use less). */
   strength?: number;
-  /** Cor do halo, quando for diferente da cor do botão (ex.: botão escuro com halo azul). */
+  /** Halo color, when different from the button color (e.g. dark button with blue halo). */
   halo?: string;
 };
 
 /**
- * Estilo "brilho suave": gradiente leve, realce no topo e um halo difuso na cor do botão.
- * Usa `boxShadow` e `experimental_backgroundImage` do React Native (iOS e Android, nova arquitetura).
- * Fica de fora de propósito: a barra de navegação inferior.
+ * "Soft glow" style: light gradient, highlight on top and a diffuse halo in the button color.
+ * Uses React Native's `boxShadow` and `experimental_backgroundImage` (iOS and Android, new architecture).
+ * Deliberately left out: the bottom navigation bar.
  */
 export function softGlow(
   color: string,
@@ -82,8 +82,8 @@ export function softGlow(
 }
 
 /**
- * Brilho suave contornado: só a borda e um leve preenchimento na cor, com o mesmo halo difuso.
- * Para ações secundárias (o botão cheio fica para a ação principal da tela).
+ * Outlined soft glow: only the border and a light fill in the color, with the same diffuse halo.
+ * For secondary actions (the filled button is kept for the screen's main action).
  */
 export function softGlowOutline(
   color: string,
@@ -108,7 +108,7 @@ export function softGlowOutline(
   };
 }
 
-/** Cartão contornado na cor do tom (indicadores e card de história): borda forte e fundo leve. */
+/** Card outlined in the tone color (indicators and story card): strong border and light background. */
 export function tonedCard(
   color: string,
 ): Pick<ViewStyle, 'borderWidth' | 'borderColor' | 'backgroundColor'> {

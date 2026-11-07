@@ -21,14 +21,14 @@ const base: Item = {
 };
 
 describe('ItemRow', () => {
-  it('toque no check chama onCheck com o item', async () => {
+  it('tapping the check calls onCheck with the item', async () => {
     const onCheck = jest.fn();
     await render(<ItemRow item={base} onCheck={onCheck} />);
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Marcar Treinar' }));
     expect(onCheck).toHaveBeenCalledWith(base);
   });
 
-  it('diário feito fica marcado e bloqueado; hábito feito continua marcável', async () => {
+  it('a done daily stays checked and locked; a done habit can still be checked', async () => {
     const onCheck = jest.fn();
     const { rerender } = await render(
       <ItemRow item={{ ...base, doneToday: true }} onCheck={onCheck} />,
@@ -48,7 +48,7 @@ describe('ItemRow', () => {
     expect(screen.getByText('Hoje 2 · Semana 0')).toBeTruthy();
   });
 
-  it('mostra atraso e sequência e a dificuldade como ícone, sem o botão Desfazer', async () => {
+  it('shows overdue and streak and the difficulty as an icon, without the Desfazer button', async () => {
     await render(<ItemRow item={{ ...base, overdue: true, streak: 3 }} onCheck={jest.fn()} />);
     expect(screen.getByText('Atrasado')).toBeTruthy();
     expect(screen.getByLabelText('3 dias seguidos')).toBeTruthy();
@@ -57,7 +57,7 @@ describe('ItemRow', () => {
     expect(screen.queryByRole('button', { name: 'Desfazer' })).toBeNull();
   });
 
-  it('check feito hoje neste aparelho desmarca ao tocar', async () => {
+  it('a check done today on this device unchecks on tap', async () => {
     const onCheck = jest.fn();
     const onUndo = jest.fn();
     await render(<ItemRow item={{ ...base, doneToday: true }} onCheck={onCheck} onUndo={onUndo} />);

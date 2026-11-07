@@ -37,7 +37,7 @@ export const queryKeys = {
   me: ['me'] as const,
   home: ['home'] as const,
   items: (type: ItemType) => ['items', type] as const,
-  // começa com 'items': qualquer check ou desmarcar recarrega o histórico junto
+  // starts with 'items': any check or uncheck reloads the history too
   history: ['items', 'history'] as const,
   stories: ['stories'] as const,
   timeline: ['timeline'] as const,
@@ -71,7 +71,7 @@ export const useItems = (type: ItemType) => {
   return useQuery({ queryKey: queryKeys.items(type), queryFn: () => fetchItems(type), enabled });
 };
 
-/** Histórico de tarefas concluídas, paginado pelo instante de conclusão. */
+/** History of completed tasks, paged by completion time. */
 export const useHistory = () => {
   const enabled = useSignedIn();
   return useInfiniteQuery({
@@ -93,7 +93,7 @@ export const useTimeline = () => {
   return useQuery({ queryKey: queryKeys.timeline, queryFn: fetchTimeline, enabled });
 };
 
-/** Capítulos de qualquer história do catálogo (Minha história: ver outra sem trocar a ativa). */
+/** Chapters of any story in the catalog (My story: view another without switching the active one). */
 export const useStoryTimeline = (slug: string | null) => {
   const enabled = useSignedIn() && slug !== null;
   return useQuery({
@@ -118,8 +118,8 @@ export const useCosmetics = () => {
   return useQuery({ queryKey: queryKeys.cosmetics, queryFn: fetchCosmetics, enabled });
 };
 
-/** Depois de qualquer mudança de jogo, estes dados podem ter mudado. */
-/** Recarrega tudo que depende do progresso (itens, perfil, home, história, conquistas). */
+/** After any game change, this data may have changed. */
+/** Reloads everything that depends on progress (items, profile, home, story, achievements). */
 export function refreshGameData(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: ['items'] });
   void queryClient.invalidateQueries({ queryKey: queryKeys.me });
@@ -139,8 +139,8 @@ function useRefreshGameData() {
 type CheckVariables = { itemId: string; checkId: string };
 
 /**
- * Check com atualização otimista: o item aparece marcado na hora (menos de 100 ms) e o cache é
- * reconciliado com o CheckResult da API. Em erro, volta ao estado anterior. O app NÃO calcula EXP.
+ * Check with optimistic update: the item shows as checked right away (under 100 ms) and the cache is
+ * reconciled with the API's CheckResult. On error it goes back to the previous state. The app does NOT compute EXP.
  */
 export function useCheckItem(type: ItemType) {
   const queryClient = useQueryClient();
@@ -165,7 +165,7 @@ export function useCheckItem(type: ItemType) {
       return { previous };
     },
     onError: (error, _variables, context) => {
-      // Sem rede o check vai para a fila offline: o item continua marcado até sincronizar
+      // No network: the check goes to the offline queue and the item stays checked until it syncs
       if (isRetryableError(error)) return;
       if (context?.previous) queryClient.setQueryData(queryKeys.items(type), context.previous);
     },
@@ -173,7 +173,7 @@ export function useCheckItem(type: ItemType) {
   });
 }
 
-/** Desfazer um check (só no mesmo dia). O servidor devolve o que foi revertido. */
+/** Undo a check (same day only). The server returns what was reverted. */
 export function useUndoCheck() {
   const refresh = useRefreshGameData();
   return useMutation<CheckResult, Error, CheckVariables>({
@@ -183,9 +183,9 @@ export function useUndoCheck() {
 }
 
 /**
- * Depois de uma ação que não devolve conquistas (criar item ou categoria, salvar personagem, evento):
- * busca as pendentes e mostra só a mais antiga, e só se nenhum modal estiver aberto. Assim cada
- * ação abre no máximo um modal de conquista.
+ * After an action that returns no achievements (create item or category, save character, event):
+ * fetches the pending ones and shows only the oldest, and only if no modal is open. This way each
+ * action opens at most one achievement modal.
  */
 export async function showNextPending(queryClient: QueryClient): Promise<void> {
   try {
@@ -209,7 +209,7 @@ export async function showNextPending(queryClient: QueryClient): Promise<void> {
       },
     ]);
   } catch {
-    // Sem rede: a conquista continua pendente e aparece na próxima ação
+    // No network: the achievement stays pending and shows up on the next action
   }
 }
 
@@ -266,12 +266,12 @@ export function useCategoryMutations() {
   };
 }
 
-/** Barra de progresso da história (0 a 1): cheia com a história concluída, senão a EXP do capítulo. */
+/** Story progress bar (0 to 1): full when the story is complete, otherwise the chapter's EXP. */
 export function storyRatio(me: MeResponse | undefined): number {
   return me?.player.story.completed ? 1 : chapterProgress(me);
 }
 
-/** Progresso do capítulo (0 a 1): a EXP dentro do nível, que também move o personagem no banner. */
+/** Chapter progress (0 to 1): the EXP within the level, which also moves the character on the banner. */
 export function chapterProgress(me: MeResponse | undefined): number {
   if (!me) return 0;
   const { expInLevel, expForNextLevel } = me.player;

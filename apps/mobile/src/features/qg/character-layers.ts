@@ -1,6 +1,6 @@
 import type { Character, CharacterLayers } from '@nextjourney/contracts';
 
-/** Camadas que o banner recebe: as do personagem salvo ou, sem personagem ainda, as padrão. */
+/** Layers the banner receives: those of the saved character or, with no character yet, the default ones. */
 export function characterLayers(character: Character | null): CharacterLayers {
   if (!character) return { skin: 'light', hair: 'short-brown', outfit: 'tunic-purple' };
   return {

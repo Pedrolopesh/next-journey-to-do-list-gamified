@@ -34,11 +34,11 @@ async function persist(queue: QueuedCheck[]): Promise<void> {
     if (queue.length === 0) await AsyncStorage.removeItem(KEY);
     else await AsyncStorage.setItem(KEY, JSON.stringify(queue));
   } catch {
-    // sem armazenamento: a fila segue só na memória
+    // no storage: the queue stays in memory only
   }
 }
 
-/** Fila de checks feitos sem rede. Persistida no aparelho para sobreviver a fechar o app. */
+/** Queue of checks made without network. Persisted on the device to survive closing the app. */
 export const useOfflineStore = create<OfflineState>((set, get) => ({
   queue: [],
   loaded: false,
@@ -47,10 +47,10 @@ export const useOfflineStore = create<OfflineState>((set, get) => ({
       const raw = await AsyncStorage.getItem(KEY);
       const parsed: unknown = raw ? JSON.parse(raw) : [];
       const stored = Array.isArray(parsed) ? parsed.filter(isQueuedCheck) : [];
-      // O que entrou na memória antes do carregamento termina depois do que já estava salvo
+      // What entered memory before loading ends up after what was already saved
       set({ queue: stored.reduce(enqueue, get().queue).sort((a, b) => a.queuedAt - b.queuedAt) });
     } catch {
-      // arquivo corrompido: começa vazio
+      // corrupted file: starts empty
     }
     set({ loaded: true });
   },

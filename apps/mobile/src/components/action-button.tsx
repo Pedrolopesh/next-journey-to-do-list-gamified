@@ -12,7 +12,7 @@ type Props = {
   disabled?: boolean;
 };
 
-/** Botão de ação da Home: contornado, com pixel art ao lado, título e descrição curta. */
+/** Home action button: outlined, with pixel art beside it, a title and a short description. */
 export function ActionButton({ title, description, art, onPress, disabled = false }: Props) {
   return (
     <Pressable

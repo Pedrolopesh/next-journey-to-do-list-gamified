@@ -1,0 +1,43 @@
+# Check and uncheck a habit: the EXP stays and the coins decrease.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow: ../subflows/start.yaml
+- tapOn: 'Hábitos(, tab.*)?'
+- tapOn: 'Novo item'
+- runFlow:
+    file: ../subflows/tap-field.yaml
+    env:
+      FIELD: 'Título'
+- inputText: 'Beber água'
+# iOS: with the hardware keyboard on there is nothing to hide, and the command fails
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- runFlow: ../subflows/create-item.yaml
+# waits for the form to close (the item may be below the fold and the modal may not come)
+- extendedWaitUntil:
+    notVisible: 'Criar item'
+    timeout: 15000
+- runFlow: ../subflows/close-achievement.yaml
+- runFlow:
+    file: ../subflows/view-item.yaml
+    env:
+      ITEM: 'Marcar Beber água'
+- tapOn: 'Marcar Beber água'
+- extendedWaitUntil:
+    visible: 'Conquista desbloqueada!|Desmarcar Beber água'
+    timeout: 15000
+- runFlow: ../subflows/close-achievement.yaml
+# Uncheck: the EXP stays and only the coins decrease (1 + 2 earned, loses up to 3 in chapter 1).
+# The yellow notice disappears in 3 s, before Maestro can check it; the rule is verified on the API.
+- tapOn: 'Desmarcar Beber água'
+- extendedWaitUntil:
+    visible: 'Marcar Beber água'
+    timeout: 15000
+- runScript:
+    file: ../scripts/check-player.js
+    env:
+      EXP_TOTAL: '15'
+      COINS: '0'
