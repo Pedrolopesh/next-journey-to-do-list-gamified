@@ -1,51 +1,51 @@
-# Next Journey — como o projeto funciona
+# Next Journey — how the project works
 
-Atualizado em 2026-11-05. Este documento descreve **o que existe hoje** no repositório e **como as peças conversam**. Fontes: [REQUISITOS.MD](./REQUISITOS.MD) (especificação), [TURBOREPO.md](./TURBOREPO.md) (ferramenta de build), as specs em `openspec/` e os ADRs em [`adr/`](./adr/README.md).
+Updated on 2026-11-05. This document describes **what exists today** in the repository and **how the pieces talk to each other**. Sources: [REQUISITOS.MD](./REQUISITOS.MD) (specification), [TURBOREPO.md](./TURBOREPO.md) (build tool), the specs in `openspec/` and the ADRs in [`adr/`](./adr/README.md).
 
-## 1. O produto em uma frase
+## 1. The product in one sentence
 
-Um to-do list de uso pessoal para iOS e Android em que cada item marcado rende EXP e moedas e faz um personagem pixel art (LPC) avançar por uma história em 5 capítulos (6 histórias, uma por cenário; cada nível ganho conclui um capítulo). Três tipos de item (diário, tarefa, hábito) usam o mesmo check. Sem social, sem loja, sem penalidades na v1.
+A personal to-do list for iOS and Android where every checked item earns EXP and coins and moves a pixel art character (LPC) through a story of 5 chapters (6 stories, one per scene; each level gained completes a chapter). Three item types (daily, task, habit) use the same check. No social features, no store, no penalties in v1.
 
-## 2. Estado atual do repositório (2026-11-05)
+## 2. Current state of the repository (2026-11-05)
 
-| Item | Estado |
-|---|---|
-| Especificação e registro do Figma | Prontos, em `docs/` e `openspec/` |
-| Monorepo pnpm + Turborepo, hooks e CI | Funcionando: ESLint, Prettier, Husky, lint-staged, commitlint e GitHub Actions (lint, typecheck, test, build e varredura de segurança em todo PR) |
-| `packages/contracts` | Schemas Zod compartilhados (auth, itens, check, histórias, personagem, protocolo do banner), com testes; build com `tsup` |
-| `packages/tsconfig`, `packages/eslint-config` | Prontos |
-| `apps/api` | NestJS + Prisma + PostgreSQL: entrada por e-mail com código, sessões, perfil (metas, idade e gênero opcionais), itens, check, progressão, histórias, conquistas, personagem, `GET /home`, exportação e exclusão de conta; testes unitários e e2e |
-| `apps/banner` | Vite + TypeScript: cena Mapa (CSS) e cena QG (canvas, 7 cenários, personagem LPC); laboratório de desenvolvimento em páginas (`lab.html`: botões, indicadores, conquistas, cenários, personagem e créditos) e painel de debug (`dev.html`), ambos fora do build |
-| `apps/mobile` | Expo + React Native: entrada por e-mail com código, apresentação, criação do personagem, escolha da história, lembretes, Home com o QG, abas de itens (com rascunho da nova tarefa), conquistas, perfil, configurações e créditos |
-| `apps/infra`, `apps/smoke` | Servidor em contêineres (Ansible, OpenTofu, Docker Compose), pipeline de entrega e testes de fumaça |
-| Ambientes | Dois ambientes da API (desenvolvimento e produção), com a mesma versão; produção só depois de aprovação manual |
+| Item                                       | State                                                                                                                                                                                                                                                                                  |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Specification                              | Ready, in `docs/` and `openspec/`                                                                                                                                                                                                                                                      |
+| pnpm + Turborepo monorepo, hooks and CI    | Working: ESLint, Prettier, Husky, lint-staged, commitlint and GitHub Actions (lint, typecheck, test, build and security scan on every PR)                                                                                                                                               |
+| `packages/contracts`                       | Shared Zod schemas (auth, items, check, stories, character, banner protocol), with tests; built with `tsup`                                                                                                                                                                            |
+| `packages/tsconfig`, `packages/eslint-config` | Ready                                                                                                                                                                                                                                                                               |
+| `apps/api`                                 | NestJS + Prisma + PostgreSQL: email code sign-in, sessions, profile (goals, optional age and gender), items, check, progression, stories, achievements, character, `GET /home`, data export and account deletion; unit and e2e tests                                                   |
+| `apps/banner`                              | Vite + TypeScript: Map scene (CSS) and HQ scene (canvas, 7 scenes, LPC character); a development lab in pages (`lab.html`: buttons, indicators, achievements, scenes, character and credits) and a debug panel (`dev.html`), both outside the build                                    |
+| `apps/mobile`                              | Expo + React Native: email code sign-in, introduction, character creation, story choice, reminders, Home with the HQ, item tabs (with a draft of the new task), achievements, profile, settings and credits                                                                            |
+| `apps/infra`, `apps/smoke`                 | Containerized server (Ansible, OpenTofu, Docker Compose), delivery pipeline and smoke tests                                                                                                                                                                                            |
+| Environments                               | Two API environments (development and production), on the same version; production only after manual approval                                                                                                                                                                          |
 
-O que ainda falta: builds de loja do app, Termos e Política de Privacidade publicados, revisão jurídica da pergunta de idade e remoção dos endpoints de senha legados. Os registros de decisão estão em `docs/adr/` e as mudanças em `openspec/`.
+What is still missing: store builds of the app, published Terms and Privacy Policy, legal review of the age question and removal of the legacy password endpoints. The decision records are in `docs/adr/` and the changes in `openspec/`.
 
-## 3. Estrutura de pastas
+## 3. Folder structure
 
 ```
 next-journey-to-do-list-gamified/
   apps/
     api/        NestJS + Prisma + PostgreSQL
-    banner/     Vite + TypeScript; Mapa em CSS e QG em canvas (src/qg)
+    banner/     Vite + TypeScript; Map in CSS and HQ on canvas (src/qg)
     mobile/     Expo + React Native + Expo Router
-    infra/      servidor, contêineres, deploy e runbooks
-    smoke/      testes de fumaça contra um ambiente no ar
+    infra/      server, containers, deploy and runbooks
+    smoke/      smoke tests against a live environment
   packages/
-    contracts/      schemas Zod e tipos compartilhados
-    insignias/      arte das insígnias (grades de caracteres e paleta)
-    tsconfig/       configurações base do TypeScript
-    eslint-config/  regras de lint compartilhadas
-  docs/            requisitos, Figma, ADRs, QA, segurança e este documento
-  openspec/        propostas e specs de mudanças de comportamento
-  scripts/         verificação local, varredura de segurança e backup
-  CONTRIBUTING.md  regras de código, segurança e PR
+    contracts/      shared Zod schemas and types
+    insignias/      badge art (character grids and palette)
+    tsconfig/       base TypeScript configurations
+    eslint-config/  shared lint rules
+  docs/            requirements, ADRs, QA, API reference and this document
+  openspec/        proposals and specs for behavior changes
+  scripts/         local verification, security scan and backup
+  CONTRIBUTING.md  code, security and PR rules
 ```
 
-Nome dos pacotes: escopo `@nextjourney/*` (ex.: `@nextjourney/contracts`). Um pacote enxerga o outro pelo nome, sem publicar nada.
+Package names: scope `@nextjourney/*` (e.g. `@nextjourney/contracts`). A package sees the others by name, without publishing anything.
 
-## 4. Os três projetos e como conversam
+## 4. The three projects and how they talk
 
 ```
 ┌───────────────┐   REST /v1 (JSON, HTTPS)   ┌───────────────────┐
@@ -55,75 +55,75 @@ Nome dos pacotes: escopo `@nextjourney/*` (ex.: `@nextjourney/contracts`). Um pa
        │ postMessage { v:1, type, payload }
        ▼
 ┌───────────────┐
-│ apps/banner   │  roda dentro de um WebView; nunca acessa a API
+│ apps/banner   │  runs inside a WebView; never reaches the API
 │ Vite + TS     │
 └───────────────┘
-        └──────── todos importam schemas Zod de packages/contracts ────────┘
+        └──────── all import Zod schemas from packages/contracts ────────┘
 ```
 
-- **App ↔ API:** REST sob `/v1`, com JWT de acesso (15 min) e refresh token rotativo (365 dias, renovado a cada uso). A entrada é por e-mail: a API envia um código de 6 dígitos (`/auth/email/start` e `/auth/email/confirm`), sem senha. Login Google e Apple acontece no aparelho; só o ID token vai para a API, que o valida. Os endpoints de senha (`register`, `login`, `forgot-password`) são legados e serão removidos.
-- **App ↔ banner:** o banner é um único `banner.html` embutido no app (gerado pelo Vite com `vite-plugin-singlefile`) e carregado em um WebView. O app envia mensagens (`INIT`, `ITEM_CHECKED`, `CHAPTER_COMPLETED`, `SET_CHARACTER`, `SET_TIME_OF_DAY`, `PAUSE`/`RESUME`) e o banner responde com `READY`, `CHAPTER_TRANSITION_DONE` e `ERROR`. Toda mensagem é validada com Zod nos dois lados.
-- **Contratos:** `packages/contracts` é a única fonte dos formatos de dados. Se um schema muda, o typecheck dos três apps quebra no mesmo PR.
+- **App ↔ API:** REST under `/v1`, with an access JWT (15 min) and a rotating refresh token (365 days, renewed on every use). Sign-in is by email: the API sends a 6-digit code (`/auth/email/start` and `/auth/email/confirm`), with no password. Google and Apple login happens on the device; only the ID token goes to the API, which validates it. The password endpoints (`register`, `login`, `forgot-password`) are legacy and will be removed.
+- **App ↔ banner:** the banner is a single `banner.html` embedded in the app (generated by Vite with `vite-plugin-singlefile`) and loaded in a WebView. The app sends messages (`INIT`, `ITEM_CHECKED`, `CHAPTER_COMPLETED`, `SET_CHARACTER`, `SET_TIME_OF_DAY`, `PAUSE`/`RESUME`) and the banner answers with `READY`, `CHAPTER_TRANSITION_DONE` and `ERROR`. Every message is validated with Zod on both sides.
+- **Contracts:** `packages/contracts` is the single source of the data formats. If a schema changes, the typecheck of the three apps breaks in the same PR.
 
-## 5. A regra central: o servidor decide a progressão
+## 5. The central rule: the server decides progression
 
-Toda a regra de EXP, moedas, nível, capítulo, sequência (streak), desfazer e conquistas fica **só na API**, em `apps/api/src/modules/progression/domain`, como funções puras com teste (decisão de 2026-10-02; não existe pacote de domínio compartilhado). O app **não calcula EXP**.
+All the rules for EXP, coins, level, chapter, streak, undo and achievements live **only in the API**, in `apps/api/src/modules/progression/domain`, as pure functions with tests (decision of 2026-10-02; there is no shared domain package). The app **does not compute EXP**.
 
-Fluxo de um check:
+Flow of a check:
 
-1. O usuário toca no checkbox. O app vibra, anima (180 ms) e marca o item no cache **na hora** (otimista, só o estado do check).
-2. O app gera um `checkId` (UUID v4), manda `ITEM_CHECKED` ao banner na posição atual e chama `POST /v1/items/:id/checks`.
-3. A API, em uma única transação (`prisma.$transaction`): valida o check, grava em `item_checks`, atualiza sequência, `user_stats` e `story_progress`, avalia conquistas, e responde um `CheckResult` (EXP, moedas, nível, se subiu de nível, progresso do capítulo (EXP do nível), se concluiu o capítulo, conquistas desbloqueadas).
-4. O app reconcilia o cache com o `CheckResult` e mostra o toast de EXP e moedas; o personagem corre até a posição nova (a EXP do nível). Subida de nível e conquistas entram numa fila de modais, um de cada vez.
-5. Subiu de nível: o personagem chega ao portal e espera; o modal do capítulo concluído abre junto do de nível. No check seguinte o app envia `CHAPTER_COMPLETED` (fade da troca de cena) e o personagem recomeça na posição da EXP.
-6. Erro de rede: o check vai para a fila offline e continua marcado. Erro de regra (4xx): o app desfaz o otimismo e mostra o motivo.
+1. The user taps the checkbox. The app vibrates, animates (180 ms) and marks the item in the cache **at once** (optimistic, only the check state).
+2. The app generates a `checkId` (UUID v4), sends `ITEM_CHECKED` to the banner at the current position and calls `POST /v1/items/:id/checks`.
+3. The API, in a single transaction (`prisma.$transaction`): validates the check, saves it in `item_checks`, updates the streak, `user_stats` and `story_progress`, evaluates achievements, and answers a `CheckResult` (EXP, coins, level, whether it leveled up, chapter progress (level EXP), whether it completed the chapter, unlocked achievements).
+4. The app reconciles the cache with the `CheckResult` and shows the EXP and coins toast; the character runs to the new position (the level EXP). Level-ups and achievements enter a queue of modals, one at a time.
+5. Leveled up: the character reaches the portal and waits; the completed-chapter modal opens together with the level one. On the next check the app sends `CHAPTER_COMPLETED` (fade of the scene change) and the character restarts at the EXP position.
+6. Network error: the check goes to the offline queue and stays checked. Rule error (4xx): the app undoes the optimism and shows the reason.
 
-O `checkId` torna o check **idempotente**: repetir a chamada (ou reenviar pela fila offline) não duplica EXP.
+The `checkId` makes the check **idempotent**: repeating the call (or resending from the offline queue) does not duplicate EXP.
 
-Valores iniciais (ficam na tabela `game_config`, ajustáveis sem novo build): EXP 5/10/20 e moedas 1/2/4 por dificuldade (fácil/médio/difícil); EXP por capítulo 200, 400, 600, 800 e 1000 (depois do capítulo 5 o nível sobe de 1000 em 1000 e a história fica no cenário do 5); desmarcar nunca tira EXP, só moedas (3, 5, 10, 15 e 20 por capítulo); cada nível ganho conclui um capítulo da história ativa; bônus de 10 moedas ao subir de nível; 5 capítulos por história; hábitos sem limite diário de checks; virada do dia às 00:00 no fuso do perfil. O restante das regras (desfazer, conquistas, casos de borda) está em REQUISITOS.MD, seção "Regras complementares".
+Initial values (kept in the `game_config` table, adjustable without a new build): EXP 5/10/20 and coins 1/2/4 per difficulty (easy/medium/hard); EXP per chapter 200, 400, 600, 800 and 1000 (after chapter 5 the level rises every 1000 and the story stays in the scene of chapter 5); unchecking never takes EXP, only coins (3, 5, 10, 15 and 20 per chapter); each level gained completes a chapter of the active story; a bonus of 10 coins on leveling up; 5 chapters per story; habits with no daily limit of checks; the day rolls over at 00:00 in the profile time zone. The rest of the rules (undo, achievements, edge cases) is in REQUISITOS.MD, section "Regras complementares".
 
-## 6. Stack por projeto
+## 6. Stack per project
 
-| Projeto | Principais tecnologias |
-|---|---|
-| API | Node 24, NestJS 11, Prisma, PostgreSQL 16+, Zod + nestjs-zod, argon2, JWT, nestjs-pino, helmet, throttler, Terminus (`/health`), Swagger fora de produção, Vitest |
-| Banner | Vite, TypeScript; Mapa em CSS (`@keyframes`, só `transform` e `opacity`) e QG em canvas 2D com sprites LPC; Vitest + jsdom |
-| App | Expo (development build, não Expo Go), React Native, Expo Router, TanStack Query, Zustand, axios, react-hook-form + Zod, SecureStore, reanimated, i18next (pt-BR), google-signin, expo-apple-authentication, expo-notifications, Sentry, jest-expo |
-| Compartilhado | pnpm, Turborepo, TypeScript strict, ESLint 9 (flat config), Prettier, Husky, lint-staged, commitlint, GitHub Actions |
+| Project | Main technologies                                                                                                                                                                                              |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API     | Node 24, NestJS 11, Prisma, PostgreSQL 16+, Zod + nestjs-zod, argon2, JWT, nestjs-pino, helmet, throttler, Terminus (`/health`), Swagger outside production, Vitest                                              |
+| Banner  | Vite, TypeScript; Map in CSS (`@keyframes`, only `transform` and `opacity`) and HQ on 2D canvas with LPC sprites; Vitest + jsdom                                                                                |
+| App     | Expo (development build, not Expo Go), React Native, Expo Router, TanStack Query, Zustand, axios, react-hook-form + Zod, SecureStore, reanimated, i18next (pt-BR), google-signin, expo-apple-authentication, expo-notifications, Sentry, jest-expo |
+| Shared  | pnpm, Turborepo, strict TypeScript, ESLint 9 (flat config), Prettier, Husky, lint-staged, commitlint, GitHub Actions                                                                                            |
 
-## 7. Como rodar hoje
+## 7. How to run today
 
-Os passos completos estão no [README](../README.md). Em resumo: Node 24, pnpm 11 via corepack, `pnpm install`, PostgreSQL local com `docker compose up -d`, migrations e seed, e `pnpm run verify` para conferir tudo.
+The full steps are in the [README](../README.md). In short: Node 24, pnpm 11 through corepack, `pnpm install`, local PostgreSQL with `docker compose up -d`, migrations and seed, and `pnpm run verify` to check everything.
 
-## 8. Ambientes e hospedagem
+## 8. Environments and hosting
 
-- **Desenvolvimento local:** Postgres via `docker compose` (arquivo na raiz) e app em development build contra a API local ou a de desenvolvimento.
-- **Desenvolvimento e produção hospedados:** uma VPS em Docker, com nginx no host (80/443) e TLS. Regras: Postgres próprio do projeto em compose project separado, portas publicadas só em `127.0.0.1`, limites de memória e CPU por container, os dois ambientes em projetos e portas distintos, backup diário do Postgres com 7 dias de retenção, monitor externo no `/health`. A imagem da API é escaneada, assinada e verificada no servidor antes de subir (ver `docs/adr/`). Endereço, inventário e achados de auditoria ficam fora do repositório.
-- **Builds do app:** EAS Build e EAS Submit, perfis `development`, `preview` e `production`; OTA (EAS Update) para correções de JavaScript e do banner.
-- **E-mail:** Resend, para o código de entrada. Sem chave configurada (ambiente local), a API escreve o código no log.
-- **Identidade:** nome Next Journey; bundle id `br.com.wetechhub.app` (dev: `br.com.wetechhub.app.dev`), imutável a partir do primeiro build iOS com credenciais Apple.
+- **Local development:** Postgres through `docker compose` (file at the root) and the app as a development build against the local API or the development one.
+- **Hosted development and production:** a VPS running Docker, with nginx on the host (80/443) and TLS. Rules: the project's own Postgres in a separate compose project, ports published only on `127.0.0.1`, memory and CPU limits per container, the two environments in distinct projects and ports, a daily Postgres backup with 7 days of retention, an external monitor on `/health`. The API image is scanned, signed and verified on the server before it starts (see `docs/adr/`). Address, inventory and audit findings stay outside the repository.
+- **App builds:** EAS Build and EAS Submit, profiles `development`, `preview` and `production`; OTA (EAS Update) for JavaScript and banner fixes.
+- **Email:** Resend, for the sign-in code. Without a configured key (local environment), the API writes the code to the log.
+- **Identity:** name Next Journey; bundle id `br.com.wetechhub.app` (dev: `br.com.wetechhub.app.dev`), immutable from the first iOS build with Apple credentials.
 
-## 9. Como o trabalho é conduzido
+## 9. How the work is done
 
-- Trabalho em fases (histórico em [`fases/`](./fases/)), cada mudança de comportamento com proposta e spec no OpenSpec antes do código.
-- Cada mudança vira um PR pequeno com Conventional Commits (`feat(mobile): ...`, `chore: ...`). PR só entra com `pnpm run verify` e a CI verdes, revisão de código e varredura de segurança (ver [PROCESSO-DE-PR.md](./PROCESSO-DE-PR.md)).
-- Decisões difíceis de reverter viram ADR em `docs/adr/`. Datas sempre em ISO 8601.
+- Work in phases, with each behavior change having a proposal and a spec in OpenSpec before the code.
+- Each change becomes a small PR with Conventional Commits (`feat(mobile): ...`, `chore: ...`). A PR only goes in with `pnpm run verify` and CI green, a code review and a security scan (see [PROCESSO-DE-PR.md](./PROCESSO-DE-PR.md)).
+- Decisions that are hard to reverse become an ADR in `docs/adr/`. Dates always in ISO 8601.
 
-## 10. Decisões já tomadas (2026-10-02)
+## 10. Decisions already made (2026-10-02)
 
-- Regras de progressão num único lugar do back-end; sem pacote `@nextjourney/domain`.
-- Banner: Mapa em CSS; QG em canvas (decidido na Fase 6, com limite de 30 quadros por segundo e peso máximo de 1,5 MB).
-- Login Google com `@react-native-google-signin/google-signin`.
-- Rota do check: `POST /v1/items/:id/checks`.
-- Sem limite de checks por hábito.
-- Escolhas narrativas e escolha de mapa: backlog (fora da v1).
-- Excluir conta: sem tela dedicada, linha em Configurações › Conta com diálogo de confirmação (exigência das lojas).
-- Hospedagem própria, em contêineres.
+- Progression rules in a single place in the back end; no `@nextjourney/domain` package.
+- Banner: Map in CSS; HQ on canvas (decided in Phase 6, with a limit of 30 frames per second and a maximum weight of 1.5 MB).
+- Google login with `@react-native-google-signin/google-signin`.
+- Check route: `POST /v1/items/:id/checks`.
+- No limit of checks per habit.
+- Narrative choices and map choice: backlog (outside v1).
+- Delete account: no dedicated screen, a row in Configurações › Conta with a confirmation dialog (a store requirement).
+- Own hosting, in containers.
 
-## 11. Pendências conhecidas
+## 11. Known pending items
 
-- Publicar Termos de Uso e Política de Privacidade e ligar os links das telas de entrada.
-- Revisão jurídica da coleta de faixa de idade (opcional; nada depende dela).
-- Remover os endpoints de senha legados depois que as versões antigas do app saírem de uso.
-- Medir o banner em aparelho real e escrever o ADR-0003 (WebView para o banner).
-- Builds de loja (EAS) e testes de interface (Maestro) na CI.
+- Publish the Terms of Use and Privacy Policy and connect the links on the sign-in screens.
+- Legal review of the age range collection (optional; nothing depends on it).
+- Remove the legacy password endpoints after the old app versions fall out of use.
+- Measure the banner on a real device and write ADR-0003 (WebView for the banner).
+- Store builds (EAS) and interface tests (Maestro) in CI.
