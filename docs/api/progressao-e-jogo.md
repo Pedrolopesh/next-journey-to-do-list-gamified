@@ -1,53 +1,53 @@
-# Progressão e regras de jogo
+# Progression and game rules
 
-Código em `apps/api/src/modules/progression/domain` (funções puras, uma por regra, cada uma com teste) e `modules/achievements`. **O servidor decide a progressão**; o app nunca calcula EXP. Os valores abaixo vêm de `packages/contracts` (`DEFAULT_GAME_CONFIG`) e da tabela `game_config`, que pode ser ajustada sem publicar o app (sem registro, vale o valor inicial).
+Code in `apps/api/src/modules/progression/domain` (pure functions, one per rule, each with a test) and `modules/achievements`. **The server decides progression**; the app never computes EXP. The values below come from `packages/contracts` (`DEFAULT_GAME_CONFIG`) and from the `game_config` table, which can be adjusted without publishing the app (with no row, the initial value applies).
 
-## Valores iniciais
+## Initial values
 
-| Item | Fácil | Médio | Difícil |
-|---|---|---|---|
-| EXP por check | 5 | 10 | 20 |
-| Moedas por check | 1 | 2 | 4 |
+| Item           | Easy | Medium | Hard |
+| -------------- | ---- | ------ | ---- |
+| EXP per check  | 5    | 10     | 20   |
+| Coins per check | 1   | 2      | 4    |
 
-- EXP para concluir cada nível: 200, 400, 600, 800 e 1000; do nível 5 em diante, 1000. Passando do fim de uma tabela, vale o último valor.
-- Bônus de moedas por nível ganho: 10. Cada história tem 5 capítulos.
-- Moedas perdidas ao desmarcar, por capítulo: 3, 5, 10, 15 e 20 (depois do fim, o último valor).
+- EXP to complete each level: 200, 400, 600, 800 and 1000; from level 5 on, 1000. Past the end of a table, the last value applies.
+- Coin bonus per level gained: 10. Each story has 5 chapters.
+- Coins lost on uncheck, per chapter: 3, 5, 10, 15 and 20 (after the end, the last value).
 
-## Datas
+## Dates
 
-"Dia" é o dia **local** do usuário (`AAAA-MM-DD`), no fuso IANA do perfil: a virada é às 00:00 nesse fuso. As funções de domínio recebem a data ou o instante como argumento e **nunca leem o relógio** (o relógio é injetado), então os testes controlam o tempo. A aritmética de datas usa UTC só como calendário. Fuso inválido lança `RangeError`.
+"Day" is the user's **local** day (`YYYY-MM-DD`), in the profile IANA time zone: the rollover is at 00:00 in that zone. The domain functions receive the date or the instant as an argument and **never read the clock** (the clock is injected), so the tests control time. Date arithmetic uses UTC only as a calendar. An invalid time zone throws `RangeError`.
 
-## Marcar um item (`applyCheck`)
+## Checking an item (`applyCheck`)
 
-- EXP e moedas vêm da dificuldade. Hábito não tem limite diário.
-- Se o item já rendeu EXP hoje (marcado, desmarcado e marcado de novo), rende **só as moedas**.
-- O EXP que sobra ao subir de nível é carregado; um check pode subir mais de um nível. Cada nível ganho rende o bônus de moedas.
-- Cada nível ganho conclui um capítulo da **história ativa**, até a história terminar. O progresso do capítulo é a EXP dentro do nível. Sem história ativa (onboarding incompleto) o check rende EXP e moedas, mas não conta capítulo.
-- O resultado vira um registro (`item_checks`) com tudo que o check fez, que é a entrada exata do desfazer.
+- EXP and coins come from the difficulty. A habit has no daily limit.
+- If the item already earned EXP today (checked, unchecked and checked again), it earns **only the coins**.
+- The EXP left over when leveling up is carried over; one check can raise more than one level. Each level gained earns the coin bonus.
+- Each level gained completes a chapter of the **active story**, until the story ends. Chapter progress is the EXP within the level. With no active story (incomplete onboarding) the check earns EXP and coins but does not count a chapter.
+- The result becomes a record (`item_checks`) with everything the check did, which is the exact input of the undo.
 
-## Desmarcar (`undoCheck`)
+## Unchecking (`undoCheck`)
 
-- Vale em qualquer dia e em qualquer capítulo.
-- **EXP, nível e capítulo nunca voltam**: só as moedas diminuem, pela perda do capítulo atual, nunca abaixo de zero.
-- O bônus de moedas por nível não é revertido.
+- Works on any day and in any chapter.
+- **EXP, level and chapter never go back**: only the coins decrease, by the loss of the current chapter, never below zero.
+- The coin bonus per level is not reverted.
 
-## Diário: atraso e sequência
+## Daily: overdue and streak
 
-- Um diário está **atrasado** quando o último dia agendado antes de hoje terminou sem check. Só conta dias a partir da criação. Marcar hoje (mesmo um atrasado) tira o atraso.
-- **Sequência:** dias seguidos com check, voltando a partir de hoje. Dia agendado sem check (que não seja hoje) quebra; dias não agendados não quebram. Hoje ainda sem check não quebra (o dia não terminou). Marcar um atrasado hoje reinicia em 1.
+- A daily is **overdue** when the last scheduled day before today ended without a check. It only counts days from creation. Checking today (even an overdue one) clears the overdue state.
+- **Streak:** consecutive days with a check, going back from today. A scheduled day with no check (that is not today) breaks it; unscheduled days do not. Today with no check yet does not break it (the day has not ended). Checking an overdue daily today restarts at 1.
 
-## Dias seguidos completos (Chama)
+## Complete consecutive days (Flame)
 
-Conta os dias seguidos em que **todo** diário agendado foi concluído no próprio dia, voltando a partir de hoje. Um dia sem nenhum diário agendado é **neutro**: não conta e não quebra. Hoje incompleto ainda não quebra (o dia não terminou); um dia anterior incompleto quebra. Os dias perfeitos (3 ou mais diários agendados, todos feitos) olham só a janela de 90 dias, porque o retroativo tem limite de volta: alargar a janela sem carregar mais histórico faria a conquista contar a menos.
+Counts the consecutive days on which **every** scheduled daily was completed on the same day, going back from today. A day with no scheduled daily is **neutral**: it neither counts nor breaks. An incomplete today does not break it yet (the day has not ended); an incomplete earlier day breaks it. The perfect days (3 or more scheduled dailies, all done) look only at the 90-day window, because the backfill has a lookback limit: widening the window without loading more history would make the achievement count too few.
 
-## Conquistas
+## Achievements
 
-O catálogo (slugs, classes, ícones) está em `packages/contracts`; o critério de cada uma é uma função pura em `domain/achievements.ts`, e o serviço monta o contexto a partir do banco.
+The catalog (slugs, classes, icons) is in `packages/contracts`; each criterion is a pure function in `domain/achievements.ts`, and the service builds the context from the database.
 
-- **Avaliação dentro da transação** da ação (check, item, categoria, personagem ou evento do app). Cada conquista é liberada **uma só vez** (a chave primária impede duplicar).
-- As de **coleção** dependem das outras: entram na volta seguinte, e o serviço repete a avaliação até estabilizar (no máximo 4 voltas).
-- **Um modal por ação:** tudo que foi liberado fica pendente (`notifiedAt` nulo), mas a resposta traz só a pendente **mais antiga** (empate: ordem do catálogo). As outras aparecem, uma por vez, nas ações seguintes. O app confirma o aviso por `POST /v1/achievements/ack`, e só as conquistas do próprio usuário.
-- **Retroativo** (`backfillAll`): libera, já como avisadas, o que cada usuário já cumpria, sem abrir modal.
-- Os diários são avaliados numa janela de 90 dias (cobre a Chama de 30 dias e os dias perfeitos recentes); quem usa o app há mais tempo só enxerga essa janela.
-- Slug que saiu do catálogo não trava a fila das válidas. A galeria mostra progresso numérico (nulo quando o critério é um evento); surpresa bloqueada não mostra o texto.
-- **Itens de exemplo não contam** como criação (nem como item ativo ou anotação), mas marcar ou concluir um exemplo conta normalmente. Detalhes em `openspec/specs/starter-items/spec.md`.
+- **Evaluation inside the transaction** of the action (check, item, category, character or app event). Each achievement is unlocked **only once** (the primary key prevents duplicates).
+- The **collection** ones depend on the others: they enter on the next pass, and the service repeats the evaluation until it settles (at most 4 passes).
+- **One modal per action:** everything unlocked stays pending (`notifiedAt` null), but the response brings only the **oldest** pending one (tie: catalog order). The others show up, one at a time, in the following actions. The app confirms the notice through `POST /v1/achievements/ack`, and only for the user's own achievements.
+- **Backfill** (`backfillAll`): unlocks, already marked as notified, what each user already met, without opening a modal.
+- Dailies are evaluated in a 90-day window (it covers the 30-day Flame and the recent perfect days); whoever has used the app for longer only sees that window.
+- A slug that left the catalog does not block the queue of valid ones. The gallery shows numeric progress (null when the criterion is an event); a locked surprise does not show the text.
+- **Starter items do not count** as creation (nor as an active item or a note), but checking or completing an example counts normally. Details in `openspec/specs/starter-items/spec.md`.

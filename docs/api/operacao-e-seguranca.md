@@ -1,78 +1,78 @@
-# Operação e segurança da API
+# API operation and security
 
-Código em `apps/api/src/common`, `config`, `modules/security`, `app.module.ts` e `setup-app.ts`. Checklist de segurança por PR: [`CONTRIBUTING.md`](../../CONTRIBUTING.md).
+Code in `apps/api/src/common`, `config`, `modules/security`, `app.module.ts` and `setup-app.ts`. Per-PR security checklist: [`CONTRIBUTING.md`](../../CONTRIBUTING.md).
 
-## Guard global (`JwtAuthGuard`)
+## Global guard (`JwtAuthGuard`)
 
-Toda rota nasce **protegida**; `@Public()` marca a exceção. O guard valida o JWT de acesso (algoritmo fixo HS256) e confere que a conta ainda existe (busca por chave primária, sem cache), então conta excluída perde o acesso na hora, sem esperar os 15 minutos do token.
+Every route is born **protected**; `@Public()` marks the exception. The guard validates the access JWT (fixed algorithm HS256) and checks that the account still exists (primary key lookup, no cache), so a deleted account loses access at once, without waiting for the 15 minutes of the token.
 
-- O id do usuário e o da sessão são UUIDs: qualquer outra coisa nem chega ao banco.
-- Com `sid`, a sessão precisa continuar ativa: encerrar um aparelho (ou trocar a senha, ou sair) derruba o token de acesso na hora, na mesma consulta. Token antigo sem `sid` só confere a conta.
-- Erro de banco no guard **não vira 401**: nega com 5xx, porque uma falha temporária não pode deslogar o app, que trata 401 como sessão encerrada.
+- The user id and the session id are UUIDs: anything else never reaches the database.
+- With `sid`, the session must still be active: ending a device (or changing the password, or signing out) drops the access token at once, in the same query. An old token without `sid` only checks the account.
+- A database error in the guard **does not become 401**: it denies with 5xx, because a temporary failure must not log the app out, which treats 401 as an ended session.
 
-## Erros e validação
+## Errors and validation
 
-- Toda resposta de erro tem o formato `{ code, message, requestId }`. Erro de regra de negócio (`AppError`) tem código estável: o app escolhe a mensagem pelo `code`. **5xx nunca vaza detalhes**; o erro inesperado é registrado com a stack, sem o corpo da requisição.
-- A entrada é validada com o schema Zod do contrato; o erro nunca devolve o valor recebido (senhas).
+- Every error response has the format `{ code, message, requestId }`. A business rule error (`AppError`) has a stable code: the app picks the message by `code`. **5xx never leaks details**; the unexpected error is logged with the stack, without the request body.
+- Input is validated with the contract Zod schema; the error never returns the received value (passwords).
 
 ## Logs
 
-- Pino, um `requestId` por requisição: usa o `x-request-id` recebido, se for válido, ou gera um UUID, e o devolve no cabeçalho.
-- Só **metadados** (id, método, URL sem query, status): o corpo da requisição nunca é logado.
-- Defesa em profundidade: mesmo que algo seja logado por engano, `authorization`, `cookie`, `password`, `token`, `refreshToken`, `accessToken` e `idToken` são censurados.
-- O destinatário de e-mail nunca é logado; o texto (com código ou link) só vai para o log com `NODE_ENV=development` e sem `RESEND_API_KEY`, onde nenhum e-mail sai; nos outros ambientes sem chave só sai o aviso de que o e-mail não foi enviado.
+- Pino, one `requestId` per request: it uses the received `x-request-id` if valid, or generates a UUID, and returns it in the header.
+- Only **metadata** (id, method, URL without query, status): the request body is never logged.
+- Defense in depth: even if something is logged by mistake, `authorization`, `cookie`, `password`, `token`, `refreshToken`, `accessToken` and `idToken` are redacted.
+- The email recipient is never logged; the text (with code or link) only goes to the log with `NODE_ENV=development` and without `RESEND_API_KEY`, where no email goes out; in other environments without a key, only the notice that the email was not sent is logged.
 
-## Eventos de segurança
+## Security events
 
-`SecurityEvents` grava uma linha estruturada por evento (campo `security`), conta por tipo em janela deslizante e alerta quando passa do limite. Os eventos têm nome fixo e **nunca** carregam e-mail, senha, token nem corpo de requisição; o IP vai mascarado (IPv4 perde o último número, IPv6 fica com os dois primeiros grupos).
+`SecurityEvents` writes one structured line per event (`security` field), counts per type in a sliding window and alerts when it passes the limit. The events have fixed names and **never** carry email, password, token or request body; the IP is masked (IPv4 loses the last number, IPv6 keeps the first two groups).
 
-| Evento | Alerta quando passa de | Janela |
-|---|---|---|
-| `login_failed` | 30 | 5 min |
-| `rate_limited` | 100 | 5 min |
-| `refresh_reuse_detected` | 5 | 10 min |
-| `reauth_failed` | 10 | 10 min |
-| `password_reset_requested` | 30 | 10 min |
+| Event                      | Alert when it exceeds | Window |
+| -------------------------- | --------------------- | ------ |
+| `login_failed`             | 30                    | 5 min  |
+| `rate_limited`             | 100                   | 5 min  |
+| `refresh_reuse_detected`   | 5                     | 10 min |
+| `reauth_failed`            | 10                    | 10 min |
+| `password_reset_requested` | 30                    | 10 min |
 
-O alerta sai no log em nível `error` com `alert: true` (uma vez por janela) e, se `SECURITY_ALERT_WEBHOOK_URL` estiver definido, num POST com texto curto (tipo, quantidade, janela), sem dado pessoal. Falha do webhook não afeta a API. A contagem é **por instância**.
+The alert goes to the log at `error` level with `alert: true` (once per window) and, if `SECURITY_ALERT_WEBHOOK_URL` is set, in a POST with a short text (type, count, window), with no personal data. A webhook failure does not affect the API. The count is **per instance**.
 
-## Camada HTTP
+## HTTP layer
 
-- Throttler por IP por minuto: geral (`THROTTLE_LIMIT`, 120) e, só nas rotas de autenticação, um mais rígido (`THROTTLE_AUTH_LIMIT`, 10).
-- `helmet` ligado. A página do Swagger usa scripts inline, então a CSP só relaxa quando ele está ligado.
-- CORS com lista explícita (`CORS_ORIGINS`); sem lista, nenhuma origem web é aceita (o app nativo não precisa).
-- Atrás de proxy reverso, `TRUST_PROXY=true` faz a API confiar no primeiro salto, para o limite enxergar o IP real.
-- Versionamento `/v1`; o health fica na raiz e é público, sem dado sensível.
+- Throttler per IP per minute: general (`THROTTLE_LIMIT`, 120) and, only on the authentication routes, a stricter one (`THROTTLE_AUTH_LIMIT`, 10).
+- `helmet` on. The Swagger page uses inline scripts, so the CSP only relaxes when it is on.
+- CORS with an explicit list (`CORS_ORIGINS`); with no list, no web origin is accepted (the native app does not need it).
+- Behind a reverse proxy, `TRUST_PROXY=true` makes the API trust the first hop, so the limit sees the real IP.
+- `/v1` versioning; the health endpoint is at the root and is public, with no sensitive data.
 
-## Variáveis de ambiente
+## Environment variables
 
-A API **não sobe** se faltar ou estiver inválida alguma obrigatória, e a mensagem de erro lista só os **nomes**, nunca os valores. Modelo comentado: `apps/api/.env.example`. Opcional deixada vazia (`CHAVE=`) vale como ausente.
+The API **does not start** if a required one is missing or invalid, and the error message lists only the **names**, never the values. Commented template: `apps/api/.env.example`. An optional one left empty (`KEY=`) counts as absent.
 
-| Variável | Para que serve | Padrão |
-|---|---|---|
-| `DATABASE_URL`, `JWT_ACCESS_SECRET` (32+ caracteres) | obrigatórias | (nenhum) |
-| `NODE_ENV`, `HOST`, `PORT`, `LOG_LEVEL` | execução | `development`, `127.0.0.1`, `3000`, `info` |
-| `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_KEY_ID` | emissor, audiência e `kid` da chave atual | `nextjourney-api`, `nextjourney-app`, `k1` |
-| `JWT_ACCESS_SECRET_PREVIOUS`, `JWT_PREVIOUS_KEY_ID` | chave anterior, válida até o fim do token na troca do segredo | vazio |
-| `ACCESS_TOKEN_TTL_SECONDS`, `REFRESH_TOKEN_TTL_DAYS` | validade dos tokens | 900, 365 |
-| `RESEND_API_KEY`, `MAIL_FROM` | e-mail transacional; sem chave nada é enviado (desenvolvimento) | vazio |
-| `PASSWORD_RESET_URL`, `PASSWORD_RESET_TTL_MINUTES` | deep link e validade do link de nova senha | `nextjourney://reset-password`, 30 |
-| `GOOGLE_CLIENT_IDS`, `APPLE_CLIENT_ID` | ids públicos do login social; vazio = recurso indisponível | vazio |
-| `CORS_ORIGINS`, `TRUST_PROXY` | camada HTTP | vazio, `false` |
-| `THROTTLE_LIMIT`, `THROTTLE_AUTH_LIMIT` | requisições por minuto por IP | 120, 10 |
-| `AUTH_MIN_RESPONSE_MS` | piso de tempo das rotas anti-enumeração (0 só fora de produção, teto de 5000) | 250 |
-| `ACCOUNT_PURGE_DAYS` | dias até a remoção definitiva de uma conta excluída | 30 |
-| `SECURITY_ALERT_WEBHOOK_URL` | aviso opcional de contagem anormal (https) | vazio |
-| `SEED_STARTER_ITEMS` | cria os itens de exemplo quando a conta passa a valer | `true` |
+| Variable                                                  | Purpose                                                               | Default                                        |
+| --------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------- |
+| `DATABASE_URL`, `JWT_ACCESS_SECRET` (32+ characters)      | required                                                              | (none)                                         |
+| `NODE_ENV`, `HOST`, `PORT`, `LOG_LEVEL`                   | runtime                                                               | `development`, `127.0.0.1`, `3000`, `info`     |
+| `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_KEY_ID`                | issuer, audience and `kid` of the current key                         | `nextjourney-api`, `nextjourney-app`, `k1`     |
+| `JWT_ACCESS_SECRET_PREVIOUS`, `JWT_PREVIOUS_KEY_ID`       | previous key, valid until the token ends during a secret rotation     | empty                                          |
+| `ACCESS_TOKEN_TTL_SECONDS`, `REFRESH_TOKEN_TTL_DAYS`      | token validity                                                        | 900, 365                                       |
+| `RESEND_API_KEY`, `MAIL_FROM`                             | transactional email; without a key nothing is sent (development)      | empty                                          |
+| `PASSWORD_RESET_URL`, `PASSWORD_RESET_TTL_MINUTES`        | deep link and validity of the new-password link                       | `nextjourney://reset-password`, 30             |
+| `GOOGLE_CLIENT_IDS`, `APPLE_CLIENT_ID`                    | public social login ids; empty = feature unavailable                  | empty                                          |
+| `CORS_ORIGINS`, `TRUST_PROXY`                             | HTTP layer                                                            | empty, `false`                                 |
+| `THROTTLE_LIMIT`, `THROTTLE_AUTH_LIMIT`                   | requests per minute per IP                                            | 120, 10                                        |
+| `AUTH_MIN_RESPONSE_MS`                                    | time floor of the anti-enumeration routes (0 only outside production, ceiling of 5000) | 250                          |
+| `ACCOUNT_PURGE_DAYS`                                      | days until a deleted account is removed for good                      | 30                                             |
+| `SECURITY_ALERT_WEBHOOK_URL`                              | optional notice of an abnormal count (https)                          | empty                                          |
+| `SEED_STARTER_ITEMS`                                      | creates the starter items when the account becomes valid              | `true`                                         |
 
-## Troca do segredo do JWT
+## JWT secret rotation
 
-O token de acesso leva emissor (`iss`), audiência (`aud`) e o identificador da chave (`kid`). A verificação aceita a chave atual e, durante a troca, a anterior. Os tokens de acesso duram 15 minutos, então a janela é curta. Procedimento, sem valores:
+The access token carries issuer (`iss`), audience (`aud`) and the key identifier (`kid`). Verification accepts the current key and, during a rotation, the previous one. Access tokens last 15 minutes, so the window is short. Procedure, without values:
 
-1. Gerar um segredo novo (mínimo de 32 caracteres) e guardar no gerenciador de segredos.
-2. No ambiente da API: mover o segredo atual para `JWT_ACCESS_SECRET_PREVIOUS` e o `JWT_KEY_ID` atual para `JWT_PREVIOUS_KEY_ID`; colocar o segredo novo em `JWT_ACCESS_SECRET` e um `JWT_KEY_ID` novo (diferente do anterior).
-3. Reiniciar a API. Os tokens emitidos com a chave anterior continuam valendo até expirar; os novos já saem com a chave nova.
-4. Depois de pelo menos o tempo de vida do token (15 minutos), remover `JWT_ACCESS_SECRET_PREVIOUS` e `JWT_PREVIOUS_KEY_ID` e reiniciar de novo.
-5. Se o segredo vazou: pule a espera, remova a chave anterior na hora (todos refazem o login por refresh) e revogue os refresh tokens se houver suspeita de uso indevido.
+1. Generate a new secret (at least 32 characters) and store it in the secrets manager.
+2. In the API environment: move the current secret to `JWT_ACCESS_SECRET_PREVIOUS` and the current `JWT_KEY_ID` to `JWT_PREVIOUS_KEY_ID`; put the new secret in `JWT_ACCESS_SECRET` and a new `JWT_KEY_ID` (different from the previous one).
+3. Restart the API. Tokens issued with the previous key stay valid until they expire; new ones already come out with the new key.
+4. After at least the token lifetime (15 minutes), remove `JWT_ACCESS_SECRET_PREVIOUS` and `JWT_PREVIOUS_KEY_ID` and restart again.
+5. If the secret leaked: skip the wait, remove the previous key at once (everyone signs in again through refresh) and revoke the refresh tokens if misuse is suspected.
 
-A troca de `JWT_ISSUER` ou `JWT_AUDIENCE` invalida todos os tokens em circulação; o app renova sozinho pelo refresh token.
+Changing `JWT_ISSUER` or `JWT_AUDIENCE` invalidates all tokens in circulation; the app renews on its own through the refresh token.
