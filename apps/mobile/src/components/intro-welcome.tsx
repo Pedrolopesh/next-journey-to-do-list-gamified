@@ -13,8 +13,8 @@ const STEPS: readonly { art: PixelArtName; key: 'character' | 'story' | 'check' 
 ];
 
 /**
- * First screen of the intro: the animated book of the app, a welcome and the three steps ahead.
- * Nothing here is saved.
+ * First screen of the intro below the title: the animated book of the app, a welcome and the three
+ * steps ahead. Nothing here is saved.
  */
 export function IntroWelcome() {
   const { t } = useTranslation();
@@ -23,12 +23,7 @@ export function IntroWelcome() {
       <View style={styles.frame}>
         <AnimatedLogo />
       </View>
-      <View style={styles.speech}>
-        <Text style={styles.speechTitle} accessibilityRole="header">
-          {t('tutorial.welcome.title')}
-        </Text>
-        <Text style={styles.speechText}>{t('tutorial.welcome.text')}</Text>
-      </View>
+      <Text style={styles.speechText}>{t('tutorial.welcome.text')}</Text>
       <Text style={styles.kicker}>{t('tutorial.welcome.kicker')}</Text>
       <View style={styles.steps}>
         {STEPS.map((step) => (
@@ -61,16 +56,12 @@ const styles = StyleSheet.create({
     borderColor: colors.brand.gold,
     backgroundColor: colors.bg.surface,
   },
-  speech: {
-    gap: space[4],
-    padding: space[16],
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.border.strong,
-    backgroundColor: colors.bg.surface,
+  speechText: {
+    color: colors.text.primary,
+    fontSize: fontSize[15],
+    lineHeight: fontSize[15] * 1.4,
+    textAlign: 'center',
   },
-  speechTitle: { color: colors.brand.primaryLight, fontSize: fontSize[16], fontWeight: '700' },
-  speechText: { color: colors.text.primary, fontSize: fontSize[14] },
   kicker: {
     color: colors.text.muted,
     fontSize: fontSize[12],

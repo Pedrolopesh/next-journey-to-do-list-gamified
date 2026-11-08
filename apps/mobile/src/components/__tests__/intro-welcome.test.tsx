@@ -17,7 +17,8 @@ beforeEach(() => {
 describe('intro welcome', () => {
   it('shows the welcome and the three steps', async () => {
     await render(<IntroWelcome />);
-    expect(screen.getByText('Bem-vindo ao Next Journey')).toBeTruthy();
+    expect(screen.getByText(/cada tarefa que você conclui é um passo/)).toBeTruthy();
+    expect(screen.queryByText('Bem-vindo ao Next Journey')).toBeNull();
     expect(screen.getByText('personagem')).toBeTruthy();
     expect(screen.getByText('história')).toBeTruthy();
     expect(screen.getByText('e evolua')).toBeTruthy();
@@ -26,5 +27,15 @@ describe('intro welcome', () => {
   it('the two-line title is read as a single sentence', async () => {
     await render(<PixelTitle lead="Seja Bem vindo, A sua" accent="próxima Jornada" />);
     expect(screen.getByLabelText('Seja Bem vindo, A sua próxima Jornada')).toBeTruthy();
+  });
+
+  it('the title is the heading of the welcome and appears only once', async () => {
+    await render(
+      <>
+        <PixelTitle lead="Seja Bem vindo, A sua" accent="próxima Jornada" />
+        <IntroWelcome />
+      </>,
+    );
+    expect(screen.getAllByRole('header')).toHaveLength(1);
   });
 });

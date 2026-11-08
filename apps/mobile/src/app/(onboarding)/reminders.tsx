@@ -57,6 +57,7 @@ export default function RemindersScreen() {
 
   return (
     <OnboardingScreen
+      noReturn
       preview={<CharacterPreview layers={characterLayers(me?.character ?? null)} />}
       title={t('onboarding.reminders.title')}
       subtitle={t('onboarding.reminders.text')}

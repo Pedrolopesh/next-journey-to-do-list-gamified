@@ -73,11 +73,11 @@ export default function TutorialScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        <PixelTitle lead={t('tutorial.titleLead')} accent={t('tutorial.titleAccent')} />
         {welcome ? (
           <IntroWelcome />
         ) : (
           <>
-            <PixelTitle lead={t('tutorial.titleLead')} accent={t('tutorial.titleAccent')} />
             {step === 'slide1' ? <IntroWalkingHero look={DEFAULT_LOOK} /> : null}
             {step === 'slide2' ? <IntroCheckDemo /> : null}
             {step === 'slide3' ? <IntroScenery look={DEFAULT_LOOK} /> : null}
