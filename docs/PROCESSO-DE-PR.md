@@ -1,62 +1,62 @@
-# Processo de PR: da branch ao merge
+# PR process: from branch to merge
 
-Objetivo: nenhum PR sobe com erro que uma máquina acharia, e todo PR é fácil de revisar. As etapas abaixo valem para qualquer pessoa que contribua.
+Goal: no PR goes up with an error a machine would find, and every PR is easy to review. The steps below apply to anyone who contributes.
 
-## 1. Antes de abrir o PR (local)
+## 1. Before opening the PR (local)
 
-1. `git pull origin main` e uma branch `<tipo>/<slug>`.
-2. Commits: Conventional Commits **em inglês** e em minúscula, **sem corpo** e **sem atribuição a IA** (conferido por `commitlint`).
-3. Mudança de comportamento, contrato ou regra de jogo: proposta no OpenSpec (`/opsx:propose`) antes do código.
-4. `pnpm run verify` (ver abaixo). Só segue com tudo verde.
-5. Revise o diff: código novo em inglês e comentários só onde o código não diz sozinho (regras 11 e 12 do `CONTRIBUTING.md`).
-6. Revisão de código da branch (`/code-review` ou revisão de outra pessoa). Corrija tudo que for relevante; o que ficar pendente vai para uma issue com o motivo, e para a seção "Risks and pending items" do PR.
-7. Descrição no padrão do `.github/PULL_REQUEST_TEMPLATE.md`, **em inglês** (veja a seção 5).
+1. `git pull origin main` and a `<type>/<slug>` branch.
+2. Commits: Conventional Commits **in English** and lowercase, **with no body** and **with no AI attribution** (checked by `commitlint`).
+3. A change in behavior, contract or game rule: an OpenSpec proposal (`/opsx:propose`) before the code.
+4. `pnpm run verify` (see below). Only go on with everything green.
+5. Review the diff: new code in English and comments only where the code does not say it by itself (rules 11 and 12 of `CONTRIBUTING.md`).
+6. Code review of the branch (`/code-review` or another person's review). Fix everything relevant; what stays pending goes to an issue with the reason, and to the "Risks and pending items" section of the PR.
+7. Description following `.github/PULL_REQUEST_TEMPLATE.md`, **in English** (see section 5).
 
-## 2. O que `pnpm run verify` confere
+## 2. What `pnpm run verify` checks
 
-| # | Etapa | Ferramenta |
-|---|---|---|
-| 1 | Mensagens dos commits | `commitlint` (`scripts/check-commits.sh`) |
-| 2 | Lint, tipos, testes unitários e build de todos os pacotes | Turborepo |
-| 3 | Regras de negócio contra o banco (e2e da API) | Vitest + Supertest + Postgres de teste |
-| 4 | Propostas do OpenSpec alteradas | `openspec validate` (`scripts/check-openspec.sh`) |
-| 5 | Código duplicado (limite 2%) | `jscpd` (`.jscpd.json`) |
-| 6 | Segredos, IPs, histórico, autoria e dependências | `scripts/security-scan.sh` (modo completo) |
-| 7 | Árvore limpa | `git status` |
+| #   | Step                                                     | Tool                                         |
+| --- | -------------------------------------------------------- | -------------------------------------------- |
+| 1   | Commit messages                                          | `commitlint` (`scripts/check-commits.sh`)    |
+| 2   | Lint, types, unit tests and build of all packages        | Turborepo                                    |
+| 3   | Business rules against the database (API e2e)            | Vitest + Supertest + test Postgres           |
+| 4   | Changed OpenSpec proposals                               | `openspec validate` (`scripts/check-openspec.sh`) |
+| 5   | Duplicated code (2% limit)                               | `jscpd` (`.jscpd.json`)                      |
+| 6   | Secrets, IPs, history, authorship and dependencies       | `scripts/security-scan.sh` (full mode)       |
+| 7   | Clean tree                                               | `git status`                                 |
 
-`SKIP_E2E=1 pnpm run verify` pula o e2e quando não há Postgres local. A CI roda tudo isso (menos o completo do passo 6) a cada PR.
+`SKIP_E2E=1 pnpm run verify` skips the e2e when there is no local Postgres. CI runs all of this (except the full mode of step 6) on every PR.
 
 ## 3. CI (`.github/workflows/ci.yml`)
 
-- Job `check`: commits do PR, lint, tipos, testes, build, e2e da API (PostgreSQL que já vem no runner), OpenSpec, duplicação e varredura de segredos.
-- Job `descricao`: título no formato `tipo: assunto` e as cinco seções do template; bloqueia citação de ferramenta de IA.
-- Ações oficiais com versão fixada; nenhum segredo de repositório no fluxo.
-- Fora da CI, por ora: testes de interface (Maestro, precisam de emulador). Rode antes do PR se mexeu em tela (`docs/TESTES.md`).
+- `check` job: PR commits, lint, types, tests, build, API e2e (the PostgreSQL that comes with the runner), OpenSpec, duplication and secret scan.
+- `descricao` job: title in the `type: subject` format and the five template sections; it blocks mentions of AI tools.
+- Official actions with pinned versions; no repository secret in the flow.
+- Outside CI, for now: interface tests (Maestro, they need an emulator). Run them before the PR if you touched a screen (`docs/TESTES.md`).
 
-## 4. Revisão de segurança, em todas as frentes
+## 4. Security review, on every front
 
-Percorra o checklist do `CONTRIBUTING.md` para o que mudou:
+Go through the `CONTRIBUTING.md` checklist for what changed:
 
-- **API**: rota nasce protegida, entrada e saída com Zod, `select`/DTO (nunca o model inteiro), objeto do próprio usuário (IDOR), transação para contadores, sem dado sensível em log.
-- **App**: tokens só no SecureStore, nada sensível em AsyncStorage, URL ou log; validação no cliente é só UX.
-- **Banner/laboratório**: sem rede, sem estado, mensagens validadas; o laboratório é só de desenvolvimento.
-- **Contratos**: mudança de contrato e de consumidores no mesmo PR.
-- **Dependências**: nome exato, versão fixada, lockfile junto, `pnpm audit` sem alta ou crítica (exceções documentadas em `pnpm-workspace.yaml`).
-- Não existe app administrativo neste repositório; se vier a existir, entra nesta lista.
+- **API**: the route is born protected, input and output with Zod, `select`/DTO (never the whole model), the user's own object (IDOR), a transaction for counters, no sensitive data in logs.
+- **App**: tokens only in SecureStore, nothing sensitive in AsyncStorage, URL or log; client validation is only UX.
+- **Banner/lab**: no network, no state, validated messages; the lab is for development only.
+- **Contracts**: a contract change and the consumers' change in the same PR.
+- **Dependencies**: exact name, pinned version, lockfile together, `pnpm audit` with no high or critical (exceptions documented in `pnpm-workspace.yaml`).
+- There is no admin app in this repository; if one ever exists, it goes into this list.
 
-## 4.1 Qualidade e duplicação
+## 4.1 Quality and duplication
 
-- Procure no repositório antes de criar (reuso). Trecho repetido em dois lugares vira função ou módulo compartilhado.
-- `pnpm run duplicates` falha acima de 2%. Arte gerada (`qg/scenes`) e dados de pixel art ficam de fora.
-- Dívida que não cabe no PR vira uma issue no GitHub, com o motivo, nunca fica só na cabeça de alguém.
+- Search the repository before creating (reuse). Code repeated in two places becomes a shared function or module.
+- `pnpm run duplicates` fails above 2%. Generated art (`qg/scenes`) and pixel art data are left out.
+- Debt that does not fit in the PR becomes a GitHub issue, with the reason; it never stays only in someone's head.
 
-## 5. Abrir e mesclar
+## 5. Opening and merging
 
-- Só com a aprovação de quem mantém o projeto. Revise o próprio diff antes de abrir.
-- Título e descrição **em inglês**, curtos e declarativos, com as seções `## What changes`, `## Why`, `## How it was verified`, `## Risks and pending items` e `## Security` (a CI confere esses títulos). A lista de caixas do template pode virar frases curtas (padrão dos PRs da infra). Diga também o que não foi verificado.
-- Sem rodapé de ferramenta, sem co-autor e sem menção a IA ou sessão, no título, no corpo e nos commits. A CI bloqueia as formas comuns no título e no corpo do PR e o `commitlint` nos commits; o idioma (inglês) não é conferido por máquina, é regra de revisão.
+- Only with the maintainer's approval. Review your own diff before opening.
+- Title and description **in English**, short and declarative, with the sections `## What changes`, `## Why`, `## How it was verified`, `## Risks and pending items` and `## Security` (CI checks these headings). The template's checkbox list can become short sentences (the standard of the infra PRs). Also say what was not verified.
+- No tool footer, no co-author and no mention of AI or a session, in the title, the body and the commits. CI blocks the common forms in the PR title and body and `commitlint` in the commits; the language (English) is not fully checked by a machine, it is a review rule.
 
-Exemplo de descrição:
+Example description:
 
 ```md
 ## What changes
@@ -79,5 +79,6 @@ The smoke step failed with `Cannot find module .../contracts/dist/index.js`.
 
 - No permission, secret or access change.
 ```
-- Merge por squash, com título `tipo: assunto (#N)` e **corpo vazio** (`gh pr merge --squash --body ""`), depois de CI verde.
-- Depois do merge: atualizar a `main` local e apagar a branch.
+
+- Squash merge, with the title `type: subject (#N)` and an **empty body** (`gh pr merge --squash --body ""`), after green CI.
+- After the merge: update the local `main` and delete the branch.
