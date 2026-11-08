@@ -19,7 +19,7 @@ function statCard([art, value, label, tone]: (typeof STATS)[number]): HTMLElemen
   return card;
 }
 
-/** Card de história, o mesmo da Home e das abas (`StoryProgressCard`). */
+/** Story card, the same as the Home and the tabs (`StoryProgressCard`). */
 function storyCard(chapter = 1, expInLevel = 145, expForNext = 350): HTMLElement {
   const ratio = Math.round((expInLevel / expForNext) * 100);
   const card = h('div', 'story');

@@ -1,5 +1,5 @@
-// Valida a arte do banner (Fase 6): peso do bundle, tamanho dos arquivos e paleta por sprite.
-// Roda depois do build: `pnpm --filter @nextjourney/banner validate:assets`.
+// Validates the banner art (Phase 6): bundle weight, file sizes and palette per sprite.
+// Runs after the build: `pnpm --filter @nextjourney/banner validate:assets`.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import process from 'node:process';
@@ -7,16 +7,16 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** Limites. Mudar um limite exige registrar o motivo no ADR-0003. */
+/** Limits. Changing a limit requires recording the reason in ADR-0003. */
 export const LIMITS = {
-  bundleBytes: 1_500_000, // index.html único (tudo embutido) que vai dentro do app
-  assetBytes: 60_000, // cada arquivo de arte no código-fonte
-  maxColors: 16, // paleta LPC: até 16 cores por sprite
+  bundleBytes: 1_500_000, // single index.html (everything embedded) that goes inside the app
+  assetBytes: 60_000, // each art file in the source code
+  maxColors: 16, // LPC palette: up to 16 colors per sprite
 };
 
 const HEX = /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
 
-/** Cores distintas de um SVG, em minúsculas e com 6 dígitos. */
+/** Distinct colors of an SVG, lowercase and with 6 digits. */
 export function distinctColors(svg) {
   const colors = new Set();
   for (const raw of svg.match(HEX) ?? []) {
@@ -27,7 +27,7 @@ export function distinctColors(svg) {
   return colors;
 }
 
-/** Retorna a lista de problemas; vazia quando tudo está dentro dos limites. */
+/** Returns the list of problems; empty when everything is within the limits. */
 export function validate({ assetsDir, bundlePath, limits = LIMITS }) {
   const problems = [];
 

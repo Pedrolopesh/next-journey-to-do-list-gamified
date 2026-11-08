@@ -2,7 +2,7 @@ import type { CharacterLayers } from '@nextjourney/contracts';
 
 import type { Selection } from './compose';
 
-/** Pele: chave do app -> paleta LPC. */
+/** Skin: app key -> LPC palette. */
 const SKINS: Record<string, string> = {
   light: 'light',
   tan: 'amber',
@@ -10,7 +10,7 @@ const SKINS: Record<string, string> = {
   dark: 'black',
 };
 
-/** Cabelo: chave do app -> peça e cor LPC (`null` = careca). */
+/** Hair: app key -> LPC piece and color (`null` = bald). */
 type Hair = { hair: string | null; color: string };
 const HAIRS: Record<string, Hair> = {
   'short-brown': { hair: 'hair-buzzcut', color: 'dark_brown' },
@@ -27,7 +27,7 @@ type Outfit = {
   feetColor: string;
 };
 
-/** Roupa: chave do app -> torso, calça e cores LPC. */
+/** Clothes: app key -> LPC torso, pants and colors. */
 const OUTFITS: Record<string, Outfit> = {
   'tunic-purple': {
     torso: 'torso-longsleeve-2',
@@ -56,13 +56,13 @@ const FALLBACK_HAIR: Hair = { hair: 'hair-buzzcut', color: 'dark_brown' };
 const FALLBACK_OUTFIT = OUTFITS['tunic-purple'] as Outfit;
 
 /**
- * Converte as camadas do personagem do app na seleção LPC do banner: usa `look` quando existe e,
- * senão, as chaves simples (cadastro antigo).
- * Chave desconhecida cai no padrão em vez de quebrar a cena. Acessórios (chapéu, espada, escudo) ainda
- * não têm arte LPC importada e são ignorados.
+ * Converts the app character layers into the banner LPC selection: uses `look` when it exists and,
+ * otherwise, the simple keys (old signup).
+ * An unknown key falls back to the default instead of breaking the scene. Accessories (hat, sword, shield) still
+ * have no imported LPC art and are ignored.
  */
 export function selectionFromLayers(layers: CharacterLayers): Selection {
-  // A aparência detalhada (formulário do app) vale mais que o mapa das chaves simples
+  // The detailed appearance (app form) takes precedence over the simple keys map
   if (layers.look) return { ...layers.look };
   const hair = HAIRS[layers.hair] ?? FALLBACK_HAIR;
   const outfit = OUTFITS[layers.outfit] ?? FALLBACK_OUTFIT;

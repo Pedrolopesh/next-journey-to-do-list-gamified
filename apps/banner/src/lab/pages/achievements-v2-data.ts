@@ -7,12 +7,12 @@ import {
 import type { InsigniaName } from '@nextjourney/insignias';
 
 /**
- * Visão do laboratório sobre o catálogo oficial de conquistas (`@nextjourney/contracts`): a lista é
- * a mesma do app e da API; aqui só entram a cor de cada classe e de onde sai o dado de cada critério.
+ * Lab view of the official achievements catalog (`@nextjourney/contracts`): the list is
+ * the same as the app and the API; here only the color of each class and where each criterion's data comes from.
  */
 
 export type Tier = AchievementTier;
-/** pronto: o servidor já mede; consulta: sai das tabelas atuais; novo: precisa de contador ou evento novo. */
+/** pronto: the server already measures it; consulta: comes from the current tables; novo: needs a new counter or event. */
 export type Source = 'pronto' | 'consulta' | 'novo';
 
 export type Trail = { id: string; name: string; goal: string };
@@ -24,7 +24,7 @@ export type Proposal = {
   desc: string;
   glyph: InsigniaName;
   source: Source;
-  /** Conquista surpresa: a descrição só aparece depois de desbloquear. */
+  /** Surprise achievement: the description only appears after unlocking. */
   secret?: true;
 };
 

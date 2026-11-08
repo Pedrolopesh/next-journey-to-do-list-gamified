@@ -8,7 +8,7 @@ const DEFAULT_TINT: Record<SceneEnv['time'], Tint> = {
   night: { color: '#2f3d8f', alpha: 0.58 },
 };
 
-/** Cor da hora do dia aplicada sobre a cena inteira (multiplica as cores). */
+/** Time-of-day color applied over the whole scene (multiplies the colors). */
 export function applyTint(env: SceneEnv, tint?: Tint): void {
   const { ctx } = env;
   const chosen = tint ?? DEFAULT_TINT[env.time];
@@ -21,7 +21,7 @@ export function applyTint(env: SceneEnv, tint?: Tint): void {
   ctx.restore();
 }
 
-/** Brilho das fontes de luz: degradê radial que soma cor. */
+/** Glow of the light sources: radial gradient that adds color. */
 export function drawLights(env: SceneEnv, lights: Light[]): void {
   for (const light of lights) {
     if (!(light.at ?? ['night']).includes(env.time)) continue;
@@ -32,7 +32,7 @@ export function drawLights(env: SceneEnv, lights: Light[]): void {
   }
 }
 
-/** Acabamento: escurece de leve as bordas para dar foco e profundidade. */
+/** Finish: slightly darkens the edges to give focus and depth. */
 export function vignette(env: SceneEnv): void {
   const { ctx } = env;
   const gradient = ctx.createRadialGradient(

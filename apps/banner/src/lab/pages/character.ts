@@ -33,7 +33,7 @@ const CLOTH_COLORS = [
   'gray',
 ];
 
-/** Peças com modelo (`<select>`) e cor: uma linha de controles para cada. */
+/** Pieces with a model (`<select>`) and color: one row of controls for each. */
 const PARTS = [
   {
     label: 'Cabelo',

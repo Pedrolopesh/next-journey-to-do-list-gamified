@@ -1,8 +1,8 @@
-/* Laboratório: base, menu lateral e peças comuns às páginas */
+/* Lab: base, side menu and pieces shared by the pages */
 /*
- * Laboratório de botões com efeito de luz (só em desenvolvimento, fora do build).
- * Serve para validar o formato, as cores e os estados antes de levar um estilo ao app.
- * Cores vêm dos tokens do app (apps/mobile/src/theme/colors.ts).
+ * Lab of buttons with a light effect (development only, outside the build).
+ * Used to validate the shape, colors and states before taking a style to the app.
+ * Colors come from the app tokens (apps/mobile/src/theme/colors.ts).
  */
 @property --angle {
   syntax: '<angle>';
@@ -16,7 +16,7 @@
   --text: #f1f5f9;
   --muted: #94a3b8;
   --line: #334155;
-  /* cor do tema em "R G B" (para usar com rgb(var(--c) / alfa)) e cor do texto sobre ela */
+  /* theme color as "R G B" (to use with rgb(var(--c) / alpha)) and the text color over it */
   --c: 124 58 237;
   --on: #ffffff;
   --ok: 16 185 129;
@@ -153,14 +153,14 @@ section.style {
 }
 
 /* ------------------------------------------------------------------ */
-/* Menu lateral e tela "Botões do aplicativo"                          */
+/* Side menu and "Botões do aplicativo" screen                         */
 /* ------------------------------------------------------------------ */
 body {
   display: flex;
   gap: 0;
   padding: 0;
 }
-/* Menu lateral no estilo Material UI: lista com estados de hover, foco e seleção, e seções recolhíveis */
+/* Side menu in the Material UI style: list with hover, focus and selected states, and collapsible sections */
 .side {
   position: sticky;
   top: 0;
@@ -235,7 +235,7 @@ body {
 .side button[aria-current='page']:hover {
   background: rgb(var(--c) / 0.3);
 }
-/* Barra lateral de destaque no item aberto, como o indicador do Material UI */
+/* Highlight sidebar on the open item, like the Material UI indicator */
 .side button[aria-current='page']::before {
   content: '';
   position: absolute;
@@ -246,7 +246,7 @@ body {
   border-radius: 0 3px 3px 0;
   background: rgb(var(--c));
 }
-/* Seção recolhível: título com seta que gira ao abrir */
+/* Collapsible section: title with an arrow that rotates on open */
 .side summary {
   justify-content: space-between;
 }
@@ -268,7 +268,7 @@ body {
   color: rgb(var(--c) / 1);
   filter: brightness(1.5);
 }
-/* Sub-itens recuados */
+/* Indented sub-items */
 .side-group > button {
   padding-left: 32px;
   font-weight: 400;
@@ -338,8 +338,8 @@ body {
 }
 
 /* ------------------------------------------------------------------ */
-/* Celular: menu em barra no topo, controles com área de toque maior,  */
-/* palco do canvas fixo no topo enquanto os controles rolam            */
+/* Phone: menu as a bar on top, controls with a larger touch area,     */
+/* canvas stage fixed at the top while the controls scroll             */
 /* ------------------------------------------------------------------ */
 html {
   -webkit-text-size-adjust: 100%;
@@ -393,7 +393,7 @@ html {
     font-size: 13px;
   }
 
-  /* palco do canvas: grudado logo abaixo do menu, para ver o cenário enquanto troca os controles */
+  /* canvas stage: stuck right below the menu, to see the scene while changing the controls */
   .view .stage {
     position: sticky;
     top: 57px;

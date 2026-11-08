@@ -16,7 +16,7 @@ import { SCENE_W } from './types';
 
 export const BEACH_LEVEL_COUNT = 5;
 
-/** Os cinco níveis da praia: o mesmo lugar, a cada nível com mais vida e uma sensação nova. */
+/** The five beach levels: the same place, with more life and a new feel at each level. */
 export const BEACH_LEVELS: { level: number; name: string; blurb: string; changes: string[] }[] = [
   {
     level: 1,
@@ -81,10 +81,10 @@ const clampLevel = (level: number): number =>
   Math.min(BEACH_LEVEL_COUNT, Math.max(1, Math.round(level)));
 
 // ---------------------------------------------------------------------------------------------
-// Objetos novos
+// New objects
 // ---------------------------------------------------------------------------------------------
 
-/** Quiosque: balcão de madeira, prateleira com garrafas e toldo listrado. */
+/** Kiosk: wooden counter, shelf with bottles and striped awning. */
 function kiosk(env: SceneEnv, x: number, y: number, awning: string): void {
   rect(env, x - 2, y, 52, 3, 'rgba(0,0,0,0.18)');
   rect(env, x, y - 36, 2, 36, OUTLINE);
@@ -102,7 +102,7 @@ function kiosk(env: SceneEnv, x: number, y: number, awning: string): void {
   for (const px of [14, 26, 38]) rect(env, x + px, y - 12, 1, 11, '#8a5d2c');
   rect(env, x + 18, y - 19, 4, 4, '#f4f4f4');
   rect(env, x + 19, y - 21, 2, 2, '#ff7a2e');
-  // toldo
+  // awning
   rect(env, x - 6, y - 45, 60, 11, OUTLINE);
   for (let i = 0; i < 12; i++) {
     rect(env, x - 5 + i * 5, y - 44, 5, 8, i % 2 ? '#f8f8f8' : awning);
@@ -111,7 +111,7 @@ function kiosk(env: SceneEnv, x: number, y: number, awning: string): void {
   rect(env, x - 5, y - 44, 58, 1, 'rgba(255,255,255,0.45)');
 }
 
-/** Guarda-sol aberto com listras e sombra na areia. */
+/** Open beach umbrella with stripes and a shadow on the sand. */
 function umbrella(env: SceneEnv, x: number, y: number, color: string): void {
   const { ctx } = env;
   ctx.fillStyle = 'rgba(0,0,0,0.2)';
@@ -135,7 +135,7 @@ function umbrella(env: SceneEnv, x: number, y: number, color: string): void {
   rect(env, x - 1, top - 4, 3, 3, OUTLINE);
 }
 
-/** Poste de luz do calçadão. */
+/** Boardwalk lamppost. */
 function lamp(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 3, y, 7, 2, 'rgba(0,0,0,0.25)');
   rect(env, x - 1, y - 40, 3, 40, OUTLINE);
@@ -189,14 +189,14 @@ function bonfire(env: SceneEnv, x: number, y: number): void {
   flame(env, x, y - 1, 3);
   flame(env, x - 7, y, 2);
   flame(env, x + 8, y, 2);
-  // faíscas
+  // sparks
   for (let i = 0; i < 5; i++) {
     const rise = (env.t * 14 + i * 9) % 34;
     rect(env, x - 8 + i * 4 + Math.sin(env.t * 3 + i) * 3, y - 14 - rise, 1, 1, '#ffd43b');
   }
 }
 
-/** Bar de palha (tiki): telhado de folhas, balcão, copos e luzinhas. */
+/** Thatched bar (tiki): leaf roof, counter, cups and little lights. */
 function tiki(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 2, y, 62, 3, 'rgba(0,0,0,0.2)');
   rect(env, x + 2, y - 34, 3, 34, OUTLINE);
@@ -213,14 +213,14 @@ function tiki(env: SceneEnv, x: number, y: number): void {
     rect(env, x + 10 + i * 16, y - 22, 5, 7, 'rgba(225,242,255,0.9)');
     rect(env, x + 10 + i * 16, y - 20, 5, 5, color);
   });
-  // telhado de palha em camadas
+  // layered thatch roof
   for (let i = 0; i < 6; i++) {
     const w = 70 - i * 9;
     rect(env, x + 28 - w / 2 - 1, y - 38 - i * 4, w + 2, 6, OUTLINE);
     rect(env, x + 28 - w / 2, y - 37 - i * 4, w, 4, i % 2 ? '#d9a84a' : '#b88a2f');
   }
   for (let fx = x - 8; fx < x + 64; fx += 3) rect(env, fx, y - 33, 1, 3, '#8a6320');
-  // luzinhas penduradas
+  // hanging little lights
   const lit = env.time !== 'afternoon';
   for (let i = 0; i < 8; i++) {
     const on = lit && Math.sin(env.t * 3 + i * 1.7) > -0.4;
@@ -248,13 +248,13 @@ function crates(env: SceneEnv, x: number, y: number): void {
   box(x, y - 14, 18, 14);
   box(x + 20, y - 12, 18, 12);
   box(x + 6, y - 26, 18, 12);
-  // rede de pesca pendurada e boia
+  // hanging fishing net and buoy
   rect(env, x + 30, y - 22, 6, 6, '#e63946');
   rect(env, x + 30, y - 20, 6, 2, '#f8f8f8');
   rect(env, x + 33, y - 28, 1, 6, '#d9d2c0');
 }
 
-/** Gaivota de pixel: asas que batem. */
+/** Pixel seagull: flapping wings. */
 function gull(env: SceneEnv, x: number, y: number, phase: number): void {
   const up = Math.sin(env.t * 6 + phase) > 0 ? 1 : 0;
   const color = env.time === 'night' ? '#8b94c8' : '#f4f4f4';
@@ -274,7 +274,7 @@ function gulls(env: SceneEnv, count: number): void {
   }
 }
 
-/** Barco a motor que cruza o mar da direita para a esquerda, deixando um rastro de espuma. */
+/** Motorboat that crosses the sea from right to left, leaving a foam wake. */
 function motorBoat(env: SceneEnv): void {
   const span = SCENE_W + 100;
   const x = Math.round(SCENE_W + 40 - ((env.t * 22) % span));
@@ -303,7 +303,7 @@ function dockedBoat(env: SceneEnv, x: number, y: number, hull: string, seed: num
   rect(env, x + 6, by - 14, 6, 1, '#d9d2c0');
 }
 
-/** Ilha menor e mais distante, reaproveitando o desenho da ilha principal. */
+/** Smaller, more distant island, reusing the main island's drawing. */
 function farIsland(env: SceneEnv, cx: number, scale: number): void {
   const { ctx } = env;
   ctx.save();
@@ -313,7 +313,7 @@ function farIsland(env: SceneEnv, cx: number, scale: number): void {
   ctx.restore();
 }
 
-/** Poucos prédios da orla no horizonte, em três grupinhos; à noite, janelas acesas. */
+/** A few waterfront buildings on the horizon, in three small groups; at night, windows lit. */
 const TOWERS: { x: number; w: number; h: number }[] = [
   { x: 14, w: 16, h: 30 },
   { x: 31, w: 20, h: 44 },
@@ -328,7 +328,7 @@ function skyline(env: SceneEnv, xOf: (world: number) => number): void {
   const night = env.time === 'night';
   const tone = night ? '#16203f' : env.time === 'morning' ? '#a58fa8' : '#8aa0b8';
   const edge = night ? '#0e1630' : env.time === 'morning' ? '#8b7590' : '#728aa3';
-  // A cidade fica em terra firme: os prédios param numa rua que corre ao longo do horizonte
+  // The city sits on solid ground: the buildings stop at a street that runs along the horizon
   const base = HORIZON - 7;
   for (const { x: world, w, h } of TOWERS) {
     const x = xOf(world);
@@ -349,7 +349,7 @@ function skyline(env: SceneEnv, xOf: (world: number) => number): void {
     const x = env.journey ? xOf(dash) : dash;
     rect(env, x, base + 5, 6, 1, night ? '#8a7a40' : '#e8d27a');
   }
-  // alguns carros passando devagar pela rua
+  // a few cars slowly passing along the street
   const cars = ['#e63946', '#f4f4f4', '#2d6cdf'];
   cars.forEach((color, i) => {
     const span = SCENE_W + 40;
@@ -361,7 +361,7 @@ function skyline(env: SceneEnv, xOf: (world: number) => number): void {
   });
 }
 
-/** Farol numa ponta de pedra no horizonte; à noite o facho gira. */
+/** Lighthouse on a rocky point on the horizon; at night the beam rotates. */
 function lighthouse(env: SceneEnv, cx: number): void {
   const { ctx } = env;
   rect(env, cx - 14, HORIZON - 4, 28, 6, '#5b5560');
@@ -391,7 +391,7 @@ function lighthouse(env: SceneEnv, cx: number): void {
   }
 }
 
-/** Píer de madeira que entra no mar em perspectiva, com pilares e um poste de luz na ponta. */
+/** Wooden pier that goes into the sea in perspective, with pillars and a lamppost at the end. */
 function pier(env: SceneEnv, cx: number): void {
   const bottom = 160;
   const top = HORIZON + 14;
@@ -415,7 +415,7 @@ function pier(env: SceneEnv, cx: number): void {
   rect(env, cx - 2, top - 25, 5, 3, env.time === 'night' ? '#ffe9a8' : '#cfd8e6');
 }
 
-/** Bandeirinhas penduradas entre dois pontos (as copas de dois coqueiros), com a barriga do varal. */
+/** Pennants hung between two points (the crowns of two coconut trees), with the sag of the line. */
 function bunting(env: SceneEnv, x0: number, y0: number, x1: number, y1: number, sag: number): void {
   const colors = ['#e63946', '#ffc93c', '#2a9d8f', '#ff7a2e', '#6aa8e0', '#ff6fa8'];
   const steps = Math.max(2, Math.round(Math.abs(x1 - x0) / 8));
@@ -435,7 +435,7 @@ function bunting(env: SceneEnv, x0: number, y0: number, x1: number, y1: number, 
   }
 }
 
-/** Liga a copa de cada coqueiro à do próximo (na jornada, o último liga ao primeiro do ciclo). */
+/** Links the crown of each coconut tree to the next (on the journey, the last links to the first of the cycle). */
 function palmBunting(env: SceneEnv, list: Prop[]): void {
   const palms = list.filter((p): p is Extract<Prop, { k: 'palm' }> => p.k === 'palm');
   palms.sort((a, b) => a.x - b.x);
@@ -455,7 +455,7 @@ function palmBunting(env: SceneEnv, list: Prop[]): void {
   });
 }
 
-/** Fogos de artifício no céu da noite: cada explosão abre, cai e some. */
+/** Fireworks in the night sky: each burst opens, falls and fades. */
 function fireworks(env: SceneEnv): void {
   if (env.time !== 'night') return;
   const bursts: [number, number, string, number][] = [
@@ -479,7 +479,7 @@ function fireworks(env: SceneEnv): void {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Objetos da areia de cada nível
+// Sand objects of each level
 // ---------------------------------------------------------------------------------------------
 
 type Prop =
@@ -501,7 +501,7 @@ const SL = SAND_LANE;
 const RED = '#e63946';
 const BLUE = '#2d6cdf';
 
-/** Posições no quadro do QG (personagem parado), de trás para a frente. */
+/** Positions in the HQ frame (character standing), from back to front. */
 const QG_PROPS: Record<number, Prop[]> = {
   1: [
     { k: 'palm', x: 40, y: 200, lean: 1.6 },
@@ -548,7 +548,7 @@ const QG_PROPS: Record<number, Prop[]> = {
   ],
 };
 
-/** Posições no mundo da jornada (o cenário rola), numa faixa de `JOURNEY_PERIOD`. */
+/** Positions in the journey world (the scenery scrolls), in a band of `JOURNEY_PERIOD`. */
 const JOURNEY_PROPS: Record<number, Prop[]> = {
   1: [
     { k: 'palm', x: 30, y: SL, lean: 1.6 },
@@ -609,7 +609,7 @@ const KIOSK_SCALE = 1.5;
 const BENCH_SCALE = 1.5;
 const TIKI_SCALE = 1.4;
 
-/** Desenha um objeto maior, a partir do pé dele: o desenho é feito na origem e ampliado. */
+/** Draws a larger object from its foot: it is drawn at the origin and scaled up. */
 function grown(env: SceneEnv, x: number, y: number, k: number, draw: () => void): void {
   env.ctx.save();
   env.ctx.translate(Math.round(x), Math.round(y));
@@ -651,7 +651,7 @@ function drawProp(env: SceneEnv, prop: Prop, x: number): void {
   }
 }
 
-/** Onde cada objeto acende à noite (e quanto), em relação ao seu x. */
+/** Where each object lights up at night (and how much), relative to its x. */
 function lightOf(prop: Prop, x: number): Light | null {
   switch (prop.k) {
     case 'fire':
@@ -698,7 +698,7 @@ function lightOf(prop: Prop, x: number): Light | null {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Cenário completo
+// Complete scenery
 // ---------------------------------------------------------------------------------------------
 
 const SEA = {
@@ -707,7 +707,7 @@ const SEA = {
   afternoon: ['#1d78c2', '#2a90d6', '#3ba6e0'],
 };
 
-/** Posição de camadas distantes: quase paradas na jornada. */
+/** Position of distant layers: almost still on the journey. */
 const farXOf =
   (env: SceneEnv) =>
   (world: number): number =>
@@ -731,16 +731,16 @@ function farSea(env: SceneEnv, level: number): void {
   }
 }
 
-/** Mundo do píer na jornada: o píer e os barcos amarrados passam juntos, e depois vem mar aberto. */
+/** Pier world on the journey: the pier and the moored boats pass together, then open sea follows. */
 const PIER_WORLD = 430;
-/** O píer aparece uma vez a cada tanto de caminhada: bem mais raro que o resto da praia. */
+/** The pier shows up once every so often of walking: much rarer than the rest of the beach. */
 const PIER_PERIOD = 1900;
 
-/** A fogueira com a turma também é rara na jornada: aparece uma vez por ciclo longo. */
+/** The bonfire with the crowd is also rare on the journey: it shows up once per long cycle. */
 const FIRE_WORLD = 160;
 const FIRE_PERIOD = 1900;
 const FIRE_Y = SAND_LANE - 8;
-/** O bar de palha vem no mesmo ciclo, bem longe da fogueira (nunca perto dela). */
+/** The thatched bar comes in the same cycle, far from the bonfire (never near it). */
 const TIKI_WORLD = FIRE_WORLD + 400;
 const TIKI_Y = SAND_LANE - 6;
 const fireCenter = (env: SceneEnv): number =>
@@ -748,7 +748,7 @@ const fireCenter = (env: SceneEnv): number =>
 const tikiCenter = (env: SceneEnv): number =>
   env.journey ? scrolled(TIKI_WORLD, env.scroll, FIRE_PERIOD) : 0;
 
-/** Centro do píer na tela. */
+/** Center of the pier on the screen. */
 const pierCenter = (env: SceneEnv): number =>
   env.journey ? scrolled(PIER_WORLD, env.scroll, PIER_PERIOD) : 302;
 
@@ -760,7 +760,7 @@ function nearSea(env: SceneEnv, level: number): void {
     dockedBoat(env, cx - 52, HORIZON + 30, '#2a6fb0', 1);
     dockedBoat(env, cx + 50, HORIZON + 36, '#c9742a', 2);
     dockedBoat(env, cx - 182, HORIZON + 14, '#b8392f', 3);
-    // barco de pesca ao longe: anda devagar, como tudo que está longe
+    // fishing boat far away: moves slowly, like everything far away
     const far = env.journey ? scrolled(200, env.scroll, JOURNEY_PERIOD, 0.3) : 200;
     dockedBoat(env, far, HORIZON + 8, '#d8a63a', 4);
   }
@@ -768,7 +768,7 @@ function nearSea(env: SceneEnv, level: number): void {
   if (level === 5) fireworks(env);
 }
 
-/** Calçadão de ondas pretas e brancas (como o de Copacabana); na jornada ele passa sob os pés. */
+/** Boardwalk of black and white waves (like the one in Copacabana); on the journey it passes under the feet. */
 function promenade(env: SceneEnv): void {
   rect(env, 0, 150, SCENE_W, 3, '#b9a77a');
   rect(env, 0, 152, SCENE_W, 70, '#ece6da');
@@ -787,7 +787,7 @@ function sand(env: SceneEnv): void {
   bands(env, 0, 145, SCENE_W, 75, ['#f1d9a0', '#ecd194', '#e6c987', '#dfc07c', '#d8b772']);
   const random = rng(11);
   if (env.journey) {
-    // Grãos fixos no mundo: a areia parece passar sob os pés
+    // Grains fixed in the world: the sand seems to pass under the feet
     for (let i = 0; i < 70; i++) {
       const worldX = random() * JOURNEY_PERIOD;
       rect(
@@ -805,7 +805,7 @@ function sand(env: SceneEnv): void {
     rect(env, random() * SCENE_W, 150 + random() * 66, 2, 1, 'rgba(120,80,30,0.25)');
 }
 
-/** Desenha a praia no nível pedido, parada (QG) ou rolando (jornada). */
+/** Draws the beach at the requested level, still (HQ) or scrolling (journey). */
 export function renderBeach(env: SceneEnv): void {
   const level = clampLevel(env.level);
   sky(env, 0, 0, SCENE_W, HORIZON);
@@ -854,7 +854,7 @@ export function renderBeach(env: SceneEnv): void {
   if (env.journey && env.arrivedFor !== null) portal(env, env.arrivedFor, SAND_LANE);
 }
 
-/** Luzes do nível: fogueira, postes, tochas e quiosques, mais o luar. */
+/** Level lights: bonfire, lampposts, torches and kiosks, plus the moonlight. */
 export function beachLights(env: SceneEnv): Light[] {
   const level = clampLevel(env.level);
   const list = (env.journey ? JOURNEY_PROPS : QG_PROPS)[level] ?? [];
@@ -893,7 +893,7 @@ export function beachLights(env: SceneEnv): Light[] {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Gente na praia
+// People on the beach
 // ---------------------------------------------------------------------------------------------
 
 type Look = Partial<ExtraCharacter['selection']>;
@@ -1018,7 +1018,7 @@ const roam = (
   patrol: { from, to, speed },
 });
 
-/** Quem está na praia em cada nível (só no QG; na jornada o cenário é que passa). */
+/** Who is on the beach at each level (HQ only; on the journey the scenery is what moves). */
 export function beachExtras(level: number): ExtraCharacter[] {
   switch (clampLevel(level)) {
     case 2:
@@ -1067,8 +1067,8 @@ const drifter = (
 });
 
 /**
- * Quem está na praia durante a jornada. As posições são do mundo (que rola): quem está parado
- * passa pela tela junto com o cenário e quem anda se move um pouco mais devagar ou mais rápido.
+ * Who is on the beach during the journey. Positions are in the world (which scrolls): whoever is standing
+ * passes across the screen with the scenery and whoever walks moves a bit slower or faster.
  */
 export function beachJourneyExtras(level: number): ExtraCharacter[] {
   const lane = SAND_LANE;

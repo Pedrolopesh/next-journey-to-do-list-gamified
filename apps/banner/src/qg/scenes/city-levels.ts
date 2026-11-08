@@ -19,7 +19,7 @@ import { SCENE_W } from './types';
 
 export const CITY_LEVEL_COUNT = 5;
 const OUT = '#14161c';
-/** Altura dos pés do personagem na cidade. */
+/** Height of the character's feet in the city. */
 export const CITY_GROUND = 190;
 
 export const CITY_LEVELS: LevelInfo[] = [
@@ -75,7 +75,7 @@ export const CITY_LEVELS: LevelInfo[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------
-// Céu: pombos, dirigível, drones, fogos (desenhados atrás dos prédios)
+// Sky: pigeons, airship, drones, fireworks (drawn behind the buildings)
 // ---------------------------------------------------------------------------------------------
 
 function pigeons(env: SceneEnv): void {
@@ -85,7 +85,7 @@ function pigeons(env: SceneEnv): void {
     const x = Math.round((((env.t * (14 + i) + i * 61) % span) + span) % span) - 30;
     const y = 40 + i * 7 + Math.round(Math.sin(env.t * 0.8 + i) * 2);
     const flap = Math.sin(env.t * 5 + i * 1.4) > 0;
-    // pássaro de longe: corpo e duas asas em "v" que sobem e descem
+    // bird far away: body and two "v" wings that go up and down
     rect(env, x, y + 1, 1, 1, color);
     rect(env, x - 1, flap ? y : y + 1, 1, 1, color);
     rect(env, x + 1, flap ? y : y + 1, 1, 1, color);
@@ -94,7 +94,7 @@ function pigeons(env: SceneEnv): void {
   }
 }
 
-/** Elipse cheia em pixels inteiros, linha a linha. */
+/** Filled ellipse in whole pixels, line by line. */
 function oval(env: SceneEnv, cx: number, cy: number, rx: number, ry: number, color: string): void {
   for (let dy = -ry; dy <= ry; dy++) {
     const half = Math.round(rx * Math.sqrt(1 - (dy * dy) / (ry * ry + 0.5)));
@@ -107,32 +107,32 @@ function blimp(env: SceneEnv): void {
   const x = Math.round(SCENE_W + 70 - ((env.t * 6) % span));
   const y = 40 + Math.round(Math.sin(env.t * 0.5) * 1);
   const night = env.time === 'night';
-  // cauda: duas barbatanas cruzadas
+  // tail: two crossed fins
   rect(env, x + 18, y - 9, 6, 7, OUT);
   rect(env, x + 19, y - 8, 4, 5, '#e63946');
   rect(env, x + 18, y + 3, 6, 7, OUT);
   rect(env, x + 19, y + 4, 4, 5, '#e63946');
-  // casco
+  // hull
   oval(env, x, y, 25, 8, OUT);
   oval(env, x, y, 24, 7, night ? '#9aa6d8' : '#f2f2ee');
   oval(env, x, y + 4, 22, 3, night ? '#6e7ab0' : '#c8ccd2');
   rect(env, x - 16, y - 1, 34, 2, '#e63946');
   rect(env, x - 12, y - 6, 22, 1, night ? '#c8d0f0' : '#ffffff');
-  // cabine e hélice
+  // cabin and propeller
   rect(env, x - 6, y + 9, 12, 5, OUT);
   rect(env, x - 5, y + 10, 10, 3, '#59606e');
   rect(env, x - 3, y + 10, 6, 1, night ? '#ffe28a' : '#bfe3f8');
   rect(env, x + 26, y - 1, 1, 3, Math.sin(env.t * 20) > 0 ? '#59606e' : '#cfd2d8');
 }
 
-/** Avião de hélice com uma faixa de bandeirinhas atrás; cruza o céu e some por um tempo. */
+/** Propeller plane with a string of pennants behind; crosses the sky and disappears for a while. */
 function airplane(env: SceneEnv): void {
   const span = SCENE_W + 420;
   const x = Math.round(((env.t * 22 + 60) % span) - 150);
   const y = 34 + Math.round(Math.sin(env.t * 0.7) * 2);
   const night = env.time === 'night';
   const body = night ? '#c9d0ee' : '#f4f4f0';
-  // faixa rebocada: corda e bandeirinhas ondulando
+  // towed banner: rope and waving pennants
   const colors = ['#e63946', '#ffc93c', '#6aa8e0', '#7bd88f', '#ff6fa8'];
   rect(env, x - 18 - 8 * 7, y + 2, 8 * 7 + 6, 1, '#59606e');
   for (let i = 0; i < 9; i++) {
@@ -142,7 +142,7 @@ function airplane(env: SceneEnv): void {
     rect(env, fx + 1, fy + 1, 4, 5, OUT);
     rect(env, fx + 2, fy + 1, 2, 4, colors[i % colors.length] ?? '#e63946');
   }
-  // cauda, fuselagem, asa e hélice
+  // tail, fuselage, wing and propeller
   rect(env, x - 17, y - 8, 5, 8, OUT);
   rect(env, x - 16, y - 7, 3, 6, '#e63946');
   oval(env, x, y, 15, 5, OUT);
@@ -168,7 +168,7 @@ function drones(env: SceneEnv): void {
   }
 }
 
-/** Céu do nível, chamado pelo cenário logo depois de pintar o céu. */
+/** Level sky, called by the scenery right after painting the sky. */
 export function citySky(env: SceneEnv): void {
   const level = Math.min(CITY_LEVEL_COUNT, Math.max(1, env.level));
   if (level === 2) pigeons(env);
@@ -184,7 +184,7 @@ export function citySky(env: SceneEnv): void {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Objetos da rua e do terraço
+// Street and terrace objects
 // ---------------------------------------------------------------------------------------------
 
 type Prop =
@@ -201,7 +201,7 @@ type Prop =
   | { k: 'cake'; x: number; y: number }
   | { k: 'railflags'; x: number; y: number };
 
-/** Árvore de canteiro: tronco curto, copa redonda com sombra e luz. */
+/** Planter tree: short trunk, round crown with shadow and light. */
 function tree(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 9, y - 4, 18, 5, OUT);
   rect(env, x - 8, y - 3, 16, 3, '#8a8f99');
@@ -292,7 +292,7 @@ function stall(env: SceneEnv, x: number, y: number, color: string): void {
   }
 }
 
-/** Letreiro de neon vertical: contorno escuro, tubo colorido e um desenho simples por tipo. */
+/** Vertical neon sign: dark outline, colored tube and a simple drawing per type. */
 function neon(env: SceneEnv, x: number, y: number, color: string, kind: number): void {
   const night = env.time === 'night';
   const lit = night || env.time === 'morning';
@@ -373,7 +373,7 @@ function cake(env: SceneEnv, x: number, y: number): void {
   rect(env, x + 17, y - 25, 1, 7, '#ffd43b');
 }
 
-/** Bandeirinhas ligando os postes do corrimão do terraço. */
+/** Pennants linking the terrace railing posts. */
 function railFlags(env: SceneEnv): void {
   for (let x = 0; x < SCENE_W; x += 48) flagLine(env, x, 112, x + 48, 112, 8, x / 48);
 }
@@ -428,7 +428,7 @@ const QG_PROPS: Record<number, Prop[]> = {
   ],
 };
 
-/** Na jornada: posições do mundo, ciclo de 900 px (o mesmo dos postes), objetos raros com ciclo maior. */
+/** On the journey: world positions, 900 px cycle (the same as the lampposts), rare objects with a longer cycle. */
 const RARE = STREET_PERIOD * 2;
 const SIDE = 186;
 
@@ -492,7 +492,7 @@ const kit: PropKit<Prop> = {
 
 export const cityLevelLayers = propLayers(kit, CITY_LEVEL_COUNT);
 
-/** Bandeirinhas entre os postes da rua (no mundo, presas às pontas dos postes). */
+/** Pennants between the street posts (in the world, attached to the post tips). */
 export function cityStreetFlags(env: SceneEnv): void {
   if (env.level !== 4 || !env.journey) return;
   LAMP_WORLD.forEach((world, i) => {
@@ -502,7 +502,7 @@ export function cityStreetFlags(env: SceneEnv): void {
   });
 }
 
-/** Marcas no asfalto: a faixa de pedestres do nível 3, que passa sob os carros. */
+/** Road markings: the level 3 crosswalk, which passes under the cars. */
 export function cityRoadMarks(env: SceneEnv): void {
   if (env.level !== 3 || !env.journey) return;
   const x = Math.round(scrolled(310, env.scroll, STREET_PERIOD * 2));
@@ -512,12 +512,12 @@ export function cityRoadMarks(env: SceneEnv): void {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Gente
+// People
 // ---------------------------------------------------------------------------------------------
 
 const person = (i: number): (typeof CASUAL)[number] => CASUAL[i % CASUAL.length] ?? {};
 
-/** QG: o terraço (a lounger fica em 104 e os vasos em 334 e 368). */
+/** HQ: the terrace (the lounger sits at 104 and the pots at 334 and 368). */
 export function cityExtras(level: number): ExtraCharacter[] {
   switch (Math.min(CITY_LEVEL_COUNT, Math.max(1, level))) {
     case 2:
@@ -548,7 +548,7 @@ export function cityExtras(level: number): ExtraCharacter[] {
   }
 }
 
-/** Jornada: a calçada vai de y 183 a 220; quem anda fica abaixo da linha do personagem. */
+/** Journey: the sidewalk goes from y 183 to 220; whoever walks stays below the character's line. */
 export function cityJourneyExtras(level: number): ExtraCharacter[] {
   switch (Math.min(CITY_LEVEL_COUNT, Math.max(1, level))) {
     case 2:

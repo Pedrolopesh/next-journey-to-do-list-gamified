@@ -39,7 +39,7 @@ const STATES: [string, string][] = [
 ];
 const LABELS: Record<string, string> = { 'is-done': 'Salvo', 'is-loading': 'Salvando' };
 
-/** Rótulo com o espaço do girador/✓ (o span só aparece em carregando e sucesso). */
+/** Label with room for the spinner/✓ (the span only shows in loading and success). */
 function setLabel(button: HTMLElement, state: string, text: string): void {
   const spinner = h('span', 'sp');
   spinner.setAttribute('aria-hidden', 'true');
@@ -56,7 +56,7 @@ function sample(style: string, state: string, text: string, pill: boolean): HTML
   return button;
 }
 
-/** Botão vivo: toque -> carregando -> sucesso -> volta (a regra de feedback do app). */
+/** Live button: touch -> loading -> success -> back (the app feedback rule). */
 function liveDemo(button: HTMLButtonElement): void {
   button.onclick = () => {
     button.classList.add('is-loading');
@@ -141,7 +141,7 @@ export const glowPage: LabPage = {
       styles.append(section);
     }
 
-    // Vidro: a luz segue o ponteiro
+    // Glass: the light follows the pointer
     const follow = (event: PointerEvent): void => {
       const target =
         event.target instanceof Element ? event.target.closest<HTMLElement>('.v-glass') : null;

@@ -21,10 +21,10 @@ const block = (
   shadedBlock(env, x, y, w, h, fill, dark, light, OUT);
 };
 
-/** Trono dourado com costas pontudas e almofada de veludo; `base` é o chão sob o assento. */
+/** Golden throne with a pointed back and velvet cushion; `base` is the floor under the seat. */
 export function drawThrone(env: SceneEnv, CX: number, base: number): void {
   const top = base - 88;
-  // costas pontudas com moldura dourada
+  // pointed back with a golden frame
   for (let y = top + 8; y < base - 16; y++) {
     const half = y < top + 26 ? 2 + Math.round(((y - (top + 8)) * 17) / 18) : 19;
     rect(env, CX - half - 1, y, half * 2 + 2, 1, OUT);
@@ -35,13 +35,13 @@ export function drawThrone(env: SceneEnv, CX: number, base: number): void {
     rect(env, CX - half, y, 2, 1, GOLD_LIGHT);
     rect(env, CX + half - 2, y, 2, 1, GOLD_DARK);
   }
-  // almofada de veludo nas costas
+  // velvet cushion on the back
   for (let y = top + 16; y < base - 20; y++) {
     const half = y < top + 30 ? 1 + Math.round(((y - (top + 16)) * 13) / 14) : 14;
     rect(env, CX - half, y, half * 2, 1, VELVET);
     rect(env, CX + half - 3, y, 3, 1, VELVET_DARK);
   }
-  // botões (tufos) no veludo
+  // buttons (tufts) on the velvet
   for (const [dx, dy] of [
     [-7, 0],
     [0, 0],
@@ -63,7 +63,7 @@ export function drawThrone(env: SceneEnv, CX: number, base: number): void {
     rect(env, CX + dx, top - 4, 2, 5, GOLD);
   }
   rect(env, CX - 1, top + 2, 2, 3, '#d03a3a');
-  // colunas laterais com bolas
+  // side columns with balls
   for (const side of [-1, 1]) {
     const x = side < 0 ? CX - 25 : CX + 20;
     rect(env, x - 1, top + 22, 7, base - top - 28, OUT);
@@ -73,7 +73,7 @@ export function drawThrone(env: SceneEnv, CX: number, base: number): void {
     rect(env, x - 1, top + 19, 7, 5, OUT);
     rect(env, x, top + 20, 5, 3, GOLD_LIGHT);
   }
-  // braços e assento
+  // arms and seat
   for (const side of [-1, 1]) {
     const x = side < 0 ? CX - 25 : CX + 20;
     block(env, x - 2, base - 28, 9, 6, GOLD, GOLD_DARK, GOLD_LIGHT);

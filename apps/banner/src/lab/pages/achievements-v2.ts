@@ -13,7 +13,7 @@ const SOURCE_LABEL: Record<Source, string> = {
   novo: 'Precisa de dado novo',
 };
 
-/** Insígnia: insígnia em pixel art dentro da moldura da classe (bronze, prata, ouro, diamante). */
+/** Badge: pixel art badge inside the class frame (bronze, silver, gold, diamond). */
 function badge(item: Pick<Proposal, 'glyph' | 'tier'>, locked: boolean, size = ''): HTMLElement {
   const box = h(
     'span',
@@ -25,7 +25,7 @@ function badge(item: Pick<Proposal, 'glyph' | 'tier'>, locked: boolean, size = '
 
 type View = 'regras' | 'bloqueadas' | 'desbloqueadas';
 
-/** O que mudou em relação às regras anteriores: nome e/ou critério de antes, se mudaram. */
+/** What changed compared to the previous rules: previous name and/or criterion, if they changed. */
 function change(item: Proposal): { name?: string; desc?: string } | null {
   const before = ANTES[item.id];
   if (!before) return null;
@@ -96,7 +96,7 @@ export const achievementsV2Page: LabPage = {
       );
     };
 
-    // Resumo: trilhas x classes
+    // Summary: tracks x classes
     const header = h(
       'tr',
       '',

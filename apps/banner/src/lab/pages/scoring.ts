@@ -8,12 +8,12 @@ type Difficulty = 'easy' | 'medium' | 'hard';
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard'];
 const LABEL: Record<Difficulty, string> = { easy: 'Fácil', medium: 'Média', hard: 'Difícil' };
 
-/** Regra de hoje, lida da configuração real do jogo. */
+/** Today's rule, read from the real game configuration. */
 const NOW = DEFAULT_GAME_CONFIG;
-const expAntes = (nivel: number): number => 75 * nivel - 25; // fórmula antiga
+const expAntes = (nivel: number): number => 75 * nivel - 25; // old formula
 const OLD_CHAPTER_EXP = [1, 2, 3, 4, 5].map(expAntes);
 
-/** PROPOSTA (ainda não vale no app): EXP de cada capítulo e moedas perdidas ao desmarcar. */
+/** PROPOSAL (not in force in the app yet): EXP of each chapter and coins lost when unchecking. */
 const CHAPTER_EXP = [...NOW.levelExpTable];
 const UNDO_PENALTY = [...NOW.undoCoinPenalty];
 const { expByDifficulty: EXP, coinsByDifficulty: COINS, levelUpBonusCoins: BONUS } = NOW;
@@ -67,7 +67,7 @@ export const scoringPage: LabPage = {
     };
     renderChapters();
 
-    // Editor: mexa nos números e a tabela e o simulador acompanham
+    // Editor: change the numbers and the table and the simulator follow
     const numberInput = (list: number[], index: number, after: () => void): HTMLInputElement => {
       const input = h('input');
       input.type = 'number';
@@ -87,7 +87,7 @@ export const scoringPage: LabPage = {
       DIFFICULTIES.map((d) => [LABEL[d], `${EXP[d]}`, `${COINS[d]}`]),
     );
 
-    // Simulador da proposta
+    // Proposal simulator
     const state = { chapter: 0, exp: 0, coins: 0, nextId: 1, items: [] as Item[] };
     const bar = h('i');
     const stats = h('div', 'sc-stats');

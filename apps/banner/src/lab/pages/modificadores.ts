@@ -1,7 +1,7 @@
 import type { LabPage } from '../page';
 import { inventoryPage } from './inventario';
 
-/** Barbas, bigodes, rosto, cabeça e corpo especial: o que muda o personagem além de roupa e cabelo. */
+/** Beards, mustaches, face, head and special body: what changes the character beyond clothes and hair. */
 export const modifiersPage: LabPage = inventoryPage({
   id: 'modificadores',
   label: 'Modificadores do personagem',

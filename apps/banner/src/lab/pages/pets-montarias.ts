@@ -16,7 +16,7 @@ const BADGE: Record<PlannedStatus, string> = {
   bloqueado: 'no',
 };
 
-/** Caminhada animada: a folha vira fundo de um quadro e o CSS desliza de quadro em quadro. */
+/** Animated walk: the sheet becomes a frame's background and the CSS slides from frame to frame. */
 function preview(sprite: SpritePreview): HTMLElement {
   const { scale, frameWidth, frameHeight, frames } = sprite;
   const box = h('div', 'pet-sprite');
@@ -59,7 +59,7 @@ function card(item: PlannedUtility): HTMLElement {
   return wrap;
 }
 
-/** Pets, montarias e veículos: o que existe fora do gerador de personagens, com prévia e licença. */
+/** Pets, mounts and vehicles: what exists outside the character generator, with preview and license. */
 export const petsPage: LabPage = {
   id: 'pets',
   label: 'Pets e montarias',

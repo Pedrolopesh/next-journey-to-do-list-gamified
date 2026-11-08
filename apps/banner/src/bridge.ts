@@ -8,7 +8,7 @@ type ReactNativeWindow = Window & {
   ReactNativeWebView?: { postMessage: (data: string) => void };
 };
 
-/** Banner -> app. No WebView usa a ponte do React Native; no painel de debug (iframe) usa o pai. */
+/** Banner -> app. In the WebView it uses the React Native bridge; in the debug panel (iframe) it uses the parent. */
 export function sendToApp(message: BannerToAppMessage): void {
   const data = JSON.stringify(message);
   const native = (window as ReactNativeWindow).ReactNativeWebView;
@@ -20,8 +20,8 @@ export function sendToApp(message: BannerToAppMessage): void {
 }
 
 /**
- * App -> banner. O React Native entrega no `window` (iOS) ou no `document` (Android).
- * Mensagem inválida é descartada e reportada por `onInvalid` (vira ERROR).
+ * App -> banner. React Native delivers on `window` (iOS) or on `document` (Android).
+ * An invalid message is discarded and reported by `onInvalid` (becomes ERROR).
  */
 export function listenToApp(
   onMessage: (message: AppToBannerMessage) => void,
@@ -29,7 +29,7 @@ export function listenToApp(
 ): () => void {
   const handler = (event: Event): void => {
     const { data, source } = event as MessageEvent<unknown>;
-    // No debug (iframe) só aceita o pai; no WebView o `source` é nulo.
+    // In debug (iframe) it only accepts the parent; in the WebView `source` is null.
     if (source && source !== window && source !== window.parent) return;
     const result = parseAppToBannerMessage(data);
     if (result.ok) onMessage(result.message);

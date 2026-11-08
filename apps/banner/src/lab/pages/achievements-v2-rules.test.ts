@@ -3,16 +3,16 @@ import { describe, expect, it } from 'vitest';
 
 import { AGORA } from './achievements-v2-rules';
 
-/** Números de um texto, sem o ponto de milhar ("3.000" vira 3000). */
+/** Numbers in a text, without the thousands separator ("3.000" becomes 3000). */
 const numeros = (texto: string): number[] =>
   (texto.match(/\d[\d.]*/g) ?? []).map((n) => Number(n.replace(/\./g, '')));
 
 /**
- * O simulador do laboratório precisa descrever as mesmas regras do catálogo (que a API confere com
- * as regras de verdade em achievements-consistency.spec.ts).
+ * The lab simulator must describe the same rules as the catalog (which the API checks against
+ * the real rules in achievements-consistency.spec.ts).
  */
-describe('laboratório e catálogo dizem o mesmo', () => {
-  it('toda conquista do catálogo tem critério no laboratório, com o mesmo texto e nome', () => {
+describe('lab and catalog say the same', () => {
+  it('every catalog achievement has a lab criterion, with the same text and name', () => {
     for (const a of ACHIEVEMENT_CATALOG) {
       const lab = AGORA[a.slug];
       expect(lab, `sem critério no laboratório para ${a.slug}`).toBeDefined();
@@ -21,10 +21,10 @@ describe('laboratório e catálogo dizem o mesmo', () => {
     }
   });
 
-  it('a meta numérica do laboratório aparece no texto do catálogo', () => {
+  it('the lab numeric goal appears in the catalog text', () => {
     for (const a of ACHIEVEMENT_CATALOG) {
       const lab = AGORA[a.slug];
-      // meta 1 vira palavra no texto ("primeiro"), então só confere de 2 em diante
+      // goal 1 becomes a word in the text ("primeiro"), so only check from 2 onwards
       if (lab && lab.m !== 'manual' && lab.m !== 'trail' && lab.m !== 'secrets' && lab.t > 1) {
         expect(numeros(a.description), a.slug).toContain(lab.t);
       }

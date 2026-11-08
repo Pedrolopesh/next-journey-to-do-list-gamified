@@ -5,7 +5,7 @@ import { h } from '../dom';
 import type { LabPage } from '../page';
 import { pixelSvg } from '../pixel';
 
-/** Botões do app hoje: [classe, rótulo da linha, texto, desabilitado]. */
+/** Buttons in the app today: [class, row label, text, disabled]. */
 const EXISTING: [string, string, string, boolean][] = [
   ['primary', 'Principal', 'Entrar', false],
   ['secondary', 'Secundário', 'Criar conta', false],
@@ -14,7 +14,7 @@ const EXISTING: [string, string, string, boolean][] = [
   ['primary off', 'Desabilitado', 'Salvar', true],
 ];
 
-/** Botões de ação da Home: [pixel art, título, descrição]. */
+/** Home action buttons: [pixel art, title, description]. */
 const ACTIONS: [PixelArtName, string, string][] = [
   ['character', 'Mudar personagem', 'Troque o visual do seu herói'],
   ['story', 'Mudar história principal', 'Escolha por qual aventura seguir'],

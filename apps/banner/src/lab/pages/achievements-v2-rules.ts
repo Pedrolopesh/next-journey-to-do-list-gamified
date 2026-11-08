@@ -1,6 +1,6 @@
 /**
- * Critérios das conquistas para o simulador de ritmo: `agora` espelha as regras do app; `proposta`
- * espaça os limites. Só o laboratório usa isto; a regra de verdade mora na API.
+ * Achievement criteria for the pace simulator: `agora` mirrors the app rules; `proposta`
+ * spaces out the limits. Only the lab uses this; the real rule lives in the API.
  */
 export type Metric =
   | 'checks'
@@ -157,7 +157,7 @@ export const ANTES: Record<string, Criterion> = {
   'cofre-aberto': { m: 'secrets', t: 0, desc: 'Desbloqueie todas as conquistas surpresa' },
 };
 
-/** Só o que muda na proposta; o resto herda de ANTES. */
+/** Only what changes in the proposal; the rest inherits from ANTES. */
 const MUDANCAS: Record<string, Criterion> = {
   'rotina-marcada': c('dailyDays', 4, 'Marque diários em 4 dias diferentes'),
   'tarefa-cumprida': c('tasksDone', 6, 'Conclua 6 tarefas'),

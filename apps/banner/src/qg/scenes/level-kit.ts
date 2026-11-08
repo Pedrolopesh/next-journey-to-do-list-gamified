@@ -2,29 +2,29 @@ import { rect, scrolled } from './draw';
 import type { ExtraCharacter, Light, SceneDef, SceneEnv } from './types';
 
 /**
- * Peças comuns dos níveis dos cenários (ver docs/CENARIOS.md): lista de objetos por nível, um
- * jeito único de posicioná-los (QG parado ou jornada rolando), separação entre o que fica atrás e
- * na frente do personagem pela altura dos pés, e atalhos para criar figurantes.
+ * Shared pieces of the scenery levels (see docs/CENARIOS.md): list of objects per level, a
+ * single way to position them (HQ still or journey scrolling), separation between what goes behind and
+ * in front of the character by foot height, and shortcuts to create extras.
  */
 
 export type BaseProp = {
   k: string;
-  /** QG: posição na tela. Jornada: posição no mundo. */
+  /** HQ: screen position. Journey: world position. */
   x: number;
-  /** Altura dos pés (base do objeto). */
+  /** Foot height (base of the object). */
   y: number;
-  /** Jornada: quanto rola em relação ao chão (menor que 1 para o que está longe). */
+  /** Journey: how much it scrolls relative to the ground (below 1 for what is far away). */
   f?: number;
-  /** Jornada: ciclo próprio em px (padrão: o do cenário). Use ciclos longos para o que é raro. */
+  /** Journey: own cycle in px (default: the scenery's). Use long cycles for what is rare. */
   p?: number;
 };
 
 export type PropKit<P extends BaseProp> = {
-  /** Ciclo do mundo na jornada. */
+  /** World cycle on the journey. */
   period: number;
-  /** Objetos de cada nível no QG. */
+  /** Objects of each level in the HQ. */
   qg: Record<number, P[]>;
-  /** Objetos de cada nível na jornada. */
+  /** Objects of each level on the journey. */
   journey: Record<number, P[]>;
   draw: (env: SceneEnv, prop: P, x: number) => void;
   light?: (env: SceneEnv, prop: P, x: number) => Light | null;
@@ -33,7 +33,7 @@ export type PropKit<P extends BaseProp> = {
 export const clampLevel = (level: number, count: number): number =>
   Math.min(count, Math.max(1, Math.round(level)));
 
-/** Posição de um objeto na tela, sempre em pixel inteiro. */
+/** Position of an object on the screen, always in whole pixels. */
 export function propX<P extends BaseProp>(env: SceneEnv, kit: PropKit<P>, prop: P): number {
   if (!env.journey) return Math.round(prop.x);
   return Math.round(scrolled(prop.x, env.scroll, prop.p ?? kit.period, prop.f ?? 1));
@@ -44,7 +44,7 @@ function propsOf<P extends BaseProp>(env: SceneEnv, kit: PropKit<P>, count: numb
   return table[clampLevel(env.level, count)] ?? [];
 }
 
-/** Ganchos `levelItems` e `levelLights` de um cenário a partir da lista de objetos. */
+/** `levelItems` and `levelLights` hooks of a scenery from the list of objects. */
 export function propLayers<P extends BaseProp>(
   kit: PropKit<P>,
   count: number,
@@ -67,7 +67,7 @@ export function propLayers<P extends BaseProp>(
   };
 }
 
-/** Desenha um objeto maior a partir do pé dele: o desenho é feito na origem e ampliado. */
+/** Draws a larger object from its foot: it is drawn at the origin and scaled up. */
 export function grown(env: SceneEnv, x: number, y: number, k: number, draw: () => void): void {
   env.ctx.save();
   env.ctx.translate(Math.round(x), Math.round(y));
@@ -77,12 +77,12 @@ export function grown(env: SceneEnv, x: number, y: number, k: number, draw: () =
 }
 
 // ---------------------------------------------------------------------------------------------
-// Figurantes
+// Extras
 // ---------------------------------------------------------------------------------------------
 
 export type Look = Partial<ExtraCharacter['selection']>;
 
-/** Gente comum para cenários do dia a dia. */
+/** Everyday people for day-to-day scenery. */
 export const CASUAL: Look[] = [
   {
     bodyType: 'female',
@@ -174,7 +174,7 @@ export const CASUAL: Look[] = [
   },
 ];
 
-/** Alguém parado, olhando para `direction`. */
+/** Someone standing, looking toward `direction`. */
 export const stand = (
   look: Look,
   x: number,
@@ -182,7 +182,7 @@ export const stand = (
   direction: ExtraCharacter['direction'],
 ): ExtraCharacter => ({ x, feetY, anim: 'idle', direction, selection: look });
 
-/** QG: vai e volta entre dois pontos da tela. */
+/** HQ: goes back and forth between two points on the screen. */
 export const roamer = (
   look: Look,
   anim: 'walk' | 'run',
@@ -199,7 +199,7 @@ export const roamer = (
   patrol: { from, to, speed },
 });
 
-/** Jornada: anda no mundo (`drift` em px/s; negativo vai para a esquerda). */
+/** Journey: walks in the world (`drift` in px/s; negative goes left). */
 export const walker = (
   look: Look,
   anim: 'walk' | 'run',
@@ -215,7 +215,7 @@ export const walker = (
   drift,
 });
 
-/** Jornada: parado no mundo, com ciclo próprio quando acompanha um objeto raro. */
+/** Journey: standing in the world, with its own cycle when it accompanies a rare object. */
 export const stander = (
   look: Look,
   world: number,
@@ -232,10 +232,10 @@ export const stander = (
 });
 
 // ---------------------------------------------------------------------------------------------
-// Desenhos comuns
+// Common drawings
 // ---------------------------------------------------------------------------------------------
 
-/** Círculo cheio em pixels inteiros, linha a linha (sem serrilhado suave). */
+/** Filled circle in whole pixels, line by line (no soft jaggies). */
 export function disc(env: SceneEnv, cx: number, cy: number, r: number, color: string): void {
   for (let dy = -r; dy <= r; dy++) {
     const half = Math.round(Math.sqrt(r * r - dy * dy));
@@ -245,7 +245,7 @@ export function disc(env: SceneEnv, cx: number, cy: number, r: number, color: st
 
 const FLAGS = ['#e63946', '#ffc93c', '#2a9d8f', '#ff7a2e', '#6aa8e0', '#ff6fa8'];
 
-/** Bandeirinhas penduradas num varal entre dois pontos de apoio (nunca soltas no ar). */
+/** Pennants hung on a line between two support points (never loose in the air). */
 export function flagLine(
   env: SceneEnv,
   x0: number,
@@ -274,7 +274,7 @@ export function flagLine(
 
 const SCENE_W_KIT = 390;
 
-/** Fogos de artifício: cada explosão abre, cai e some. Só à noite. */
+/** Fireworks: each burst opens, falls and fades. Night only. */
 export function fireworks(env: SceneEnv, bursts: [number, number, string, number][]): void {
   if (env.time !== 'night') return;
   for (const [bx, by, color, offset] of bursts) {
@@ -291,7 +291,7 @@ export function fireworks(env: SceneEnv, bursts: [number, number, string, number
   }
 }
 
-/** Balões amarrados num ponto: sobem e balançam devagar, presos por um fio. */
+/** Balloons tied at one point: they rise and sway slowly, held by a string. */
 export function balloons(env: SceneEnv, x: number, y: number, colors: string[], phase = 0): void {
   colors.forEach((color, i) => {
     const sway = Math.round(Math.sin(env.t * 0.9 + phase + i * 1.7) * 1.5);

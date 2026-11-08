@@ -73,7 +73,7 @@ export const CASTLE_LEVELS: LevelInfo[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------
-// Gente da corte
+// Court people
 // ---------------------------------------------------------------------------------------------
 
 const GUARD: Look[] = [
@@ -193,12 +193,12 @@ const APPRENTICE: Look = {
   feet: 'feet-basic-shoes',
 };
 const guard = (i: number): Look => GUARD[i % GUARD.length] ?? {};
-/** Guarda real: viseira Pigface e a proteção "Armour" nos braços, por cima das roupas de cada um. */
+/** Royal guard: Pigface visor and "Armour" arm protection, over each one's clothes. */
 const knightOf = (extra: ExtraCharacter): ExtraCharacter => ({
   ...extra,
   selection: { ...extra.selection, hat: 'hat-visor-pigface', arms: 'arms-armour' },
 });
-/** Torre do mago: só o chapéu Celestial Wizard Moon Hat, na cor de cada um. */
+/** Wizard tower: only the Celestial Wizard Moon Hat, in each one's color. */
 const mageOf = (extra: ExtraCharacter, color: string): ExtraCharacter => ({
   ...extra,
   selection: { ...extra.selection, hat: `hat-celestial-moon-${color}` },
@@ -206,7 +206,7 @@ const mageOf = (extra: ExtraCharacter, color: string): ExtraCharacter => ({
 const noble = (i: number): Look => NOBLE[i % NOBLE.length] ?? {};
 
 // ---------------------------------------------------------------------------------------------
-// Objetos
+// Objects
 // ---------------------------------------------------------------------------------------------
 
 type Prop =
@@ -235,7 +235,7 @@ function brazier(env: SceneEnv, x: number, y: number): void {
   flame(env, x - 4, y - 21, 1);
 }
 
-/** Escudo na parede com duas espadas cruzadas atrás. */
+/** Shield on the wall with two crossed swords behind it. */
 function shield(env: SceneEnv, x: number, y: number): void {
   for (let k = -12; k <= 12; k++) {
     rect(env, x + k, y + Math.round(k * 0.7), 2, 2, OUT);
@@ -272,7 +272,7 @@ function chandelier(env: SceneEnv, x: number, y: number): void {
   rect(env, x, y + 5, 1, 3, lit ? GOLD_LIGHT : GOLD);
 }
 
-/** Mesa comprida de banquete: toalha, comida, taças, velas e pernas. */
+/** Long banquet table: tablecloth, food, goblets, candles and legs. */
 function table(env: SceneEnv, x: number, y: number, w: number): void {
   rect(env, x - 2, y + 1, w + 4, 3, 'rgba(0,0,0,0.25)');
   for (const lx of [x + 3, x + w - 6]) {
@@ -329,7 +329,7 @@ const ORB_COLORS: [string, string, [number, number, number]][] = [
   ['#6bff9a', '#d0ffe0', [110, 255, 160]],
 ];
 
-/** Esfera mágica: flutua de leve (fase fixa por esfera, nunca pela posição) e pulsa. */
+/** Magic sphere: floats gently (fixed phase per sphere, never by position) and pulses. */
 function orb(env: SceneEnv, x: number, y: number, hue: number): void {
   const [main, shine] = ORB_COLORS[hue % ORB_COLORS.length] ?? ORB_COLORS[0] ?? ['#fff', '#fff'];
   const bob = Math.round(Math.sin(env.t * 0.9 + hue * 2.1) * 2);
@@ -395,7 +395,7 @@ function vase(env: SceneEnv, x: number, y: number): void {
   rect(env, x + 2, y - 20, 1, 5, '#2f8f4a');
 }
 
-/** Almofada de veludo sobre um pedestal, com a coroa de ouro. */
+/** Velvet cushion on a pedestal, with the gold crown. */
 function cushion(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 10, y + 1, 21, 3, 'rgba(0,0,0,0.25)');
   rect(env, x - 7, y - 20, 15, 21, OUT);
@@ -414,7 +414,7 @@ function cushion(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 1, y - 29, 3, 3, '#d03a3a');
 }
 
-/** Confete caindo pelo salão: fase e posição fixas por peça, queda lenta e contínua. */
+/** Confetti falling through the hall: fixed phase and position per piece, slow continuous fall. */
 function confetti(env: SceneEnv): void {
   const colors = ['#e63946', '#ffc93c', '#f8f8f8', '#6aa8e0', '#ff6fa8', GOLD];
   for (let i = 0; i < 46; i++) {
@@ -506,7 +506,7 @@ const JOURNEY_PROPS: Record<number, Prop[]> = {
     { k: 'table', x: 850, y: 162, w: 130 },
   ],
   4: [
-    // na parede (mesmo deslocamento das armaduras), sempre ao lado de uma armadura e longe das tochas
+    // on the wall (same offset as the armors), always next to an armor and away from the torches
     { k: 'shelf', x: 108, y: 150, ...W },
     { k: 'shelf', x: 703, y: 150, ...W },
     { k: 'shelf', x: 1102, y: 150, ...W },
@@ -603,7 +603,7 @@ const kit: PropKit<Prop> = {
 export const castleLevelLayers = propLayers(kit, CASTLE_LEVEL_COUNT);
 
 // ---------------------------------------------------------------------------------------------
-// Figurantes
+// Extras
 // ---------------------------------------------------------------------------------------------
 
 const lv = (n: number): number => Math.min(CASTLE_LEVEL_COUNT, Math.max(1, n));
@@ -659,7 +659,7 @@ export function castleJourneyExtras(n: number): ExtraCharacter[] {
         stander(guard(0), 940, 162, 'left'),
       ].map(knightOf);
     case 3:
-      // mesa com convidados: dupla, espaço e um sozinho; mesa vazia; mesa com um, espaço e uma dupla
+      // table with guests: a pair, a gap and one alone; empty table; table with one, a gap and a pair
       return [
         stander(noble(0), 224, 168, 'up'),
         stander(noble(1), 250, 168, 'up'),

@@ -1,7 +1,7 @@
 import type { LabPage } from '../page';
 import { inventoryPage } from './inventario';
 
-/** Roupas do gerador LPC (tronco, braços, pernas e pés), com a licença de cada uma. */
+/** Clothes of the LPC generator (torso, arms, legs and feet), with the license of each one. */
 export const clothesPage: LabPage = inventoryPage({
   id: 'roupas',
   label: 'Roupas',

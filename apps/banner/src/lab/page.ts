@@ -1,8 +1,8 @@
-/** Uma página do laboratório: `mount` desenha em `host` e pode devolver a limpeza ao sair. */
+/** A lab page: `mount` draws into `host` and may return the cleanup to run on exit. */
 export type LabPage = {
   id: string;
   label: string;
-  /** Seção do menu: páginas com a mesma seção ficam como sub-itens de um único item. */
+  /** Menu section: pages with the same section become sub-items of a single item. */
   section?: string;
   mount: (host: HTMLElement) => void | (() => void) | Promise<void | (() => void)>;
 };

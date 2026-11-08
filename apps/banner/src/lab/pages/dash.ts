@@ -10,11 +10,11 @@ import { loadLabData } from './inventario';
 import { type InventoryItem, PAGE_RULES } from './inventario-regras';
 import { PLANNED, STATUS_LABEL } from './pets-montarias-dados';
 
-/** Repositório e laboratório publicados (links públicos). */
+/** Published repository and lab (public links). */
 const REPO_URL = 'https://github.com/Pedrolopesh/next-journey-to-do-list-gamified';
 const LAB_URL = 'https://next-journey-lab.vercel.app';
 
-/** Nome de cada página do inventário, na ordem do menu. */
+/** Name of each inventory page, in the menu order. */
 const INVENTORY_PAGES: [id: string, label: string][] = [
   ['roupas', 'Roupas'],
   ['acessorios', 'Acessórios'],
@@ -42,7 +42,7 @@ function table(
   return el;
 }
 
-/** Painel de acompanhamento do laboratório: números das peças, atalhos e links. */
+/** Lab tracking panel: piece counts, shortcuts and links. */
 export const dashPage: LabPage = {
   id: 'dash',
   label: 'Dash',
@@ -64,7 +64,7 @@ export const dashPage: LabPage = {
         [STATUS_LABEL[status], PLANNED.filter((p) => p.status === status).length] as const,
     );
 
-    // Atalhos: lidos do próprio menu, então acompanham qualquer página nova
+    // Shortcuts: read from the menu itself, so they follow any new page
     const shortcuts = [...document.querySelectorAll<HTMLButtonElement>('#menu button')]
       .filter((button) => button.dataset.page && button.dataset.page !== 'dash')
       .map((button) => {

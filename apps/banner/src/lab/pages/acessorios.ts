@@ -1,7 +1,7 @@
 import type { LabPage } from '../page';
 import { inventoryPage } from './inventario';
 
-/** Acessórios de cabeça e rosto do gerador LPC, com a licença de cada um. */
+/** Head and face accessories of the LPC generator, with the license of each one. */
 export const accessoriesPage: LabPage = inventoryPage({
   id: 'acessorios',
   label: 'Acessórios',

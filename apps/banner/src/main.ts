@@ -25,8 +25,8 @@ listenToApp(
   },
 );
 
-// Posição inicial neutra; a posição real chega do app em INIT
+// Neutral initial position; the real position arrives from the app in INIT
 scene.setProgress(0, { animate: false });
 
-// Avisa o app que está pronto. O app só envia INIT depois disso.
+// Tells the app it is ready. The app only sends INIT after this.
 controller.start();

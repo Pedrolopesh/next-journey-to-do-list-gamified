@@ -1,4 +1,4 @@
-/* Indicadores: números do dia, saldo e avanço da história */
+/* Indicators: today's numbers, balance and story progress */
 .stats {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -70,7 +70,7 @@ export const ZOMBIE_LEVELS: LevelInfo[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------
-// Gente: soldados e zumbis
+// People: soldiers and zombies
 // ---------------------------------------------------------------------------------------------
 
 const SOLDIER: Look[] = [
@@ -175,7 +175,7 @@ const soldier = (i: number): Look => SOLDIER[i % SOLDIER.length] ?? {};
 const zombie = (i: number): Look => ZOMBIES[i % ZOMBIES.length] ?? {};
 
 // ---------------------------------------------------------------------------------------------
-// Objetos
+// Objects
 // ---------------------------------------------------------------------------------------------
 
 type Prop =
@@ -206,7 +206,7 @@ function wheel(env: SceneEnv, cx: number, cy: number, r: number): void {
   disc(env, cx, cy, Math.max(1, r - 3), '#8a9096');
 }
 
-/** Jipe militar de lado: capô, para-brisa baixo, estepe atrás e uma estrela branca. */
+/** Military jeep from the side: hood, low windshield, spare tire at the back and a white star. */
 function jeep(env: SceneEnv, x: number, y: number, dir: 1 | -1): void {
   const fx = (dx: number, w: number): number => (dir > 0 ? x + dx : x - dx - w);
   rect(env, x - 22, y - 1, 46, 3, 'rgba(0,0,0,0.25)');
@@ -229,7 +229,7 @@ function jeep(env: SceneEnv, x: number, y: number, dir: 1 | -1): void {
   disc(env, fx(-22, 0), y - 9, 2, '#2e322c');
 }
 
-/** Caminhão de carga: cabine à frente, lona esticada na carroceria e três eixos. */
+/** Cargo truck: cab in front, canvas stretched over the body and three axles. */
 function truck(env: SceneEnv, x: number, y: number, dir: 1 | -1): void {
   const fx = (dx: number, w: number): number => (dir > 0 ? x + dx : x - dx - w);
   rect(env, x - 32, y - 1, 66, 3, 'rgba(0,0,0,0.25)');
@@ -268,7 +268,7 @@ function tent(env: SceneEnv, x: number, y: number): void {
   }
 }
 
-/** Cancela de posto de controle: guarita pequena e barra listrada (que sobe e desce devagar). */
+/** Checkpoint barrier: small booth and striped bar (which slowly goes up and down). */
 function gate(env: SceneEnv, x: number, y: number): void {
   const lift = Math.round(Math.max(0, Math.sin(env.t * 0.5)) * 10);
   rect(env, x - 6, y - 1, 78, 3, 'rgba(0,0,0,0.2)');
@@ -297,7 +297,7 @@ function firebarrel(env: SceneEnv, x: number, y: number): void {
   flame(env, x, y - 15, 2);
 }
 
-/** Tripé de holofote: três pés, haste e a cabeça da lâmpada (acende de noite). */
+/** Floodlight tripod: three feet, stem and the lamp head (lights at night). */
 function flood(env: SceneEnv, x: number, y: number): void {
   const night = env.time === 'night';
   rect(env, x - 8, y, 17, 2, 'rgba(0,0,0,0.2)');
@@ -310,7 +310,7 @@ function flood(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 4, y - 46, 9, 5, night ? '#fff3b8' : '#d8dde0');
 }
 
-/** Armário de armas: três portas de aço abertas, com um fuzil em cada uma. */
+/** Weapons locker: three open steel doors, with a rifle in each. */
 function armory(env: SceneEnv, x: number, y: number): void {
   const left = x - 22;
   rect(env, x - 24, y - 1, 49, 3, 'rgba(0,0,0,0.25)');
@@ -321,17 +321,17 @@ function armory(env: SceneEnv, x: number, y: number): void {
     const dx = left + 2 + i * 14;
     rect(env, dx, y - 27, 12, 25, OUT);
     rect(env, dx + 1, y - 26, 10, 23, '#1d2118');
-    // fuzil em pé: cano, corpo e coronha
+    // rifle standing: barrel, body and stock
     rect(env, dx + 5, y - 25, 2, 12, '#7a8087');
     rect(env, dx + 4, y - 14, 4, 7, '#3a3a3a');
     rect(env, dx + 4, y - 7, 4, 4, '#6b4a2a');
-    // porta aberta, de lado
+    // open door, from the side
     rect(env, dx + 11, y - 27, 2, 25, '#3f4a2c');
   }
   rect(env, left + 2, y - 30, 40, 1, '#c9a227');
 }
 
-/** Carro destruído em chamas, com a carcaça escura e as rodas no chão. */
+/** Burning wrecked car, with a dark shell and the wheels on the ground. */
 function wreck(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 22, y - 1, 46, 3, 'rgba(0,0,0,0.25)');
   rect(env, x - 21, y - 13, 42, 10, OUT);
@@ -350,7 +350,7 @@ function wreck(env: SceneEnv, x: number, y: number): void {
   flame(env, x - 14, y - 12, 2);
 }
 
-/** Coluna de fumaça: bolhas que sobem, crescem e somem; fase fixa por objeto. */
+/** Column of smoke: bubbles that rise, grow and fade; fixed phase per object. */
 function smoke(env: SceneEnv, x: number, y: number, green = false): void {
   const { ctx } = env;
   ctx.save();
@@ -365,7 +365,7 @@ function smoke(env: SceneEnv, x: number, y: number, green = false): void {
   ctx.restore();
 }
 
-/** Luz de alarme giratória: lâmpada vermelha no alto de um poste, que acende e apaga. */
+/** Rotating alarm light: red lamp on top of a pole, which turns on and off. */
 function siren(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 1, y - 30, 3, 30, OUT);
   rect(env, x, y - 30, 1, 30, '#6c7380');
@@ -375,7 +375,7 @@ function siren(env: SceneEnv, x: number, y: number): void {
   if (on) rect(env, x - 2, y - 35, 2, 2, '#ffb0a8');
 }
 
-/** Holofote de torre: facho que varre o terreno de um lado para o outro. */
+/** Tower searchlight: beam that sweeps the ground from side to side. */
 function searchlight(env: SceneEnv, x: number, y: number): void {
   const { ctx } = env;
   rect(env, x - 2, y - 44, 5, 44, OUT);
@@ -398,7 +398,7 @@ function searchlight(env: SceneEnv, x: number, y: number): void {
   ctx.restore();
 }
 
-/** Heliponto: círculo e "H" pintados no chão, achatados pela perspectiva. */
+/** Helipad: circle and "H" painted on the ground, flattened by perspective. */
 function helipad(env: SceneEnv, x: number, y: number): void {
   const { ctx } = env;
   ctx.save();
@@ -415,7 +415,7 @@ function helipad(env: SceneEnv, x: number, y: number): void {
   rect(env, x - 7, y - 1, 14, 2, '#f4f4f0');
 }
 
-/** Helicóptero de resgate pousado, com o rotor ainda girando. */
+/** Rescue helicopter landed, with the rotor still spinning. */
 function rescue(env: SceneEnv, x: number, y: number): void {
   const { ctx } = env;
   ctx.save();
@@ -436,7 +436,7 @@ function supplies(env: SceneEnv, x: number, y: number): void {
   rect(env, x + 30, y - 5, 6, 4, '#c8b060');
 }
 
-/** Arame farpado esticado entre dois mourões. */
+/** Barbed wire stretched between two posts. */
 function wire(env: SceneEnv, x: number, y: number, w: number): void {
   rect(env, x, y - 12, 2, 12, OUT);
   rect(env, x + w, y - 12, 2, 12, OUT);
@@ -488,7 +488,7 @@ function drawProp(env: SceneEnv, prop: Prop, x: number): void {
   }
 }
 
-/** Heliponto com o helicóptero de resgate pousado (usado também no fundo da jornada). */
+/** Helipad with the rescue helicopter landed (also used in the journey background). */
 export function parkedHeli(env: SceneEnv, x: number, y: number): void {
   helipad(env, x, y);
   grown(env, x, y, 1.25, () => rescue(env, 0, 0));
@@ -614,12 +614,12 @@ const kit: PropKit<Prop> = {
 export const zombieLevelLayers = propLayers(kit, ZOMBIE_LEVEL_COUNT);
 
 // ---------------------------------------------------------------------------------------------
-// Figurantes
+// Extras
 // ---------------------------------------------------------------------------------------------
 
 const level = (n: number): number => Math.min(ZOMBIE_LEVEL_COUNT, Math.max(1, n));
 
-/** Soldados e zumbis a mais do QG (a multidão do nível 1 é montada pelo cenário). */
+/** Extra soldiers and zombies in the HQ (the level 1 crowd is assembled by the scenery). */
 function zombieExtrasRaw(n: number): ExtraCharacter[] {
   switch (level(n)) {
     case 2:
@@ -648,7 +648,7 @@ function zombieExtrasRaw(n: number): ExtraCharacter[] {
   }
 }
 
-/** Jornada: posições do mundo (ciclo de 820 px; o que acompanha um objeto raro usa o ciclo dele). */
+/** Journey: world positions (820 px cycle; whatever accompanies a rare object uses its cycle). */
 function zombieJourneyRaw(n: number): ExtraCharacter[] {
   const lane = LANE;
   switch (level(n)) {
@@ -668,7 +668,7 @@ function zombieJourneyRaw(n: number): ExtraCharacter[] {
       ];
     case 4:
       return [
-        // soldados fogem à frente do personagem; zumbis correm atrás dele
+        // soldiers flee ahead of the character; zombies run behind
         chaser(soldier(0), 58, lane + 6, 5, 1.7, 0),
         chaser(soldier(2), 94, lane + 22, 4, 1.3, 2),
         chaser(soldier(3), 134, lane - 4, 5, 1.5, 4),
@@ -691,7 +691,7 @@ function zombieJourneyRaw(n: number): ExtraCharacter[] {
   }
 }
 
-/** Quem corre junto do personagem, sempre na tela: soldados à frente e zumbis atrás. */
+/** Whoever runs with the character, always on screen: soldiers ahead and zombies behind. */
 const chaser = (
   look: Look,
   offset: number,

@@ -84,28 +84,28 @@ const selection: Selection = {
   feetColor: 'white',
 };
 
-describe('lab do personagem', () => {
-  it('converte hex e calcula o quadro na folha', () => {
+describe('character lab', () => {
+  it('converts hex and computes the frame in the sheet', () => {
     expect(hexToRgb('#FF8000')).toEqual([255, 128, 0]);
     expect(hexToRgb('#f80')).toEqual([255, 136, 0]);
     expect(frameRect('down', 3)).toEqual({ sx: 192, sy: 128 });
     expect(frameRect('up', 0)).toEqual({ sx: 0, sy: 0 });
   });
 
-  it('recolore só pixels opacos da paleta-base', () => {
+  it('recolors only the opaque pixels of the base palette', () => {
     const map = buildRecolorMap(['#ff0000', '#00ff00'], ['#0000ff', '#ffffff']);
     const pixels = new Uint8ClampedArray([255, 0, 0, 255, 0, 255, 0, 0, 1, 2, 3, 255]);
     recolorPixels(pixels, map);
     expect([...pixels]).toEqual([0, 0, 255, 255, 0, 255, 0, 0, 1, 2, 3, 255]);
   });
 
-  it('monta as camadas ordenadas por profundidade para o tipo de corpo', () => {
+  it('assembles the layers ordered by depth for the body type', () => {
     const specs = layersFor(catalog, selection);
     expect(specs.map((s) => s.partId)).toEqual(['body', 'legs-pants', 'head-male', 'face']);
     expect(specs.find((s) => s.partId === 'legs-pants')?.color).toBe('blue');
   });
 
-  it('lista as licenças só dos itens escolhidos, sem repetir', () => {
+  it('lists the licenses of the chosen items only, without repeats', () => {
     const credits = creditsFor(catalog, ['body', 'head-male', 'legs-pants']);
     expect(credits.map((c) => c.licenseUsed)).toEqual(['OGA-BY 3.0', 'CC0']);
   });

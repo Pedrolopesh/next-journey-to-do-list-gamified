@@ -7,7 +7,7 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
   version: string;
 };
 
-// Gera um único index.html com JS, CSS e sprites embutidos. O app o carrega num WebView.
+// Generates a single index.html with JS, CSS and sprites embedded. The app loads it in a WebView.
 export default defineConfig({
   plugins: [viteSingleFile()],
   define: { __BANNER_VERSION__: JSON.stringify(pkg.version) },

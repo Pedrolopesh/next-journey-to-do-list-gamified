@@ -1,4 +1,4 @@
-# Créditos da arte LPC usada no laboratório
+# Credits for the LPC art used in the lab
 
 Gerado por `scripts/import-lpc.mjs`. **Não edite à mão.** Toda a arte abaixo é de terceiros e só foi
 incluída por oferecer a licença indicada na terceira coluna (CC0, OGA-BY 3.0 ou CC-BY). OGA-BY e CC-BY

@@ -6,8 +6,8 @@ import { SCENE_W } from './scenes/types';
 const cache = new WeakMap<SceneDef, Map<string, ExtraCharacter[]>>();
 
 /**
- * Figurantes de um cenário num nível (guardados, porque o desenho pergunta a cada quadro). Na
- * jornada vale a lista própria dela.
+ * Extras of a scene at a level (cached, because drawing asks on every frame). On the
+ * journey the journey's own list applies.
  */
 export function extrasOf(def: SceneDef, level: number, journey = false): ExtraCharacter[] {
   if (journey) return cached(def, `j${level}`, () => def.journeyExtrasFor?.(level) ?? []);
@@ -29,7 +29,7 @@ function cached(def: SceneDef, key: string, make: () => ExtraCharacter[]): Extra
   return list;
 }
 
-/** Onde um figurante está na tela durante a jornada: o mundo rola e ele anda um pouco nele. */
+/** Where an extra is on the screen during the journey: the world scrolls and they walk a little in it. */
 export function journeySpot(
   extra: ExtraCharacter,
   scroll: number,
@@ -43,7 +43,7 @@ export function journeySpot(
   };
 }
 
-/** Onde um figurante que vai e volta está depois de `clock` segundos, e para onde olha. */
+/** Where an extra that goes back and forth is after `clock` seconds, and which way they face. */
 export function patrolSpot(
   patrol: NonNullable<ExtraCharacter['patrol']>,
   clock: number,
@@ -61,8 +61,8 @@ export function patrolSpot(
 }
 
 /**
- * Onde está quem corre junto do personagem (perseguidores atrás, fugitivos na frente). `chase` vai
- * de 0 (cenário parado: está fora da tela, do lado de onde veio) a 1 (em posição).
+ * Where those running with the character are (chasers behind, fleeing ones ahead). `chase` goes
+ * from 0 (scenery stopped: off screen, on the side they came from) to 1 (in position).
  */
 export function followSpot(
   follow: NonNullable<ExtraCharacter['follow']>,

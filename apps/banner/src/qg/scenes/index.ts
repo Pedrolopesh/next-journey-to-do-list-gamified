@@ -7,5 +7,5 @@ import { rooftop } from './rooftop';
 import type { SceneDef } from './types';
 import { zombie } from './zombie';
 
-/** Cenários do QG disponíveis no laboratório. */
+/** HQ scenes available in the lab. */
 export const SCENES: SceneDef[] = [cabin, beach, rooftop, zombie, castle, paradise, hell];
