@@ -1,4 +1,4 @@
-/** Insígnias das conquistas v2: pixel art 24x24 (contorno escuro, 3 tons e brilho), desenhadas para o projeto. */
+/** Achievement v2 badges: 24x24 pixel art (dark outline, 3 tones and a highlight), drawn for the project. */
 
 export const INSIGNIA_PALETTE: Record<string, string> = {
   E: '#1f7a3a',
@@ -872,7 +872,7 @@ export const INSIGNIAS = {
     '.........onnnno.........',
     '..........oooo..........',
   ],
-  // Reserva do Figma (página Insígnias, seção Histórico)
+  // Figma reserve (page "Insígnias", section "Histórico")
   trofeu: [
     '........................',
     '........................',
