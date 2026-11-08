@@ -1,2 +1,2 @@
--- Banco separado para os testes e2e da API
+-- Separate database for the API e2e tests
 CREATE DATABASE nextjourney_test OWNER nextjourney;

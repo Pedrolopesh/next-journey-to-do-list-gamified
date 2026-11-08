@@ -2,17 +2,17 @@ packages:
   - 'apps/*'
   - 'packages/*'
 allowBuilds:
-  # Scripts de instalação ignorados de propósito: os binários vêm dos pacotes opcionais por plataforma.
+  # Install scripts skipped on purpose: the binaries come from the per-platform optional packages.
   esbuild: false
   unrs-resolver: false
   argon2: false
   '@swc/core': false
   '@parcel/watcher': false
-  # CLI do OpenSpec (validação das propostas): funciona sem o script de instalação
+  # OpenSpec CLI (proposal validation): works without the install script
   '@fission-ai/openspec': false
-  # Telemetria de terceiros: nunca
+  # Third-party telemetry: never
   '@scarf/scarf': false
-  # Precisam rodar: baixam o motor de migrations do Prisma
+  # They must run: they download the Prisma migration engine
   prisma: true
   '@prisma/engines': true
 
@@ -24,7 +24,7 @@ auditConfig:
   ignoreGhsas:
     - GHSA-86w9-cpqp-85rv # node-forge (via @expo/code-signing-certificates)
     - GHSA-vfj7-8cjw-p6xm # braces (via metro / micromatch)
-    - GHSA-mrhx-c7xc-m3w5 # zod 3.x embutido no @expo/cli (a 3.x não recebeu correção; o projeto usa zod 4 corrigido)
+    - GHSA-mrhx-c7xc-m3w5 # zod 3.x bundled in @expo/cli (3.x got no fix; the project uses the fixed zod 4)
 
 minimumReleaseAgeExclude:
   - '@expo/cli@58.1.11'
@@ -43,15 +43,15 @@ minimumReleaseAgeExclude:
   - expo-router@58.0.23
   - expo-splash-screen@58.0.10
 
-# Correções de vulnerabilidades em dependências transitivas do CLI do Prisma (só ferramenta de desenvolvimento).
+# Fixes for vulnerabilities in transitive dependencies of the Prisma CLI (development tooling only).
 overrides:
   mysql2: '>=3.23.1'
   deepmerge-ts: '>=8.0.0'
-  # Correções de ferramentas de desenvolvimento (Expo e Vite) com versão corrigida publicada
+  # Fixes for development tooling (Expo and Vite) with a published fixed version
   esbuild: '>=0.28.1'
   uuid: '>=11.1.1'
   decode-uri-component: '>=0.5.0'
-  # Correções de DoS com versão corrigida publicada (Express/Nest e cliente HTTP)
+  # DoS fixes with a published fixed version (Express/Nest and HTTP client)
   body-parser: '>=2.4.0'
   multer: '>=2.5.0'
   undici: '>=8.12.2'

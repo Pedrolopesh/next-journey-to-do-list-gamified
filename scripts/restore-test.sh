@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
-# Prova que um backup restaura: carrega o dump num banco DESCARTÁVEL e confere as tabelas-chave.
-# Uso: RESTORE_DATABASE_URL=... scripts/restore-test.sh <arquivo.dump>
-# ATENÇÃO: o banco de RESTORE_DATABASE_URL é limpo antes. Nunca aponte para o banco real.
+# Proves that a backup restores: loads the dump into a THROWAWAY database and checks the key tables.
+# Usage: RESTORE_DATABASE_URL=... scripts/restore-test.sh <file.dump>
+# WARNING: the RESTORE_DATABASE_URL database is wiped first. Never point it at the real database.
 set -euo pipefail
 
-dump="${1:?informe o arquivo .dump}"
-: "${RESTORE_DATABASE_URL:?defina RESTORE_DATABASE_URL (banco descartável)}"
+dump="${1:?give the .dump file}"
+: "${RESTORE_DATABASE_URL:?set RESTORE_DATABASE_URL (throwaway database)}"
 url="${RESTORE_DATABASE_URL%%\?*}"
 
-# Avisos de versão (ex.: pg_dump mais novo que o servidor) saem com código 1; a conferência abaixo
-# é o que decide se a restauração serviu. Prefira pg_dump/pg_restore da mesma versão do servidor.
+# Version warnings (e.g. a pg_dump newer than the server) exit with code 1; the check below
+# is what decides whether the restore worked. Prefer pg_dump/pg_restore of the same version as the server.
 pg_restore --clean --if-exists --no-owner --no-privileges --dbname "$url" "$dump" ||
-  echo "aviso: pg_restore reportou erros; conferindo o resultado" >&2
+  echo "warning: pg_restore reported errors; checking the result" >&2
 
 count() { psql "$url" -At -c "select count(*) from $1"; }
 for table in users items item_checks stories chapters _prisma_migrations; do
-  echo "$table: $(count "$table") linhas"
+  echo "$table: $(count "$table") rows"
 done
-[ "$(count _prisma_migrations)" -gt 0 ] || { echo "restauração incompleta" >&2; exit 1; }
-echo "restauração ok"
+[ "$(count _prisma_migrations)" -gt 0 ] || { echo "incomplete restore" >&2; exit 1; }
+echo "restore ok"

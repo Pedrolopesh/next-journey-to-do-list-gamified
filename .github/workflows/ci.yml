@@ -2,35 +2,35 @@ name: CI
 
 on:
   pull_request:
-    # edited: corrigir título ou descrição no GitHub refaz a checagem da descrição
+    # edited: fixing the title or description on GitHub reruns the description check
     types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
 
 concurrency:
-  # Editar título/descrição não pode cancelar a execução do código (grupos separados)
-  group: ci-${{ github.ref }}-${{ github.event.action == 'edited' && 'descricao' || 'codigo' }}
+  # Editing the title/description must not cancel the code run (separate groups)
+  group: ci-${{ github.ref }}-${{ github.event.action == 'edited' && 'description' || 'code' }}
   cancel-in-progress: true
 
 jobs:
   check:
-    # editar título/descrição não precisa refazer build e testes
+    # editing the title/description does not need a rebuild and tests
     if: github.event.action != 'edited'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     env:
-      # O Prisma 7 lê esta variável até para gerar o cliente; o valor aponta para o banco efêmero acima
-      DATABASE_URL: postgresql://ci:ci-senha-descartavel@127.0.0.1:5432/nextjourney_test # scan-allow: credencial efêmera
-      TEST_DATABASE_URL: postgresql://ci:ci-senha-descartavel@127.0.0.1:5432/nextjourney_test # scan-allow: credencial efêmera
+      # Prisma 7 reads this variable even to generate the client; the value points to the ephemeral database above
+      DATABASE_URL: postgresql://ci:ci-senha-descartavel@127.0.0.1:5432/nextjourney_test # scan-allow: ephemeral credential
+      TEST_DATABASE_URL: postgresql://ci:ci-senha-descartavel@127.0.0.1:5432/nextjourney_test # scan-allow: ephemeral credential
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Histórico inteiro: a checagem de commits e a varredura de segredos olham o intervalo do PR
+          # Whole history: the commit check and the secret scan look at the PR range
           fetch-depth: 0
 
-      # A versão do pnpm vem do campo packageManager do package.json
+      # The pnpm version comes from the packageManager field of package.json
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -40,18 +40,18 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Postgres só para os testes e2e da API: o PostgreSQL que já vem instalado no runner (descartado ao fim
-      # do job). Evita baixar imagem de container, que falha de vez em quando por limite de downloads.
-      - name: Banco de teste (PostgreSQL do runner)
+      # Postgres only for the API e2e tests: the PostgreSQL already installed on the runner (discarded at the end
+      # of the job). It avoids pulling a container image, which sometimes fails because of download limits.
+      - name: Test database (runner PostgreSQL)
         run: |
           sudo systemctl start postgresql.service
-          sudo -u postgres psql -v ON_ERROR_STOP=1 -c "CREATE ROLE ci WITH LOGIN SUPERUSER PASSWORD 'ci-senha-descartavel'" # scan-allow: credencial efêmera
+          sudo -u postgres psql -v ON_ERROR_STOP=1 -c "CREATE ROLE ci WITH LOGIN SUPERUSER PASSWORD 'ci-senha-descartavel'" # scan-allow: ephemeral credential
           sudo -u postgres createdb -O ci nextjourney_test
           pg_isready -h 127.0.0.1 -p 5432 -d nextjourney_test -U ci
 
-      # Só no PR: mensagens dos commits (Conventional Commits, sem corpo, sem atribuição a IA)
+      # Only on a PR: commit messages (Conventional Commits, no body, no AI attribution)
       # Dependabot writes its own commit bodies (release notes), which the rule would reject
-      - name: Commits do PR
+      - name: PR commits
         if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         env:
           BASE_REF: origin/${{ github.base_ref }}
@@ -68,20 +68,20 @@ jobs:
           BASE_REF: origin/${{ github.base_ref }}
         run: bash scripts/check-openspec.sh
 
-      - name: Código duplicado
+      - name: Duplicated code
         run: pnpm run duplicates
 
       - run: bash scripts/security-scan.sh
 
-  # Descrição e título do PR no padrão do template (o texto vem por variável de ambiente, nunca
-  # interpolado no script, para não permitir injeção de comando pelo título ou corpo)
+  # PR title and description following the template (the text comes through an environment variable, never
+  # interpolated into the script, so the title or body cannot inject commands)
   # Dependabot pull requests have a fixed generated description, so only people are held to the template
   descricao:
     if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Título e descrição do PR
+      - name: PR title and description
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
