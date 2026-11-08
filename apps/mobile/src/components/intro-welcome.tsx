@@ -5,7 +5,6 @@ import { colors, fontSize, radius, space } from '@/theme';
 
 import { AnimatedLogo } from './animated-logo';
 import { PixelArt, type PixelArtName } from './pixel-art';
-import { PixelTitle } from './pixel-title';
 
 const STEPS: readonly { art: PixelArtName; key: 'character' | 'story' | 'check' }[] = [
   { art: 'character', key: 'character' },
@@ -14,14 +13,13 @@ const STEPS: readonly { art: PixelArtName; key: 'character' | 'story' | 'check' 
 ];
 
 /**
- * First screen of the intro: the animated book of the app, a welcome and the three steps ahead.
- * Nothing here is saved.
+ * First screen of the intro below the title: the animated book of the app, a welcome and the three
+ * steps ahead. Nothing here is saved.
  */
 export function IntroWelcome() {
   const { t } = useTranslation();
   return (
     <View style={styles.stack}>
-      <PixelTitle lead={t('tutorial.titleLead')} accent={t('tutorial.titleAccent')} />
       <View style={styles.frame}>
         <AnimatedLogo />
       </View>
@@ -58,7 +56,12 @@ const styles = StyleSheet.create({
     borderColor: colors.brand.gold,
     backgroundColor: colors.bg.surface,
   },
-  speechText: { color: colors.text.primary, fontSize: fontSize[15], textAlign: 'center' },
+  speechText: {
+    color: colors.text.primary,
+    fontSize: fontSize[15],
+    lineHeight: fontSize[15] * 1.4,
+    textAlign: 'center',
+  },
   kicker: {
     color: colors.text.muted,
     fontSize: fontSize[12],

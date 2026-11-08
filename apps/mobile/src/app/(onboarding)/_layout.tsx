@@ -32,10 +32,6 @@ export default function OnboardingLayout() {
         headerShown: false,
         contentStyle: { backgroundColor: colors.bg.base },
       }}
-    >
-      {/* After the character is created there is no going back: no button and no swipe */}
-      <Stack.Screen name="reminders" options={{ gestureEnabled: false }} />
-      <Stack.Screen name="goal" options={{ gestureEnabled: false }} />
-    </Stack>
+    />
   );
 }

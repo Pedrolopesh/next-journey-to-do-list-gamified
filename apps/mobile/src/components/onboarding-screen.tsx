@@ -1,5 +1,14 @@
-import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect, useNavigation } from 'expo-router';
+import { type ReactNode, useCallback, useEffect } from 'react';
+import {
+  BackHandler,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/back-button';
@@ -17,13 +26,45 @@ type Props = {
   preview?: ReactNode;
   /** No back button (first screens of a flow). */
   hideBack?: boolean;
+  /**
+   * No way back at all: no button, no swipe and no Android back button. For the steps after a point
+   * of no return (the character is already created).
+   */
+  noReturn?: boolean;
 };
+
+function useNoReturn(enabled: boolean): void {
+  const navigation = useNavigation();
+  useEffect(() => {
+    if (enabled) navigation.setOptions({ gestureEnabled: false });
+  }, [enabled, navigation]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!enabled) return undefined;
+      // Returning true tells Android the press was handled, so the screen stays
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => true);
+      return () => {
+        subscription.remove();
+      };
+    }, [enabled]),
+  );
+}
 
 /**
  * Common layout of the onboarding steps: back button, title, scrolling content and a fixed footer
  * with the actions.
  */
-export function OnboardingScreen({ title, subtitle, children, footer, preview, hideBack }: Props) {
+export function OnboardingScreen({
+  title,
+  subtitle,
+  children,
+  footer,
+  preview,
+  hideBack: hideBackProp,
+  noReturn = false,
+}: Props) {
+  const hideBack = hideBackProp || noReturn;
+  useNoReturn(noReturn);
   const insets = useSafeAreaInsets();
   const keyboard = useKeyboardVisible();
   // The preview takes a third of the screen: with the keyboard open it would leave no room for

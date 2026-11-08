@@ -28,4 +28,14 @@ describe('intro welcome', () => {
     await render(<PixelTitle lead="Seja Bem vindo, A sua" accent="próxima Jornada" />);
     expect(screen.getByLabelText('Seja Bem vindo, A sua próxima Jornada')).toBeTruthy();
   });
+
+  it('the title is the heading of the welcome and appears only once', async () => {
+    await render(
+      <>
+        <PixelTitle lead="Seja Bem vindo, A sua" accent="próxima Jornada" />
+        <IntroWelcome />
+      </>,
+    );
+    expect(screen.getAllByRole('header')).toHaveLength(1);
+  });
 });
