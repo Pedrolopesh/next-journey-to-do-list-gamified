@@ -1,5 +1,5 @@
-# Postgres local de desenvolvimento e testes. NÃO é a infraestrutura de produção.
-# A porta é publicada só em 127.0.0.1 (o Docker ignora o firewall do sistema para portas publicadas).
+# Local Postgres for development and tests. It is NOT the production infrastructure.
+# The port is published on 127.0.0.1 only (Docker ignores the system firewall for published ports).
 name: next-journey-dev
 
 services:
@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: nextjourney
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env da raiz (veja .env.example)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in the root .env (see .env.example)}
       POSTGRES_DB: nextjourney
     ports:
       - '127.0.0.1:${POSTGRES_PORT:-5544}:5432'
