@@ -1,24 +1,24 @@
-# Política de segurança
+# Security policy
 
-O Next Journey é um projeto aberto. Segurança é prioridade: se você encontrou uma vulnerabilidade, **não abra uma issue pública**.
+Next Journey is an open project. Security is a priority: if you found a vulnerability, **do not open a public issue**.
 
-## Como reportar
+## How to report
 
-Use o reporte privado do GitHub: aba **Security** do repositório → **Report a vulnerability**. Descreva o impacto, os passos para reproduzir e, se possível, uma sugestão de correção.
+Use GitHub private reporting: the repository **Security** tab → **Report a vulnerability**. Describe the impact, the steps to reproduce and, if possible, a suggested fix.
 
-Você receberá uma resposta em até 7 dias. Pedimos que não divulgue publicamente antes da correção estar disponível.
+You will get a reply within 7 days. Please do not disclose publicly before the fix is available.
 
-## Escopo
+## Scope
 
-- Código deste repositório (API, app, banner, pacotes compartilhados).
-- Configurações de exemplo (`.env.example`, workflows de CI).
+- Code in this repository (API, app, banner, shared packages).
+- Example configuration (`.env.example`, CI workflows).
 
-Fora de escopo: a infraestrutura de produção (servidores, domínios) e serviços de terceiros.
+Out of scope: the production infrastructure (servers, domains) and third-party services.
 
-## Se você replicar o projeto
+## If you replicate the project
 
-Gere os seus próprios segredos (JWT, banco, e-mail, chaves de login social). Nunca reutilize valores de exemplo em produção.
+Generate your own secrets (JWT, database, email, social login keys). Never reuse example values in production.
 
-## Para quem contribui
+## For contributors
 
-Antes de abrir PR, rode `pnpm run security` e siga o checklist de `docs/SEGURANCA.md`. Nunca commite segredos, `.env` ou dados de infraestrutura.
+Before opening a PR, run `pnpm run security` and follow the checklist in `docs/SEGURANCA.md`. Never commit secrets, `.env` files or infrastructure data.
