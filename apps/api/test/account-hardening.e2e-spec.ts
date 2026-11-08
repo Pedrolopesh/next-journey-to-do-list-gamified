@@ -17,10 +17,10 @@ const deleteWithPassword = (ctx: TestContext, auth: Awaited<ReturnType<typeof re
     .http()
     .delete('/v1/me')
     .set('authorization', bearer(auth))
-    .send({ password: PASSWORD }) // scan-allow: senha falsa de teste
+    .send({ password: PASSWORD }) // scan-allow: fake test password
     .expect(204);
 
-describe('exclusão de conta', () => {
+describe('account deletion', () => {
   let ctx: TestContext;
   beforeAll(async () => {
     ctx = await createTestApp();
@@ -29,7 +29,7 @@ describe('exclusão de conta', () => {
     await ctx.app.close();
   });
 
-  it('anonimiza na hora, encerra as sessões e libera o e-mail', async () => {
+  it('anonymizes at once, ends the sessions and frees the email', async () => {
     const email = uniqueEmail('apagar');
     const auth = await registerUser(ctx, email);
     await createItem(ctx, auth, { type: 'habit', title: 'Beber água' });
@@ -38,7 +38,7 @@ describe('exclusão de conta', () => {
       .http()
       .delete('/v1/me')
       .set('authorization', bearer(auth))
-      .send({ password: PASSWORD }) // scan-allow: senha falsa de teste
+      .send({ password: PASSWORD }) // scan-allow: fake test password
       .expect(204);
 
     const row = await ctx.prisma.user.findUniqueOrThrow({ where: { id: auth.user.id } });
@@ -47,9 +47,9 @@ describe('exclusão de conta', () => {
     expect(row.name).toBe('Conta excluída');
     expect(row.passwordHash).toBeNull();
 
-    // O token de acesso ainda dentro da validade deixa de valer na hora
+    // An access token still within its validity stops working at once
     await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(401);
-    // Login e renovação de sessão deixam de funcionar
+    // Login and session renewal stop working
     await ctx.http().post('/v1/auth/login').send({ email, password: PASSWORD }).expect(401);
     await ctx
       .http()
@@ -57,12 +57,12 @@ describe('exclusão de conta', () => {
       .send({ refreshToken: auth.tokens.refreshToken })
       .expect(401);
 
-    // O mesmo e-mail pode abrir uma conta nova
+    // The same email can open a new account
     const again = await registerUser(ctx, email);
     expect(again.user.id).not.toBe(auth.user.id);
   });
 
-  it('o expurgo também apaga cadastro por senha nunca confirmado há mais de 7 dias', async () => {
+  it('the purge also deletes a password signup never confirmed for over 7 days', async () => {
     const stale = uniqueEmail('pendente-antigo');
     const fresh = uniqueEmail('pendente-novo');
     for (const email of [stale, fresh]) {
@@ -82,12 +82,12 @@ describe('exclusão de conta', () => {
     expect(await ctx.prisma.user.count({ where: { id: confirmed.user.id } })).toBe(1);
   });
 
-  it('o expurgo apaga de vez só o que passou do prazo de retenção', async () => {
+  it('the purge deletes for good only what passed the retention period', async () => {
     const old = await registerUser(ctx);
     const recent = await registerUser(ctx);
     await deleteWithPassword(ctx, old);
     await deleteWithPassword(ctx, recent);
-    // 31 dias atrás para a conta antiga
+    // 31 days ago for the old account
     await ctx.prisma.user.update({
       where: { id: old.user.id },
       data: { deletedAt: new Date(ctx.clock.now().getTime() - 31 * 24 * 3600 * 1000) },
@@ -101,13 +101,13 @@ describe('exclusão de conta', () => {
     expect(await ctx.prisma.user.findUnique({ where: { id: recent.user.id } })).not.toBeNull();
   });
 
-  it('exige autenticação', async () => {
+  it('requires authentication', async () => {
     await ctx.http().delete('/v1/me').expect(401);
   });
 });
 
-describe('segurança da API', () => {
-  it('manda headers do helmet e não anuncia o framework', async () => {
+describe('API security', () => {
+  it('sends helmet headers and does not advertise the framework', async () => {
     const ctx = await createTestApp();
     const res = await ctx.http().get('/health').expect(200);
     expect(res.headers['x-content-type-options']).toBe('nosniff');
@@ -115,14 +115,14 @@ describe('segurança da API', () => {
     await ctx.app.close();
   });
 
-  it('sem CORS_ORIGINS nenhuma origem web recebe permissão', async () => {
+  it('without CORS_ORIGINS no web origin is allowed', async () => {
     const ctx = await createTestApp();
     const res = await ctx.http().get('/health').set('origin', 'https://outro.exemplo');
     expect(res.headers['access-control-allow-origin']).toBeUndefined();
     await ctx.app.close();
   });
 
-  it('limita as rotas de autenticação e responde 429 no excesso', async () => {
+  it('limits the authentication routes and answers 429 on excess', async () => {
     const previous = process.env.THROTTLE_AUTH_LIMIT;
     process.env.THROTTLE_AUTH_LIMIT = '3';
     const ctx = await createTestApp();
@@ -138,7 +138,7 @@ describe('segurança da API', () => {
       }
       expect(statuses.slice(0, 3)).toEqual([401, 401, 401]);
       expect(statuses.slice(3)).toEqual([429, 429]);
-      // Rotas fora de auth seguem no limite geral, bem mais folgado
+      // Routes outside auth stay on the general limit, much looser
       await ctx.http().get('/health').expect(200);
     } finally {
       await ctx.app.close();

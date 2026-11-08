@@ -67,10 +67,10 @@ describe('checkStats', () => {
         ...extra,
       });
     const s = checkStats([
-      todo('t1', '2026-10-05T10:00:00Z', { dueAt: due }), // no prazo
+      todo('t1', '2026-10-05T10:00:00Z', { dueAt: due }), // on time
       todo('t1', '2026-10-05T10:00:00Z', { dueAt: due }), // repeated: does not count twice
       todo('t2', '2026-10-06T10:00:00Z', { dueAt: due, difficulty: 'hard' }), // late and hard
-      todo('t3', '2026-10-06T10:00:00Z'), // sem prazo
+      todo('t3', '2026-10-06T10:00:00Z'), // no due date
     ]);
     expect(s.todosDone).toBe(3);
     expect(s.todosOnTime).toBe(1);

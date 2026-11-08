@@ -1,9 +1,9 @@
-/** Banco dos testes e2e: TEST_DATABASE_URL, ou o DATABASE_URL do .env com o banco trocado por *_test. */
+/** Database of the e2e tests: TEST_DATABASE_URL, or the .env DATABASE_URL with the database swapped for *_test. */
 export function testDatabaseUrl(): string {
   try {
     process.loadEnvFile('.env');
   } catch {
-    // sem .env: o CI define TEST_DATABASE_URL
+    // without .env: CI sets TEST_DATABASE_URL
   }
   if (process.env.TEST_DATABASE_URL) return process.env.TEST_DATABASE_URL;
   const base = process.env.DATABASE_URL;

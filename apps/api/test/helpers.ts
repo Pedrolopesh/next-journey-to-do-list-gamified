@@ -17,7 +17,7 @@ import { Mailer } from '../src/modules/auth/mailer.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { setupApp } from '../src/setup-app.js';
 
-/** Relógio controlável: os testes avançam o tempo para exercitar dia local, atraso e desfazer. */
+/** Controllable clock: tests advance time to exercise local day, overdue and undo. */
 export class TestClock extends Clock {
   constructor(private current: Date) {
     super();
@@ -38,24 +38,24 @@ export type TestContext = {
   mailer: FakeMailer;
 };
 
-// 12:00 em America/Sao_Paulo (UTC-3)
+// 12:00 in America/Sao_Paulo (UTC-3)
 export const NOON_09 = '2026-10-09T15:00:00Z';
 
-/** E-mail capturado pelo teste (não há envio real). */
+/** Email captured by the test (nothing is really sent). */
 export class FakeMailer extends Mailer {
   readonly sent: { to: string; subject: string; text: string }[] = [];
-  /** Simula um provedor lento (ms) para provar que a resposta não espera o envio. */
+  /** Simulates a slow provider (ms) to prove the response does not wait for the send. */
   delayMs = 0;
   async send(message: { to: string; subject: string; text: string }): Promise<void> {
     this.sent.push(message);
     if (this.delayMs > 0) await new Promise((resolve) => setTimeout(resolve, this.delayMs));
   }
-  /** Código de confirmação do último e-mail para o endereço. */
+  /** Confirmation code from the last email to the address. */
   lastVerificationCode(to: string): string | undefined {
     const mail = [...this.sent].reverse().find((entry) => entry.to === to);
     return mail?.text.match(/é (\d{6})\./)?.[1];
   }
-  /** Segredo do link de recuperação do último e-mail para o endereço. */
+  /** Secret of the recovery link from the last email to the address. */
   lastResetToken(to: string): string | undefined {
     const mail = [...this.sent].reverse().find((entry) => entry.to === to);
     return mail?.text.match(/token=([A-Za-z0-9_-]+)/)?.[1];
@@ -89,7 +89,7 @@ export async function createTestApp(
   };
 }
 
-/** Verificador falso: devolve a identidade configurada ou recusa o token "invalido". */
+/** Fake verifier: returns the configured identity or rejects the token "invalido". */
 export class FakeVerifier extends IdTokenVerifier {
   identity: VerifiedIdentity = {
     subject: 'sub-1',
@@ -104,13 +104,13 @@ export class FakeVerifier extends IdTokenVerifier {
   }
 }
 
-export const PASSWORD = 'Teste#1234'; // scan-allow: senha falsa de teste
+export const PASSWORD = 'Teste#1234'; // scan-allow: fake test password
 
 export function uniqueEmail(prefix = 'user'): string {
   return `${prefix}-${randomUUID()}@exemplo.com`;
 }
 
-/** Dados válidos de cadastro por senha. */
+/** Valid password signup data. */
 export const registerBody = (email: string, password = PASSWORD) => ({
   name: 'Pessoa de Teste',
   email,
@@ -121,7 +121,7 @@ export const registerBody = (email: string, password = PASSWORD) => ({
   timezone: 'America/Sao_Paulo',
 });
 
-/** Cadastra, confirma o e-mail com o código capturado e devolve a sessão. */
+/** Signs up, confirms the email with the captured code and returns the session. */
 export async function registerUser(
   ctx: TestContext,
   email = uniqueEmail(),
@@ -132,10 +132,10 @@ export async function registerUser(
   const response = await ctx
     .http()
     .post('/v1/auth/verify-email')
-    .send({ email, code, password: PASSWORD }) // scan-allow: senha falsa de teste
+    .send({ email, code, password: PASSWORD }) // scan-allow: fake test password
     .expect(200);
   const auth = response.body as AuthResponse;
-  // A maioria dos testes precisa de uma história ativa (onboarding completo)
+  // Most tests need an active story (complete onboarding)
   const story = options.story === undefined ? 'beach' : options.story;
   if (story) {
     await ctx

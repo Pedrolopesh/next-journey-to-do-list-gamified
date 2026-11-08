@@ -24,7 +24,7 @@ describe('itens e check', () => {
   });
   const reset = (): void => ctx.clock.set(NOON_09);
 
-  it('check rende EXP e moedas pela dificuldade e atualiza o estado', async () => {
+  it('a check earns EXP and coins by difficulty and updates the state', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'hard' });
@@ -32,10 +32,10 @@ describe('itens e check', () => {
     expect(res.body).toMatchObject({ expGained: 20, coinsGained: 4, level: 1, leveledUp: false });
     const state = await me(ctx, auth);
     expect(state.player).toMatchObject({ expTotal: 20, coins: 4, totalChecks: 1 });
-    expect(state.player.story).toEqual({ chapter: 1, completed: false }); // sem subir de nível o capítulo não muda
+    expect(state.player.story).toEqual({ chapter: 1, completed: false }); // without a level-up the chapter does not change
   });
 
-  it('IDEMPOTENTE: repetir o mesmo checkId devolve o mesmo resultado sem duplicar EXP', async () => {
+  it('IDEMPOTENT: repeating the same checkId returns the same result without duplicating EXP', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'medium' });
@@ -48,7 +48,7 @@ describe('itens e check', () => {
     expect(state.player.totalChecks).toBe(1);
   });
 
-  it('IDEMPOTENTE sob concorrência: 6 chamadas paralelas com o mesmo checkId contam uma vez', async () => {
+  it('IDEMPOTENT under concurrency: 6 parallel calls with the same checkId count once', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'medium' });
@@ -63,7 +63,7 @@ describe('itens e check', () => {
     expect(await ctx.prisma.itemCheck.count({ where: { userId: auth.user.id } })).toBe(1);
   });
 
-  it('checks diferentes em paralelo não se perdem (sem corrida no estado)', async () => {
+  it('different checks in parallel are not lost (no race on the state)', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
@@ -73,7 +73,7 @@ describe('itens e check', () => {
     expect(state.player.totalChecks).toBe(8);
   });
 
-  it('hábito não tem limite diário', async () => {
+  it('a habit has no daily limit', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
@@ -87,7 +87,7 @@ describe('itens e check', () => {
     expect(list.body[0]).toMatchObject({ checksToday: 5, checksThisWeek: 5, doneToday: true });
   });
 
-  it('diário só pode ser marcado uma vez por dia', async () => {
+  it('a daily can only be checked once per day', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, {
@@ -99,7 +99,7 @@ describe('itens e check', () => {
     expect(again.body.code).toBe('ALREADY_CHECKED');
   });
 
-  it('tarefa concluída sai da lista e não pode ser marcada de novo', async () => {
+  it('a completed task leaves the list and cannot be checked again', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'todo' });
@@ -114,7 +114,7 @@ describe('itens e check', () => {
     expect(again.body.code).toBe('ALREADY_COMPLETED');
   });
 
-  it('sobe de nível, carrega o EXP e dá o bônus de moedas', async () => {
+  it('levels up, carries the EXP and gives the coin bonus', async () => {
     reset();
     const auth = await registerUser(ctx);
     await ctx.prisma.userStats.update({
@@ -127,7 +127,7 @@ describe('itens e check', () => {
     expect((await me(ctx, auth)).player).toMatchObject({ level: 2, expInLevel: 15, coins: 14 });
   });
 
-  it('desfazer tira moedas, nunca o EXP, e marcar de novo no dia rende só as moedas', async () => {
+  it('undo takes coins, never EXP, and checking again on the day earns only the coins', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'medium' });
@@ -138,7 +138,7 @@ describe('itens e check', () => {
       .delete(`/v1/items/${item.id}/checks/${checkId}`)
       .set('authorization', bearer(auth))
       .expect(200);
-    // capítulo 1 perde até 3 moedas, limitado ao saldo (2)
+    // chapter 1 loses up to 3 coins, limited to the balance (2)
     expect(undone.body).toMatchObject({ expGained: 0, coinsGained: -2 });
     expect((await me(ctx, auth)).player).toMatchObject({
       expTotal: 10,
@@ -152,20 +152,20 @@ describe('itens e check', () => {
       .delete(`/v1/items/${item.id}/checks/${checkId}`)
       .set('authorization', bearer(auth))
       .expect(409);
-    // marcar de novo no mesmo dia: moedas sim, EXP não
+    // checking again on the same day: coins yes, EXP no
     const again = await check(ctx, auth, item.id).expect(200);
     expect(again.body).toMatchObject({ expGained: 0, coinsGained: 2 });
     expect((await me(ctx, auth)).player).toMatchObject({ expTotal: 10, coins: 2, totalChecks: 1 });
   });
 
-  it('tarefa desmarcada em outro dia e marcada de novo não rende EXP de novo', async () => {
+  it('a task unchecked on another day and checked again does not earn EXP again', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'todo', difficulty: 'medium' });
     const checkId = randomUUID();
     const first = await check(ctx, auth, item.id, checkId).expect(200);
     expect(first.body.expGained).toBe(10);
-    ctx.clock.set('2026-10-10T15:00:00Z'); // dia seguinte
+    ctx.clock.set('2026-10-10T15:00:00Z'); // next day
     await ctx
       .http()
       .delete(`/v1/items/${item.id}/checks/${checkId}`)
@@ -176,7 +176,7 @@ describe('itens e check', () => {
     expect((await me(ctx, auth)).player.expTotal).toBe(10);
   });
 
-  it('a perda de moedas segue o capítulo atual (capítulo 2 perde 5)', async () => {
+  it('the coin loss follows the current chapter (chapter 2 loses 5)', async () => {
     reset();
     const auth = await registerUser(ctx);
     await ctx.prisma.storyProgress.updateMany({
@@ -199,13 +199,13 @@ describe('itens e check', () => {
     expect((await me(ctx, auth)).player.coins).toBe(36);
   });
 
-  it('desfazer vale em outro dia', async () => {
+  it('undo works on another day', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const checkId = randomUUID();
     await check(ctx, auth, item.id, checkId).expect(200);
-    ctx.clock.set('2026-10-10T15:00:00Z'); // dia seguinte
+    ctx.clock.set('2026-10-10T15:00:00Z'); // next day
     const res = await ctx
       .http()
       .delete(`/v1/items/${item.id}/checks/${checkId}`)
@@ -214,22 +214,22 @@ describe('itens e check', () => {
     expect(res.body.expGained).toBe(0);
   });
 
-  it('a virada do dia segue o fuso do perfil (23:59 ainda é o mesmo dia local)', async () => {
+  it('the day rollover follows the profile time zone (23:59 is still the same local day)', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const checkId = randomUUID();
-    ctx.clock.set('2026-10-10T02:59:00Z'); // 23:59 do dia 09 em Sao_Paulo
+    ctx.clock.set('2026-10-10T02:59:00Z'); // 23:59 of the 9th in Sao_Paulo
     await check(ctx, auth, item.id, checkId).expect(200);
     ctx.clock.set('2026-10-10T02:59:30Z');
     await ctx
       .http()
       .delete(`/v1/items/${item.id}/checks/${checkId}`)
       .set('authorization', bearer(auth))
-      .expect(200); // ainda é o mesmo dia local
+      .expect(200); // still the same local day
   });
 
-  it('o check que fecha o capítulo também pode ser desmarcado: nível e capítulo ficam', async () => {
+  it('the check that closes the chapter can also be unchecked: level and chapter stay', async () => {
     reset();
     const auth = await registerUser(ctx);
     await ctx.prisma.userStats.update({
@@ -252,7 +252,7 @@ describe('itens e check', () => {
     expect((await me(ctx, auth)).player.story).toEqual({ chapter: 2, completed: false });
   });
 
-  it('diário: sequência, atraso e restauração ao desmarcar', async () => {
+  it('daily: streak, overdue and restoration on uncheck', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, {
@@ -265,14 +265,14 @@ describe('itens e check', () => {
 
     expect(await list()).toMatchObject({ overdue: false, streak: 0 });
 
-    await check(ctx, auth, item.id).expect(200); // dia 09
+    await check(ctx, auth, item.id).expect(200); // day 9
     ctx.clock.set('2026-10-10T15:00:00Z');
     expect(await list()).toMatchObject({ overdue: false, doneToday: false, streak: 1 });
     const day10 = randomUUID();
     await check(ctx, auth, item.id, day10).expect(200);
     expect(await list()).toMatchObject({ doneToday: true, streak: 2 });
 
-    // desmarcar o de hoje restaura a sequência anterior
+    // unchecking today's restores the previous streak
     await ctx
       .http()
       .delete(`/v1/items/${item.id}/checks/${day10}`)
@@ -280,14 +280,14 @@ describe('itens e check', () => {
       .expect(200);
     expect(await list()).toMatchObject({ doneToday: false, streak: 1 });
 
-    // pula um dia sem marcar: atrasado, e marcar hoje reinicia em 1
+    // skips a day without checking: overdue, and checking today restarts at 1
     ctx.clock.set('2026-10-12T15:00:00Z');
     expect(await list()).toMatchObject({ overdue: true, streak: 0 });
     await check(ctx, auth, item.id).expect(200);
     expect(await list()).toMatchObject({ overdue: false, streak: 1 });
   });
 
-  it('a lista traz o check de hoje que vale (lastCheckId) e some quando é desmarcado', async () => {
+  it("the list brings today's valid check (lastCheckId) and drops it when unchecked", async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
@@ -300,7 +300,7 @@ describe('itens e check', () => {
     const second = randomUUID();
     await check(ctx, auth, item.id, first).expect(200);
     await check(ctx, auth, item.id, second).expect(200);
-    expect((await list()).lastCheckId).toBe(second); // o mais recente vale
+    expect((await list()).lastCheckId).toBe(second); // the most recent one counts
 
     await ctx
       .http()
@@ -309,11 +309,11 @@ describe('itens e check', () => {
       .expect(200);
     expect((await list()).lastCheckId).toBe(first);
 
-    ctx.clock.set('2026-10-10T15:00:00Z'); // dia seguinte: o check de ontem não aparece
+    ctx.clock.set('2026-10-10T15:00:00Z'); // next day: yesterday's check does not show
     expect((await list()).lastCheckId).toBeNull();
   });
 
-  it('histórico: tarefas concluídas, da mais recente à mais antiga, paginado', async () => {
+  it('history: completed tasks, from newest to oldest, paginated', async () => {
     reset();
     const auth = await registerUser(ctx);
     const a = await createItem(ctx, auth, { type: 'todo', title: 'Primeira' });
@@ -350,7 +350,7 @@ describe('itens e check', () => {
     expect(page2.body.items.map((i: { title: string }) => i.title)).toEqual(['Primeira']);
     expect(page2.body.nextCursor).toBeNull();
 
-    // desmarcar a tarefa devolve ela à lista e a tira do histórico
+    // unchecking the task returns it to the list and removes it from the history
     await ctx
       .http()
       .delete(`/v1/items/${a.id}/checks/${checkA}`)
@@ -368,7 +368,7 @@ describe('itens e check', () => {
     expect(open.body.map((i: { title: string }) => i.title)).toContain('Primeira');
   });
 
-  it('histórico exige login, valida a consulta e não mistura usuários (IDOR)', async () => {
+  it('history requires login, validates the query and does not mix users (IDOR)', async () => {
     reset();
     const owner = await registerUser(ctx);
     const other = await registerUser(ctx);
@@ -400,7 +400,7 @@ describe('itens e check', () => {
     expect(theirs.body.items).toEqual([]);
   });
 
-  it('ISOLAMENTO (IDOR): usuário não vê, marca nem desfaz itens de outro usuário', async () => {
+  it("ISOLATION (IDOR): a user does not see, check or undo another user's items", async () => {
     reset();
     const owner = await registerUser(ctx);
     const intruder = await registerUser(ctx);
@@ -421,14 +421,14 @@ describe('itens e check', () => {
       .expect(200);
     expect(list.body).toHaveLength(0);
 
-    // reusar o checkId do outro usuário também não vaza nada
+    // reusing the other user's checkId also leaks nothing
     const own = await createItem(ctx, intruder, { type: 'habit' });
     const conflict = await check(ctx, intruder, own.id, checkId).expect(409);
     expect(conflict.body.code).toBe('CHECK_ID_CONFLICT');
     expect(await me(ctx, owner)).toBeTruthy();
   });
 
-  it('criar item com categoria de outro usuário é 404', async () => {
+  it("creating an item with another user's category is 404", async () => {
     reset();
     const owner = await registerUser(ctx);
     const intruder = await registerUser(ctx);
@@ -441,7 +441,7 @@ describe('itens e check', () => {
       .expect(404);
   });
 
-  it('entrada inválida: tipo errado, diário sem dias, checkId que não é UUID', async () => {
+  it('invalid input: wrong type, a daily without days, a checkId that is not a UUID', async () => {
     reset();
     const auth = await registerUser(ctx);
     const categoryId = await firstCategoryId(ctx, auth.user.id);
@@ -466,7 +466,7 @@ describe('itens e check', () => {
       .expect(400);
   });
 
-  it('o x-request-id válido volta no header e inválido é substituído', async () => {
+  it('a valid x-request-id comes back in the header and an invalid one is replaced', async () => {
     const ok = await ctx.http().get('/health').set('x-request-id', 'meu-id-12345').expect(200);
     expect(ok.headers['x-request-id']).toBe('meu-id-12345');
     const bad = await ctx.http().get('/health').set('x-request-id', 'a b<script>').expect(200);

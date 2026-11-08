@@ -1,5 +1,5 @@
-// Fonte da verdade do banco. Datas em UTC (timestamptz). "Dias locais" do usuário ficam como
-// texto AAAA-MM-DD (já calculados no fuso do perfil), para nunca depender do fuso do servidor.
+// Source of truth for the database. Dates in UTC (timestamptz). The user's "local days" are kept as
+// YYYY-MM-DD text (already computed in the profile time zone), so nothing depends on the server time zone.
 
 generator client {
   provider = "prisma-client"
@@ -25,27 +25,27 @@ enum Difficulty {
 model User {
   id                     String    @id @default(uuid()) @db.Uuid
   email                  String    @unique
-  /// Nulo para contas criadas só por login social
+  /// Null for accounts created only through social login
   passwordHash           String?   @map("password_hash")
   name                   String
   timezone               String
   termsAcceptedAt        DateTime  @map("terms_accepted_at") @db.Timestamptz
   termsVersion           String    @map("terms_version")
-  /// Quando o tutorial foi visto (ou pulado)
+  /// When the tutorial was seen (or skipped)
   tutorialSeenAt         DateTime? @map("tutorial_seen_at") @db.Timestamptz
-  /// Horário do lembrete diário (HH:MM), no fuso do perfil
+  /// Daily reminder time (HH:MM), in the profile time zone
   notifyAt               String?   @map("notify_at") @db.VarChar(5)
-  /// Respostas do onboarding (valores dos enums de `packages/contracts/src/profile.ts`)
+  /// Onboarding answers (values of the enums in `packages/contracts/src/profile.ts`)
   goals                  String[]  @default([]) @db.VarChar(20)
   ageRange               String?   @map("age_range") @db.VarChar(10)
   gender                 String?   @db.VarChar(10)
-  /// Se a pessoa ligou os lembretes na tela de notificações (nulo = ainda não respondeu)
+  /// Whether the person turned reminders on in the notifications screen (null = has not answered yet)
   remindersOptIn         Boolean?  @map("reminders_opt_in")
   createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
   deletedAt              DateTime? @map("deleted_at") @db.Timestamptz
-  /// Quando a pessoa provou ser dona do e-mail (nulo = cadastro ainda pendente)
+  /// When the person proved they own the email (null = signup still pending)
   emailVerifiedAt        DateTime? @map("email_verified_at") @db.Timestamptz
-  /// Último envio de código ou aviso de confirmação (intervalo mínimo entre envios)
+  /// Last send of a code or confirmation notice (minimum interval between sends)
   verificationMailSentAt DateTime? @map("verification_mail_sent_at") @db.Timestamptz
 
   stats              UserStats?
@@ -68,11 +68,11 @@ model User {
 model RefreshToken {
   id         String    @id @default(uuid()) @db.Uuid
   userId     String    @map("user_id") @db.Uuid
-  /// sha256 do segredo do token; o token em si nunca é guardado
+  /// sha256 of the token secret; the token itself is never stored
   tokenHash  String    @unique @map("token_hash")
-  /// Todos os tokens rotacionados a partir do mesmo login compartilham a família
+  /// All tokens rotated from the same login share the family
   familyId   String    @map("family_id") @db.Uuid
-  /// Nome do aparelho informado pelo app (cabeçalho X-Device-Name), mantido na rotação
+  /// Device name reported by the app (X-Device-Name header), kept across rotation
   deviceName String?   @map("device_name") @db.VarChar(80)
   expiresAt  DateTime  @map("expires_at") @db.Timestamptz
   revokedAt  DateTime? @map("revoked_at") @db.Timestamptz
@@ -86,7 +86,7 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-/// Estado de jogo global: EXP, nível e moedas. O progresso de capítulo é por história (StoryProgress).
+/// Global game state: EXP, level and coins. Chapter progress is per story (StoryProgress).
 model UserStats {
   userId            String    @id @map("user_id") @db.Uuid
   level             Int       @default(1)
@@ -95,11 +95,11 @@ model UserStats {
   coins             Int       @default(0)
   totalChecks       Int       @default(0) @map("total_checks")
   itemsCreated      Int       @default(0) @map("items_created")
-  /// Quantas vezes a pessoa mudou o visual do personagem (conquistas)
+  /// How many times the person changed the character look (achievements)
   lookChanges       Int       @default(0) @map("look_changes")
-  /// Categorias criadas pela pessoa (as do cadastro não contam)
+  /// Categories created by the person (the ones from signup do not count)
   categoriesCreated Int       @default(0) @map("categories_created")
-  /// Quando o app avisou que o lembrete diário foi ativado (conquista)
+  /// When the app reported that the daily reminder was turned on (achievement)
   reminderEnabledAt DateTime? @map("reminder_enabled_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -130,13 +130,13 @@ model Item {
   title         String
   notes         String?
   difficulty    Difficulty
-  /// Dias agendados (0 = domingo ... 6 = sábado); só para diários
+  /// Scheduled days (0 = Sunday ... 6 = Saturday); dailies only
   scheduleDays  Int[]      @map("schedule_days")
   dueAt         DateTime?  @map("due_at") @db.Timestamptz
   completedAt   DateTime?  @map("completed_at") @db.Timestamptz
-  /// Dia local da criação (AAAA-MM-DD)
+  /// Local day of creation (YYYY-MM-DD)
   createdOn     String     @map("created_on") @db.VarChar(10)
-  /// Último dia local com check ativo (AAAA-MM-DD)
+  /// Last local day with an active check (YYYY-MM-DD)
   lastCheckedOn String?    @map("last_checked_on") @db.VarChar(10)
   streakCurrent Int        @default(0) @map("streak_current")
   streakBest    Int        @default(0) @map("streak_best")
@@ -144,7 +144,7 @@ model Item {
   /// Starter item created by the server when the account becomes valid; it does not count as created by the user
   isExample     Boolean    @default(false) @map("is_example")
   createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz
-  /// Exclusão lógica: mantém o histórico de EXP
+  /// Soft delete: keeps the EXP history
   deletedAt     DateTime?  @map("deleted_at") @db.Timestamptz
 
   user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -153,31 +153,31 @@ model Item {
 
   @@index([userId, type])
   @@index([userId, deletedAt])
-  // Histórico de tarefas: filtra por tipo e ordena por conclusão
+  // Task history: filters by type and sorts by completion
   @@index([userId, type, completedAt])
   @@map("items")
 }
 
-/// Um check. O id é o checkId (UUID v4) gerado pelo app: torna o check idempotente.
+/// A check. The id is the checkId (UUID v4) generated by the app: it makes the check idempotent.
 model ItemCheck {
   id                String    @id @db.Uuid
   itemId            String    @map("item_id") @db.Uuid
   userId            String    @map("user_id") @db.Uuid
-  /// Dia local do check (AAAA-MM-DD)
+  /// Local day of the check (YYYY-MM-DD)
   checkedOn         String    @map("checked_on") @db.VarChar(10)
   checkedAt         DateTime  @default(now()) @map("checked_at") @db.Timestamptz
   exp               Int
   coins             Int
   countsForChapter  Boolean   @map("counts_for_chapter")
   chapterAtCheck    Int?      @map("chapter_at_check")
-  /// História em que o check contou para o capítulo (para desfazer no progresso certo)
+  /// Story in which the check counted toward the chapter (to undo on the right progress)
   storyId           String?   @map("story_id") @db.Uuid
   closedChapter     Boolean   @map("closed_chapter")
-  /// Para restaurar o diário ao desmarcar
+  /// To restore the daily on uncheck
   streakBefore      Int       @map("streak_before")
   lastCheckedBefore String?   @map("last_checked_before") @db.VarChar(10)
   revertedAt        DateTime? @map("reverted_at") @db.Timestamptz
-  /// CheckResult devolvido na primeira vez; repetir o checkId devolve o mesmo resultado
+  /// CheckResult returned the first time; repeating the checkId returns the same result
   result            Json
 
   item Item @relation(fields: [itemId], references: [id])
@@ -200,7 +200,7 @@ enum AuthProvider {
   apple
 }
 
-/// Login social vinculado a um usuário (um provedor/conta externa só pode estar em um usuário)
+/// Social login linked to a user (an external provider/account can belong to only one user)
 model AuthIdentity {
   id             String       @id @default(uuid()) @db.Uuid
   userId         String       @map("user_id") @db.Uuid
@@ -218,7 +218,7 @@ model AuthIdentity {
 model PasswordReset {
   id        String    @id @default(uuid()) @db.Uuid
   userId    String    @map("user_id") @db.Uuid
-  /// sha256 do segredo enviado por e-mail; o segredo em si nunca é guardado
+  /// sha256 of the secret sent by email; the secret itself is never stored
   tokenHash String    @unique @map("token_hash")
   expiresAt DateTime  @map("expires_at") @db.Timestamptz
   usedAt    DateTime? @map("used_at") @db.Timestamptz
@@ -234,7 +234,7 @@ model PasswordReset {
 model EmailVerification {
   id        String    @id @default(uuid()) @db.Uuid
   userId    String    @map("user_id") @db.Uuid
-  /// sha256 de "userId:código"; o código em si nunca é guardado
+  /// sha256 of "userId:code"; the code itself is never stored
   codeHash  String    @map("code_hash")
   expiresAt DateTime  @map("expires_at") @db.Timestamptz
   attempts  Int       @default(0)
@@ -248,8 +248,8 @@ model EmailVerification {
   @@map("email_verifications")
 }
 
-/// Contadores do limite de tentativas por conta (login, cadastro, recuperação). A chave é um hash:
-/// nunca guarda e-mail nem IP em texto.
+/// Attempt-limit counters per account (login, signup, recovery). The key is a hash:
+/// it never stores email or IP in plain text.
 model RateLimit {
   key         String   @id
   count       Int      @default(0)
@@ -263,13 +263,13 @@ model Character {
   userId         String  @id @map("user_id") @db.Uuid
   name           String
   title          String
-  /// Classe escolhida no onboarding (enum de `profile.ts`); nulo em personagens antigos
+  /// Class chosen in onboarding (enum from `profile.ts`); null on old characters
   characterClass String? @map("character_class") @db.VarChar(20)
   skin           String
   hair           String
   outfit         String
   accessory      String?
-  /// Aparência LPC detalhada (validada por `lpcLookSchema` antes de gravar)
+  /// Detailed LPC look (validated by `lpcLookSchema` before saving)
   look           Json?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -306,7 +306,7 @@ model Chapter {
   @@map("chapters")
 }
 
-/// Progresso por história: trocar de história preserva o progresso de cada uma
+/// Progress per story: switching stories preserves the progress of each one
 model StoryProgress {
   userId          String   @map("user_id") @db.Uuid
   storyId         String   @map("story_id") @db.Uuid
@@ -341,12 +341,12 @@ model Achievement {
   slug        String  @id
   name        String
   description String
-  /// Trilha e classe (1 bronze a 4 diamante); o catálogo vem de `@nextjourney/contracts`
+  /// Track and class (1 bronze to 4 diamond); the catalog comes from `@nextjourney/contracts`
   trail       String
   tier        Int
-  /// Nome da insígnia 24x24 em `@nextjourney/insignias`
+  /// Name of the 24x24 badge in `@nextjourney/insignias`
   glyph       String
-  /// Surpresa: a descrição só é enviada depois de desbloquear
+  /// Surprise: the description is only sent after unlocking
   secret      Boolean @default(false)
   position    Int     @default(0)
 
@@ -359,7 +359,7 @@ model UserAchievement {
   userId          String    @map("user_id") @db.Uuid
   achievementSlug String    @map("achievement_slug")
   unlockedAt      DateTime  @default(now()) @map("unlocked_at") @db.Timestamptz
-  /// Quando o app confirmou o aviso (modal); nulo = aviso pendente
+  /// When the app confirmed the notice (modal); null = notice pending
   notifiedAt      DateTime? @map("notified_at") @db.Timestamptz
 
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -372,7 +372,7 @@ model UserAchievement {
 model UserCosmetic {
   userId      String   @map("user_id") @db.Uuid
   cosmeticKey String   @map("cosmetic_key")
-  /// Slug da conquista que liberou
+  /// Slug of the achievement that was unlocked
   source      String
   unlockedAt  DateTime @default(now()) @map("unlocked_at") @db.Timestamptz
 

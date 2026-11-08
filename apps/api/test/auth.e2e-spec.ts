@@ -10,7 +10,7 @@ import {
   uniqueEmail,
 } from './helpers.js';
 
-describe('auth e segurança básica', () => {
+describe('auth and basic security', () => {
   let ctx: TestContext;
   beforeAll(async () => {
     ctx = await createTestApp();
@@ -25,7 +25,7 @@ describe('auth e segurança básica', () => {
     expect(res.body.info.database.status).toBe('up');
   });
 
-  it('cadastro cria o usuário, as 5 categorias padrão e nunca devolve hash de senha', async () => {
+  it('signup creates the user, the 5 default categories and never returns a password hash', async () => {
     const auth = await registerUser(ctx);
     expect(JSON.stringify(auth)).not.toMatch(/hash|password/i);
     const categories = await ctx.prisma.category.findMany({ where: { userId: auth.user.id } });
@@ -40,7 +40,7 @@ describe('auth e segurança básica', () => {
     expect(stored.passwordHash?.startsWith('$argon2id$')).toBe(true);
   });
 
-  it('e-mail repetido responde igual ao e-mail novo (sem revelar que a conta existe)', async () => {
+  it('a repeated email answers the same as a new email (without revealing that the account exists)', async () => {
     const email = uniqueEmail();
     await registerUser(ctx, email);
     const repeated = await ctx
@@ -56,15 +56,15 @@ describe('auth e segurança básica', () => {
     expect(repeated.body).toEqual(fresh.body);
   });
 
-  it('validação não devolve o valor enviado (senha) e usa o formato padrão de erro', async () => {
+  it('validation does not return the value sent (password) and uses the standard error format', async () => {
     const res = await ctx
       .http()
       .post('/v1/auth/register')
       .send({
         name: 'x',
         email: 'nao-e-email',
-        password: 'senhaSecretaFraca', // scan-allow: senha falsa de teste
-        confirmPassword: 'senhaSecretaFraca', // scan-allow: senha falsa de teste
+        password: 'senhaSecretaFraca', // scan-allow: fake test password
+        confirmPassword: 'senhaSecretaFraca', // scan-allow: fake test password
         acceptedTerms: true,
         termsVersion: '1',
         timezone: 'UTC',
@@ -75,17 +75,17 @@ describe('auth e segurança básica', () => {
     expect(JSON.stringify(res.body)).not.toContain('senhaSecretaFraca');
   });
 
-  it('login: senha errada e e-mail inexistente dão a MESMA resposta (sem enumeração)', async () => {
+  it('login: wrong password and a missing email give the SAME response (no enumeration)', async () => {
     const auth = await registerUser(ctx);
     const wrongPassword = await ctx
       .http()
       .post('/v1/auth/login')
-      .send({ email: auth.user.email, password: 'Errada#1234' }) // scan-allow: senha falsa de teste
+      .send({ email: auth.user.email, password: 'Errada#1234' }) // scan-allow: fake test password
       .expect(401);
     const unknown = await ctx
       .http()
       .post('/v1/auth/login')
-      .send({ email: uniqueEmail('naoexiste'), password: 'Errada#1234' }) // scan-allow: senha falsa de teste
+      .send({ email: uniqueEmail('naoexiste'), password: 'Errada#1234' }) // scan-allow: fake test password
       .expect(401);
     const strip = (body: Record<string, unknown>) => ({ code: body.code, message: body.message });
     expect(strip(wrongPassword.body)).toEqual(strip(unknown.body));
@@ -96,7 +96,7 @@ describe('auth e segurança básica', () => {
     const login = await ctx
       .http()
       .post('/v1/auth/login')
-      .send({ email: auth.user.email, password: PASSWORD }) // scan-allow: senha falsa de teste
+      .send({ email: auth.user.email, password: PASSWORD }) // scan-allow: fake test password
       .expect(200);
     expect(login.body.tokens.accessToken).toBeTruthy();
 
@@ -105,7 +105,7 @@ describe('auth e segurança básica', () => {
     await ctx.http().get('/v1/items').set('authorization', bearer(auth)).expect(200);
   });
 
-  it('o token de acesso emitido leva emissor, audiência e identificador da chave', async () => {
+  it('the issued access token carries issuer, audience and key identifier', async () => {
     const auth = await registerUser(ctx);
     const [header, payload] = auth.tokens.accessToken
       .split('.')
@@ -122,7 +122,7 @@ describe('auth e segurança básica', () => {
     });
   });
 
-  it('JWT assinado com outro segredo ou com alg none é recusado', async () => {
+  it('a JWT signed with another secret or with alg none is rejected', async () => {
     const forged = [
       'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ4In0.', // alg: none
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ4In0.assinatura-invalida',
@@ -132,7 +132,7 @@ describe('auth e segurança básica', () => {
     }
   });
 
-  it('refresh simultâneo com o mesmo token: só um vence e a sessão toda cai (reuso)', async () => {
+  it('simultaneous refresh with the same token: only one wins and the whole session falls (reuse)', async () => {
     const auth = await registerUser(ctx);
     const responses = await Promise.all(
       Array.from({ length: 8 }, () =>
@@ -142,7 +142,7 @@ describe('auth e segurança básica', () => {
     const winners = responses.filter((response) => response.status === 200);
     expect(winners).toHaveLength(1);
     expect(responses.filter((response) => response.status === 401)).toHaveLength(7);
-    // Houve reuso: nenhum token da família continua valendo, nem o que o vencedor recebeu
+    // There was reuse: no token of the family stays valid, not even the one the winner received
     for (const winner of winners) {
       await ctx
         .http()
@@ -156,7 +156,7 @@ describe('auth e segurança básica', () => {
     expect(active).toBe(0);
   });
 
-  it('refresh rotaciona o token; reusar o antigo derruba a sessão inteira', async () => {
+  it('refresh rotates the token; reusing the old one drops the whole session', async () => {
     const auth = await registerUser(ctx);
     const first = auth.tokens.refreshToken;
 
@@ -168,12 +168,12 @@ describe('auth e segurança básica', () => {
     const second = rotated.body.tokens.refreshToken as string;
     expect(second).not.toBe(first);
 
-    // reuso do token já rotacionado: 401 e a família inteira é revogada
+    // reuse of the already rotated token: 401 and the whole family is revoked
     await ctx.http().post('/v1/auth/refresh').send({ refreshToken: first }).expect(401);
     await ctx.http().post('/v1/auth/refresh').send({ refreshToken: second }).expect(401);
   });
 
-  it('logout revoga a sessão', async () => {
+  it('logout revokes the session', async () => {
     const auth = await registerUser(ctx);
     await ctx
       .http()
@@ -187,7 +187,7 @@ describe('auth e segurança básica', () => {
       .expect(401);
   });
 
-  it('refresh com token mal formado ou adulterado é 401', async () => {
+  it('refresh with a malformed or tampered token is 401', async () => {
     const auth = await registerUser(ctx);
     const [id] = auth.tokens.refreshToken.split('.');
     await ctx.http().post('/v1/auth/refresh').send({ refreshToken: 'abc' }).expect(401);

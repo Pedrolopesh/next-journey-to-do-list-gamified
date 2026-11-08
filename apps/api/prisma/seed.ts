@@ -7,7 +7,7 @@ import { ACHIEVEMENTS, STORIES } from './seed-data.js';
 try {
   process.loadEnvFile('.env');
 } catch {
-  // sem .env
+  // without .env
 }
 
 const prisma = new PrismaClient({
@@ -21,8 +21,8 @@ await prisma.gameConfig.upsert({
   update: {},
 });
 
-// O catálogo é fixo: histórias que saíram dele (ex.: as temáticas antigas) são removidas, junto com o
-// progresso delas (cascata do banco). Quem tinha uma ativa volta à escolha de história.
+// The catalog is fixed: stories that left it (e.g. the old themed ones) are removed, along with their
+// progress (database cascade). Whoever had one active goes back to the story choice.
 await prisma.story.deleteMany({ where: { slug: { notIn: STORIES.map((story) => story.slug) } } });
 
 for (const [position, story] of STORIES.entries()) {

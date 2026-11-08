@@ -5,12 +5,12 @@ import { PrismaClient } from '../src/generated/prisma/client.js';
 try {
   process.loadEnvFile('.env');
 } catch {
-  // sem .env
+  // without .env
 }
 
 /**
- * Só desenvolvimento: marca o e-mail de uma conta de teste como confirmado, direto no banco local
- * (o script de testes de interface não lê a caixa de e-mail). Recusa banco que não seja local.
+ * Development only: marks the email of a test account as confirmed, straight in the local database
+ * (the UI test script does not read a mailbox). Refuses a database that is not local.
  * Uso: pnpm --filter @nextjourney/api exec tsx prisma/confirm-test-email.ts <email>
  */
 const email = process.argv[2]?.trim().toLowerCase();

@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 import { ACHIEVEMENTS, STORIES } from '../../../prisma/seed-data.js';
 
-describe('conteúdo versionado (seed)', () => {
-  it('tem 6 histórias, uma por cenário do banner, com 5 capítulos cada', () => {
+describe('versioned content (seed)', () => {
+  it('has 6 stories, one per banner scene, with 5 chapters each', () => {
     expect(STORIES.map((story) => story.slug)).toEqual([
       'beach',
       'rooftop',
@@ -16,7 +16,7 @@ describe('conteúdo versionado (seed)', () => {
     for (const story of STORIES) expect(story.chapters).toHaveLength(5);
   });
 
-  it('cada história respeita o contrato de Story', () => {
+  it('each story respects the Story contract', () => {
     for (const story of STORIES) {
       const parsed = storySchema.safeParse({
         slug: story.slug,
@@ -34,7 +34,7 @@ describe('conteúdo versionado (seed)', () => {
     }
   });
 
-  it('slugs únicos e textos curtos o bastante para o card do capítulo', () => {
+  it('unique slugs and texts short enough for the chapter card', () => {
     expect(new Set(STORIES.map((story) => story.slug)).size).toBe(STORIES.length);
     for (const story of STORIES) {
       for (const [title, text] of story.chapters) {
@@ -44,7 +44,7 @@ describe('conteúdo versionado (seed)', () => {
     }
   });
 
-  it('não repete o slug de conquista', () => {
+  it('does not repeat an achievement slug', () => {
     expect(new Set(ACHIEVEMENTS.map((a) => a.slug)).size).toBe(ACHIEVEMENTS.length);
   });
 });

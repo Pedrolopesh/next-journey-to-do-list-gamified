@@ -3,16 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { loadEnv } from './env.js';
 
 const base = {
-  DATABASE_URL: 'postgresql://u:p@localhost:5432/db', // scan-allow: dado falso de teste
-  JWT_ACCESS_SECRET: 'segredo-de-teste-com-pelo-menos-32-caracteres!', // scan-allow: segredo falso só para testes
+  DATABASE_URL: 'postgresql://u:p@localhost:5432/db', // scan-allow: fake test data
+  JWT_ACCESS_SECRET: 'segredo-de-teste-com-pelo-menos-32-caracteres!', // scan-allow: fake secret for tests only
 };
 
 describe('AUTH_MIN_RESPONSE_MS', () => {
-  it('padrão de 250 ms', () => {
+  it('defaults to 250 ms', () => {
     expect(loadEnv({ ...base, NODE_ENV: 'production' }).AUTH_MIN_RESPONSE_MS).toBe(250);
   });
 
-  it('0 só vale fora de produção', () => {
+  it('0 is only valid outside production', () => {
     expect(
       loadEnv({ ...base, NODE_ENV: 'test', AUTH_MIN_RESPONSE_MS: '0' }).AUTH_MIN_RESPONSE_MS,
     ).toBe(0);
@@ -21,20 +21,20 @@ describe('AUTH_MIN_RESPONSE_MS', () => {
     );
   });
 
-  it('tem teto para não segurar requisições por minutos', () => {
+  it('has a ceiling so requests are not held for minutes', () => {
     expect(() => loadEnv({ ...base, AUTH_MIN_RESPONSE_MS: '250000' })).toThrow(
       /AUTH_MIN_RESPONSE_MS/,
     );
   });
 });
 
-describe('troca do segredo do JWT', () => {
+describe('JWT secret rotation', () => {
   const previous = {
-    JWT_ACCESS_SECRET_PREVIOUS: 'segredo-antigo-de-teste-com-mais-de-32-caracteres', // scan-allow: segredo falso só para testes
+    JWT_ACCESS_SECRET_PREVIOUS: 'segredo-antigo-de-teste-com-mais-de-32-caracteres', // scan-allow: fake secret for tests only
     JWT_PREVIOUS_KEY_ID: 'k0',
   };
 
-  it('chave anterior precisa de segredo e identificador juntos, e id diferente do atual', () => {
+  it('the previous key needs a secret and an identifier together, and an id different from the current one', () => {
     expect(loadEnv({ ...base, ...previous }).JWT_PREVIOUS_KEY_ID).toBe('k0');
     expect(() => loadEnv({ ...base, JWT_PREVIOUS_KEY_ID: 'k0' })).toThrow(
       /JWT_ACCESS_SECRET_PREVIOUS/,
@@ -44,13 +44,13 @@ describe('troca do segredo do JWT', () => {
     );
   });
 
-  it('o segredo anterior não pode ser igual ao atual', () => {
+  it('the previous secret cannot equal the current one', () => {
     expect(() =>
       loadEnv({ ...base, ...previous, JWT_ACCESS_SECRET_PREVIOUS: base.JWT_ACCESS_SECRET }),
     ).toThrow(/JWT_ACCESS_SECRET_PREVIOUS/);
   });
 
-  it('sem configuração extra usa emissor e audiência padrão', () => {
+  it('without extra configuration it uses the default issuer and audience', () => {
     expect(loadEnv(base)).toMatchObject({
       JWT_ISSUER: 'nextjourney-api',
       JWT_AUDIENCE: 'nextjourney-app',
@@ -59,7 +59,7 @@ describe('troca do segredo do JWT', () => {
   });
 });
 
-describe('variáveis opcionais vazias', () => {
+describe('empty optional variables', () => {
   it('RESEND_API_KEY= e chave anterior vazia valem como ausentes', () => {
     const env = loadEnv({
       ...base,

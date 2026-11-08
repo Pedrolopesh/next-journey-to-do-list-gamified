@@ -8,12 +8,12 @@ import type { PrismaService } from '../src/prisma/prisma.service.js';
 try {
   process.loadEnvFile('.env');
 } catch {
-  // sem .env
+  // without .env
 }
 
 /**
- * Retroativo das conquistas: libera, já como avisadas (sem modal), o que cada usuário já cumpria.
- * Idempotente: rodar de novo não libera nada repetido. Uso: pnpm --filter @nextjourney/api db:backfill-achievements
+ * Achievements backfill: unlocks, already marked as notified (no modal), what each user already met.
+ * Idempotent: running it again unlocks nothing twice. Usage: pnpm --filter @nextjourney/api db:backfill-achievements
  */
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),

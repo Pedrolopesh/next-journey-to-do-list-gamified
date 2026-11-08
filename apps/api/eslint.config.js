@@ -5,7 +5,7 @@ export default defineConfig(
   node,
   { ignores: ['src/generated/**'] },
   {
-    // Nos e2e, `response.body` do supertest é `any` por natureza
+    // In e2e, supertest's `response.body` is `any` by nature
     files: ['test/**/*.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-member-access': 'off',

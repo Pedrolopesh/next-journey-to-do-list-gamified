@@ -7,7 +7,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/modules/progression/domain/**/*.ts'],
       exclude: ['**/*.spec.ts'],
-      // Meta da especificação: 80% de cobertura nas regras de negócio (domain/)
+      // Spec target: 80% coverage on the business rules (domain/)
       thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
     },
   },

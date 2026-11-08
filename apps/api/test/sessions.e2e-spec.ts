@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { bearer, createTestApp, PASSWORD, registerUser, type TestContext } from './helpers.js';
 
-describe('sessões da conta', () => {
+describe('account sessions', () => {
   let ctx: TestContext;
   beforeAll(async () => {
     ctx = await createTestApp();
@@ -17,7 +17,7 @@ describe('sessões da conta', () => {
   const loginAs = async (email: string, device?: string): Promise<AuthResponse> => {
     let request = ctx.http().post('/v1/auth/login');
     if (device !== undefined) request = request.set('x-device-name', encodeURIComponent(device));
-    const res = await request.send({ email, password: PASSWORD }).expect(200); // scan-allow: senha falsa
+    const res = await request.send({ email, password: PASSWORD }).expect(200); // scan-allow: fake password
     return res.body as AuthResponse;
   };
   const list = async (auth: AuthResponse): Promise<Session[]> =>
@@ -26,7 +26,7 @@ describe('sessões da conta', () => {
   const later = (ms: number) =>
     ctx.clock.set(new Date(ctx.clock.now().getTime() + ms).toISOString());
 
-  it('lista um item por aparelho, com o nome e só o atual marcado', async () => {
+  it('lists one item per device, with the name and only the current one marked', async () => {
     const first = await registerUser(ctx);
     const phone = await loginAs(first.user.email, 'Pixel 8');
     const tablet = await loginAs(first.user.email, 'Tablet da sala');
@@ -37,23 +37,23 @@ describe('sessões da conta', () => {
     );
     expect(sessions.filter((s) => s.current).map((s) => s.deviceName)).toEqual(['Pixel 8']);
     expect((await list(tablet)).find((s) => s.current)?.deviceName).toBe('Tablet da sala');
-    // Nada de segredo na resposta
+    // No secret in the response
     expect(JSON.stringify(sessions)).not.toMatch(/token|hash|secret/i);
   });
 
-  it('nome do aparelho vem limpo e limitado; lixo vira o nome padrão', async () => {
+  it('the device name comes clean and limited; junk becomes the default name', async () => {
     const first = await registerUser(ctx);
     const long = await loginAs(first.user.email, `${'a'.repeat(200)}`);
     const control = await loginAs(first.user.email, 'Linha\tcom   espaços');
     const names = (await list(long)).map((s) => s.deviceName);
     expect(names).toContain('a'.repeat(80));
     expect(names).toContain('Linha com espaços');
-    // Nenhuma das sessões ficou com o nome cru
+    // None of the sessions kept the raw name
     expect(names.every((name) => name.length <= 80 && !/[\t\n\r]/.test(name))).toBe(true);
     expect(control.tokens.refreshToken).toBeTruthy();
   });
 
-  it('a renovação mantém a mesma sessão e atualiza o último uso', async () => {
+  it('renewal keeps the same session and updates the last use', async () => {
     const first = await registerUser(ctx);
     const device = await loginAs(first.user.email, 'Aparelho renovado');
     const before = (await list(device)).find((s) => s.current)!;
@@ -73,7 +73,7 @@ describe('sessões da conta', () => {
     );
   });
 
-  it('encerrar outro aparelho derruba só o refresh dele', async () => {
+  it('ending another device drops only its refresh', async () => {
     const first = await registerUser(ctx);
     const keep = await loginAs(first.user.email, 'Fica');
     const drop = await loginAs(first.user.email, 'Sai');
@@ -95,7 +95,7 @@ describe('sessões da conta', () => {
       .post('/v1/auth/refresh')
       .send({ refreshToken: keep.tokens.refreshToken })
       .expect(200);
-    // Encerrar de novo a mesma sessão é seguro (toque repetido, resposta perdida)
+    // Ending the same session again is safe (repeated tap, lost response)
     await ctx
       .http()
       .delete(`/v1/me/sessions/${target.id}`)
@@ -103,7 +103,7 @@ describe('sessões da conta', () => {
       .expect(204);
   });
 
-  it('o token de acesso de um aparelho encerrado deixa de valer na hora', async () => {
+  it('the access token of an ended device stops working at once', async () => {
     const first = await registerUser(ctx);
     const keep = await loginAs(first.user.email, 'Fica');
     const drop = await loginAs(first.user.email, 'Sai');
@@ -118,7 +118,7 @@ describe('sessões da conta', () => {
     await ctx.http().get('/v1/me').set('authorization', bearer(keep)).expect(200);
   });
 
-  it('logout também derruba o token de acesso daquela sessão', async () => {
+  it('logout also drops the access token of that session', async () => {
     const first = await registerUser(ctx);
     const device = await loginAs(first.user.email, 'Sai pelo logout');
     await ctx.http().get('/v1/me').set('authorization', bearer(device)).expect(200);
@@ -130,7 +130,7 @@ describe('sessões da conta', () => {
     await ctx.http().get('/v1/me').set('authorization', bearer(device)).expect(401);
   });
 
-  it('encerrar a sessão atual funciona como logout', async () => {
+  it('ending the current session works as logout', async () => {
     const first = await registerUser(ctx);
     const only = await loginAs(first.user.email, 'Atual');
     const current = (await list(only)).find((s) => s.current)!;
@@ -146,7 +146,7 @@ describe('sessões da conta', () => {
       .expect(401);
   });
 
-  it('não vê nem encerra sessão de outra conta (IDOR)', async () => {
+  it("does not see or end another account's session (IDOR)", async () => {
     const mine = await registerUser(ctx);
     const theirs = await registerUser(ctx);
     const theirSession = (await list(theirs))[0]!;
@@ -158,13 +158,13 @@ describe('sessões da conta', () => {
       .set('authorization', bearer(mine))
       .expect(404);
     expect(res.body.code).toBe('NOT_FOUND');
-    // A sessão da outra pessoa continua viva
+    // The other person's session stays alive
     await ctx
       .http()
       .post('/v1/auth/refresh')
       .send({ refreshToken: theirs.tokens.refreshToken })
       .expect(200);
-    // Id inventado ou malformado
+    // Made-up or malformed id
     await ctx
       .http()
       .delete(`/v1/me/sessions/${randomUUID()}`)
@@ -177,7 +177,7 @@ describe('sessões da conta', () => {
       .expect(400);
   });
 
-  it('sair de todos os aparelhos encerra todas as sessões', async () => {
+  it('signing out of all devices ends all sessions', async () => {
     const first = await registerUser(ctx);
     const a = await loginAs(first.user.email, 'A');
     const b = await loginAs(first.user.email, 'B');
@@ -192,7 +192,7 @@ describe('sessões da conta', () => {
     }
   });
 
-  it('exige autenticação', async () => {
+  it('requires authentication', async () => {
     await ctx.http().get('/v1/me/sessions').expect(401);
     await ctx.http().delete('/v1/me/sessions').expect(401);
   });

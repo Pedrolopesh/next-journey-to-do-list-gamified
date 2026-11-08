@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { bearer, createTestApp, registerUser, type TestContext } from './helpers.js';
 
-describe('perfil do onboarding', () => {
+describe('onboarding profile', () => {
   let ctx: TestContext;
   beforeAll(async () => {
     ctx = await createTestApp();
@@ -11,7 +11,7 @@ describe('perfil do onboarding', () => {
     await ctx.app.close();
   });
 
-  it('guarda meta, idade, gênero e lembretes e devolve em GET /me', async () => {
+  it('stores goal, age, gender and reminders and returns them in GET /me', async () => {
     const auth = await registerUser(ctx);
     const patched = await ctx
       .http()
@@ -32,7 +32,7 @@ describe('perfil do onboarding', () => {
     });
   });
 
-  it('rejeita metas vazias ou repetidas', async () => {
+  it('rejects empty or repeated goals', async () => {
     const auth = await registerUser(ctx);
     for (const goals of [[], ['fitness', 'fitness'], ['unknown']]) {
       await ctx
@@ -44,7 +44,7 @@ describe('perfil do onboarding', () => {
     }
   });
 
-  it('idade e gênero podem ser limpos com null', async () => {
+  it('age and gender can be cleared with null', async () => {
     const auth = await registerUser(ctx);
     await ctx
       .http()
@@ -62,7 +62,7 @@ describe('perfil do onboarding', () => {
     expect(cleared.body.user.gender).toBeNull();
   });
 
-  it('valor fora da lista dá 400 e não grava', async () => {
+  it('a value outside the list gives 400 and is not saved', async () => {
     const auth = await registerUser(ctx);
     await ctx
       .http()
@@ -74,7 +74,7 @@ describe('perfil do onboarding', () => {
     expect(me.body.user.ageRange).toBeNull();
   });
 
-  it('o personagem guarda a classe e o personagem antigo vem sem ela', async () => {
+  it('the character stores the class and the old character comes without it', async () => {
     const auth = await registerUser(ctx);
     const base = {
       name: 'Aria',
@@ -102,7 +102,7 @@ describe('perfil do onboarding', () => {
     expect(withClass.body.character.characterClass).toBe('mage');
   });
 
-  it('o nome do personagem aceita apelidos livres e recusa marcação e caracteres invisíveis', async () => {
+  it('the character name accepts free nicknames and rejects markup and invisible characters', async () => {
     const auth = await registerUser(ctx);
     const base = { title: 'Aventureiro', skin: 'light', hair: 'brown', outfit: 'tunic' };
     const put = (name: string) =>
@@ -124,7 +124,7 @@ describe('perfil do onboarding', () => {
     await put('a'.repeat(41)).expect(400);
   });
 
-  it('o e-mail do pedido de código tem limite de tamanho', async () => {
+  it('the email in the code request has a size limit', async () => {
     const huge = `${'a'.repeat(250)}@exemplo.com`;
     await ctx.http().post('/v1/auth/email/start').send({ email: huge }).expect(400);
   });

@@ -1,10 +1,10 @@
 import { defineConfig, env } from 'prisma/config';
 
-// Prisma 7 não carrega o .env sozinho
+// Prisma 7 does not load .env by itself
 try {
   process.loadEnvFile('.env');
 } catch {
-  // sem .env: a variável precisa vir do ambiente (CI)
+  // without .env: the variable must come from the environment (CI)
 }
 
 export default defineConfig({

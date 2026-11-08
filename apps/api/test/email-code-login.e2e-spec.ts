@@ -5,7 +5,7 @@ import { bearer, createTestApp, registerBody, type TestContext, uniqueEmail } fr
 
 const WRONG = '000000';
 
-describe('login sem senha por código de e-mail', () => {
+describe('passwordless login by email code', () => {
   let ctx: TestContext;
   beforeAll(async () => {
     ctx = await createTestApp({ seedStarterItems: true });
@@ -25,7 +25,7 @@ describe('login sem senha por código de e-mail', () => {
   const later = (ms: number) =>
     ctx.clock.set(new Date(ctx.clock.now().getTime() + ms).toISOString());
 
-  it('e-mail novo cria conta pendente sem senha e envia o código', async () => {
+  it('a new email creates a pending account without a password and sends the code', async () => {
     const email = uniqueEmail();
     await start(email).expect(202);
     expect(code(email)).toMatch(/^\d{6}$/);
@@ -34,7 +34,7 @@ describe('login sem senha por código de e-mail', () => {
     expect(user.emailVerifiedAt).toBeNull();
   });
 
-  it('o código confirma a conta, devolve a sessão e cria os itens de exemplo', async () => {
+  it('the code confirms the account, returns the session and creates the starter items', async () => {
     const email = uniqueEmail();
     await start(email).expect(202);
     const ok = await confirm(email, code(email)).expect(200);
@@ -47,7 +47,7 @@ describe('login sem senha por código de e-mail', () => {
     expect(me.body.user.goals).toEqual([]);
   });
 
-  it('a exportação lista o e-mail como forma de entrar da conta sem senha', async () => {
+  it('the export lists email as a way to sign in for the account without a password', async () => {
     const email = uniqueEmail();
     await start(email).expect(202);
     const auth = await confirm(email, code(email)).expect(200);
@@ -59,7 +59,7 @@ describe('login sem senha por código de e-mail', () => {
     expect(exported.body.account.signInMethods).toEqual(['email']);
   });
 
-  it('conta já confirmada entra de novo pelo código, sem recriar itens', async () => {
+  it('an already confirmed account signs in again by code, without recreating items', async () => {
     const email = uniqueEmail();
     await start(email).expect(202);
     await confirm(email, code(email)).expect(200);
@@ -72,7 +72,7 @@ describe('login sem senha por código de e-mail', () => {
     expect(await ctx.prisma.item.count({ where: { userId: user.id } })).toBe(before);
   });
 
-  it('código errado, expirado, usado ou e-mail sem conta dão a mesma resposta', async () => {
+  it('a wrong, expired or used code, or an email without an account, give the same response', async () => {
     const email = uniqueEmail();
     await start(email).expect(202);
     const otp = code(email);
@@ -85,14 +85,14 @@ describe('login sem senha por código de e-mail', () => {
     await confirm(email, otp).expect(400);
   });
 
-  it('a senha de um cadastro pendente alheio não sobrevive à confirmação do dono do e-mail', async () => {
+  it("the password of someone else's pending signup does not survive the email owner's confirmation", async () => {
     const email = uniqueEmail();
     // Someone else registers the victim's email with a password they know (legacy endpoint)
     await ctx
       .http()
       .post('/v1/auth/register')
       .send(registerBody(email, 'Atacante#1234'))
-      .expect(202); // scan-allow: senha falsa
+      .expect(202); // scan-allow: fake password
     later(VERIFICATION_RESEND_INTERVAL_MS + 1000);
     // The owner signs in with the code that reaches their mailbox
     await start(email).expect(202);
@@ -100,11 +100,11 @@ describe('login sem senha por código de e-mail', () => {
     await ctx
       .http()
       .post('/v1/auth/login')
-      .send({ email, password: 'Atacante#1234' }) // scan-allow: senha falsa
+      .send({ email, password: 'Atacante#1234' }) // scan-allow: fake password
       .expect(401);
   });
 
-  it('a resposta do pedido é igual para e-mail novo e já confirmado', async () => {
+  it('the request response is the same for a new and an already confirmed email', async () => {
     const known = uniqueEmail();
     await start(known).expect(202);
     await confirm(known, code(known)).expect(200);
@@ -114,7 +114,7 @@ describe('login sem senha por código de e-mail', () => {
     expect(a.body).toEqual(b.body);
   });
 
-  it('a conta criada por e-mail apaga a conta com o código', async () => {
+  it('the account created by email deletes the account with the code', async () => {
     const email = uniqueEmail();
     await start(email).expect(202);
     const auth = await confirm(email, code(email)).expect(200);

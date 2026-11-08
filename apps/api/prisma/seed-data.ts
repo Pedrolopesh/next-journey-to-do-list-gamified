@@ -1,9 +1,9 @@
 import { ACHIEVEMENT_CATALOG } from '@nextjourney/contracts';
 
 /**
- * Conteúdo versionado das histórias: uma por cenário do banner (slug = id do cenário), 5 capítulos
- * cada. Cada nível ganho conclui um capítulo da história ativa. Os textos são curtos e provisórios:
- * o roteiro final entra na Fase 6. Nada de conteúdo digitado direto no banco de produção.
+ * Versioned story content: one per banner scene (slug = scene id), 5 chapters
+ * each. Each level gained completes a chapter of the active story. The texts are short and provisional:
+ * the final script arrives in Phase 6. No content typed straight into the production database.
  */
 export const STORIES = [
   {
