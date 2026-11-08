@@ -1,76 +1,76 @@
-# Cenários do banner: regras de construção e de checagem
+# Banner scenes: construction and check rules
 
-Vale para criar, mudar ou revisar qualquer cenário em `apps/banner/src/qg/scenes` (QG parado e jornada com o cenário rolando) e seus níveis. Cada regra abaixo vem de um defeito que já apareceu e foi corrigido; o objetivo é não repeti-lo. Lido junto com `CONTRIBUTING.md`.
+Applies to creating, changing or reviewing any scene in `apps/banner/src/qg/scenes` (still HQ and the journey with the scrolling scene) and their levels. Each rule below comes from a defect that already appeared and was fixed; the goal is not to repeat it. Read together with `CONTRIBUTING.md`.
 
-## 1. Como um cenário é montado
+## 1. How a scene is built
 
-- Quadro lógico de 390×220 px (`SCENE_W`, `SCENE_H`). O personagem fica com os pés em `groundY` do cenário.
-- `back` (QG) e `journey` (jornada, rola com `env.scroll`) desenham o cenário. `front` desenha o que fica na frente do personagem no QG.
-- **Níveis** (1 a 5, um por capítulo da história): `levels`, `levelInfo` (nome, descrição e lista do que muda), `levelBack`, `levelFront`, `levelLights`, e as pessoas em `extrasFor` (QG) e `journeyExtrasFor` (jornada). O nível 1 é o cenário base; os seguintes só acrescentam ou trocam coisas. Nunca remova do nível 1 o que o app já usa.
-- Objetos de nível vivem num arquivo `<cenario>-levels.ts`, com listas de posições separadas para o QG e para a jornada (a jornada usa posições do mundo e um ciclo).
-- Tudo que aparece no laboratório (`#cenarios`) vem de `SceneDef`; o laboratório não tem lista própria de níveis.
+- Logical frame of 390×220 px (`SCENE_W`, `SCENE_H`). The character stands with the feet at the scene's `groundY`.
+- `back` (HQ) and `journey` (journey, scrolls with `env.scroll`) draw the scene. `front` draws what stays in front of the character in the HQ.
+- **Levels** (1 to 5, one per story chapter): `levels`, `levelInfo` (name, description and a list of what changes), `levelBack`, `levelFront`, `levelLights`, and the people in `extrasFor` (HQ) and `journeyExtrasFor` (journey). Level 1 is the base scene; the following ones only add or swap things. Never remove from level 1 what the app already uses.
+- Level objects live in a `<scene>-levels.ts` file, with separate position lists for the HQ and for the journey (the journey uses world positions and a cycle).
+- Everything that shows in the lab (`#cenarios`) comes from `SceneDef`; the lab has no list of levels of its own.
 
-## 2. Profundidade (o erro mais repetido)
+## 2. Depth (the most repeated mistake)
 
-1. **Ordem de desenho é pela altura dos pés (`y`).** O motor mistura objetos do nível (`levelItems`), figurantes e o personagem numa lista só e desenha do mais acima para o mais abaixo na tela. Por isso o `y` de cada objeto é a base dele (onde toca o chão), e não o meio nem o topo.
-2. **Quem passa pelo personagem usa uma faixa própria.** Pessoas e coisas que andam não podem dividir a mesma altura dos pés com quem está parado ou com o personagem: separe por pelo menos 12 px. Caminhantes em faixas diferentes (e velocidades diferentes) para não andarem grudados.
-3. **Fundo é mais alto na tela, frente é mais baixa.** Para parecer mais ao fundo: pés mais acima, tamanho menor e movimento mais lento (paralaxe), nunca só mover.
-4. **Nada fica em cima de outra coisa sem ser de propósito.** Conferir sobreposição entre: fogueira e bar, poste e casal, quiosque e palmeira, candelabro e armadura, banco e pessoa.
-5. **Coisas em terra não ficam na água.** Prédios, postes e casas precisam de chão: calçada, rua, margem ou areia. Um prédio com a base dentro de um lago ou do mar é defeito. Se o fundo é cidade ao lado da água, desenhe a margem e a rua entre eles.
+1. **Draw order is by foot height (`y`).** The engine mixes level objects (`levelItems`), extras and the character in a single list and draws from the highest to the lowest on screen. So each object's `y` is its base (where it touches the ground), not the middle or the top.
+2. **Whoever passes by the character uses its own lane.** People and things that walk cannot share the same foot height with whoever is standing still or with the character: separate by at least 12 px. Walkers in different lanes (and at different speeds) so they do not walk stuck together.
+3. **The background is higher on screen, the foreground is lower.** To look farther back: feet higher up, smaller size and slower movement (parallax), never just moving.
+4. **Nothing sits on top of something else unless on purpose.** Check overlap between: bonfire and bar, lamppost and couple, kiosk and palm tree, chandelier and armor, bench and person.
+5. **Land things do not stand in water.** Buildings, lampposts and houses need ground: sidewalk, street, shore or sand. A building with its base inside a lake or the sea is a defect. If the background is a city next to water, draw the shore and the street between them.
 
-## 3. Movimento e animação
+## 3. Movement and animation
 
-1. **Posição sempre inteira.** Arredonde `x` e `y` antes de desenhar (`Math.round`), principalmente nas formas em vetor (traços e arcos): posição fracionária treme ao rolar.
-2. **A fase de uma animação nunca depende da posição na tela.** `Math.sin(t + x)` com `x` que muda ao rolar faz o objeto ondular rápido enquanto o personagem anda. Use uma fase fixa por objeto (índice, `lean`, semente).
-3. **Balanço suave e curto.** Folhas, bandeiras e chamas: amplitude de 1 px ou menos, período de vários segundos. Prefira passos discretos de 1 px a movimento fracionário.
-4. **Objetos raros têm ciclo longo.** O que é grande ou chamativo (píer, fogueira com a turma, ponte, ponto de ônibus) usa um ciclo de 1800 px ou mais; senão parece que aparece o tempo todo. Dois objetos que não podem se encontrar (fogueira e bar) andam no mesmo ciclo, com distância fixa entre eles.
-5. **Camadas distantes rolam devagar** (fator 0,03 a 0,5), cada uma com ciclo próprio. Objetos presos a um mesmo grupo (píer e barcos amarrados) rolam com o mesmo fator.
-6. **Ao dar a volta no ciclo, o objeto some fora da tela** (use `scrolled`, que tem margem de 100 px) e nunca no meio dela.
-7. **Veículos andam na pista e na direção dos faróis.** Carro e ônibus têm frente, traseira, rodas nas pontas e vão no sentido da frente.
+1. **Position is always an integer.** Round `x` and `y` before drawing (`Math.round`), especially on vector shapes (strokes and arcs): a fractional position shakes while scrolling.
+2. **An animation phase never depends on the on-screen position.** `Math.sin(t + x)` with an `x` that changes while scrolling makes the object ripple fast while the character walks. Use a fixed phase per object (index, `lean`, seed).
+3. **Soft and short sway.** Leaves, flags and flames: amplitude of 1 px or less, a period of several seconds. Prefer discrete 1 px steps to fractional movement.
+4. **Rare objects have a long cycle.** Whatever is big or eye-catching (pier, bonfire with the group, bridge, bus stop) uses a cycle of 1800 px or more; otherwise it looks like it shows up all the time. Two objects that must not meet (bonfire and bar) move on the same cycle, with a fixed distance between them.
+5. **Distant layers scroll slowly** (factor 0.03 to 0.5), each with its own cycle. Objects attached to the same group (pier and moored boats) scroll with the same factor.
+6. **When the cycle wraps around, the object disappears off screen** (use `scrolled`, which has a 100 px margin) and never in the middle of it.
+7. **Vehicles move in the lane and in the direction of the headlights.** A car and a bus have a front, a back, wheels at the ends and go in the direction of the front.
 
-## 4. Desenho de objetos reconhecíveis
+## 4. Drawing recognizable objects
 
-- Cada objeto precisa ser lido de relance. Ônibus: carroceria longa, fileira de janelas, para-brisa grande, porta, letreiro, duas rodas em cavas escuras, para-choque. Torre: lados com perspectiva e janelas em grade. Bandeirinhas presas em algo (nunca soltas no ar).
-- Contorno escuro de 1 px nos objetos principais, luz em cima e sombra embaixo.
-- Escala: um adulto tem cerca de 44 px de altura. Quiosque, bar e carro são maiores que isso; banco e poste têm que ter proporção.
-- Janelas, tijolos, folhas e pedras seguem uma semente fixa por objeto (nunca `Math.random()` no quadro).
+- Each object must be readable at a glance. Bus: long body, a row of windows, a big windshield, a door, a destination sign, two wheels in dark arches, a bumper. Tower: sides with perspective and windows in a grid. Bunting attached to something (never loose in the air).
+- A 1 px dark outline on the main objects, light on top and shadow below.
+- Scale: an adult is about 44 px tall. A kiosk, a bar and a car are bigger than that; a bench and a lamppost must be in proportion.
+- Windows, bricks, leaves and stones follow a fixed seed per object (never `Math.random()` in the frame).
 
-## 5. Pessoas e figurantes
+## 5. People and extras
 
-- No QG, `extrasFor`; na jornada, `journeyExtrasFor` (posições do mundo, `drift` para quem anda, `period` próprio para quem acompanha um objeto raro).
-- Pelo menos 3 ou 4 pessoas por nível na jornada a partir do nível 2, entre paradas e caminhando; no mínimo duas junto de um ponto de reunião (fogueira, mesa), uma delas olhando para o ponto.
-- Quem fica junto de um objeto fica **mais ao fundo** que o caminho do personagem.
+- In the HQ, `extrasFor`; on the journey, `journeyExtrasFor` (world positions, `drift` for those who walk, their own `period` for those who accompany a rare object).
+- At least 3 or 4 people per level on the journey from level 2 on, between standing and walking; at least two together at a gathering point (bonfire, table), one of them looking at the point.
+- Whoever stays next to an object stays **farther back** than the character's path.
 
-Perseguição na jornada: quem corre junto do personagem (`follow` no figurante) fica na tela, pelo
-`heroX`, e não no mundo que rola. Perseguidores levam `offset` negativo (sempre atrás) e quem foge,
-positivo (sempre à frente), com `sway` menor que a folga para ninguém alcançar o personagem. Quando o
-cenário para, eles saem pelo lado de onde vieram.
+Chase on the journey: whoever runs alongside the character (`follow` on the extra) stays on screen, by
+`heroX`, and not in the scrolling world. Chasers take a negative `offset` (always behind) and whoever flees,
+a positive one (always ahead), with a `sway` smaller than the gap so nobody reaches the character. When the
+scene stops, they leave on the side they came from.
 
-Peças prontas do catálogo LPC entram no figurante pelo `selection` do `ExtraCharacter` (`hat` e `arms`,
-sem recolorir): a guarda real usa a viseira Pigface e a "Armour" nos braços; a torre do mago usa o
-Celestial Wizard Moon Hat. Árvores, cabana, lago e objetos
-de um mesmo chão andam juntos (mesmo fator de rolagem); o que fica sobre o chão entra na lista
-ordenada por altura dos pés (`levelItems`), nunca desenhado em bloco atrás de todo mundo.
+Ready-made pieces from the LPC catalog enter the extra through the `selection` of `ExtraCharacter` (`hat` and `arms`,
+without recoloring): the royal guard uses the Pigface visor and the "Armour" on the arms; the wizard's tower uses the
+Celestial Wizard Moon Hat. Trees, cabin, lake and objects
+of the same ground move together (same scroll factor); what stands on the ground enters the list
+sorted by foot height (`levelItems`), never drawn as a block behind everyone.
 
-## 6. Luz e hora do dia
+## 6. Light and time of day
 
-- Cada nível precisa ficar certo de manhã, à tarde e à noite. Luzes só acendem à noite, exceto o que é fogo ou lâmpada de dentro.
-- Luzes seguem a posição na tela do objeto (inclusive na jornada) e usam o mesmo ciclo dele.
+- Each level must look right in the morning, in the afternoon and at night. Lights only turn on at night, except what is fire or an indoor lamp.
+- Lights follow the object's on-screen position (including on the journey) and use the same cycle as it.
 
-## 7. Desempenho
+## 7. Performance
 
-- Orçamento de ordem de grandeza: algumas centenas de retângulos e algumas dezenas de traços por quadro. Evite criar objetos ou gradientes novos a cada quadro; guarde o que não muda.
-- O motor limita os quadros por segundo; não dependa de passos de tempo fixos.
+- Order-of-magnitude budget: a few hundred rectangles and a few dozen strokes per frame. Avoid creating new objects or gradients on every frame; keep what does not change.
+- The engine limits the frames per second; do not depend on fixed time steps.
 
-## 8. Protocolo de checagem (obrigatório antes de dizer que um cenário ou nível está pronto)
+## 8. Check protocol (mandatory before saying a scene or level is ready)
 
-Fazer no laboratório (`pnpm --filter @nextjourney/banner exec vite --port 5173`, depois `http://localhost:5173/lab.html#cenarios`):
+Do it in the lab (`pnpm --filter @nextjourney/banner exec vite --port 5173`, then `http://localhost:5173/lab.html#cenarios`):
 
-1. Para cada nível: **QG nas três horas** (manhã, tarde, noite).
-2. Para cada nível: **jornada em pelo menos 3 momentos distintos** (o personagem andando por alguns segundos entre as capturas), e de dia e de noite. Um único quadro não prova nada: os defeitos de profundidade e de ciclo só aparecem quando as coisas se cruzam.
-3. Olhar de propósito: prédio ou objeto na água; objeto sobre objeto; pessoa sobre o personagem fora de ordem; objeto que aparece o tempo todo; tremida; elemento cortado na borda; veículo com forma estranha; luz no lugar errado.
-4. Conferir que o nível 1 continua igual ao que o app usa.
-5. `pnpm exec turbo run lint typecheck test build` (16 de 16) e `FULL=1 pnpm run security:full` antes de qualquer PR.
-6. Relatar no PR o que foi visto e o que não foi.
+1. For each level: **HQ at the three times** (morning, afternoon, night).
+2. For each level: **journey at at least 3 distinct moments** (the character walking for a few seconds between captures), and by day and by night. A single frame proves nothing: depth and cycle defects only show when things cross.
+3. Look on purpose for: a building or object in the water; an object on top of an object; a person over the character out of order; an object that shows up all the time; shaking; an element cut at the edge; a vehicle with a strange shape; a light in the wrong place.
+4. Check that level 1 is still the same as what the app uses.
+5. `pnpm exec turbo run lint typecheck test build` (16 of 16) and `FULL=1 pnpm run security:full` before any PR.
+6. Report in the PR what was seen and what was not.
 
-Testes automáticos: `scenes.test.ts` confere que todo cenário com níveis tem `levelInfo` completo, e `extras.test.ts` cobre as posições dos figurantes.
+Automated tests: `scenes.test.ts` checks that every scene with levels has a complete `levelInfo`, and `extras.test.ts` covers the extras' positions.

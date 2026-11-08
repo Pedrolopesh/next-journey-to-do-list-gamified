@@ -1,36 +1,36 @@
-# Backup e restauração do Postgres
+# Postgres backup and restore
 
-## Fazer um backup
-
-```bash
-DATABASE_URL=<url do banco> scripts/backup-db.sh /caminho/dos/backups
-```
-
-- Formato custom do `pg_dump`, arquivo `nextjourney-<data>.dump` com permissão 600.
-- Apaga backups com mais de `BACKUP_RETENTION_DAYS` dias (padrão 14).
-- Use `pg_dump` da mesma versão (ou mais antiga) do servidor. Com cliente mais novo a restauração
-  avisa `transaction_timeout`, o que é inofensivo, mas evite.
-- Agende no servidor (cron diário) e **copie os dumps para fora da máquina** (outro provedor ou
-  armazenamento de objetos). Backup no mesmo disco não protege contra perda do disco.
-- Os dumps contêm dados pessoais: nunca vão para o Git (`backups/` e `*.dump` estão no `.gitignore`)
-  e devem ser guardados com acesso restrito.
-
-## Testar a restauração (obrigatório a cada mudança de rotina)
+## Taking a backup
 
 ```bash
-# 1. crie um banco descartável, NUNCA o de produção
-# 2. restaure e confira
-RESTORE_DATABASE_URL=<url do banco descartável> scripts/restore-test.sh arquivo.dump
+DATABASE_URL=<database url> scripts/backup-db.sh /path/to/backups
 ```
 
-O script restaura, imprime a contagem das tabelas-chave e falha se o histórico de migrations vier
-vazio. Teste feito em 2026-10-09 com o banco de testes local: 513 usuários, 375 itens, 446 checks,
-5 histórias, 25 capítulos e 3 migrations restaurados.
+- `pg_dump` custom format, file `nextjourney-<date>.dump` with permission 600.
+- Deletes backups older than `BACKUP_RETENTION_DAYS` days (default 14).
+- Use a `pg_dump` of the same version (or older) as the server. With a newer client the restore
+  warns about `transaction_timeout`, which is harmless, but avoid it.
+- Schedule it on the server (daily cron) and **copy the dumps off the machine** (another provider or
+  object storage). A backup on the same disk does not protect against losing the disk.
+- The dumps contain personal data: they never go to Git (`backups/` and `*.dump` are in `.gitignore`)
+  and must be stored with restricted access.
 
-## Recuperação de desastre (resumo)
+## Testing the restore (mandatory on every routine change)
 
-1. Suba um Postgres novo na mesma versão maior.
-2. `pg_restore --no-owner --dbname <url> arquivo.dump`.
-3. Aponte `DATABASE_URL` da API para ele e suba a API.
-4. Contas excluídas há mais de 30 dias voltam do backup antigo: rode a rotina de expurgo (ela roda
-   sozinha às 03:00) antes de reabrir o serviço para respeitar a exclusão pedida.
+```bash
+# 1. create a throwaway database, NEVER the production one
+# 2. restore and check
+RESTORE_DATABASE_URL=<throwaway database url> scripts/restore-test.sh file.dump
+```
+
+The script restores, prints the count of the key tables and fails if the migration history comes
+back empty. Test done on 2026-10-09 with the local test database: 513 users, 375 items, 446 checks,
+5 stories, 25 chapters and 3 migrations restored.
+
+## Disaster recovery (summary)
+
+1. Start a new Postgres on the same major version.
+2. `pg_restore --no-owner --dbname <url> file.dump`.
+3. Point the API `DATABASE_URL` at it and start the API.
+4. Accounts deleted more than 30 days ago come back from the old backup: run the purge routine (it
+   runs by itself at 03:00) before reopening the service, to honor the requested deletion.
