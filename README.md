@@ -60,7 +60,7 @@ pnpm --filter @nextjourney/api test:e2e   # business rules against the test data
 pnpm run security:full   # secrets, IPs, the whole history and dependencies
 ```
 
-CI repeats these checks on every PR. The API image is scanned (Trivy) and signed (cosign) before the deploy, and static analysis (CodeQL) runs on GitHub. The security policy is in [SECURITY.md](SECURITY.md) and the checklist in [docs/SEGURANCA.md](docs/SEGURANCA.md).
+CI repeats these checks on every PR. The API image is scanned (Trivy) and signed (cosign) before the deploy, and static analysis (CodeQL) runs on GitHub. The security policy is in [SECURITY.md](SECURITY.md) and the security checklist in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Documentation
 
@@ -71,7 +71,6 @@ CI repeats these checks on every PR. The API image is scanned (Trivy) and signed
 - [Architecture decisions (ADRs)](docs/adr/README.md)
 - [API reference](docs/api/README.md)
 - [Turborepo](docs/TURBOREPO.md)
-- [Design in Figma](docs/FIGMA-INTERA.md)
 
 ## Contributing
 

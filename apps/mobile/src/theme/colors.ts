@@ -1,4 +1,4 @@
-// Color tokens of the design system (dark theme). Source: docs/FIGMA-INTERA.md, `Color` collection.
+// Color tokens of the design system (dark theme). Source: the Figma design system, `Color` collection.
 export const colors = {
   bg: {
     base: '#1a1a2e',

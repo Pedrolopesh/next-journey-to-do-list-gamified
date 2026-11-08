@@ -13,7 +13,7 @@ Como a API (`apps/api`, NestJS + Prisma + PostgreSQL) funciona por dentro. Estes
 Complementam, sem repetir:
 
 - decisões e motivos: `docs/adr/` (principalmente o [ADR-0008](../adr/0008-autenticacao-e-sessao.md));
-- checklist e auditorias de segurança: [`docs/SEGURANCA.md`](../SEGURANCA.md);
+- checklist de segurança por PR: [`CONTRIBUTING.md`](../../CONTRIBUTING.md);
 - dados coletados e prazos: [`docs/PRIVACIDADE.md`](../PRIVACIDADE.md);
 - requisitos do produto: [`docs/REQUISITOS.MD`](../REQUISITOS.MD);
 - comportamento exigido, por capacidade: `openspec/specs/`.

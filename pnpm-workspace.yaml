@@ -16,10 +16,10 @@ allowBuilds:
   prisma: true
   '@prisma/engines': true
 
-# Vulnerabilidades ALTAS aceitas de forma documentada (sem correção publicada pelo upstream).
-# Todas vêm só de ferramentas de desenvolvimento do Expo/Metro (CLI e empacotador), que rodam na
-# máquina de dev e no CI e NÃO são embutidas no app nem rodam em produção.
-# Revisar em 2026-11-03 ou quando o Expo publicar versão com a correção. Detalhes: docs/SEGURANCA.md.
+# HIGH vulnerabilities accepted on purpose (no fix published upstream).
+# All of them come only from Expo/Metro development tools (CLI and bundler), which run on the
+# dev machine and in CI and are NOT embedded in the app nor run in production.
+# Review on 2026-11-03 or when Expo publishes a version with the fix.
 auditConfig:
   ignoreGhsas:
     - GHSA-86w9-cpqp-85rv # node-forge (via @expo/code-signing-certificates)

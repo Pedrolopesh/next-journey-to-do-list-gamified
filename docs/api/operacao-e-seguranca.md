@@ -1,6 +1,6 @@
 # Operação e segurança da API
 
-Código em `apps/api/src/common`, `config`, `modules/security`, `app.module.ts` e `setup-app.ts`. Checklist por PR e auditorias: [`docs/SEGURANCA.md`](../SEGURANCA.md).
+Código em `apps/api/src/common`, `config`, `modules/security`, `app.module.ts` e `setup-app.ts`. Checklist de segurança por PR: [`CONTRIBUTING.md`](../../CONTRIBUTING.md).
 
 ## Guard global (`JwtAuthGuard`)
 
@@ -64,3 +64,15 @@ A API **não sobe** se faltar ou estiver inválida alguma obrigatória, e a mens
 | `ACCOUNT_PURGE_DAYS` | dias até a remoção definitiva de uma conta excluída | 30 |
 | `SECURITY_ALERT_WEBHOOK_URL` | aviso opcional de contagem anormal (https) | vazio |
 | `SEED_STARTER_ITEMS` | cria os itens de exemplo quando a conta passa a valer | `true` |
+
+## Troca do segredo do JWT
+
+O token de acesso leva emissor (`iss`), audiência (`aud`) e o identificador da chave (`kid`). A verificação aceita a chave atual e, durante a troca, a anterior. Os tokens de acesso duram 15 minutos, então a janela é curta. Procedimento, sem valores:
+
+1. Gerar um segredo novo (mínimo de 32 caracteres) e guardar no gerenciador de segredos.
+2. No ambiente da API: mover o segredo atual para `JWT_ACCESS_SECRET_PREVIOUS` e o `JWT_KEY_ID` atual para `JWT_PREVIOUS_KEY_ID`; colocar o segredo novo em `JWT_ACCESS_SECRET` e um `JWT_KEY_ID` novo (diferente do anterior).
+3. Reiniciar a API. Os tokens emitidos com a chave anterior continuam valendo até expirar; os novos já saem com a chave nova.
+4. Depois de pelo menos o tempo de vida do token (15 minutos), remover `JWT_ACCESS_SECRET_PREVIOUS` e `JWT_PREVIOUS_KEY_ID` e reiniciar de novo.
+5. Se o segredo vazou: pule a espera, remova a chave anterior na hora (todos refazem o login por refresh) e revogue os refresh tokens se houver suspeita de uso indevido.
+
+A troca de `JWT_ISSUER` ou `JWT_AUDIENCE` invalida todos os tokens em circulação; o app renova sozinho pelo refresh token.

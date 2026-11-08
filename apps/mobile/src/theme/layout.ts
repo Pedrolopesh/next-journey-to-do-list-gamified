@@ -1,4 +1,4 @@
-// Spacing, radius and sizes of the design system. Source: docs/FIGMA-INTERA.md.
+// Spacing, radius and sizes of the design system. Source: the Figma design system.
 // Spacing and icons follow the screen width (see `scale.ts`); the touch target never goes
 // below 44 pt (accessibility rule).
 import { Platform } from 'react-native';

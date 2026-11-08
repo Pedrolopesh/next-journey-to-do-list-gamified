@@ -21,7 +21,7 @@ O que foi decidido.
 O que melhora, o que piora e o que precisa ser feito depois.
 ```
 
-Dados de infraestrutura (endereços, portas, nomes de servidor) **nunca** entram em ADR: este repositório é público (ver `docs/SEGURANCA.md`).
+Dados de infraestrutura (endereços, portas, nomes de servidor) **nunca** entram em ADR: este repositório é público (ver `CONTRIBUTING.md`).
 
 ## Índice
 
