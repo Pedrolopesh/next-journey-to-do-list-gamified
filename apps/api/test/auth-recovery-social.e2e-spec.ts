@@ -12,9 +12,9 @@ import {
   uniqueEmail,
 } from './helpers.js';
 
-const NEW_PASSWORD = 'Outra#9876'; // scan-allow: senha falsa de teste
+const NEW_PASSWORD = 'Outra#9876'; // scan-allow: fake test password
 
-describe('recuperação de senha', () => {
+describe('password recovery', () => {
   let ctx: TestContext & { mailer: import('./helpers.js').FakeMailer };
   beforeAll(async () => {
     ctx = await createTestApp();
@@ -23,7 +23,7 @@ describe('recuperação de senha', () => {
     await ctx.app.close();
   });
 
-  it('responde 202 igual para e-mail existente e inexistente (sem enumeração)', async () => {
+  it('answers 202 the same for an existing and a missing email (no enumeration)', async () => {
     ctx.clock.set(NOON_09);
     const auth = await registerUser(ctx);
     const known = await ctx
@@ -45,13 +45,13 @@ describe('recuperação de senha', () => {
     expect(ctx.mailer.sent.some((m) => m.to.startsWith('nao-'))).toBe(false);
   });
 
-  it('o link troca a senha uma só vez, derruba as sessões e a senha nova passa a valer', async () => {
+  it('the link changes the password only once, drops the sessions and the new password becomes valid', async () => {
     ctx.clock.set(NOON_09);
     const auth = await registerUser(ctx);
     await ctx.http().post('/v1/auth/forgot-password').send({ email: auth.user.email }).expect(202);
     const token = ctx.mailer.lastResetToken(auth.user.email) as string;
     expect(token).toBeTruthy();
-    // só o hash fica no banco
+    // only the hash stays in the database
     const stored = await ctx.prisma.passwordReset.findFirstOrThrow({
       where: { userId: auth.user.id },
     });
@@ -62,24 +62,24 @@ describe('recuperação de senha', () => {
       .post('/v1/auth/reset-password')
       .send({ token, newPassword: NEW_PASSWORD })
       .expect(204);
-    // link de uso único
+    // single-use link
     await ctx
       .http()
       .post('/v1/auth/reset-password')
       .send({ token, newPassword: NEW_PASSWORD })
       .expect(400);
-    // senha antiga não vale mais, a nova vale
+    // the old password is no longer valid, the new one is
     await ctx
       .http()
       .post('/v1/auth/login')
       .send({ email: auth.user.email, password: PASSWORD })
-      .expect(401); // scan-allow: senha falsa
+      .expect(401); // scan-allow: fake password
     await ctx
       .http()
       .post('/v1/auth/login')
       .send({ email: auth.user.email, password: NEW_PASSWORD })
       .expect(200);
-    // sessão anterior foi revogada
+    // the previous session was revoked
     await ctx
       .http()
       .post('/v1/auth/refresh')
@@ -87,7 +87,7 @@ describe('recuperação de senha', () => {
       .expect(401);
   });
 
-  it('o link expira em 30 minutos e só o mais recente vale', async () => {
+  it('the link expires in 30 minutes and only the most recent one works', async () => {
     ctx.clock.set(NOON_09);
     const auth = await registerUser(ctx);
     await ctx.http().post('/v1/auth/forgot-password').send({ email: auth.user.email }).expect(202);
@@ -109,7 +109,7 @@ describe('recuperação de senha', () => {
       .expect(400);
   });
 
-  it('recusa senha nova fraca e token inventado', async () => {
+  it('rejects a weak new password and a made-up token', async () => {
     ctx.clock.set(NOON_09);
     const auth = await registerUser(ctx);
     await ctx.http().post('/v1/auth/forgot-password').send({ email: auth.user.email }).expect(202);
@@ -122,9 +122,9 @@ describe('recuperação de senha', () => {
     await ctx
       .http()
       .post('/v1/auth/reset-password')
-      .send({ token: 'inventado', newPassword: NEW_PASSWORD }) // scan-allow: dado de teste
+      .send({ token: 'inventado', newPassword: NEW_PASSWORD }) // scan-allow: test data
       .expect(400);
-    // o token ainda é válido depois de uma tentativa com senha fraca
+    // the token is still valid after an attempt with a weak password
     await ctx
       .http()
       .post('/v1/auth/reset-password')
@@ -143,7 +143,7 @@ describe('login social', () => {
     await ctx.app.close();
   });
 
-  it('primeiro acesso exige o aceite dos termos e cria a conta com as categorias padrão', async () => {
+  it('first access requires accepting the terms and creates the account with the default categories', async () => {
     const email = uniqueEmail('social');
     verifier.identity = {
       subject: `g-${email}`,
@@ -169,7 +169,7 @@ describe('login social', () => {
     expect(stored.passwordHash).toBeNull();
   });
 
-  it('o segundo acesso entra na mesma conta (sem duplicar)', async () => {
+  it('the second access enters the same account (no duplicate)', async () => {
     const email = uniqueEmail('social');
     verifier.identity = { subject: `g-${email}`, email, emailVerified: true, name: null };
     const first = await ctx
@@ -181,7 +181,7 @@ describe('login social', () => {
     expect(second.body.user.id).toBe(first.body.user.id);
   });
 
-  it('vincula ao mesmo usuário quando o e-mail VERIFICADO coincide', async () => {
+  it('links to the same user when the VERIFIED email matches', async () => {
     const existing = await registerUser(ctx);
     verifier.identity = {
       subject: `a-${existing.user.email}`,
@@ -194,7 +194,7 @@ describe('login social', () => {
     expect(await ctx.prisma.authIdentity.count({ where: { userId: existing.user.id } })).toBe(1);
   });
 
-  it('e-mail NÃO verificado nunca vincula nem cria conta (evita tomada de conta)', async () => {
+  it('an UNVERIFIED email never links or creates an account (prevents account takeover)', async () => {
     const existing = await registerUser(ctx);
     verifier.identity = {
       subject: `x-${existing.user.email}`,
@@ -211,7 +211,7 @@ describe('login social', () => {
     expect(await ctx.prisma.authIdentity.count({ where: { userId: existing.user.id } })).toBe(0);
   });
 
-  it('provedor sem e-mail verificado não cria conta nova', async () => {
+  it('a provider without a verified email does not create a new account', async () => {
     const email = uniqueEmail('naoverificado');
     verifier.identity = { subject: `n-${email}`, email, emailVerified: false, name: null };
     const res = await ctx
@@ -223,7 +223,7 @@ describe('login social', () => {
     expect(await ctx.prisma.user.count({ where: { email } })).toBe(0);
   });
 
-  it('login social assume a conta por senha NÃO confirmada: apaga a senha e as sessões', async () => {
+  it('social login takes over an UNCONFIRMED password account: deletes the password and the sessions', async () => {
     const email = uniqueEmail('pendente');
     await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
     const pendingCode = ctx.mailer.lastVerificationCode(email) ?? '';
@@ -233,24 +233,24 @@ describe('login social', () => {
     const user = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
     expect(user.emailVerifiedAt).not.toBeNull();
     expect(user.passwordHash).toBeNull();
-    // A senha de quem cadastrou antes e o código pendente deixam de valer
-    await ctx.http().post('/v1/auth/login').send({ email, password: PASSWORD }).expect(401); // scan-allow: senha falsa
+    // The password of whoever signed up earlier and the pending code stop working
+    await ctx.http().post('/v1/auth/login').send({ email, password: PASSWORD }).expect(401); // scan-allow: fake password
     await ctx
       .http()
       .post('/v1/auth/verify-email')
-      .send({ email, code: pendingCode, password: PASSWORD }) // scan-allow: senha falsa
+      .send({ email, code: pendingCode, password: PASSWORD }) // scan-allow: fake password
       .expect(400);
   });
 
-  it('conta só social não entra com senha; token inválido é 401', async () => {
+  it('a social-only account does not enter with a password; an invalid token is 401', async () => {
     const email = uniqueEmail('social');
     verifier.identity = { subject: `g-${email}`, email, emailVerified: true, name: null };
     await ctx.http().post('/v1/auth/google').send({ idToken: 'ok', termsVersion: '1' }).expect(200);
-    await ctx.http().post('/v1/auth/login').send({ email, password: PASSWORD }).expect(401); // scan-allow: senha falsa
-    await ctx.http().post('/v1/auth/google').send({ idToken: 'invalido' }).expect(401); // scan-allow: dado de teste
+    await ctx.http().post('/v1/auth/login').send({ email, password: PASSWORD }).expect(401); // scan-allow: fake password
+    await ctx.http().post('/v1/auth/google').send({ idToken: 'invalido' }).expect(401); // scan-allow: test data
   });
 
-  it('o access token do login social funciona nas rotas protegidas', async () => {
+  it('the social login access token works on protected routes', async () => {
     const email = uniqueEmail('social');
     verifier.identity = { subject: `g-${email}`, email, emailVerified: true, name: null };
     const res = await ctx
@@ -262,12 +262,12 @@ describe('login social', () => {
   });
 });
 
-describe('login social sem credenciais configuradas', () => {
-  it('responde 503 (recurso indisponível), sem vazar detalhes', async () => {
-    const ctx = await createTestApp(); // verificador real, sem GOOGLE_CLIENT_IDS
-    const res = await ctx.http().post('/v1/auth/google').send({ idToken: 'qualquer' }).expect(503); // scan-allow: dado de teste
+describe('social login without configured credentials', () => {
+  it('answers 503 (feature unavailable), without leaking details', async () => {
+    const ctx = await createTestApp(); // real verifier, without GOOGLE_CLIENT_IDS
+    const res = await ctx.http().post('/v1/auth/google').send({ idToken: 'qualquer' }).expect(503); // scan-allow: test data
     expect(res.body.code).toBe('SOCIAL_LOGIN_UNAVAILABLE');
-    await ctx.http().post('/v1/auth/apple').send({ idToken: 'qualquer' }).expect(503); // scan-allow: dado de teste
+    await ctx.http().post('/v1/auth/apple').send({ idToken: 'qualquer' }).expect(503); // scan-allow: test data
     await ctx.app.close();
   });
 });

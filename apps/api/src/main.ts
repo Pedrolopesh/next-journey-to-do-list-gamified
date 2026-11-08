@@ -8,7 +8,7 @@ import { setupApp } from './setup-app.js';
 try {
   process.loadEnvFile('.env');
 } catch {
-  // sem .env
+  // without .env
 }
 
 async function bootstrap(): Promise<void> {

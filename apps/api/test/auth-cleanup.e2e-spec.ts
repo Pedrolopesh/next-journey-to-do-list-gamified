@@ -10,7 +10,7 @@ import { createTestApp, registerUser, type TestContext } from './helpers.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-describe('limpeza de tokens, links e códigos expirados', () => {
+describe('cleanup of expired tokens, links and codes', () => {
   let ctx: TestContext;
   beforeAll(async () => {
     ctx = await createTestApp();
@@ -21,7 +21,7 @@ describe('limpeza de tokens, links e códigos expirados', () => {
 
   const ago = (days: number): Date => new Date(ctx.clock.now().getTime() - days * DAY_MS);
 
-  it('apaga só o que expirou há mais de 7 dias; revogado ainda válido fica (detecta reuso)', async () => {
+  it('deletes only what expired over 7 days ago; a revoked but still valid one stays (detects reuse)', async () => {
     const auth = await registerUser(ctx);
     const userId = auth.user.id;
     const family = randomUUID();
@@ -89,8 +89,8 @@ describe('limpeza de tokens, links e códigos expirados', () => {
     ).toEqual([codes[1]!.id]);
   });
 
-  it('contadores do limite de tentativas: some o que passou de 1 dia, fica o recente', async () => {
-    // Mesmo formato das chaves reais (sha256 em hexadecimal)
+  it('attempt-limit counters: what is over 1 day old goes, the recent one stays', async () => {
+    // Same format as the real keys (hexadecimal sha256)
     const oldKey = randomBytes(32).toString('hex');
     const freshKey = randomBytes(32).toString('hex');
     await ctx.prisma.rateLimit.createMany({
@@ -105,7 +105,7 @@ describe('limpeza de tokens, links e códigos expirados', () => {
     expect(await ctx.prisma.rateLimit.findUnique({ where: { key: freshKey } })).not.toBeNull();
   });
 
-  it('rodar de novo não apaga mais nada do que já ficou dentro do prazo', async () => {
+  it('running again deletes nothing more than what is already within the period', async () => {
     const auth = await registerUser(ctx);
     const kept = await ctx.prisma.refreshToken.create({
       data: {

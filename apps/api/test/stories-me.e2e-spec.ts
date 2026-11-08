@@ -12,7 +12,7 @@ import {
   type TestContext,
 } from './helpers.js';
 
-describe('histórias, personagem e perfil', () => {
+describe('stories, character and profile', () => {
   let ctx: TestContext;
   beforeAll(async () => {
     ctx = await createTestApp();
@@ -22,7 +22,7 @@ describe('histórias, personagem e perfil', () => {
   });
   beforeAll(() => ctx?.clock.set(NOON_09));
 
-  it('o catálogo tem 6 histórias (uma por cenário) com 5 capítulos cada', async () => {
+  it('the catalog has 6 stories (one per scene) with 5 chapters each', async () => {
     const auth = await registerUser(ctx, undefined, { story: false });
     const res = await ctx.http().get('/v1/stories').set('authorization', bearer(auth)).expect(200);
     expect(res.body).toHaveLength(6);
@@ -30,7 +30,7 @@ describe('histórias, personagem e perfil', () => {
     expect(res.body.some((s: { isActive: boolean }) => s.isActive)).toBe(false);
   });
 
-  it('onboarding: /me mostra o que falta até ter personagem e história', async () => {
+  it('onboarding: /me shows what is missing until there is a character and a story', async () => {
     const auth = await registerUser(ctx, undefined, { story: false });
     const before = await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
     expect(before.body.onboarding).toEqual({
@@ -78,7 +78,7 @@ describe('histórias, personagem e perfil', () => {
     });
   });
 
-  it('guarda e devolve a aparência LPC detalhada e rejeita chave inválida', async () => {
+  it('stores and returns the detailed LPC look and rejects an invalid key', async () => {
     const auth = await registerUser(ctx);
     const look = {
       bodyType: 'female',
@@ -115,7 +115,7 @@ describe('histórias, personagem e perfil', () => {
       .send({ ...base, look: { ...look, hair: '../x' } })
       .expect(400);
 
-    // salvar sem look apaga a aparência detalhada
+    // saving without a look erases the detailed look
     await ctx
       .http()
       .put('/v1/me/character')
@@ -126,7 +126,7 @@ describe('histórias, personagem e perfil', () => {
     expect(again.body.character.look).toBeUndefined();
   });
 
-  it('história inexistente é 404 e personagem inválido é 400', async () => {
+  it('a missing story is 404 and an invalid character is 400', async () => {
     const auth = await registerUser(ctx, undefined, { story: false });
     await ctx
       .http()
@@ -150,11 +150,11 @@ describe('histórias, personagem e perfil', () => {
   const activate = (auth: Awaited<ReturnType<typeof registerUser>>, slug: string) =>
     ctx.http().put('/v1/me/story').set('authorization', bearer(auth)).send({ slug }).expect(200);
 
-  it('o progresso de cada história fica salvo ao trocar de história (RF-30)', async () => {
+  it('the progress of each story is kept when switching stories (RF-30)', async () => {
     const auth = await registerUser(ctx, undefined, { story: 'beach' });
     await levelUpNext(auth);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
-    await check(ctx, auth, item.id).expect(200); // sobe de nível: capítulo 1 da praia concluído
+    await check(ctx, auth, item.id).expect(200); // levels up: chapter 1 of the beach completed
 
     await activate(auth, 'zombie');
     const other = await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
@@ -162,12 +162,12 @@ describe('histórias, personagem e perfil', () => {
 
     await activate(auth, 'beach');
     const back = await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
-    expect(back.body.player.story).toEqual({ chapter: 2, completed: false }); // retomado de onde parou
-    // EXP, nível e moedas são globais
+    expect(back.body.player.story).toEqual({ chapter: 2, completed: false }); // resumed from where it stopped
+    // EXP, level and coins are global
     expect(back.body.player).toMatchObject({ level: 2, totalChecks: 1 });
   });
 
-  it('desfazer funciona depois de trocar de história e mantém o EXP', async () => {
+  it('undo works after switching stories and keeps the EXP', async () => {
     const auth = await registerUser(ctx, undefined, { story: 'beach' });
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
     const checkId = randomUUID();
@@ -185,7 +185,7 @@ describe('histórias, personagem e perfil', () => {
     expect(me.body.player.story).toEqual({ chapter: 1, completed: false });
   });
 
-  it('subir de nível conclui o capítulo, devolve o modal e grava a conclusão', async () => {
+  it('leveling up completes the chapter, returns the modal and records the completion', async () => {
     const auth = await registerUser(ctx);
     await levelUpNext(auth);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'easy' });
@@ -206,13 +206,13 @@ describe('histórias, personagem e perfil', () => {
       .expect(200);
     const states = timeline.body.chapters.map((c: { state: string }) => c.state);
     expect(states).toEqual(['completed', 'current', 'locked', 'locked', 'locked']);
-    // texto só nos capítulos concluídos; o atual mostra o progresso (EXP do nível)
+    // text only on completed chapters; the current one shows progress (EXP of the level)
     expect(timeline.body.chapters[0].text).toBeTruthy();
     expect(timeline.body.chapters[1].text).toBeNull();
     expect(timeline.body.chapters[1]).toMatchObject({ expInLevel: 0, expForNextLevel: 400 });
   });
 
-  it('mostra os capítulos de outra história sem trocar a ativa; slug inexistente é 404', async () => {
+  it('shows the chapters of another story without switching the active one; a missing slug is 404', async () => {
     const auth = await registerUser(ctx, undefined, { story: 'beach' });
     const other = await ctx
       .http()
@@ -221,7 +221,7 @@ describe('histórias, personagem e perfil', () => {
       .expect(200);
     expect(other.body.story).toMatchObject({ slug: 'castle', isActive: false, currentChapter: 1 });
     expect(other.body.chapters).toHaveLength(5);
-    // nunca jogada: o capítulo 1 é o atual, sem progresso nem texto
+    // never played: chapter 1 is the current one, with no progress or text
     expect(other.body.chapters[0]).toMatchObject({
       state: 'current',
       expInLevel: null,
@@ -236,7 +236,7 @@ describe('histórias, personagem e perfil', () => {
       .expect(404);
   });
 
-  it('a linha do tempo exige login e a de cada história é só do próprio usuário', async () => {
+  it("the timeline requires login and each story's is only the user's own", async () => {
     await ctx.http().get('/v1/stories/beach/timeline').expect(401);
     const a = await registerUser(ctx, undefined, { story: 'beach' });
     const b = await registerUser(ctx, undefined, { story: 'beach' });
@@ -251,7 +251,7 @@ describe('histórias, personagem e perfil', () => {
     expect(mine.body.chapters[0]).toMatchObject({ state: 'current', text: null });
   });
 
-  it('concluir a história inteira e continuar rendendo EXP sem avançar capítulo', async () => {
+  it('finishing the whole story and still earning EXP without advancing a chapter', async () => {
     const auth = await registerUser(ctx);
     await ctx.prisma.storyProgress.updateMany({
       where: { userId: auth.user.id },
@@ -276,7 +276,7 @@ describe('histórias, personagem e perfil', () => {
     );
   });
 
-  it('PATCH /me: fuso do perfil e lembrete; fuso inválido é 400', async () => {
+  it('PATCH /me: profile time zone and reminder; an invalid time zone is 400', async () => {
     const auth = await registerUser(ctx);
     const res = await ctx
       .http()
@@ -293,7 +293,7 @@ describe('histórias, personagem e perfil', () => {
       .expect(400);
   });
 
-  it('o usuário só enxerga o próprio perfil (sem e-mail ou dados de outros)', async () => {
+  it('the user only sees their own profile (no email or data from others)', async () => {
     const a = await registerUser(ctx);
     const b = await registerUser(ctx);
     const me = await ctx.http().get('/v1/me').set('authorization', bearer(a)).expect(200);

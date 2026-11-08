@@ -13,7 +13,7 @@ import {
   type TestContext,
 } from './helpers.js';
 
-describe('categorias e CRUD de itens', () => {
+describe('categories and item CRUD', () => {
   let ctx: TestContext;
   beforeAll(async () => {
     ctx = await createTestApp();
@@ -23,7 +23,7 @@ describe('categorias e CRUD de itens', () => {
   });
   const reset = (): void => ctx.clock.set(NOON_09);
 
-  it('o cadastro cria 5 categorias; criar, renomear e recolorir', async () => {
+  it('signup creates 5 categories; create, rename and recolor', async () => {
     reset();
     const auth = await registerUser(ctx);
     const list = await ctx
@@ -60,7 +60,7 @@ describe('categorias e CRUD de itens', () => {
       .expect(400);
   });
 
-  it('limite de 10 categorias', async () => {
+  it('limit of 10 categories', async () => {
     const auth = await registerUser(ctx);
     for (let i = 0; i < 5; i += 1) {
       await ctx
@@ -79,7 +79,7 @@ describe('categorias e CRUD de itens', () => {
     expect(res.body.code).toBe('CATEGORY_LIMIT');
   });
 
-  it('excluir categoria com itens exige o destino (moveTo) e move os itens', async () => {
+  it('deleting a category with items requires the destination (moveTo) and moves the items', async () => {
     reset();
     const auth = await registerUser(ctx);
     const categories = (await ctx.http().get('/v1/categories').set('authorization', bearer(auth)))
@@ -105,7 +105,7 @@ describe('categorias e CRUD de itens', () => {
     expect(after).toHaveLength(4);
   });
 
-  it('não exclui a última categoria', async () => {
+  it('does not delete the last category', async () => {
     const auth = await registerUser(ctx);
     const categories = (await ctx.http().get('/v1/categories').set('authorization', bearer(auth)))
       .body;
@@ -124,7 +124,7 @@ describe('categorias e CRUD de itens', () => {
     expect(last.body.code).toBe('LAST_CATEGORY');
   });
 
-  it('ISOLAMENTO: não edita nem exclui categoria de outro usuário', async () => {
+  it("ISOLATION: does not edit or delete another user's category", async () => {
     const owner = await registerUser(ctx);
     const intruder = await registerUser(ctx);
     const id = await firstCategoryId(ctx, owner.user.id);
@@ -141,7 +141,7 @@ describe('categorias e CRUD de itens', () => {
       .expect(404);
   });
 
-  it('editar item: título, dificuldade e categoria; regras por tipo', async () => {
+  it('edit item: title, difficulty and category; rules per type', async () => {
     reset();
     const auth = await registerUser(ctx);
     const habit = await createItem(ctx, auth, { type: 'habit', title: 'Ler' });
@@ -184,7 +184,7 @@ describe('categorias e CRUD de itens', () => {
     expect(due.body.dueAt).toBe('2026-10-20T12:00:00.000Z');
   });
 
-  it('ISOLAMENTO: não edita nem exclui item de outro usuário; categoria alheia é 404', async () => {
+  it("ISOLATION: does not edit or delete another user's item; someone else's category is 404", async () => {
     const owner = await registerUser(ctx);
     const intruder = await registerUser(ctx);
     const item = await createItem(ctx, owner, { type: 'habit' });
@@ -209,7 +209,7 @@ describe('categorias e CRUD de itens', () => {
       .expect(404);
   });
 
-  it('exclusão é lógica: some da lista, mantém o histórico de EXP e trava o desfazer', async () => {
+  it('deletion is soft: it disappears from the list, keeps the EXP history and blocks undo', async () => {
     reset();
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', difficulty: 'medium' });
@@ -219,12 +219,12 @@ describe('categorias e CRUD de itens', () => {
     await ctx.http().delete(`/v1/items/${item.id}`).set('authorization', bearer(auth)).expect(204);
     const list = await ctx.http().get('/v1/items').set('authorization', bearer(auth)).expect(200);
     expect(list.body).toHaveLength(0);
-    // histórico mantido
+    // history kept
     expect(await ctx.prisma.itemCheck.count({ where: { itemId: item.id } })).toBe(1);
     expect(
       (await ctx.prisma.item.findUniqueOrThrow({ where: { id: item.id } })).deletedAt,
     ).not.toBeNull();
-    // não marca mais nem desfaz
+    // no longer checks or undoes
     await check(ctx, auth, item.id).expect(404);
     const undo = await ctx
       .http()
@@ -235,7 +235,7 @@ describe('categorias e CRUD de itens', () => {
     await ctx.http().delete(`/v1/items/${item.id}`).set('authorization', bearer(auth)).expect(404);
   });
 
-  it('tarefa com prazo vencido aparece como atrasada', async () => {
+  it('a task past its due date shows as overdue', async () => {
     reset();
     const auth = await registerUser(ctx);
     await createItem(ctx, auth, { type: 'todo', dueAt: '2026-10-08T12:00:00Z' });
@@ -248,7 +248,7 @@ describe('categorias e CRUD de itens', () => {
     expect(list.body.map((t: { overdue: boolean }) => t.overdue).sort()).toEqual([false, true]);
   });
 
-  it('criar item conta para a conquista Organizado (itemsCreated)', async () => {
+  it('creating an item counts for the "Organizado" achievement (itemsCreated)', async () => {
     const auth = await registerUser(ctx);
     for (let i = 0; i < 3; i += 1) await createItem(ctx, auth, { type: 'habit' });
     const stats = await ctx.prisma.userStats.findUniqueOrThrow({ where: { userId: auth.user.id } });

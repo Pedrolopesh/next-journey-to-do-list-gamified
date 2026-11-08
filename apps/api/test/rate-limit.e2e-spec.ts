@@ -12,9 +12,9 @@ import {
   uniqueEmail,
 } from './helpers.js';
 
-const WRONG = 'Errada#1234'; // scan-allow: senha falsa de teste
+const WRONG = 'Errada#1234'; // scan-allow: fake test password
 
-describe('limite de tentativas por e-mail', () => {
+describe('attempt limit per email', () => {
   let ctx: TestContext;
   beforeAll(async () => {
     ctx = await createTestApp();
@@ -28,17 +28,17 @@ describe('limite de tentativas por e-mail', () => {
   const later = (ms: number) =>
     ctx.clock.set(new Date(ctx.clock.now().getTime() + ms).toISOString());
 
-  it('login: a 6ª tentativa no mesmo e-mail e IP é 429, mesmo com a senha certa', async () => {
+  it('login: the 6th attempt on the same email and IP is 429, even with the right password', async () => {
     const email = (await registerUser(ctx)).user.email;
     for (let i = 0; i < LIMITS.login.perEmailAndIp.limit; i += 1) {
       await login(email, WRONG).expect(401);
     }
-    const blocked = await login(email, PASSWORD).expect(429); // scan-allow: senha falsa
+    const blocked = await login(email, PASSWORD).expect(429); // scan-allow: fake password
     expect(blocked.body.code).toBe('RATE_LIMITED');
     expect(blocked.body.details.retryAfterSeconds).toBeGreaterThan(0);
   });
 
-  it('o excesso responde igual para conta existente e inexistente (sem enumeração)', async () => {
+  it('the excess answers the same for an existing and a missing account (no enumeration)', async () => {
     const known = (await registerUser(ctx)).user.email;
     const unknown = uniqueEmail('naoexiste');
     const statuses: Record<string, number[]> = { known: [], unknown: [] };
@@ -55,7 +55,7 @@ describe('limite de tentativas por e-mail', () => {
     for (let i = 0; i < LIMITS.login.perEmailAndIp.limit - 1; i += 1) {
       await login(email, WRONG).expect(401);
     }
-    await login(email, PASSWORD).expect(200); // scan-allow: senha falsa
+    await login(email, PASSWORD).expect(200); // scan-allow: fake password
     for (let i = 0; i < LIMITS.login.perEmailAndIp.limit - 1; i += 1) {
       await login(email, WRONG).expect(401);
     }
@@ -64,12 +64,12 @@ describe('limite de tentativas por e-mail', () => {
   it('a janela passa e o login volta a funcionar', async () => {
     const email = (await registerUser(ctx)).user.email;
     for (let i = 0; i < LIMITS.login.perEmailAndIp.limit; i += 1) await login(email, WRONG);
-    await login(email, PASSWORD).expect(429); // scan-allow: senha falsa
+    await login(email, PASSWORD).expect(429); // scan-allow: fake password
     later(LIMITS.login.perEmailAndIp.windowMs + 1000);
-    await login(email, PASSWORD).expect(200); // scan-allow: senha falsa
+    await login(email, PASSWORD).expect(200); // scan-allow: fake password
   });
 
-  it('teto só por e-mail vale para ataque vindo de IPs diferentes', async () => {
+  it('a ceiling by email alone holds against an attack coming from different IPs', async () => {
     const service = ctx.app.get(RateLimitService);
     const email = uniqueEmail('distribuido');
     for (let i = 0; i < LIMITS.login.perEmail.limit; i += 1) {
@@ -78,11 +78,11 @@ describe('limite de tentativas por e-mail', () => {
     await expect(service.hit('login:email', email, LIMITS.login.perEmail)).rejects.toMatchObject({
       status: 429,
     });
-    // Outro e-mail não é afetado
+    // Another email is not affected
     await service.hit('login:email', uniqueEmail('outro'), LIMITS.login.perEmail);
   });
 
-  it('esqueci a senha: a 4ª em 15 minutos é 429 para qualquer e-mail', async () => {
+  it('forgot password: the 4th in 15 minutes is 429 for any email', async () => {
     const known = (await registerUser(ctx)).user.email;
     const unknown = uniqueEmail('naoexiste');
     for (const email of [known, unknown]) {
@@ -94,15 +94,15 @@ describe('limite de tentativas por e-mail', () => {
     }
   });
 
-  it('cadastro: limite por e-mail e mesma resposta com conta existente', async () => {
-    const email = (await registerUser(ctx)).user.email; // já consumiu 1 do cadastro
+  it('signup: limit per email and the same response with an existing account', async () => {
+    const email = (await registerUser(ctx)).user.email; // already used 1 from the signup
     for (let i = 1; i < LIMITS.register.perEmailAndIp.limit; i += 1) {
       await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
     }
     await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(429);
   });
 
-  it('quem abusa trava só a si mesmo: outro IP ainda consegue pedir a recuperação', async () => {
+  it('whoever abuses only locks themselves: another IP can still request the recovery', async () => {
     const service = ctx.app.get(RateLimitService);
     const email = uniqueEmail('vitima');
     // O atacante (IP A) esgota o limite dele
@@ -112,11 +112,11 @@ describe('limite de tentativas por e-mail', () => {
     await expect(
       service.hitBoth('forgot-password', email, 'cliente-a', LIMITS.forgotPassword),
     ).rejects.toMatchObject({ status: 429 });
-    // A dona (IP B) não é afetada
+    // The owner (IP B) is not affected
     await service.hitBoth('forgot-password', email, 'cliente-b', LIMITS.forgotPassword);
   });
 
-  it('a tabela guarda só hash: nem e-mail nem IP em texto', async () => {
+  it('the table stores only hashes: neither email nor IP in plain text', async () => {
     const email = (await registerUser(ctx)).user.email;
     await login(email, WRONG);
     const expectedKey = createHash('sha256').update(`login:email:${email}`).digest('hex');

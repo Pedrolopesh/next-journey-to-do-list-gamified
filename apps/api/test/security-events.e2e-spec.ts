@@ -3,9 +3,9 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { SecurityEvents } from '../src/modules/security/security-events.service.js';
 import { createTestApp, PASSWORD, registerUser, type TestContext } from './helpers.js';
 
-const WRONG = 'Errada#1234'; // scan-allow: senha falsa de teste
+const WRONG = 'Errada#1234'; // scan-allow: fake test password
 
-describe('eventos de segurança nos fluxos reais', () => {
+describe('security events in the real flows', () => {
   let ctx: TestContext;
   let record: ReturnType<typeof vi.spyOn>;
   beforeAll(async () => {
@@ -23,7 +23,7 @@ describe('eventos de segurança nos fluxos reais', () => {
       .map((call) => call[0]);
   const dump = (): string => JSON.stringify(calls());
 
-  it('login falho, recuperação pedida e concluída, reuso do refresh e limite deixam rastro', async () => {
+  it('failed login, recovery requested and completed, refresh reuse and the limit leave a trace', async () => {
     const auth = await registerUser(ctx);
     const { email } = auth.user;
     const mark = calls().length;
@@ -34,9 +34,9 @@ describe('eventos de segurança nos fluxos reais', () => {
     await ctx
       .http()
       .post('/v1/auth/reset-password')
-      .send({ token, newPassword: 'Outra#9876' }) // scan-allow: senha falsa de teste
+      .send({ token, newPassword: 'Outra#9876' }) // scan-allow: fake test password
       .expect(204);
-    // Reuso do refresh token: o 1º já foi derrubado pelo reset; uma conta nova mostra o reuso de verdade
+    // Refresh token reuse: the 1st was already dropped by the reset; a new account shows the real reuse
     const other = await registerUser(ctx);
     await ctx
       .http()
@@ -60,7 +60,7 @@ describe('eventos de segurança nos fluxos reais', () => {
     );
   });
 
-  it('exclusão: prova recusada e conta excluída deixam rastro', async () => {
+  it('deletion: a refused proof and a deleted account leave a trace', async () => {
     const auth = await registerUser(ctx);
     const mark = calls().length;
     await ctx
@@ -73,7 +73,7 @@ describe('eventos de segurança nos fluxos reais', () => {
       .http()
       .delete('/v1/me')
       .set('authorization', `Bearer ${auth.tokens.accessToken}`)
-      .send({ password: PASSWORD }) // scan-allow: senha falsa de teste
+      .send({ password: PASSWORD }) // scan-allow: fake test password
       .expect(204);
     expect(typesSince(mark)).toEqual(['reauth_failed', 'account_deleted']);
     expect(
@@ -83,7 +83,7 @@ describe('eventos de segurança nos fluxos reais', () => {
     ).toBe(true);
   });
 
-  it('o limite de tentativas gera o evento rate_limited', async () => {
+  it('the attempt limit generates the rate_limited event', async () => {
     const { email } = (await registerUser(ctx)).user;
     const mark = calls().length;
     for (let i = 0; i < 6; i += 1) {
@@ -92,7 +92,7 @@ describe('eventos de segurança nos fluxos reais', () => {
     expect(typesSince(mark)).toContain('rate_limited');
   });
 
-  it('nenhum evento carrega e-mail, senha ou token', async () => {
+  it('no event carries an email, password or token', async () => {
     const auth = await registerUser(ctx);
     await ctx.http().post('/v1/auth/login').send({ email: auth.user.email, password: WRONG });
     const logged = dump();
@@ -101,7 +101,7 @@ describe('eventos de segurança nos fluxos reais', () => {
     expect(logged).not.toContain(PASSWORD);
     expect(logged).not.toContain(auth.tokens.refreshToken);
     expect(logged).not.toContain(auth.tokens.accessToken);
-    // O IP chega mascarado ao log; aqui conferimos que o contexto traz só campos conhecidos
+    // The IP reaches the log masked; here we check that the context carries only known fields
     for (const call of calls()) {
       expect(
         Object.keys(call[1] ?? {}).every((key) => ['userId', 'ip', 'scope'].includes(key)),

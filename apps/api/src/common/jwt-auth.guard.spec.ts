@@ -11,7 +11,7 @@ const USER_ID = '5f0f4d4e-6b43-4f5e-9f55-0d1c1b8a8b11';
 
 function build(findFirst: () => Promise<{ id: string } | null>, sub: string = USER_ID) {
   const request: { headers: Record<string, string>; user?: { id: string } } = {
-    headers: { authorization: 'Bearer token-de-teste' }, // scan-allow: token falso de teste
+    headers: { authorization: 'Bearer token-de-teste' }, // scan-allow: fake test token
   };
   const context = {
     getHandler: () => undefined,
@@ -26,26 +26,26 @@ function build(findFirst: () => Promise<{ id: string } | null>, sub: string = US
   return { guard, context, request };
 }
 
-describe('JwtAuthGuard com a conta', () => {
-  it('conta existente passa e o id vem do banco', async () => {
+describe('JwtAuthGuard with the account', () => {
+  it('an existing account passes and the id comes from the database', async () => {
     const { guard, context, request } = build(() => Promise.resolve({ id: USER_ID }));
     await expect(guard.canActivate(context)).resolves.toBe(true);
     expect(request.user).toEqual({ id: USER_ID });
   });
 
-  it('conta excluída ou inexistente dá 401', async () => {
+  it('deleted or missing account gives 401', async () => {
     const { guard, context } = build(() => Promise.resolve(null));
     await expect(guard.canActivate(context)).rejects.toMatchObject({ status: 401 });
   });
 
-  it('sub que não é UUID dá 401 sem consultar o banco', async () => {
+  it('sub that is not a UUID gives 401 without querying the database', async () => {
     const find = vi.fn(() => Promise.resolve({ id: USER_ID }));
     const { guard, context } = build(find, 'nao-e-uuid');
     await expect(guard.canActivate(context)).rejects.toMatchObject({ status: 401 });
     expect(find).not.toHaveBeenCalled();
   });
 
-  it('falha do banco NÃO vira 401 (não desloga o app), mas também nega o acesso', async () => {
+  it('database failure does NOT become 401 (does not log the app out), but also denies access', async () => {
     const { guard, context } = build(() => Promise.reject(new Error('banco fora')));
     const error = await guard.canActivate(context).catch((cause: unknown) => cause);
     expect(error).toBeInstanceOf(Error);

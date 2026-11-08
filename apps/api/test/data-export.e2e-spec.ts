@@ -16,7 +16,7 @@ import {
   uniqueEmail,
 } from './helpers.js';
 
-describe('exportação dos dados da conta (LGPD)', () => {
+describe('account data export (LGPD)', () => {
   let ctx: TestContext;
   const verifier = new FakeVerifier();
   beforeAll(async () => {
@@ -29,7 +29,7 @@ describe('exportação dos dados da conta (LGPD)', () => {
   const exportOf = (auth: Awaited<ReturnType<typeof registerUser>>) =>
     ctx.http().get('/v1/me/export').set('authorization', bearer(auth));
 
-  it('traz perfil, itens, checks, categorias e progresso da própria conta, no formato do contrato', async () => {
+  it("brings the account's own profile, items, checks, categories and progress, in the contract format", async () => {
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'habit', title: 'Beber água' });
     await check(ctx, auth, item.id).expect(200);
@@ -50,7 +50,7 @@ describe('exportação dos dados da conta (LGPD)', () => {
     expect(data.stories.length).toBeGreaterThan(0);
   });
 
-  it('inclui itens excluídos logicamente (o histórico também é da pessoa)', async () => {
+  it('includes soft-deleted items (the history also belongs to the person)', async () => {
     const auth = await registerUser(ctx);
     const item = await createItem(ctx, auth, { type: 'todo', title: 'Tarefa apagada' });
     await ctx.http().delete(`/v1/items/${item.id}`).set('authorization', bearer(auth)).expect(204);
@@ -59,9 +59,9 @@ describe('exportação dos dados da conta (LGPD)', () => {
     expect(row?.deletedAt).not.toBeNull();
   });
 
-  it('nunca traz hash de senha, token, código ou id do provedor', async () => {
+  it('never brings a password hash, token, code or provider id', async () => {
     const auth = await registerUser(ctx);
-    // Com sessão aberta, login social ligado e e-mail confirmado
+    // With an open session, a linked social login and a confirmed email
     const subject = `google-subject-${randomUUID()}`;
     verifier.identity = {
       subject,
@@ -80,7 +80,7 @@ describe('exportação dos dados da conta (LGPD)', () => {
     expect(text).not.toContain(auth.tokens.accessToken);
   });
 
-  it('não mistura dados de outra conta', async () => {
+  it('does not mix in data from another account', async () => {
     const mine = await registerUser(ctx);
     const theirs = await registerUser(ctx);
     const theirItem = await createItem(ctx, theirs, {
@@ -95,7 +95,7 @@ describe('exportação dos dados da conta (LGPD)', () => {
     expect(data.checks.map((row) => row.itemId)).not.toContain(theirItem.id);
   });
 
-  it('conta só social também exporta, sem senha entre os métodos', async () => {
+  it('a social-only account also exports, with no password among the methods', async () => {
     const email = uniqueEmail('social');
     verifier.identity = { subject: `g-${email}`, email, emailVerified: true, name: null };
     const login = await ctx
@@ -107,7 +107,7 @@ describe('exportação dos dados da conta (LGPD)', () => {
     expect(res.body.account.signInMethods).toEqual(['google']);
   });
 
-  it('limite de 3 por hora e rastro no log (id da conta, sem conteúdo)', async () => {
+  it('limit of 3 per hour and a trace in the log (account id, no content)', async () => {
     const auth = await registerUser(ctx);
     const record = vi.spyOn(ctx.app.get(SecurityEvents), 'record');
     for (let i = 0; i < 3; i += 1) await exportOf(auth).expect(200);
@@ -120,7 +120,7 @@ describe('exportação dos dados da conta (LGPD)', () => {
     record.mockRestore();
   });
 
-  it('exige autenticação', async () => {
+  it('requires authentication', async () => {
     await ctx.http().get('/v1/me/export').expect(401);
   });
 });

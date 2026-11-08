@@ -12,8 +12,8 @@ const build = (nodeEnv: Env['NODE_ENV']) => {
   return { mailer, logger };
 };
 
-describe('ResendMailer sem chave do Resend', () => {
-  it('em desenvolvimento mostra o texto (para testar no emulador), nunca o destinatário', async () => {
+describe('ResendMailer without a Resend key', () => {
+  it('in development it shows the text (to test in the emulator), never the recipient', async () => {
     const { mailer, logger } = build('development');
     await mailer.send(message);
     const logged = JSON.stringify(logger.warn.mock.calls);

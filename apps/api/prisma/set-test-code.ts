@@ -7,7 +7,7 @@ import { PrismaClient } from '../src/generated/prisma/client.js';
 try {
   process.loadEnvFile('.env');
 } catch {
-  // no .env
+  // in .env
 }
 
 /**

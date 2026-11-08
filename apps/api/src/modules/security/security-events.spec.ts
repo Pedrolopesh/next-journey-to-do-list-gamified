@@ -18,15 +18,15 @@ function build(env: Partial<Env> = {}) {
   };
 }
 
-/** Monta o IPv4 sem escrevê-lo por inteiro no código (o scanner de segredos barra IP literal). */
+/** Builds the IPv4 without writing it whole in the code (the secret scanner blocks a literal IP). */
 const v4 = (...parts: number[]): string => parts.join('.');
 
 describe('maskIp', () => {
-  it('IPv4 perde o último número, IPv6 fica só com o prefixo', () => {
+  it('IPv4 loses the last number, IPv6 keeps only the prefix', () => {
     expect(maskIp(v4(192, 168, 10, 77))).toBe('192.168.10.x');
     expect(maskIp(`::ffff:${v4(10, 1, 2, 3)}`)).toBe('10.1.2.x');
     expect(maskIp('2001:db8:abcd:12:aaaa:bbbb:cccc:dddd')).toBe('2001:db8::x');
-    // IPv6 curto não vira lixo nem vaza o último grupo
+    // short IPv6 does not turn into junk or leak the last group
     expect(maskIp('::1')).toBe('x');
     expect(maskIp('fe80::1')).toBe('x');
     expect(maskIp(undefined)).toBeUndefined();
@@ -34,7 +34,7 @@ describe('maskIp', () => {
 });
 
 describe('SecurityEvents', () => {
-  it('registra o evento com id do usuário e IP mascarado, nunca o IP inteiro', () => {
+  it('records the event with the user id and a masked IP, never the whole IP', () => {
     const { events, logger } = build();
     events.record('login_failed', { userId: 'u-1', ip: v4(203, 0, 113, 9) });
     const [fields, message] = logger.warn.mock.calls[0] as [Record<string, unknown>, string];
@@ -43,7 +43,7 @@ describe('SecurityEvents', () => {
     expect(JSON.stringify(logger.warn.mock.calls)).not.toContain(v4(203, 0, 113, 9));
   });
 
-  it('só os campos conhecidos entram no log (nada de e-mail, senha ou token)', () => {
+  it('only known fields go into the log (no email, password or token)', () => {
     const { events, logger } = build();
     events.record('rate_limited', {
       scope: 'login:email-ip',
@@ -56,23 +56,23 @@ describe('SecurityEvents', () => {
     expect(logged).not.toContain('segredo');
   });
 
-  it('passou do limite na janela: um alerta só, até a janela correr', () => {
+  it('over the limit in the window: a single alert, until the window rolls over', () => {
     const { events, logger, advance } = build();
     for (let i = 0; i < 5; i += 1) events.record('refresh_reuse_detected', { userId: 'u' });
     expect(logger.error).not.toHaveBeenCalled();
     events.record('refresh_reuse_detected', { userId: 'u' });
     expect(logger.error).toHaveBeenCalledTimes(1);
     expect(logger.error.mock.calls[0]?.[0]).toMatchObject({ alert: true, count: 6 });
-    // Mais eventos na mesma janela não repetem o alerta
+    // More events in the same window do not repeat the alert
     events.record('refresh_reuse_detected', { userId: 'u' });
     expect(logger.error).toHaveBeenCalledTimes(1);
-    // Janela nova e nova rajada: alerta de novo
+    // New window and a new burst: alert again
     advance(11 * 60_000);
     for (let i = 0; i < 6; i += 1) events.record('refresh_reuse_detected', { userId: 'u' });
     expect(logger.error).toHaveBeenCalledTimes(2);
   });
 
-  it('eventos espaçados (fora da janela) não geram alerta', () => {
+  it('spaced-out events (outside the window) raise no alert', () => {
     const { events, logger, advance } = build();
     for (let i = 0; i < 20; i += 1) {
       events.record('refresh_reuse_detected', { userId: 'u' });
@@ -81,7 +81,7 @@ describe('SecurityEvents', () => {
     expect(logger.error).not.toHaveBeenCalled();
   });
 
-  it('com webhook configurado, avisa só com texto curto e sem dado pessoal', () => {
+  it('with a webhook configured, it notifies with only a short text and no personal data', () => {
     const calls: { url: string; body: string }[] = [];
     vi.stubGlobal(
       'fetch',
