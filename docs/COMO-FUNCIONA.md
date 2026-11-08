@@ -1,6 +1,6 @@
 # Next Journey — como o projeto funciona
 
-Atualizado em 2026-11-05. Este documento descreve **o que existe hoje** no repositório e **como as peças conversam**. Fontes: [REQUISITOS.MD](./REQUISITOS.MD) (especificação), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design), [TURBOREPO.md](./TURBOREPO.md) (ferramenta de build), as specs em `openspec/` e os ADRs em [`adr/`](./adr/README.md).
+Atualizado em 2026-11-05. Este documento descreve **o que existe hoje** no repositório e **como as peças conversam**. Fontes: [REQUISITOS.MD](./REQUISITOS.MD) (especificação), [TURBOREPO.md](./TURBOREPO.md) (ferramenta de build), as specs em `openspec/` e os ADRs em [`adr/`](./adr/README.md).
 
 ## 1. O produto em uma frase
 

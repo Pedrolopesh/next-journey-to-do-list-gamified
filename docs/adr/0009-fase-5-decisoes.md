@@ -18,5 +18,5 @@
 ## Consequências
 
 - Mais colunas e tabelas; migrations aditivas e uma que troca as colunas de história de `user_stats`.
-- O cadastro por e-mail ainda revela se o e-mail existe (limitação em `docs/SEGURANCA.md`); o login, o refresh e o "esqueci a senha" não.
+- O cadastro por e-mail ainda revela se o e-mail existe (corrigido depois; ver `docs/api/autenticacao-e-sessoes.md`); o login, o refresh e o "esqueci a senha" não.
 - Notificações locais e a fila offline ficam para a Fase 7; o horário do lembrete já é guardado.

@@ -17,7 +17,7 @@ Criado em 2026-09-28 · Reorganizado para leitura em 2026-10-03
 11. [Telas ausentes do Figma](#11-telas-ausentes-do-figma)
 12. [Fora do escopo e decisões em aberto](#12-fora-do-escopo-e-decisões-em-aberto)
 
-Documentos relacionados: [COMO-FUNCIONA.md](./COMO-FUNCIONA.md) (visão geral do que existe hoje), [TURBOREPO.md](./TURBOREPO.md), [FIGMA-INTERA.md](./FIGMA-INTERA.md) (design) e [SEGURANCA.md](./SEGURANCA.md).
+Documentos relacionados: [COMO-FUNCIONA.md](./COMO-FUNCIONA.md) (visão geral do que existe hoje), [TURBOREPO.md](./TURBOREPO.md),e [PROCESSO-DE-PR.md](./PROCESSO-DE-PR.md).
 
 ---
 
@@ -729,7 +729,7 @@ Antes da primeira submissão:
 
 ## 11. Telas ausentes do Figma
 
-Pelo registro em [FIGMA-INTERA.md](./FIGMA-INTERA.md) (ainda não conferido no arquivo, que agora se chama Next Journey):
+Pelo registro do design no Figma (ainda não conferido no arquivo, que agora se chama Next Journey):
 
 - Conquistas (RF-32).
 - Modal de conquista (RF-33; pode partir do Level Up Modal).

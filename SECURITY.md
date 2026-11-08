@@ -21,4 +21,4 @@ Generate your own secrets (JWT, database, email, social login keys). Never reuse
 
 ## For contributors
 
-Before opening a PR, run `pnpm run security` and follow the checklist in `docs/SEGURANCA.md`. Never commit secrets, `.env` files or infrastructure data.
+Before opening a PR, run `pnpm run security` and follow the security checklist in `CONTRIBUTING.md`. Never commit secrets, `.env` files or infrastructure data.

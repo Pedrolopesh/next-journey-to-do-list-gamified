@@ -12,7 +12,7 @@ Gamified to-do list (dailies, tasks and habits earn EXP and coins and move an LP
 - `packages/contracts`: shared Zod schemas (API, app, banner)
 - `packages/tsconfig`, `packages/eslint-config`: shared configuration
 
-Tests and regression (layers, Maestro for the app UI): `docs/TESTES.md`. Docs: `docs/CENARIOS.md` (rules for building and checking the banner scenes; read it before creating or changing a scene), `docs/COMO-FUNCIONA.md`, `docs/TURBOREPO.md`, `docs/REQUISITOS.MD` (specification), `docs/SEGURANCA.md`.
+Tests and regression (layers, Maestro for the app UI): `docs/TESTES.md`. Docs: `docs/CENARIOS.md` (rules for building and checking the banner scenes; read it before creating or changing a scene), `docs/COMO-FUNCIONA.md`, `docs/TURBOREPO.md`, `docs/REQUISITOS.MD` (specification), `docs/api/` (how the API works inside).
 
 ## Stack (FACT, do not change without confirming)
 
@@ -59,7 +59,7 @@ A change that alters behavior, the API contract, the banner protocol or a game r
 
 ## Security checklist (check on EVERY PR)
 
-A summary; the full version and the audit history are in `docs/SEGURANCA.md`. The PR template repeats these items; each must be ticked or confirmed in a short sentence in the "Security" section.
+The PR template repeats these items; each must be ticked or confirmed in a short sentence in the "Security" section.
 
 ### Always
 

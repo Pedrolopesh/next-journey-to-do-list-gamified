@@ -34,7 +34,7 @@ Quem já tinha conta com senha entra pelo mesmo caminho: o código prova a posse
 
 ## Tokens
 
-- **Acesso:** JWT curto (HS256, 900 s por padrão, `ACCESS_TOKEN_TTL_SECONDS`) com emissor e audiência fixos e o id da sessão (`sid`). O cabeçalho `kid` só escolhe qual chave tentar (a atual ou a anterior, durante a troca do segredo); a assinatura decide. Procedimento de troca: `docs/SEGURANCA.md`, seção 8.
+- **Acesso:** JWT curto (HS256, 900 s por padrão, `ACCESS_TOKEN_TTL_SECONDS`) com emissor e audiência fixos e o id da sessão (`sid`). O cabeçalho `kid` só escolhe qual chave tentar (a atual ou a anterior, durante a troca do segredo); a assinatura decide. Procedimento de troca: `docs/api/operacao-e-seguranca.md`, seção "Troca do segredo do JWT".
 - **Refresh:** `<id>.<segredo>` aleatório, 365 dias por padrão (`REFRESH_TOKEN_TTL_DAYS`), renovados a cada rotação: a sessão só termina com "Sair", exclusão da conta, revogação em Sessões ou reúso detectado; só o `sha256` do segredo fica no banco.
 - **Rotação atômica:** a cada refresh o token é trocado. O `UPDATE` condicional (`revokedAt` nulo e ainda válido) deixa passar só **uma** de várias requisições simultâneas com o mesmo token; a que perde é tratada como **reuso** e revoga a família inteira (sinal de token roubado). Conflito de transação sob concorrência nega (falha fechada); outro erro (banco fora) segue como 5xx, para o app não tratar falha temporária como sessão encerrada.
 - **Logout** revoga a família do refresh token informado; é silencioso se o token for inválido.
