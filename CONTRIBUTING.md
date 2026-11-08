@@ -1,171 +1,171 @@
-# Contribuindo com o Next Journey
+# Contributing to Next Journey
 
-Leia este arquivo antes de qualquer alteração: stack, regras e checklists. Visão geral em `docs/COMO-FUNCIONA.md`; como rodar, no `README.md`.
+Read this file before any change: stack, rules and checklists. For an overview see `docs/COMO-FUNCIONA.md`; for how to run, see `README.md`.
 
-## Projeto
+## Project
 
-To-do list gamificado (diários, tarefas e hábitos rendem EXP e moedas e fazem um personagem LPC avançar por uma história). Monorepo **pnpm + Turborepo**, pacotes no escopo `@nextjourney/*`.
+Gamified to-do list (dailies, tasks and habits earn EXP and coins and move an LPC character through a story). **pnpm + Turborepo** monorepo, packages under the `@nextjourney/*` scope.
 
 - `apps/api`: NestJS 11 + Prisma + PostgreSQL
-- `apps/banner`: camada de jogo em Vite + TypeScript, roda num WebView (Mapa em CSS, QG em canvas)
+- `apps/banner`: game layer in Vite + TypeScript, runs in a WebView (Map in CSS, HQ on canvas)
 - `apps/mobile`: React Native + Expo, Expo Router
-- `packages/contracts`: schemas Zod compartilhados (API, app, banner)
-- `packages/tsconfig`, `packages/eslint-config`: configuração compartilhada
+- `packages/contracts`: shared Zod schemas (API, app, banner)
+- `packages/tsconfig`, `packages/eslint-config`: shared configuration
 
-Testes e regressão (camadas, Maestro para a interface do app): `docs/TESTES.md`. Docs: `docs/CENARIOS.md` (regras de construção e checagem dos cenários do banner; leia antes de criar ou mexer em cenário), `docs/COMO-FUNCIONA.md`, `docs/TURBOREPO.md`, `docs/REQUISITOS.MD` (especificação), `docs/SEGURANCA.md`.
+Tests and regression (layers, Maestro for the app UI): `docs/TESTES.md`. Docs: `docs/CENARIOS.md` (rules for building and checking the banner scenes; read it before creating or changing a scene), `docs/COMO-FUNCIONA.md`, `docs/TURBOREPO.md`, `docs/REQUISITOS.MD` (specification), `docs/SEGURANCA.md`.
 
-## Stack (FATO, não alterar sem confirmar)
+## Stack (FACT, do not change without confirming)
 
-- Node 24 (`.nvmrc`), **pnpm 11.28.3** (campo `packageManager`), Turborepo 2.x, TypeScript **~5.9** (a 7.x quebra o `typescript-eslint`)
+- Node 24 (`.nvmrc`), **pnpm 11.28.3** (`packageManager` field), Turborepo 2.x, TypeScript **~5.9** (7.x breaks `typescript-eslint`)
 - ESLint 9 (flat config), Prettier, Husky, lint-staged, commitlint
-- **NUNCA** usar `npm` ou `yarn` neste repo, só `pnpm`
-- Decisões nos ADRs em `docs/adr/`
+- **NEVER** use `npm` or `yarn` in this repo, only `pnpm`
+- Decisions are in the ADRs under `docs/adr/`
 
-## Comandos
+## Commands
 
 - `pnpm install`
-- `pnpm run build | lint | typecheck | test | dev` (todos via Turbo)
-- `pnpm --filter @nextjourney/<pacote> <script>`: um pacote só
-- `pnpm run security`: varredura rápida de dados sensíveis e `pnpm audit`; `pnpm run security:full`: varredura completa com o histórico inteiro (obrigatória antes de todo PR)
+- `pnpm run build | lint | typecheck | test | dev` (all through Turbo)
+- `pnpm --filter @nextjourney/<package> <script>`: a single package
+- `pnpm run security`: quick scan for sensitive data plus `pnpm audit`; `pnpm run security:full`: full scan with the whole history (mandatory before every PR)
 
-### O que a CI verifica em todo PR
+### What CI checks on every PR
 
-`pnpm install --frozen-lockfile` → commits do PR (commitlint) → `turbo run lint typecheck test build` → e2e da API → OpenSpec alterado → duplicação (`jscpd`) → `scripts/security-scan.sh`; mais o job `descricao` (título e seções do PR). Rode tudo localmente com `pnpm run verify`.
+`pnpm install --frozen-lockfile` → the PR commits (commitlint) → `turbo run lint typecheck test build` → API e2e → changed OpenSpec → duplication (`jscpd`) → `scripts/security-scan.sh`; plus the `descricao` job (PR title and sections). Run everything locally with `pnpm run verify`.
 
-## Arquitetura (alvo)
+## Architecture (target)
 
-- App ↔ API: REST `/v1` (JWT 15 min + refresh rotativo). App ↔ banner: `postMessage` `{ v: 1, type, payload }`, validado com Zod dos dois lados. O banner nunca acessa a API.
-- O **servidor decide a progressão**. Toda regra de EXP, moedas, nível, sequência, capítulo e conquistas mora só em `apps/api/src/modules/progression/domain`, como função pura com teste. O app não calcula EXP.
-- Contratos entre projetos só em `packages/contracts`. Nunca duplicar tipos.
+- App ↔ API: REST `/v1` (15 min JWT + rotating refresh). App ↔ banner: `postMessage` `{ v: 1, type, payload }`, validated with Zod on both sides. The banner never reaches the API.
+- The **server decides progression**. Every rule for EXP, coins, level, streak, chapter and achievements lives only in `apps/api/src/modules/progression/domain`, as a pure function with a test. The app does not compute EXP.
+- Contracts between projects live only in `packages/contracts`. Never duplicate types.
 
-## OpenSpec (mudanças com spec)
+## OpenSpec (changes with a spec)
 
-Mudança que altere comportamento, contrato da API, protocolo do banner ou regra de jogo passa por OpenSpec antes de virar código: `/opsx:propose` (proposal, design, specs, tasks), `/opsx:apply` (implementar as tasks), `/opsx:archive` (arquivar e sincronizar as specs). Specs vivas em `openspec/specs/`, mudanças em `openspec/changes/`. O `openspec/config.yaml` é curto de propósito: a fonte de verdade é este arquivo. Correção pequena e mudança só de documentação não precisam de proposta.
+A change that alters behavior, the API contract, the banner protocol or a game rule goes through OpenSpec before it becomes code: `/opsx:propose` (proposal, design, specs, tasks), `/opsx:apply` (implement the tasks), `/opsx:archive` (archive and sync the specs). Living specs are in `openspec/specs/`, changes in `openspec/changes/`. `openspec/config.yaml` is short on purpose: the source of truth is this file. A small fix or a documentation-only change does not need a proposal.
 
-## Regras de implementação (OBRIGATÓRIAS)
+## Implementation rules (MANDATORY)
 
-1. **Reuso antes de criar.** Procure em `packages/` e nos módulos existentes antes de criar algo novo.
-2. **Nunca devolva o model do Prisma inteiro.** `select` explícito ou DTO de saída: allowlist, não denylist.
-3. **Toda rota nasce protegida.** Guard mais restritivo que serve, no nível do controller; autenticação não é autorização.
-4. **Contrato explícito.** Entrada e saída validadas com Zod (`packages/contracts`); nunca repassar o corpo cru para o Prisma. Mudou contrato? Está no mesmo PR e na spec.
-5. **Banco.** `$queryRaw` só com parâmetro vinculado. Migration nova, nunca editar migration aplicada. Índice em toda coluna de filtro ou ordenação.
-6. **Textos de interface só via i18n** (`pt-BR.json`). Cores e tamanhos só pelos tokens do design system.
-7. **Logs sem dados sensíveis:** nunca e-mail, senha, token ou corpo de requisição.
-8. **Datas** em UTC no banco; "dia" do usuário no fuso do perfil; registro em ISO 8601.
-9. **Teste novo para regra nova.** Mudança de regra de jogo começa por um teste.
-10. **Nenhuma ação deixa o usuário no escuro (RN-FB).** Toda ação do usuário no app mostra carregando e termina em toast de sucesso ou de erro; validação reprovada nunca deixa o botão "sem fazer nada". Use `useAction` e `toast` (`apps/mobile/src/features/feedback`). Detalhes em `docs/REQUISITOS.MD` (seção 3) e portão de loja em `docs/QA.md` (seção 7).
-11. **Código em inglês.** Nome de variável, função, tipo, arquivo novo, comentário e nome de teste em inglês. Ficam em português só o texto que a pessoa usuária vê (`pt-BR.json`) e o conteúdo do produto (títulos de itens de exemplo, nomes de categoria, cenários). A regra vale para o que você escreve, mesmo dentro de um arquivo antigo em português: identificador e comentário novos em inglês, sem renomear o que já existe (isso é um trabalho à parte, por área). Nomes públicos já estabelecidos (rotas, colunas, chaves de contrato) não mudam por causa desta regra.
-12. **Comentário só quando o código não diz sozinho.** Comente o porquê que não é óbvio (restrição, decisão, contorno, motivo de segurança), nunca o que a linha faz; sem código comentado, sem histórico de mudança ("antes fazia X") e sem TODO solto: pendência vira uma issue no GitHub. Explicação longa, decisão de design ou regra de negócio vai para a documentação (`docs/`, `design.md` do OpenSpec) com um link curto no código. Revise os comentários do diff antes de abrir o PR: apague o que repete o código ou envelheceu e mova para a documentação o que merece ficar.
+1. **Reuse before creating.** Look in `packages/` and the existing modules before creating something new.
+2. **Never return the whole Prisma model.** Explicit `select` or an output DTO: allowlist, not denylist.
+3. **Every route is born protected.** The most restrictive guard that works, at controller level; authentication is not authorization.
+4. **Explicit contract.** Input and output validated with Zod (`packages/contracts`); never pass the raw body to Prisma. Changed a contract? It is in the same PR and in the spec.
+5. **Database.** `$queryRaw` only with a bound parameter. New migration, never edit an applied migration. Index on every filter or sort column.
+6. **UI text only through i18n** (`pt-BR.json`). Colors and sizes only through the design system tokens.
+7. **Logs without sensitive data:** never email, password, token or request body.
+8. **Dates** in UTC in the database; the user's "day" in the profile time zone; records in ISO 8601.
+9. **New test for a new rule.** A game rule change starts with a test.
+10. **No action leaves the user in the dark (RN-FB).** Every user action in the app shows loading and ends in a success or error toast; failed validation never leaves the button "doing nothing". Use `useAction` and `toast` (`apps/mobile/src/features/feedback`). Details in `docs/REQUISITOS.MD` (section 3) and the store gate in `docs/QA.md` (section 7).
+11. **Code in English.** Variable, function, type, new file name, comment and test name in English. Only the text the user sees (`pt-BR.json`) and the product content (sample item titles, category names, scenes) stay in Portuguese. The rule applies to what you write, even inside an old Portuguese file: new identifiers and comments in English, without renaming what already exists (that is separate work, by area). Established public names (routes, columns, contract keys) do not change because of this rule.
+12. **Comment only when the code does not say it by itself.** Comment the non-obvious why (a constraint, a decision, a workaround, a security reason), never what the line does; no commented-out code, no change history ("it used to do X") and no loose TODO: a pending item becomes a GitHub issue. Long explanations, design decisions and business rules go in the documentation (`docs/`, the OpenSpec `design.md`) with a short link in the code. Review the comments in the diff before opening the PR: delete what repeats the code or went stale and move to the documentation what deserves to stay.
 
-## Checklist de segurança (verificar a CADA PR)
+## Security checklist (check on EVERY PR)
 
-Resumo; a versão completa e o histórico de auditorias estão em `docs/SEGURANCA.md`. O PR template repete estes itens; cada um precisa estar marcado ou confirmado numa frase curta na seção "Security".
+A summary; the full version and the audit history are in `docs/SEGURANCA.md`. The PR template repeats these items; each must be ticked or confirmed in a short sentence in the "Security" section.
 
-### Sempre
+### Always
 
-- **Este repositório é público de propósito.** Assuma que o atacante lê todo o código; nada do que for commitado pode ser apagado depois. Nunca commitar dados de infraestrutura real (IP, host, porta, inventário) nem achados de auditoria.
+- **This repository is public on purpose.** Assume the attacker reads all the code; nothing committed can be erased later. Never commit real infrastructure data (IP, host, port, inventory) or audit findings.
 
-- **Segredos:** nada de token, senha, chave, `.env`, certificado ou IP/host de infraestrutura em código, docs, testes, commit ou PR. `pnpm run security` precisa passar.
-- **Exposição excessiva:** nunca devolver o model do ORM inteiro.
-- **IDOR/BOLA:** receber `id` do cliente exige validar que o solicitante pode acessar **aquele objeto**.
-- **Autorização ≠ autenticação.**
-- **Segredo em log ou erro:** tokens, senhas, e-mails completos e stack traces não vão para log nem resposta.
-- **Falha aberta:** em erro, negar. Nunca `catch` que autoriza.
+- **Secrets:** no token, password, key, `.env`, certificate or infrastructure IP/host in code, docs, tests, commits or PRs. `pnpm run security` must pass.
+- **Over-exposure:** never return the whole ORM model.
+- **IDOR/BOLA:** receiving an `id` from the client requires validating that the requester may access **that object**.
+- **Authorization ≠ authentication.**
+- **Secret in a log or error:** tokens, passwords, full emails and stack traces do not go into logs or responses.
+- **Fail open:** on error, deny. Never a `catch` that authorizes.
 
 ### API (NestJS)
 
-- Mass assignment (campos como `role`, `isBlocked` jamais vêm do cliente), SQL injection (`$queryRaw`), SSRF, path traversal.
-- JWT: validar `exp`, algoritmo fixo, segredo forte fora do código. Refresh token rotativo; reuso revoga a família.
-- Enumeração de contas: login, esqueci a senha e cadastro respondem igual para e-mail existente e inexistente; com rate limit.
-- Comparação de segredo em tempo constante (`crypto.timingSafeEqual`).
-- ReDoS, race condition (transação ou constraint única), CORS com allowlist (nunca refletir `Origin` com credenciais), helmet ligado.
-- Idempotência do check (`checkId`): repetir não pode duplicar EXP.
+- Mass assignment (fields such as `role` and `isBlocked` never come from the client), SQL injection (`$queryRaw`), SSRF, path traversal.
+- JWT: validate `exp`, a fixed algorithm, a strong secret outside the code. Rotating refresh token; reuse revokes the family.
+- Account enumeration: login, forgot password and signup answer the same for an existing and a missing email; with a rate limit.
+- Constant-time secret comparison (`crypto.timingSafeEqual`).
+- ReDoS, race conditions (transaction or unique constraint), CORS with an allowlist (never reflect `Origin` with credentials), helmet on.
+- Check idempotency (`checkId`): repeating must not duplicate EXP.
 
-### App (Expo/React Native) e banner (WebView)
+### App (Expo/React Native) and banner (WebView)
 
-- **Feedback de toda ação (RN-FB):** botão com `loading`, toast de sucesso/erro e mensagem de campo em validação reprovada. Tela estática depois de um toque é defeito.
-- Tokens só no SecureStore; nada sensível no AsyncStorage, em log, em URL ou em query string.
-- WebView: `originWhitelist` restrito, só HTML local embutido, sem carregar URL externa; toda mensagem do banner validada com Zod e descartada se inválida.
-- O banner não faz requisição de rede e não guarda estado.
-- Deep links e `scheme`: validar parâmetros; sem open redirect.
-- Segredos de build (EAS) só no gerenciador de segredos; `EXPO_PUBLIC_*` é público, nunca colocar segredo nele.
-- Validação no cliente é UX; a regra existe no backend também.
+- **Feedback on every action (RN-FB):** a button with `loading`, a success/error toast and a field message on failed validation. A static screen after a tap is a defect.
+- Tokens only in SecureStore; nothing sensitive in AsyncStorage, logs, URLs or query strings.
+- WebView: restricted `originWhitelist`, only embedded local HTML, no external URL loading; every banner message validated with Zod and dropped if invalid.
+- The banner makes no network request and keeps no state.
+- Deep links and `scheme`: validate parameters; no open redirect.
+- Build secrets (EAS) only in the secrets manager; `EXPO_PUBLIC_*` is public, never put a secret in it.
+- Client-side validation is UX; the rule also exists in the backend.
 
-### Dependências
+### Dependencies
 
-- Conferir o nome exato do pacote (typosquatting) antes de instalar; lockfile versionado junto.
-- `pnpm audit` limpo para severidade alta ou crítica.
-- Ação nova no GitHub Actions: fixar versão e preferir ações oficiais.
+- Check the exact package name (typosquatting) before installing; version the lockfile together.
+- `pnpm audit` clean for high or critical severity.
+- New GitHub Actions action: pin the version and prefer official actions.
 
-## Antes de abrir um PR (OBRIGATÓRIO)
+## Before opening a PR (MANDATORY)
 
-### 1. Revisão
+### 1. Review
 
-- Trabalhe numa branch e abra o PR só depois de rever o próprio diff: o que mudou e por quê, a lista de arquivos e o resultado de `lint`, `typecheck`, `test` e `build`.
-- Mudou algo depois da revisão? Revise de novo.
+- Work on a branch and open the PR only after reviewing your own diff: what changed and why, the file list and the result of `lint`, `typecheck`, `test` and `build`.
+- Changed something after the review? Review again.
 
-### 2. Verificação completa de chaves, tokens e segredos
+### 2. Full check for keys, tokens and secrets
 
-Rode `pnpm run security:full` e só prossiga com `OK`. Ele cobre: padrões de segredo em todos os arquivos versionados e novos; arquivos sensíveis (`.env`, `.pem`, keystores, chaves SSH); endereços IP; o **histórico inteiro** de todas as branches; arquivos ignorados que parecem sensíveis; autoria e mensagens dos commits (sem co-autoria nem rodapés gerados por ferramentas); e `pnpm audit`.
+Run `pnpm run security:full` and proceed only with `OK`. It covers: secret patterns in all versioned and new files; sensitive files (`.env`, `.pem`, keystores, SSH keys); IP addresses; the **whole history** of all branches; ignored files that look sensitive; commit authorship and messages (no co-authorship or tool-generated footers); and `pnpm audit`.
 
-Além do script, confira à mão:
+Besides the script, check by hand:
 
-- `git status --ignored` e `git diff --cached`: nenhum arquivo inesperado entra (`.env`, dumps, logs, capturas de tela com dados, arquivos de pessoa ou de servidor).
-- A descrição do PR e as mensagens de commit: sem token, IP, host, caminho de servidor ou achado de auditoria.
-- Docs e testes novos: sem credenciais "de exemplo" que pareçam reais; exemplos usam valores obviamente falsos (`<token>`, `exemplo.com`).
-- Dependência nova: nome exato conferido, lockfile junto, `pnpm audit` limpo.
+- `git status --ignored` and `git diff --cached`: no unexpected file gets in (`.env`, dumps, logs, screenshots with data, personal or server files).
+- The PR description and the commit messages: no token, IP, host, server path or audit finding.
+- New docs and tests: no "example" credentials that look real; examples use obviously fake values (`<token>`, `example.com`).
+- New dependency: exact name checked, lockfile together, `pnpm audit` clean.
 
-Se achar um segredo (mesmo antigo), **pare**: não faça push, avise quem mantém o projeto, revogue o segredo e só então remova do código e, se já foi commitado, do histórico.
+If you find a secret (even an old one), **stop**: do not push, tell the maintainer, revoke the secret and only then remove it from the code and, if it was already committed, from the history.
 
-## Idioma: inglês no código e nos PRs (OBRIGATÓRIO)
+## Language: English in code and PRs (MANDATORY)
 
-Vale para pessoas e para qualquer ferramenta que escreva neste repositório.
+Applies to people and to any tool that writes in this repository.
 
-- **PR, commit e issue:** título, descrição (inclusive os títulos de seção), assunto de commit e comentário de revisão em inglês. A CI barra acento no título e na descrição do PR.
-- **Código:** nome de variável, função, tipo, classe, constante, arquivo novo, nome de teste e comentário em inglês. O `scripts/check-hygiene.sh` barra comentário novo com acento.
-- **Fica em português só o que a pessoa usuária vê:** `pt-BR.json` e o conteúdo do produto (itens de exemplo, nomes de categoria, cenários, conquistas). Chaves públicas já estabelecidas (rotas, colunas, ids de conquista, campos de contrato) não mudam por causa desta regra.
-- **Ao tocar um arquivo antigo em português:** o que você escreve vai em inglês; renomeie o que já existe só num PR próprio de renomeação, por área, com `pnpm run verify` verde e nenhum contrato público alterado.
-- **Documentação nova** (`docs/`, `README`, OpenSpec) também vai em inglês; a existente é migrada por área, em PRs separados.
+- **PR, commit and issue:** title, description (including the section headings), commit subject and review comment in English. CI rejects accented characters in the PR title and description.
+- **Code:** variable, function, type, class, constant, new file name, test name and comment in English. `scripts/check-hygiene.sh` rejects a new comment with accented characters.
+- **Only what the user sees stays in Portuguese:** `pt-BR.json` and the product content (sample items, category names, scenes, achievements). Established public keys (routes, columns, achievement ids, contract fields) do not change because of this rule.
+- **When touching an old Portuguese file:** what you write goes in English; rename what already exists only in a dedicated rename PR, by area, with a green `pnpm run verify` and no public contract changed.
+- **New documentation** (`docs/`, `README`, OpenSpec) is also in English; the existing one is migrated by area, in separate PRs.
 
-## Higiene de repositório público (OBRIGATÓRIO)
+## Public repository hygiene (MANDATORY)
 
-Este repositório é aberto: quem clona vê tudo, e o que entra no Git não sai mais. Estas regras valem para pessoas e para qualquer ferramenta de IA que escreva código aqui. `scripts/check-hygiene.sh` (parte de `pnpm run security`, do `verify` e da CI) confere as cinco primeiras; as demais são de revisão.
+This repository is open: whoever clones it sees everything, and what enters Git never leaves. These rules apply to people and to any AI tool that writes code here. `scripts/check-hygiene.sh` (part of `pnpm run security`, `verify` and CI) checks the first five; the rest are for review.
 
-1. **Notas, diário, plano pessoal e regras locais ficam em `internal/`** (ignorada pelo Git), junto de `AGENTS.md`, `CLAUDE.md` e `.claude/` locais. Nunca versione `internal/`, `HANDOFF*`, `DIARIO*`, `RESUMO-DA-SESSAO*` nem `docs/gestao/`.
-2. **Sem menção a ferramenta, anotação pessoal ou documento fora do Git** em código, docs, comentários ou PR (editores de nota, assistentes de IA, atalhos do ambiente de alguém). Se a informação importa a quem contribui, escreva-a na documentação do repositório, em linguagem neutra.
-3. **Sem motivação pessoal nem de público-alvo.** Commit, comentário e descrição de PR dizem o que muda e o motivo técnico; não citam quem vai ler ou avaliar o repositório (liderança, banca, cliente), opinião ou decisão pessoal. A CI confere o título e a descrição do PR.
-4. **Sem `TODO` nem `FIXME` em comentário.** Pendência vira issue ou entra em "Risks and pending items" do PR.
-5. **Sem co-autoria, rodapé gerado por ferramenta nem URL de sessão** em commit ou PR (a CI barra).
-6. **Nunca use `git add -A`, `git add .` nem `git commit -a` às cegas.** Adicione os arquivos pelo nome e confira `git status` e `git diff --cached --stat` antes de cada commit; um arquivo local que ainda não está no `.gitignore` entra sem aviso.
-7. **Documentação acompanha o código.** Mudou comportamento, comando, variável de ambiente ou fluxo? Atualize no mesmo PR o `README.md` e o `docs/COMO-FUNCIONA.md` (e o que mais descrever aquilo). Doc que contradiz o código é defeito.
-8. **Workflow novo ou alterado do GitHub Actions:** ações fixadas por SHA, `permissions` mínimas declaradas no topo e nenhum segredo em `run:` sem passar por `env:`.
-9. **Imagem de contêiner:** a base roda `apt-get upgrade` (ou equivalente) para fechar CVEs do sistema; o Trivy da entrega falha em HIGH ou CRITICAL com correção disponível.
-10. **Dependência:** nome exato conferido, lockfile junto, `pnpm audit` limpo e nenhuma licença incompatível com a MIT do projeto. Atualização em lote (Dependabot) só entra depois de `pnpm run verify` e de abrir o app.
-11. **Licença e créditos:** arte, fonte ou som de terceiros entra com a licença anotada em `CREDITS.md` no mesmo PR.
-12. **Tela nova ou alterada:** botão de voltar do Android (e o gesto) se comporta como o do iOS, todo título tem papel de cabeçalho para leitor de tela, e o nome das rotas não se repete à mão em dois lugares.
-13. **OpenSpec:** mudança de comportamento tem proposta com `.openspec.yaml`, `proposal.md`, `tasks.md` e specs (ou `skip_specs: true` quando não houver spec); o `scripts/check-openspec.sh` confere.
+1. **Notes, diary, personal plan and local rules stay in `internal/`** (ignored by Git), together with the local `AGENTS.md`, `CLAUDE.md` and `.claude/`. Never version `internal/`, `HANDOFF*`, `DIARIO*`, `RESUMO-DA-SESSAO*` or `docs/gestao/`.
+2. **No mention of a tool, a personal note or a document outside Git** in code, docs, comments or PRs (note editors, AI assistants, someone's environment shortcuts). If the information matters to contributors, write it in the repository documentation, in neutral language.
+3. **No personal or audience motivation.** Commits, comments and PR descriptions say what changes and the technical reason; they do not mention who will read or evaluate the repository (leadership, a panel, a client), opinions or personal decisions. CI checks the PR title and description.
+4. **No `TODO` or `FIXME` in comments.** A pending item becomes an issue or goes in "Risks and pending items" of the PR.
+5. **No co-authorship, tool-generated footer or session URL** in commits or PRs (CI rejects them).
+6. **Never use `git add -A`, `git add .` or `git commit -a` blindly.** Add files by name and check `git status` and `git diff --cached --stat` before each commit; a local file that is not yet in `.gitignore` gets in without warning.
+7. **Documentation follows the code.** Changed behavior, a command, an environment variable or a flow? Update `README.md` and `docs/COMO-FUNCIONA.md` (and whatever else describes it) in the same PR. Documentation that contradicts the code is a defect.
+8. **New or changed GitHub Actions workflow:** actions pinned by SHA, minimal `permissions` declared at the top and no secret in `run:` without going through `env:`.
+9. **Container image:** the base runs `apt-get upgrade` (or equivalent) to close system CVEs; the delivery Trivy scan fails on HIGH or CRITICAL with a fix available.
+10. **Dependency:** exact name checked, lockfile together, `pnpm audit` clean and no license incompatible with the project's MIT. A batch update (Dependabot) only goes in after `pnpm run verify` and opening the app.
+11. **License and credits:** third-party art, fonts or sounds come with the license noted in `CREDITS.md` in the same PR.
+12. **New or changed screen:** the Android back button (and gesture) behaves like iOS, every title has a heading role for screen readers, and route names are not repeated by hand in two places.
+13. **OpenSpec:** a behavior change has a proposal with `.openspec.yaml`, `proposal.md`, `tasks.md` and specs (or `skip_specs: true` when there is no spec); `scripts/check-openspec.sh` checks it.
 
-## Processo de PR (OBRIGATÓRIO; detalhes em `docs/PROCESSO-DE-PR.md`)
+## PR process (MANDATORY; details in `docs/PROCESSO-DE-PR.md`)
 
-1. **`pnpm run verify` verde** antes de abrir o PR: commits (commitlint), lint, tipos, testes, build, e2e da API, OpenSpec, duplicação (`jscpd`, limite 2%) e `security:full`. A CI repete os passos e ainda confere o título e a descrição do PR.
-2. **Revisão de código da branch antes de abrir o PR.** Trate os achados; o que ficar pendente vai para uma issue e para a seção "Risks and pending items" do PR. Nunca suba dívida técnica ou de segurança sem registro.
-3. **Título e descrição em inglês**, declarativos e curtos, no padrão do `.github/PULL_REQUEST_TEMPLATE.md`: seções `## What changes`, `## Why`, `## How it was verified`, `## Risks and pending items` e `## Security` (a CI confere). Título `tipo: assunto` em minúscula. Diga também o que não foi verificado. Sem rodapés de ferramenta nem URLs de sessão, no título, no corpo ou nos commits. Exemplo de título: `fix: build the contracts before the release smoke tests`.
-4. **Reuso e duplicação:** procure antes de criar; trecho repetido vira função compartilhada. Revise a segurança de todas as frentes que o PR toca (API, app, banner, contratos, dependências).
-5. **Merge por squash** com título `tipo: assunto (#N)` e corpo vazio, só com CI verde e aprovação de quem mantém o projeto.
+1. **Green `pnpm run verify`** before opening the PR: commits (commitlint), lint, types, tests, build, API e2e, OpenSpec, duplication (`jscpd`, 2% limit) and `security:full`. CI repeats the steps and also checks the PR title and description.
+2. **Code review of the branch before opening the PR.** Handle the findings; what stays pending goes to an issue and to the "Risks and pending items" section of the PR. Never push technical or security debt without a record.
+3. **Title and description in English**, declarative and short, following `.github/PULL_REQUEST_TEMPLATE.md`: sections `## What changes`, `## Why`, `## How it was verified`, `## Risks and pending items` and `## Security` (CI checks them). Title `type: subject` in lowercase. Also say what was not verified. No tool footers or session URLs in the title, body or commits. Example title: `fix: build the contracts before the release smoke tests`.
+4. **Reuse and duplication:** search before creating; repeated code becomes a shared function. Review the security of every front the PR touches (API, app, banner, contracts, dependencies).
+5. **Squash merge** with the title `type: subject (#N)` and an empty body, only with green CI and approval from the maintainer.
 
-## Não fazer
+## Do not
 
-- Não adicionar corpo aos commits
-- Não incluir co-autoria, rodapés gerados por ferramentas nem URLs de sessão em commit ou PR
-- Não escrever título, descrição de PR (inclusive os títulos de seção) nem assunto de commit em português: tudo em inglês
-- Não escrever nome de variável, de função, de tipo nem comentário novo em português
-- Não deixar comentário que repete o código, código comentado ou histórico de mudança no diff
+- Do not add a body to commits
+- Do not include co-authorship, tool-generated footers or session URLs in commits or PRs
+- Do not write the title, the PR description (including the section headings) or the commit subject in Portuguese: everything in English
+- Do not write a new variable, function or type name or comment in Portuguese
+- Do not leave a comment that repeats the code, commented-out code or change history in the diff
 
 ## Safety
 
-- NUNCA commitar `.env` com valores reais; só `.env.example`.
-- NUNCA push direto em `main` — sempre branch + PR, com revisão e a varredura completa (seção acima).
-- NUNCA editar migrations já aplicadas.
-- Sempre `git pull origin main` antes de começar.
-- **Convenção de branch:** `<tipo>/<slug-em-kebab-case>`. Tipos: `feat`, `fix`, `chore`, `docs`, `refactor`, `perf`, `test`, `ci`.
-- **Commits:** Conventional Commits. O assunto começa em minúscula (o commitlint rejeita maiúscula inicial). Uma mudança por PR (o commit não tem corpo).
+- NEVER commit a `.env` with real values; only `.env.example`.
+- NEVER push straight to `main` — always a branch + PR, with review and the full scan (section above).
+- NEVER edit migrations that were already applied.
+- Always `git pull origin main` before starting.
+- **Branch convention:** `<type>/<kebab-case-slug>`. Types: `feat`, `fix`, `chore`, `docs`, `refactor`, `perf`, `test`, `ci`.
+- **Commits:** Conventional Commits. The subject starts in lowercase (commitlint rejects a leading capital). One change per PR (the commit has no body).

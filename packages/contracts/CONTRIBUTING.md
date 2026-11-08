@@ -1,11 +1,11 @@
-# packages/contracts — contratos compartilhados
+# packages/contracts — shared contracts
 
-Regras do monorepo em `../../CONTRIBUTING.md`. Este pacote é a **única fonte** dos formatos de dados entre API, app e banner.
+Monorepo rules are in `../../CONTRIBUTING.md`. This package is the **single source** of the data formats between the API, the app and the banner.
 
-- Schemas Zod + tipos (`z.infer`). Sem lógica de negócio e sem dependência de framework: o app (React Native), o banner (navegador) e a API (Node) importam daqui.
-- Nunca duplicar um tipo em outro pacote: importe de `@nextjourney/contracts`.
-- Toda mudança de contrato (rota, schema, mensagem do banner) atualiza os consumidores **no mesmo PR** e a proposta/ADR correspondente. O typecheck dos três quebra se algo ficar para trás.
-- Todo schema novo tem teste (`*.test.ts`), com casos válidos e inválidos, inclusive limites.
-- Schemas de entrada validam o que vem do cliente; nunca inclua no schema de **saída** campo sensível (hash de senha, token de refresh de outro usuário, e-mail de terceiros).
-- O build (`tsup`) gera ESM e CJS. O `lint`, o `typecheck` e o `test` dependem do build das dependências (Turbo).
-- Protocolo do banner: mensagens `{ v: 1, type, payload }`; mudou o formato, suba a versão `v` e trate as duas durante a transição.
+- Zod schemas + types (`z.infer`). No business logic and no framework dependency: the app (React Native), the banner (browser) and the API (Node) import from here.
+- Never duplicate a type in another package: import from `@nextjourney/contracts`.
+- Every contract change (route, schema, banner message) updates the consumers **in the same PR** and the matching proposal/ADR. The typecheck of all three breaks if something is left behind.
+- Every new schema has a test (`*.test.ts`), with valid and invalid cases, including limits.
+- Input schemas validate what comes from the client; never include a sensitive field in an **output** schema (password hash, another user's refresh token, third-party emails).
+- The build (`tsup`) emits ESM and CJS. `lint`, `typecheck` and `test` depend on the build of the dependencies (Turbo).
+- Banner protocol: messages `{ v: 1, type, payload }`; if the format changes, bump the `v` version and handle both during the transition.

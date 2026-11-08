@@ -1,82 +1,82 @@
 # Next Journey
 
-To-do list gamificado para iOS e Android. Diários, tarefas e hábitos rendem EXP e moedas e fazem um personagem pixel art avançar por uma história em capítulos. O servidor decide toda a progressão; o app só mostra.
+Gamified to-do list for iOS and Android. Dailies, tasks and habits earn EXP and coins and move a pixel art character through a story told in chapters. The server decides all progression; the app only displays it.
 
-## Estado do projeto
+## Project status
 
-| Parte                                       | Situação                                                                                                                                                      |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| API (`apps/api`)                            | No ar em ambientes de desenvolvimento e produção, com migrations, testes unitários e e2e                                                                      |
-| App (`apps/mobile`)                         | Em desenvolvimento: entrada por e-mail com código, criação do personagem, história, itens, conquistas e perfil funcionam; builds de loja ainda não publicados |
-| Banner e laboratório (`apps/banner`)        | Cenas do jogo em WebView e um site de revisão de arte (`lab.html`)                                                                                            |
-| Infraestrutura (`apps/infra`, `apps/smoke`) | Scripts de provisionamento, deploy e testes de fumaça                                                                                                         |
+| Part                                        | Status                                                                                                                                  |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| API (`apps/api`)                            | Live in development and production, with migrations, unit tests and e2e tests                                                           |
+| App (`apps/mobile`)                         | In development: email code sign-in, character creation, story, items, achievements and profile work; store builds are not published yet |
+| Banner and lab (`apps/banner`)              | Game scenes in a WebView and an art review site (`lab.html`)                                                                            |
+| Infrastructure (`apps/infra`, `apps/smoke`) | Provisioning and deploy scripts and smoke tests                                                                                         |
 
-Não existe aplicativo administrativo neste repositório.
+There is no admin application in this repository.
 
-## Como as peças se encaixam
+## How the pieces fit together
 
 ```
 apps/mobile (Expo)  ──REST /v1──▶  apps/api (NestJS + Prisma)  ──▶  PostgreSQL
       │
-      └─ postMessage ─▶  apps/banner (Vite, dentro de um WebView)
+      └─ postMessage ─▶  apps/banner (Vite, inside a WebView)
 
-packages/contracts: schemas Zod usados pelas três pontas
+packages/contracts: Zod schemas used by all three ends
 ```
 
-Detalhes em [docs/COMO-FUNCIONA.md](docs/COMO-FUNCIONA.md).
+Details in [docs/COMO-FUNCIONA.md](docs/COMO-FUNCIONA.md).
 
-## Como rodar
+## How to run
 
-Pré-requisitos: Node 24 (`.nvmrc`), Docker e Corepack.
+Prerequisites: Node 24 (`.nvmrc`), Docker and Corepack.
 
 ```bash
 nvm use && corepack enable
-pnpm install                         # instala tudo e ativa os git hooks
-cp .env.example .env && cp apps/api/.env.example apps/api/.env   # troque as senhas e o segredo do JWT
-docker compose up -d                 # PostgreSQL local, só em 127.0.0.1
+pnpm install                         # installs everything and enables the git hooks
+cp .env.example .env && cp apps/api/.env.example apps/api/.env   # change the passwords and the JWT secret
+docker compose up -d                 # local PostgreSQL, on 127.0.0.1 only
 pnpm --filter @nextjourney/api db:deploy && pnpm --filter @nextjourney/api db:seed
-pnpm --filter @nextjourney/api start:dev   # API em http://127.0.0.1:3000 (docs em /docs)
+pnpm --filter @nextjourney/api start:dev   # API at http://127.0.0.1:3000 (docs at /docs)
 ```
 
-App no simulador ou aparelho (development build, não Expo Go):
+App on the simulator or a device (development build, not Expo Go):
 
 ```bash
 cp apps/mobile/.env.example apps/mobile/.env
-cd apps/mobile && npx expo run:ios      # ou run:android
+cd apps/mobile && npx expo run:ios      # or run:android
 ```
 
-Sem `RESEND_API_KEY` configurada, a API local escreve o código de entrada no log em vez de enviar e-mail.
+Without `RESEND_API_KEY` set, the local API writes the sign-in code to the log instead of sending an email.
 
-Laboratório de arte e cenários: `pnpm --filter @nextjourney/banner dev` e abra `/lab.html`.
+Art and scene lab: `pnpm --filter @nextjourney/banner dev` and open `/lab.html`.
 
-Os arquivos `.env` nunca vão para o Git; só os `.env.example`.
+`.env` files never go to Git; only the `.env.example` files do.
 
-## Qualidade e segurança
+## Quality and security
 
 ```bash
-pnpm run verify          # commits, lint, tipos, testes, build, e2e da API, OpenSpec, duplicação e segurança
-pnpm run test            # testes unitários de todos os pacotes
-pnpm --filter @nextjourney/api test:e2e   # regras de negócio contra o banco de teste
-pnpm run security:full   # segredos, IPs, histórico inteiro e dependências
+pnpm run verify          # commits, lint, types, tests, build, API e2e, OpenSpec, duplication and security
+pnpm run test            # unit tests of all packages
+pnpm --filter @nextjourney/api test:e2e   # business rules against the test database
+pnpm run security:full   # secrets, IPs, the whole history and dependencies
 ```
 
-A CI repete essas verificações em todo PR. A imagem da API é escaneada (Trivy) e assinada (cosign) antes do deploy, e a análise estática (CodeQL) roda no GitHub. A política de segurança está em [SECURITY.md](SECURITY.md) e o checklist em [docs/SEGURANCA.md](docs/SEGURANCA.md).
+CI repeats these checks on every PR. The API image is scanned (Trivy) and signed (cosign) before the deploy, and static analysis (CodeQL) runs on GitHub. The security policy is in [SECURITY.md](SECURITY.md) and the checklist in [docs/SEGURANCA.md](docs/SEGURANCA.md).
 
-## Documentação
+## Documentation
 
-- [Como o projeto funciona](docs/COMO-FUNCIONA.md)
-- [Como contribuir](CONTRIBUTING.md) e [processo de PR](docs/PROCESSO-DE-PR.md)
-- [Especificação do MVP](docs/REQUISITOS.MD)
-- [Testes e regressão](docs/TESTES.md) e [QA](docs/QA.md)
-- [Decisões de arquitetura (ADRs)](docs/adr/README.md)
-- [Referência da API](docs/api/README.md)
+- [How the project works](docs/COMO-FUNCIONA.md)
+- [How to contribute](CONTRIBUTING.md) and the [PR process](docs/PROCESSO-DE-PR.md)
+- [MVP specification](docs/REQUISITOS.MD)
+- [Tests and regression](docs/TESTES.md) and [QA](docs/QA.md)
+- [Architecture decisions (ADRs)](docs/adr/README.md)
+- [API reference](docs/api/README.md)
 - [Turborepo](docs/TURBOREPO.md)
-- [Design no Figma](docs/FIGMA-INTERA.md)
+- [Design in Figma](docs/FIGMA-INTERA.md)
 
-## Contribuindo
+## Contributing
 
-Commits em Conventional Commits (validados pelo hook `commit-msg`), um assunto por PR, `pnpm run verify` verde antes de abrir. Veja [CONTRIBUTING.md](CONTRIBUTING.md).
+Conventional Commits (validated by the `commit-msg` hook), one subject per PR, and a green `pnpm run verify` before opening. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Licença
+## License
 
-[MIT](LICENSE). A arte baseada no Liberated Pixel Cup (LPC) segue a licença de cada autora ou autor, listada em [CREDITS.md](CREDITS.md).
+[MIT](LICENSE). Art based on the Liberated Pixel Cup (LPC) follows the license of each author, listed in [CREDITS.md](CREDITS.md).
