@@ -1,32 +1,32 @@
-# API: documentação interna
+# API: internal documentation
 
-Como a API (`apps/api`, NestJS + Prisma + PostgreSQL) funciona por dentro. Estes documentos guardam as **regras de negócio e de funcionamento** que antes ficavam em comentários longos no código; o código mantém só comentários curtos, quando o motivo de uma linha não é óbvio (regras 11 e 12 do `CONTRIBUTING.md`).
+How the API (`apps/api`, NestJS + Prisma + PostgreSQL) works inside. These documents hold the **business and operating rules** that used to live in long code comments; the code keeps only short comments, when the reason for a line is not obvious (rules 11 and 12 of `CONTRIBUTING.md`).
 
-| Documento | Assunto |
-|---|---|
-| [autenticacao-e-sessoes.md](autenticacao-e-sessoes.md) | cadastro, confirmação de e-mail, login, senha, login social, tokens, sessões, limite de tentativas |
-| [progressao-e-jogo.md](progressao-e-jogo.md) | EXP, níveis, moedas, capítulos, sequência, conquistas |
-| [itens-e-checks.md](itens-e-checks.md) | itens, categorias, marcar e desmarcar, histórico |
-| [conta-e-privacidade.md](conta-e-privacidade.md) | exclusão de conta, purga e exportação de dados |
-| [operacao-e-seguranca.md](operacao-e-seguranca.md) | guard, erros, logs, eventos de segurança, variáveis de ambiente |
+| Document                                                       | Subject                                                                                         |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [autenticacao-e-sessoes.md](autenticacao-e-sessoes.md)         | signup, email confirmation, login, password, social login, tokens, sessions, attempt limits     |
+| [progressao-e-jogo.md](progressao-e-jogo.md)                   | EXP, levels, coins, chapters, streaks, achievements                                             |
+| [itens-e-checks.md](itens-e-checks.md)                         | items, categories, check and uncheck, history                                                   |
+| [conta-e-privacidade.md](conta-e-privacidade.md)               | account deletion, purge and data export                                                         |
+| [operacao-e-seguranca.md](operacao-e-seguranca.md)             | guard, errors, logs, security events, environment variables                                     |
 
-Complementam, sem repetir:
+They complement, without repeating:
 
-- decisões e motivos: `docs/adr/` (principalmente o [ADR-0008](../adr/0008-autenticacao-e-sessao.md));
-- checklist de segurança por PR: [`CONTRIBUTING.md`](../../CONTRIBUTING.md);
-- dados coletados e prazos: [`docs/PRIVACIDADE.md`](../PRIVACIDADE.md);
-- requisitos do produto: [`docs/REQUISITOS.MD`](../REQUISITOS.MD);
-- comportamento exigido, por capacidade: `openspec/specs/`.
+- decisions and reasons: `docs/adr/` (mainly [ADR-0008](../adr/0008-autenticacao-e-sessao.md));
+- per-PR security checklist: [`CONTRIBUTING.md`](../../CONTRIBUTING.md);
+- collected data and retention periods: [`docs/PRIVACIDADE.md`](../PRIVACIDADE.md);
+- product requirements: [`docs/REQUISITOS.MD`](../REQUISITOS.MD);
+- required behavior, per capability: `openspec/specs/`.
 
-## Mapa dos módulos
+## Module map
 
-| Pasta em `apps/api/src` | Responsabilidade |
-|---|---|
-| `modules/auth` | cadastro, login, tokens, sessões, limite de tentativas, limpeza diária |
-| `modules/progression/domain` | regras de jogo como funções puras (EXP, nível, desfazer, sequência, conquistas, datas) |
-| `modules/items` | itens, marcar e desmarcar, histórico, itens de exemplo |
-| `modules/achievements` | avaliação e entrega das conquistas |
-| `modules/stories`, `modules/me`, `modules/home`, `modules/categories` | histórias, perfil e personagem, tela inicial, categorias |
-| `modules/account` | exclusão, purga e exportação |
-| `modules/security` | eventos de segurança e alertas |
-| `common`, `config`, `prisma` | guard, filtros, pipes, relógio, ambiente, banco |
+| Folder in `apps/api/src`                                           | Responsibility                                                                          |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `modules/auth`                                                     | signup, login, tokens, sessions, attempt limits, daily cleanup                          |
+| `modules/progression/domain`                                       | game rules as pure functions (EXP, level, undo, streak, achievements, dates)            |
+| `modules/items`                                                    | items, check and uncheck, history, starter items                                        |
+| `modules/achievements`                                             | evaluation and delivery of achievements                                                 |
+| `modules/stories`, `modules/me`, `modules/home`, `modules/categories` | stories, profile and character, home screen, categories                              |
+| `modules/account`                                                  | deletion, purge and export                                                              |
+| `modules/security`                                                 | security events and alerts                                                              |
+| `common`, `config`, `prisma`                                       | guard, filters, pipes, clock, environment, database                                     |

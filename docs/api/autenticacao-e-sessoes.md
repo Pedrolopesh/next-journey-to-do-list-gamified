@@ -1,66 +1,66 @@
-# Autenticação e sessões
+# Authentication and sessions
 
-Código em `apps/api/src/modules/auth`. As decisões e os motivos estão no [ADR-0008](../adr/0008-autenticacao-e-sessao.md); aqui está o que cada parte faz.
+Code in `apps/api/src/modules/auth`. The decisions and reasons are in [ADR-0008](../adr/0008-autenticacao-e-sessao.md); here is what each part does.
 
-## Entrada por código de e-mail (sem senha)
+## Email code sign-in (no password)
 
-É a forma de entrar do app. Dois passos, sem cadastro separado:
+This is how the app signs in. Two steps, with no separate signup:
 
-1. `POST /v1/auth/email/start` (`{ email, timezone?, termsVersion? }`) responde sempre `202`, sem corpo, exista a conta ou não. E-mail novo cria uma conta **pendente sem senha** (nome provisório tirado da parte antes do `@`); todo e-mail recebe um código de 6 dígitos, respeitando o intervalo de 60 s entre envios. Limite: 10 por e-mail e IP por hora e 30 por e-mail por hora (o app deixa reenviar a cada 60 s).
-2. `POST /v1/auth/email/confirm` (`{ email, code }`) troca o código pela sessão. O código segue as mesmas regras de baixo (15 minutos, uso único, 5 tentativas). A primeira confirmação marca `emailVerifiedAt`, **apaga qualquer senha gravada enquanto a conta estava pendente** (impede que quem cadastrou o e-mail alheio pelo endpoint legado entre depois) e cria os itens de exemplo, na mesma transação que consome o código; as seguintes só devolvem a sessão. Toda falha (código errado, expirado, usado ou e-mail sem conta) responde `400 INVALID_VERIFICATION_CODE`, igual.
+1. `POST /v1/auth/email/start` (`{ email, timezone?, termsVersion? }`) always answers `202`, with no body, whether the account exists or not. A new email creates a **pending account without a password** (provisional name taken from the part before the `@`); every email receives a 6-digit code, respecting the 60 s interval between sends. Limit: 10 per email and IP per hour and 30 per email per hour (the app lets the user resend every 60 s).
+2. `POST /v1/auth/email/confirm` (`{ email, code }`) exchanges the code for the session. The code follows the same rules as below (15 minutes, single use, 5 attempts). The first confirmation sets `emailVerifiedAt`, **erases any password saved while the account was pending** (it stops whoever signed up someone else's email through the legacy endpoint from getting in later) and creates the starter items, in the same transaction that consumes the code; later ones only return the session. Every failure (wrong, expired or used code, or an email with no account) answers `400 INVALID_VERIFICATION_CODE`, the same way.
 
-Quem já tinha conta com senha entra pelo mesmo caminho: o código prova a posse do e-mail. Os endpoints de senha abaixo continuam na API só para versões antigas do app; o app novo não os usa.
+Whoever already had a password account signs in through the same path: the code proves ownership of the email. The password endpoints below stay in the API only for old app versions; the new app does not use them.
 
-## Cadastro e confirmação do e-mail (por senha, legado)
+## Signup and email confirmation (by password, legacy)
 
-1. `POST /v1/auth/register` cria o usuário **pendente** (com as categorias padrão) e envia um código por e-mail. Responde sempre `202 { status: "verification_sent" }`, sem sessão, e **igual** para e-mail novo, pendente ou já confirmado (sem enumeração de contas).
-   - Cadastro pendente repetido: o último vence; só quem confirma com o código e a senha ativa entra.
-   - E-mail já confirmado: sai um aviso por e-mail, sem código.
-2. O código tem 6 dígitos, vale 15 minutos e é de **uso único**. Só o hash (`sha256(userId:código)`) fica no banco. Cinco tentativas erradas invalidam o código. Senha errada na confirmação não gasta tentativas (quem só sabe o e-mail da vítima não consegue invalidar o código dela). Cada tentativa é reservada por um `UPDATE` condicional, então requisições paralelas não passam do limite de 5: não troque por ler e depois gravar. O reenvio respeita um intervalo mínimo de 60 segundos.
-3. `POST /v1/auth/verify-email` (`{ email, code, password }`) confirma a conta e devolve a sessão. Numa **única transação**: marca o código como usado, grava `emailVerifiedAt` e cria os itens de exemplo. Se algo falhar, a conta segue pendente e o mesmo código segue válido. Toda falha responde igual e gasta o mesmo tempo (usa um hash fictício de senha).
+1. `POST /v1/auth/register` creates the **pending** user (with the default categories) and sends a code by email. It always answers `202 { status: "verification_sent" }`, with no session, and the **same** for a new, pending or already confirmed email (no account enumeration).
+   - Repeated pending signup: the last one wins; only whoever confirms with the code and the active password gets in.
+   - Already confirmed email: a notice is sent by email, with no code.
+2. The code has 6 digits, is valid for 15 minutes and is **single use**. Only the hash (`sha256(userId:code)`) is stored in the database. Five wrong attempts invalidate the code. A wrong password on confirmation does not spend attempts (whoever only knows the victim's email cannot invalidate their code). Each attempt is reserved by a conditional `UPDATE`, so parallel requests do not exceed the limit of 5: do not swap it for read-then-write. Resending respects a minimum interval of 60 seconds.
+3. `POST /v1/auth/verify-email` (`{ email, code, password }`) confirms the account and returns the session. In a **single transaction**: it marks the code as used, sets `emailVerifiedAt` and creates the starter items. If anything fails, the account stays pending and the same code stays valid. Every failure answers the same and takes the same time (it uses a dummy password hash).
 
-## Login e senha
+## Login and password
 
-- `POST /v1/auth/login`: a tentativa é contada **antes** de conferir a senha, para tentativas paralelas também contarem. Responde igual (e com o mesmo custo) para e-mail inexistente e senha errada.
-- "Esqueci a senha": responde sempre `202`, exista ou não o e-mail. O link carrega um segredo de uso único, válido por 30 minutos (`PASSWORD_RESET_TTL_MINUTES`); só o `sha256` dele fica no banco e só o link mais recente vale. O e-mail sai em segundo plano, para o tempo da resposta não depender do provedor.
-- Trocar a senha com o link encerra todas as sessões abertas.
+- `POST /v1/auth/login`: the attempt is counted **before** the password is checked, so parallel attempts count too. It answers the same (and at the same cost) for a missing email and a wrong password.
+- "Esqueci a senha" (forgot password): always answers `202`, whether or not the email exists. The link carries a single-use secret, valid for 30 minutes (`PASSWORD_RESET_TTL_MINUTES`); only its `sha256` is stored and only the most recent link works. The email goes out in the background, so the response time does not depend on the provider.
+- Changing the password with the link ends all open sessions.
 
-## Login social (Google e Apple)
+## Social login (Google and Apple)
 
-- O app manda só o ID token; a API o valida **no servidor** (emissor, audiência, validade). Token inválido nunca detalha o motivo.
-- Primeiro acesso: cria a conta e exige o aceite dos termos. A conta já nasce confirmada e recebe os itens de exemplo.
-- Vincula à conta existente quando o e-mail verificado pelo provedor coincide. Se a conta por senha nunca confirmou o e-mail, quem a criou não provou ser dono dele: a conta é confirmada (e recebe os exemplos), a senha antiga some e as sessões e códigos abertos deixam de valer.
-- Sem e-mail verificado pelo provedor, nunca cria nem vincula.
+- The app sends only the ID token; the API validates it **on the server** (issuer, audience, validity). An invalid token never details the reason.
+- First access: creates the account and requires accepting the terms. The account is born confirmed and receives the starter items.
+- Links to the existing account when the email verified by the provider matches. If the password account never confirmed the email, whoever created it did not prove they own it: the account is confirmed (and receives the examples), the old password goes away and the open sessions and codes stop working.
+- Without an email verified by the provider, it never creates or links.
 
 ## Tokens
 
-- **Acesso:** JWT curto (HS256, 900 s por padrão, `ACCESS_TOKEN_TTL_SECONDS`) com emissor e audiência fixos e o id da sessão (`sid`). O cabeçalho `kid` só escolhe qual chave tentar (a atual ou a anterior, durante a troca do segredo); a assinatura decide. Procedimento de troca: `docs/api/operacao-e-seguranca.md`, seção "Troca do segredo do JWT".
-- **Refresh:** `<id>.<segredo>` aleatório, 365 dias por padrão (`REFRESH_TOKEN_TTL_DAYS`), renovados a cada rotação: a sessão só termina com "Sair", exclusão da conta, revogação em Sessões ou reúso detectado; só o `sha256` do segredo fica no banco.
-- **Rotação atômica:** a cada refresh o token é trocado. O `UPDATE` condicional (`revokedAt` nulo e ainda válido) deixa passar só **uma** de várias requisições simultâneas com o mesmo token; a que perde é tratada como **reuso** e revoga a família inteira (sinal de token roubado). Conflito de transação sob concorrência nega (falha fechada); outro erro (banco fora) segue como 5xx, para o app não tratar falha temporária como sessão encerrada.
-- **Logout** revoga a família do refresh token informado; é silencioso se o token for inválido.
+- **Access:** short JWT (HS256, 900 s by default, `ACCESS_TOKEN_TTL_SECONDS`) with a fixed issuer and audience and the session id (`sid`). The `kid` header only chooses which key to try (the current or the previous one, during a secret rotation); the signature decides. Rotation procedure: `docs/api/operacao-e-seguranca.md`, section "JWT secret rotation".
+- **Refresh:** random `<id>.<secret>`, 365 days by default (`REFRESH_TOKEN_TTL_DAYS`), renewed on every rotation: the session only ends with "Sair" (sign out), account deletion, revocation in "Sessões" (sessions) or detected reuse; only the `sha256` of the secret is stored.
+- **Atomic rotation:** on every refresh the token is swapped. The conditional `UPDATE` (`revokedAt` null and still valid) lets only **one** of several simultaneous requests with the same token through; the one that loses is treated as **reuse** and revokes the whole family (a sign of a stolen token). A transaction conflict under concurrency denies (fail closed); any other error (database down) goes on as 5xx, so the app does not treat a temporary failure as an ended session.
+- **Logout** revokes the family of the given refresh token; it is silent if the token is invalid.
 
-## Sessões (aparelhos)
+## Sessions (devices)
 
-Uma sessão é uma **família de refresh tokens**: a rotação troca o token e mantém a família, então a lista mostra um item por aparelho. O nome vem do cabeçalho `X-Device-Name` (codificado pelo app; a API decodifica, tira caracteres de controle, junta espaços e limita o tamanho; só vira texto na tela). Tudo filtra pelo dono: o id de outra pessoa é `404`. Encerrar uma sessão é seguro de repetir. Se for a atual, equivale a sair.
+A session is a **family of refresh tokens**: rotation swaps the token and keeps the family, so the list shows one item per device. The name comes from the `X-Device-Name` header (encoded by the app; the API decodes it, strips control characters, collapses spaces and limits the length; it only becomes text on screen). Everything filters by owner: someone else's id is `404`. Ending a session is safe to repeat. If it is the current one, it is the same as signing out.
 
-## Limite de tentativas
+## Attempt limits
 
-Além do limite por IP do Throttler (`THROTTLE_LIMIT` e `THROTTLE_AUTH_LIMIT`), cada rota de conta tem **dois níveis**, guardados no Postgres (valem entre instâncias e sobrevivem a deploy). O nível por e-mail + IP faz quem abusa travar só a si mesmo; o teto por e-mail, mais alto, protege contra ataque vindo de vários IPs sem deixar um desconhecido trancar a conta de outra pessoa com facilidade. A contagem só depende do e-mail digitado (exista a conta ou não), então o excesso responde igual (`429`). A chave é um hash: nenhum e-mail ou IP fica no banco.
+Besides the Throttler per-IP limit (`THROTTLE_LIMIT` and `THROTTLE_AUTH_LIMIT`), each account route has **two levels**, stored in Postgres (they hold across instances and survive a deploy). The email + IP level makes whoever abuses lock only themselves; the higher per-email ceiling protects against an attack coming from many IPs without letting a stranger easily lock someone else's account. The count depends only on the email typed (whether or not the account exists), so the excess answers the same (`429`). The key is a hash: no email or IP is stored in the database.
 
-| Rota | por e-mail + IP | por e-mail |
-|---|---|---|
-| login | 5 em 15 min | 30 em 15 min |
-| esqueci a senha | 3 em 15 min | 10 em 1 h |
-| cadastro | 5 em 1 h | 15 em 1 h |
-| reenvio do código | 5 em 1 h | 15 em 1 h |
-| confirmar e-mail | 10 em 15 min | 40 em 15 min |
+| Route             | per email + IP | per email  |
+| ----------------- | -------------- | ---------- |
+| login             | 5 in 15 min    | 30 in 15 min |
+| forgot password   | 3 in 15 min    | 10 in 1 h  |
+| signup            | 5 in 1 h       | 15 in 1 h  |
+| code resend       | 5 in 1 h       | 15 in 1 h  |
+| confirm email     | 10 in 15 min   | 40 in 15 min |
 
-Login correto zera os erros daquele e-mail + IP.
+A correct login resets the errors of that email + IP.
 
-## Tempo de resposta e enumeração
+## Response time and enumeration
 
-As rotas que respondem igual para conta existente e inexistente têm um piso de tempo (`AUTH_MIN_RESPONSE_MS`, 250 ms por padrão; `0` só fora de produção): o trabalho a mais de um caso (gravar, enviar e-mail) some dentro do piso. Além disso, o hash de senha fictício gasta o mesmo tempo quando o e-mail não existe.
+The routes that answer the same for an existing and a missing account have a time floor (`AUTH_MIN_RESPONSE_MS`, 250 ms by default; `0` only outside production): the extra work of one case (saving, sending email) disappears inside the floor. In addition, the dummy password hash takes the same time when the email does not exist.
 
-## Limpeza diária
+## Daily cleanup
 
-Todo dia, às 03:30, remove o que só cresce: refresh tokens, links de redefinição e códigos de confirmação **expirados há mais de 7 dias** (um refresh token revogado ainda dentro da validade fica, porque é ele que denuncia o reuso de um token roubado) e os contadores do limite de tentativas com mais de 1 dia. Apaga em lotes e é idempotente, então duas instâncias juntas não atrapalham. No log só vão a classe e o código do erro.
+Every day at 03:30, it removes what only grows: refresh tokens, reset links and confirmation codes **expired for more than 7 days** (a revoked refresh token still within its validity stays, because it is what reveals the reuse of a stolen token) and the attempt-limit counters older than 1 day. It deletes in batches and is idempotent, so two instances together do not get in each other's way. Only the error class and code go to the log.
