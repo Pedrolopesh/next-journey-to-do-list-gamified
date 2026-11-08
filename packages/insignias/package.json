@@ -2,7 +2,7 @@
   "name": "@nextjourney/insignias",
   "version": "0.0.0",
   "private": true,
-  "description": "Arte das insígnias de conquista (pixel art 24x24) e paleta, compartilhada entre app e laboratório",
+  "description": "Achievement badge art (24x24 pixel art) and palette, shared between the app and the lab",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 import { INSIGNIA_PALETTE, INSIGNIAS } from './insignias';
 
-describe('insígnias', () => {
-  it('toda grade tem 24x24 e só usa cores da paleta', () => {
+describe('badges', () => {
+  it('every grid is 24x24 and only uses palette colors', () => {
     for (const [name, rows] of Object.entries(INSIGNIAS)) {
       expect(rows, name).toHaveLength(24);
       for (const row of rows) {
@@ -16,7 +16,7 @@ describe('insígnias', () => {
     }
   });
 
-  it('toda conquista do catálogo aponta para uma insígnia que existe', () => {
+  it('every catalog achievement points to a badge that exists', () => {
     for (const achievement of ACHIEVEMENT_CATALOG) {
       expect(achievement.glyph in INSIGNIAS, achievement.slug).toBe(true);
     }

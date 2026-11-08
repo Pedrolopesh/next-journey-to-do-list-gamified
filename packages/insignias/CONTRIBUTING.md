@@ -1,7 +1,7 @@
-# packages/insignias — arte das insígnias de conquista
+# packages/insignias — achievement badge art
 
-Regras do monorepo em `../../CONTRIBUTING.md`. Dados de pixel art 24×24 (grades de caracteres e paleta), usados pelo app e pelo laboratório do banner.
+Monorepo rules are in `../../CONTRIBUTING.md`. 24×24 pixel art data (character grids and palette), used by the app and the banner lab.
 
-- Uma grade por insígnia, 24 linhas de 24 caracteres; `.` é transparente e as demais letras existem em `INSIGNIA_PALETTE`.
-- O nome da insígnia (`glyph`) vem do catálogo em `@nextjourney/contracts`; o teste confere que todo `glyph` existe aqui.
-- Sem lógica e sem dependência de framework. O build (`tsup`) gera ESM e CJS.
+- One grid per badge, 24 rows of 24 characters; `.` is transparent and every other letter exists in `INSIGNIA_PALETTE`.
+- The badge name (`glyph`) comes from the catalog in `@nextjourney/contracts`; the test checks that every `glyph` exists here.
+- No logic and no framework dependency. The build (`tsup`) emits ESM and CJS.
