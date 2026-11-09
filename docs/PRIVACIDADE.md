@@ -12,6 +12,7 @@ Revisar a cada funcionalidade nova que colete dado. O repositório é público: 
 | Itens, checks, EXP, nível, conquistas, personagem | Funcionamento do jogo | Sim | Não |
 | Horário do lembrete | Notificação local | Sim | Não (agendada no aparelho) |
 | Aparelhos conectados (nome do aparelho, datas de entrada e de último uso) | Lista de sessões da conta | Sim | Não |
+| Meta, faixa etária e gênero (opcionais) e a escolha de receber lembretes | Personalizar a experiência e estatísticas de uso; a pessoa pode pular as perguntas | Sim | Não |
 | Aceite dos Termos (data e versão) | Registro de consentimento | Sim | Não |
 | Código de confirmação do e-mail, link de nova senha | Provar a posse do e-mail | Sim (guardados só como hash) | Não |
 | Contadores de tentativas (login, cadastro, recuperação) | Frear abuso | Não (só hash do e-mail) | Não |
@@ -48,7 +49,13 @@ A página web pública de pedido de exclusão (exigida pelas lojas) depende da h
 
 Se houver incidente com dados pessoais, o responsável avisa as pessoas afetadas e a ANPD em prazo razoável, conforme a LGPD. O passo a passo interno fica fora do repositório.
 
+## Onde os textos ficam
+
+Os Termos de Uso e a Política de Privacidade são servidos pela própria API, em português: `GET /v1/legal/documents/:slug` (texto estruturado, que o app mostra) e `GET /legal/terms` e `GET /legal/privacy` (páginas HTML públicas; a segunda é a URL da política que as lojas pedem). O código dos textos está em `apps/api/src/modules/legal/`; mudou o texto, sobe `LEGAL_VERSION` em `packages/contracts`.
+
+A faixa etária informada no app é um dado estatístico e opcional: a classificação etária de uso é a configurada na loja de aplicativos.
+
 ## Pendente antes das lojas
 
-- Política de privacidade publicada em URL pública.
+- Definir `LEGAL_CONTACT_EMAIL` nos ambientes hospedados (a seção de contato dos textos só aparece com ele) e conferir os textos com quem responde pelo produto.
 - Confirmar a lista final de terceiros quando Sentry e Resend entrarem em produção.

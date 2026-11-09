@@ -15,3 +15,13 @@ Goal, age range, gender, character class and the reminders choice (`remindersOpt
 ## Data export (`GET /v1/me/export`)
 
 Right of access (LGPD). Each table enters through an **allowlist of fields** (explicit `select`): never the whole model and never a password hash, token, code or provider id. Everything filters by the token `userId`. Limit of 3 exports per hour per account.
+
+## Legal texts (`modules/legal`)
+
+The Terms of Use (`terms`) and the Privacy Policy (`privacy`) are Portuguese texts kept in the API code (`legal-documents.ts`) and served without authentication:
+
+- `GET /v1/legal/documents/:slug`: the structured text (`LegalDocument`: `slug`, `version`, `title`, `updatedAt` and `sections` with `heading`, `paragraphs` and `bullets`). The app renders exactly this. An unknown slug is `404`.
+- `GET /legal/:slug`: the same text as plain HTML, outside the `/v1` prefix so the URL is stable. It is the public URL of the privacy policy that the app stores ask for. Every text is escaped and the page has no script or external resource.
+
+`LEGAL_VERSION` (in `packages/contracts`) is the version of both texts and is the `termsVersion` the app sends when it signs in. Changing a text means bumping it together with the `updatedAt` of the changed document. The controller (name and company number) is fixed in the code; the contact email comes from `LEGAL_CONTACT_EMAIL`, and without it the "Contato" section is left out. The privacy text must only state what the app does: it follows `docs/PRIVACIDADE.md` (data, third parties, rights and retention periods).
+

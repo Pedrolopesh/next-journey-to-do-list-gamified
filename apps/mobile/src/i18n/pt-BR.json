@@ -680,5 +680,13 @@
       "unlock": "Cada nível muda o cenário da jornada e revela o próximo capítulo da história. São {{chapters}} capítulos por história.",
       "chapterOf": "Capítulo {{number}} de {{total}}"
     }
+  },
+  "legal": {
+    "terms": "Termos de Uso",
+    "privacy": "Política de Privacidade",
+    "updated": "Versão {{version}} · atualizado em {{date}}",
+    "loadFailed": "Não foi possível carregar o texto. Verifique a conexão e tente de novo.",
+    "notFound": "Documento não encontrado.",
+    "retry": "Tentar de novo"
   }
 }

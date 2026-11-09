@@ -35,6 +35,8 @@ const envSchema = z
     // Transactional email (Resend). Without a key, nothing is sent (development).
     RESEND_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
     MAIL_FROM: z.string().default('Next Journey <no-reply@example.com>'),
+    /** Contact for data requests, shown in the legal texts. The "Contact" section only exists when it is set. */
+    LEGAL_CONTACT_EMAIL: z.preprocess(emptyToUndefined, z.string().email().optional()),
     /** Link that opens the app on the new password screen (deep link). */
     PASSWORD_RESET_URL: z.string().default('nextjourney://reset-password'),
     PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().default(30),

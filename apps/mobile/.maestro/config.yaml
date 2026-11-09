@@ -10,3 +10,4 @@ executionOrder:
     - 02-uncheck-yellow-notice
     - 03-achievements-gallery
     - 04-history-and-empty-state
+    - 05-legal-documents

@@ -1,0 +1,21 @@
+# Legal texts: the Terms of Use and the Privacy Policy open from the settings, as the API serves them.
+appId: br.com.wetechhub.app.dev
+---
+- runFlow: ../subflows/start.yaml
+- tapOn: 'Perfil(, tab.*)?'
+- tapOn: 'Configurações'
+- scrollUntilVisible:
+    element: 'Termos de Uso'
+- tapOn: 'Termos de Uso'
+# Text that comes from the API, not from the app: the version line and a section heading
+- assertVisible: '.*atualizado em.*'
+- assertVisible: '1. Natureza do serviço e definições'
+- runFlow: ../subflows/back.yaml
+- scrollUntilVisible:
+    element: 'Política de Privacidade'
+- tapOn: 'Política de Privacidade'
+- assertVisible: '.*atualizado em.*'
+- assertVisible: '1. Agente de tratamento \(controlador\)'
+# back to the settings, then to the Profile
+- runFlow: ../subflows/back.yaml
+- runFlow: ../subflows/back.yaml

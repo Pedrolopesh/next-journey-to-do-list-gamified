@@ -131,6 +131,20 @@ export default function SettingsScreen() {
           router.push('/settings/credits');
         }}
       />
+      <Button
+        label={t('legal.terms')}
+        variant="secondary"
+        onPress={() => {
+          router.push({ pathname: '/legal/[slug]', params: { slug: 'terms' } });
+        }}
+      />
+      <Button
+        label={t('legal.privacy')}
+        variant="secondary"
+        onPress={() => {
+          router.push({ pathname: '/legal/[slug]', params: { slug: 'privacy' } });
+        }}
+      />
       <ExportDataButton />
       <Button
         label={t('settings.delete')}
