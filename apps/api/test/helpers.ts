@@ -55,11 +55,6 @@ export class FakeMailer extends Mailer {
     const mail = [...this.sent].reverse().find((entry) => entry.to === to);
     return mail?.text.match(/é (\d{6})\./)?.[1];
   }
-  /** Secret of the recovery link from the last email to the address. */
-  lastResetToken(to: string): string | undefined {
-    const mail = [...this.sent].reverse().find((entry) => entry.to === to);
-    return mail?.text.match(/token=([A-Za-z0-9_-]+)/)?.[1];
-  }
 }
 
 export async function createTestApp(
@@ -104,37 +99,44 @@ export class FakeVerifier extends IdTokenVerifier {
   }
 }
 
-export const PASSWORD = 'Teste#1234'; // scan-allow: fake test password
-
 export function uniqueEmail(prefix = 'user'): string {
   return `${prefix}-${randomUUID()}@exemplo.com`;
 }
 
-/** Valid password signup data. */
-export const registerBody = (email: string, password = PASSWORD) => ({
-  name: 'Pessoa de Teste',
-  email,
-  password,
-  confirmPassword: password,
-  acceptedTerms: true,
-  termsVersion: '2026-10-01',
-  timezone: 'America/Sao_Paulo',
-});
+/**
+ * Asks for the sign-in code of an email and trades it for a session. The account is created on the
+ * first time. The mail interval is cleared first, so it also works for a second sign-in of the
+ * same account in the same test.
+ */
+export async function loginByCode(
+  ctx: TestContext,
+  email: string,
+  deviceName?: string,
+): Promise<AuthResponse> {
+  const normalized = email.trim().toLowerCase();
+  await ctx.prisma.user.updateMany({
+    where: { email: normalized },
+    data: { verificationMailSentAt: null },
+  });
+  await ctx
+    .http()
+    .post('/v1/auth/email/start')
+    .send({ email, timezone: 'America/Sao_Paulo', termsVersion: '2026-10-01' })
+    .expect(202);
+  const code = ctx.mailer.lastVerificationCode(normalized);
+  const confirm = ctx.http().post('/v1/auth/email/confirm');
+  if (deviceName) confirm.set('x-device-name', deviceName);
+  const response = await confirm.send({ email, code }).expect(200);
+  return response.body as AuthResponse;
+}
 
-/** Signs up, confirms the email with the captured code and returns the session. */
+/** Signs in by code (creating the account) and, by default, picks the first story. */
 export async function registerUser(
   ctx: TestContext,
   email = uniqueEmail(),
   options: { story?: string | false } = {},
 ): Promise<AuthResponse> {
-  await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
-  const code = ctx.mailer.lastVerificationCode(email.trim().toLowerCase());
-  const response = await ctx
-    .http()
-    .post('/v1/auth/verify-email')
-    .send({ email, code, password: PASSWORD }) // scan-allow: fake test password
-    .expect(200);
-  const auth = response.body as AuthResponse;
+  const auth = await loginByCode(ctx, email);
   // Most tests need an active story (complete onboarding)
   const story = options.story === undefined ? 'beach' : options.story;
   if (story) {
@@ -146,6 +148,13 @@ export async function registerUser(
       .expect(200);
   }
   return auth;
+}
+
+/** Asks for a fresh code for an existing account and returns it (the 60 s mail interval is cleared). */
+export async function requestCode(ctx: TestContext, email: string): Promise<string> {
+  await ctx.prisma.user.updateMany({ where: { email }, data: { verificationMailSentAt: null } });
+  await ctx.http().post('/v1/auth/email/start').send({ email }).expect(202);
+  return ctx.mailer.lastVerificationCode(email) ?? '';
 }
 
 export const bearer = (auth: AuthResponse): string => `Bearer ${auth.tokens.accessToken}`;
@@ -201,3 +210,14 @@ export async function me(ctx: TestContext, auth: AuthResponse) {
 }
 
 export type { CheckResult };
+
+/** Deletes the account proving ownership with a fresh email code. */
+export async function deleteWithCode(ctx: TestContext, auth: AuthResponse): Promise<void> {
+  const emailCode = await requestCode(ctx, auth.user.email);
+  await ctx
+    .http()
+    .delete('/v1/me')
+    .set('authorization', bearer(auth))
+    .send({ emailCode })
+    .expect(204);
+}

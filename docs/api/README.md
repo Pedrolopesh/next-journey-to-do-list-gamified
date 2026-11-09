@@ -4,7 +4,7 @@ How the API (`apps/api`, NestJS + Prisma + PostgreSQL) works inside. These docum
 
 | Document                                                       | Subject                                                                                         |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| [autenticacao-e-sessoes.md](autenticacao-e-sessoes.md)         | signup, email confirmation, login, password, social login, tokens, sessions, attempt limits     |
+| [autenticacao-e-sessoes.md](autenticacao-e-sessoes.md)         | email code sign-in, social login, tokens, sessions, attempt limits     |
 | [progressao-e-jogo.md](progressao-e-jogo.md)                   | EXP, levels, coins, chapters, streaks, achievements                                             |
 | [itens-e-checks.md](itens-e-checks.md)                         | items, categories, check and uncheck, history                                                   |
 | [conta-e-privacidade.md](conta-e-privacidade.md)               | account deletion, purge and data export                                                         |

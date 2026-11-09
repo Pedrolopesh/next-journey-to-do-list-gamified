@@ -14,7 +14,6 @@ const me = (exp: number, next: number): MeResponse => ({
     email: 'p@exemplo.com',
     timezone: 'UTC',
     notifyAt: null,
-    hasPassword: true,
     goals: [],
     ageRange: null,
     gender: null,

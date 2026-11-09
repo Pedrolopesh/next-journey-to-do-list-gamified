@@ -40,7 +40,7 @@ describe('account data export (LGPD)', () => {
 
     expect(data.account.id).toBe(auth.user.id);
     expect(data.account.email).toBe(auth.user.email);
-    expect(data.account.signInMethods).toEqual(['password']);
+    expect(data.account.signInMethods).toEqual(['email']);
     expect(data.account.emailVerifiedAt).not.toBeNull();
     expect(data.items.map((row) => row.title)).toContain('Beber água');
     expect(data.checks.map((row) => row.itemId)).toContain(item.id);
@@ -59,7 +59,7 @@ describe('account data export (LGPD)', () => {
     expect(row?.deletedAt).not.toBeNull();
   });
 
-  it('never brings a password hash, token, code or provider id', async () => {
+  it('never brings a token, code or provider id', async () => {
     const auth = await registerUser(ctx);
     // With an open session, a linked social login and a confirmed email
     const subject = `google-subject-${randomUUID()}`;
@@ -73,7 +73,7 @@ describe('account data export (LGPD)', () => {
 
     const res = await exportOf(auth).expect(200);
     const text = JSON.stringify(res.body);
-    expect(res.body.account.signInMethods.sort()).toEqual(['google', 'password']);
+    expect(res.body.account.signInMethods).toEqual(['google']);
     expect(text).not.toMatch(/argon2|passwordHash|tokenHash|codeHash|refreshToken|accessToken/i);
     expect(text).not.toContain(subject);
     expect(text).not.toContain(auth.tokens.refreshToken);
@@ -95,7 +95,7 @@ describe('account data export (LGPD)', () => {
     expect(data.checks.map((row) => row.itemId)).not.toContain(theirItem.id);
   });
 
-  it('a social-only account also exports, with no password among the methods', async () => {
+  it('a social-only account also exports, listing only the provider', async () => {
     const email = uniqueEmail('social');
     verifier.identity = { subject: `g-${email}`, email, emailVerified: true, name: null };
     const login = await ctx

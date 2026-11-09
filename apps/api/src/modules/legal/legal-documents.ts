@@ -5,7 +5,7 @@ const CONTROLLER = 'WE TECH HUB TECHNOLOGIES LTDA';
 const CONTROLLER_ID = '57.129.981/0001-99';
 
 /** Date of the last change of the texts below. Bump it together with `LEGAL_VERSION`. */
-const UPDATED_AT = '2026-11-08';
+const UPDATED_AT = '2026-11-09';
 
 type Options = {
   /** Contact for data requests. The "Contact" section only exists when it is set. */
@@ -205,7 +205,7 @@ function privacy({ contactEmail }: Options): LegalDocument {
       paragraphs: ['Adotamos medidas técnicas para proteger os seus dados.'],
       bullets: [
         'A comunicação com o servidor é criptografada (HTTPS).',
-        'Senhas, quando existem, códigos de confirmação e links de nova senha são guardados somente como hash.',
+        'Códigos de confirmação e tokens de sessão são guardados somente como hash.',
         'No aparelho, a sessão fica no armazenamento seguro do sistema.',
       ],
     },

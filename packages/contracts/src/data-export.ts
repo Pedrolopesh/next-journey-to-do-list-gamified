@@ -23,7 +23,7 @@ export const dataExportSchema = z.object({
     tutorialSeenAt: iso.nullable(),
     emailVerifiedAt: iso.nullable(),
     /** Formas de entrar que a conta tem (nunca o segredo nem o id no provedor). */
-    signInMethods: z.array(z.enum(['password', 'email', 'google', 'apple'])),
+    signInMethods: z.array(z.enum(['email', 'google', 'apple'])),
     goals: goalsSchema,
     ageRange: ageRangeSchema.nullable(),
     gender: genderSchema.nullable(),

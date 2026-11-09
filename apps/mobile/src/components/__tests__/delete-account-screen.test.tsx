@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { AxiosError } from 'axios';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { deleteAccount } from '@/api/endpoints';
+import { deleteAccount, emailStart } from '@/api/endpoints';
 import { useMe } from '@/api/queries';
 import { useSessionStore } from '@/auth/session-store';
 import { useToastStore } from '@/features/feedback/toast-store';
@@ -11,7 +11,7 @@ import { useToastStore } from '@/features/feedback/toast-store';
 import DeleteAccountScreen from '../../app/settings/delete-account';
 
 jest.mock('expo-router', () => ({ useRouter: () => ({ back: jest.fn(), replace: jest.fn() }) }));
-jest.mock('@/api/endpoints', () => ({ deleteAccount: jest.fn() }));
+jest.mock('@/api/endpoints', () => ({ deleteAccount: jest.fn(), emailStart: jest.fn() }));
 jest.mock('@/api/queries', () => ({ useMe: jest.fn() }));
 jest.mock('@/features/auth/social-id-token', () => ({
   configureGoogle: jest.fn(),
@@ -21,11 +21,11 @@ jest.mock('@/features/auth/social-id-token', () => ({
   isAppleAvailable: () => Promise.resolve(false),
 }));
 
-const meWith = (hasPassword: boolean) => ({
-  data: { user: { hasPassword } },
+const me = {
+  data: { user: { email: 'pessoa@exemplo.com' } },
   isError: false,
   refetch: jest.fn(),
-});
+};
 
 const renderScreen = () =>
   render(
@@ -47,34 +47,42 @@ describe('DeleteAccountScreen', () => {
     useToastStore.setState({ current: null });
   });
 
-  it('account with password: empty password shows a field error and a toast, without calling the API', async () => {
-    (useMe as jest.Mock).mockReturnValue(meWith(true));
+  /** Asks for the code and types it, so the "delete" button can be pressed. */
+  const requestAndTypeCode = async (code: string) => {
+    (emailStart as jest.Mock).mockResolvedValue(undefined);
+    await fireEvent.press(screen.getByLabelText('Enviar código'));
+    await waitFor(() => {
+      expect(emailStart).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'pessoa@exemplo.com' }),
+      );
+    });
+    await fireEvent.changeText(await screen.findByDisplayValue(''), code);
+  };
+
+  it('every account sees the email code option and the provider button, and no password field', async () => {
+    (useMe as jest.Mock).mockReturnValue(me);
     await renderScreen();
-    await fireEvent.press(screen.getByLabelText('Excluir minha conta'));
-    expect(screen.getByText('Digite sua senha para confirmar.')).toBeTruthy();
-    expect(useToastStore.getState().current?.kind).toBe('error');
-    expect(deleteAccount).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Enviar código')).toBeTruthy();
+    expect(screen.getByLabelText('Confirmar com Google e excluir')).toBeTruthy();
+    expect(screen.queryByLabelText(/senha/i)).toBeNull();
   });
 
-  it('account with password: sends the password and ends the local session', async () => {
-    (useMe as jest.Mock).mockReturnValue(meWith(true));
+  it('sends the code, then deletes with it and ends the local session', async () => {
+    (useMe as jest.Mock).mockReturnValue(me);
     (deleteAccount as jest.Mock).mockResolvedValue(undefined);
     const clear = jest.spyOn(useSessionStore.getState(), 'clear').mockResolvedValue();
     await renderScreen();
-    await fireEvent.changeText(
-      screen.getByLabelText('Digite sua senha para confirmar'),
-      'Teste#1234',
-    ); // scan-allow: senha falsa
+    await requestAndTypeCode('123456');
     await fireEvent.press(screen.getByLabelText('Excluir minha conta'));
     await waitFor(() => {
       expect(clear).toHaveBeenCalled();
     });
-    expect(deleteAccount).toHaveBeenCalledWith({ password: 'Teste#1234' }); // scan-allow: senha falsa
+    expect(deleteAccount).toHaveBeenCalledWith({ emailCode: '123456' });
     expect(useToastStore.getState().current?.message).toBe('Conta excluída.');
   });
 
   it('proof refused (REAUTH_FAILED): warns and does not end the session', async () => {
-    (useMe as jest.Mock).mockReturnValue(meWith(true));
+    (useMe as jest.Mock).mockReturnValue(me);
     (deleteAccount as jest.Mock).mockRejectedValue(
       new AxiosError('x', 'ERR_BAD_REQUEST', undefined, undefined, {
         status: 403,
@@ -86,23 +94,13 @@ describe('DeleteAccountScreen', () => {
     );
     const clear = jest.spyOn(useSessionStore.getState(), 'clear').mockResolvedValue();
     await renderScreen();
-    await fireEvent.changeText(
-      screen.getByLabelText('Digite sua senha para confirmar'),
-      'Errada#1234',
-    ); // scan-allow: senha falsa
+    await requestAndTypeCode('000000');
     await fireEvent.press(screen.getByLabelText('Excluir minha conta'));
     await waitFor(() => {
       expect(useToastStore.getState().current?.kind).toBe('error');
     });
     expect(useToastStore.getState().current?.message).toMatch(/confirmar sua identidade/);
     expect(clear).not.toHaveBeenCalled();
-  });
-
-  it('social-only account: asks for the provider instead of the password', async () => {
-    (useMe as jest.Mock).mockReturnValue(meWith(false));
-    await renderScreen();
-    expect(screen.queryByLabelText('Digite sua senha para confirmar')).toBeNull();
-    expect(screen.getByLabelText('Confirmar com Google e excluir')).toBeTruthy();
   });
 
   it('if /me fails, warns and offers a retry (never keeps spinning)', async () => {

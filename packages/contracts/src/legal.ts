@@ -5,7 +5,7 @@ import { z } from 'zod';
  * sign-in, so the version saved on an account is always the one of the texts the API serves.
  * Bump it (and the `updatedAt` of the changed document) whenever a text changes.
  */
-export const LEGAL_VERSION = '2026-11-08';
+export const LEGAL_VERSION = '2026-11-09';
 
 export const LEGAL_SLUGS = ['terms', 'privacy'] as const;
 export const legalSlugSchema = z.enum(LEGAL_SLUGS);

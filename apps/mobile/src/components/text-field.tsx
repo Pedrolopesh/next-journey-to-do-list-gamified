@@ -1,23 +1,16 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, TextInput, type TextInputProps, View } from 'react-native';
+import { StyleSheet, Text, TextInput, type TextInputProps, View } from 'react-native';
 
-import { colors, fontSize, radius, size, space } from '@/theme';
+import { colors, fontSize, radius, space } from '@/theme';
 
 type Props = Omit<TextInputProps, 'style'> & {
   label: string;
   error?: string | undefined;
-  /** Password field: shows the show/hide button. */
-  secret?: boolean;
 };
 
 /** Longest text any field accepts unless it sets a tighter limit of its own. */
 export const MAX_INPUT_LENGTH = 500;
 
-export function TextField({ label, error, secret = false, ...input }: Props) {
-  const { t } = useTranslation();
-  const [hidden, setHidden] = useState(secret);
-
+export function TextField({ label, error, ...input }: Props) {
   return (
     <View style={styles.wrapper}>
       <Text style={styles.label}>{label}</Text>
@@ -27,23 +20,8 @@ export function TextField({ label, error, secret = false, ...input }: Props) {
           {...input}
           accessibilityLabel={label}
           placeholderTextColor={colors.text.muted}
-          secureTextEntry={hidden}
           style={styles.input}
         />
-        {secret && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={hidden ? t('auth.showPassword') : t('auth.hidePassword')}
-            onPress={() => {
-              setHidden((value) => !value);
-            }}
-            style={styles.toggle}
-          >
-            <Text style={styles.toggleText}>
-              {hidden ? t('auth.showPassword') : t('auth.hidePassword')}
-            </Text>
-          </Pressable>
-        )}
       </View>
       {error ? (
         <Text style={styles.error} accessibilityLiveRegion="polite">
@@ -73,7 +51,5 @@ const styles = StyleSheet.create({
     fontSize: fontSize[15],
     paddingHorizontal: space[12],
   },
-  toggle: { minHeight: size.touchTarget, justifyContent: 'center', paddingHorizontal: space[12] },
-  toggleText: { color: colors.brand.primaryLight, fontSize: fontSize[13] },
   error: { color: colors.status.danger, fontSize: fontSize[12] },
 });

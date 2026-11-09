@@ -16,22 +16,6 @@ const MINUTE_MS = 60_000;
  * docs/api/autenticacao-e-sessoes.md.
  */
 export const LIMITS = {
-  login: {
-    perEmailAndIp: { limit: 5, windowMs: 15 * MINUTE_MS },
-    perEmail: { limit: 30, windowMs: 15 * MINUTE_MS },
-  },
-  forgotPassword: {
-    perEmailAndIp: { limit: 3, windowMs: 15 * MINUTE_MS },
-    perEmail: { limit: 10, windowMs: 60 * MINUTE_MS },
-  },
-  register: {
-    perEmailAndIp: { limit: 5, windowMs: 60 * MINUTE_MS },
-    perEmail: { limit: 15, windowMs: 60 * MINUTE_MS },
-  },
-  resendVerification: {
-    perEmailAndIp: { limit: 5, windowMs: 60 * MINUTE_MS },
-    perEmail: { limit: 15, windowMs: 60 * MINUTE_MS },
-  },
   emailStart: {
     perEmailAndIp: { limit: 10, windowMs: 60 * MINUTE_MS },
     perEmail: { limit: 30, windowMs: 60 * MINUTE_MS },

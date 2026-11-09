@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { VERIFICATION_RESEND_INTERVAL_MS } from '../src/modules/auth/email-verification.service.js';
-import { bearer, createTestApp, registerBody, type TestContext, uniqueEmail } from './helpers.js';
+import { bearer, createTestApp, type TestContext, uniqueEmail } from './helpers.js';
 
 const WRONG = '000000';
 
@@ -25,12 +25,11 @@ describe('passwordless login by email code', () => {
   const later = (ms: number) =>
     ctx.clock.set(new Date(ctx.clock.now().getTime() + ms).toISOString());
 
-  it('a new email creates a pending account without a password and sends the code', async () => {
+  it('a new email creates a pending account and sends the code', async () => {
     const email = uniqueEmail();
     await start(email).expect(202);
     expect(code(email)).toMatch(/^\d{6}$/);
     const user = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
-    expect(user.passwordHash).toBeNull();
     expect(user.emailVerifiedAt).toBeNull();
   });
 
@@ -43,11 +42,11 @@ describe('passwordless login by email code', () => {
     expect(user.emailVerifiedAt).not.toBeNull();
     expect(await ctx.prisma.item.count({ where: { userId: user.id } })).toBeGreaterThan(0);
     const me = await ctx.http().get('/v1/me').set('Authorization', bearer(ok.body)).expect(200);
-    expect(me.body.user.hasPassword).toBe(false);
+    expect(me.body.user).not.toHaveProperty('hasPassword');
     expect(me.body.user.goals).toEqual([]);
   });
 
-  it('the export lists email as a way to sign in for the account without a password', async () => {
+  it('the export lists email as a way to sign in for an account created by code', async () => {
     const email = uniqueEmail();
     await start(email).expect(202);
     const auth = await confirm(email, code(email)).expect(200);
@@ -85,23 +84,50 @@ describe('passwordless login by email code', () => {
     await confirm(email, otp).expect(400);
   });
 
-  it("the password of someone else's pending signup does not survive the email owner's confirmation", async () => {
+  it('the fifth wrong attempt invalidates the code, even the right one', async () => {
     const email = uniqueEmail();
-    // Someone else registers the victim's email with a password they know (legacy endpoint)
-    await ctx
-      .http()
-      .post('/v1/auth/register')
-      .send(registerBody(email, 'Atacante#1234'))
-      .expect(202); // scan-allow: fake password
-    later(VERIFICATION_RESEND_INTERVAL_MS + 1000);
-    // The owner signs in with the code that reaches their mailbox
     await start(email).expect(202);
-    await confirm(email, code(email)).expect(200);
-    await ctx
-      .http()
-      .post('/v1/auth/login')
-      .send({ email, password: 'Atacante#1234' }) // scan-allow: fake password
-      .expect(401);
+    const otp = code(email);
+    for (let i = 0; i < 5; i += 1) await confirm(email, WRONG).expect(400);
+    await confirm(email, otp).expect(400);
+  });
+
+  it('the code expires in 15 minutes', async () => {
+    const email = uniqueEmail();
+    await start(email).expect(202);
+    const otp = code(email);
+    later(15 * 60_000 + 1000);
+    await confirm(email, otp).expect(400);
+  });
+
+  it('parallel requests do not exceed the limit of 5 attempts', async () => {
+    const email = uniqueEmail();
+    await start(email).expect(202);
+    const otp = code(email);
+    const wrong = otp === WRONG ? '111111' : WRONG;
+    const burst = await Promise.all(Array.from({ length: 8 }, () => confirm(email, wrong)));
+    expect(burst.every((res) => res.status === 400)).toBe(true);
+    const user = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
+    const row = await ctx.prisma.emailVerification.findFirstOrThrow({ where: { userId: user.id } });
+    expect(row.attempts).toBe(5);
+    expect(row.usedAt).not.toBeNull();
+    // The right code is no longer valid: it was invalidated by the wrong attempts
+    await confirm(email, otp).expect(400);
+  });
+
+  it('asking again respects the interval, invalidates the old code and always answers 202', async () => {
+    const email = uniqueEmail();
+    await start(email).expect(202);
+    const first = code(email);
+    const sentBefore = ctx.mailer.sent.length;
+    await start(email).expect(202);
+    expect(ctx.mailer.sent.length).toBe(sentBefore); // within 60 s
+    later(VERIFICATION_RESEND_INTERVAL_MS + 1000);
+    await start(email).expect(202);
+    const second = code(email);
+    expect(ctx.mailer.sent.length).toBe(sentBefore + 1);
+    await confirm(email, first === second ? WRONG : first).expect(400);
+    await confirm(email, second).expect(200);
   });
 
   it('the request response is the same for a new and an already confirmed email', async () => {

@@ -2,34 +2,22 @@
 
 Code in `apps/api/src/modules/auth`. The decisions and reasons are in [ADR-0008](../adr/0008-autenticacao-e-sessao.md); here is what each part does.
 
-## Email code sign-in (no password)
+## Email code sign-in
 
-This is how the app signs in. Two steps, with no separate signup:
+This is how the app signs in. Two steps, with no separate signup and no password:
 
-1. `POST /v1/auth/email/start` (`{ email, timezone?, termsVersion? }`) always answers `202`, with no body, whether the account exists or not. A new email creates a **pending account without a password** (provisional name taken from the part before the `@`); every email receives a 6-digit code, respecting the 60 s interval between sends. Limit: 10 per email and IP per hour and 30 per email per hour (the app lets the user resend every 60 s).
-2. `POST /v1/auth/email/confirm` (`{ email, code }`) exchanges the code for the session. The code follows the same rules as below (15 minutes, single use, 5 attempts). The first confirmation sets `emailVerifiedAt`, **erases any password saved while the account was pending** (it stops whoever signed up someone else's email through the legacy endpoint from getting in later) and creates the starter items, in the same transaction that consumes the code; later ones only return the session. Every failure (wrong, expired or used code, or an email with no account) answers `400 INVALID_VERIFICATION_CODE`, the same way.
+1. `POST /v1/auth/email/start` (`{ email, timezone?, termsVersion? }`) always answers `202`, with no body, whether the account exists or not. A new email creates a **pending account** (provisional name taken from the part before the `@`); every email receives a 6-digit code, respecting the 60 s interval between sends. Limit: 10 per email and IP per hour and 30 per email per hour (the app lets the user ask again every 60 s). Asking again invalidates the previous code.
+2. `POST /v1/auth/email/confirm` (`{ email, code }`) exchanges the code for the session. The first confirmation sets `emailVerifiedAt` and creates the starter items, in the same transaction that consumes the code; later ones only return the session. Every failure (wrong, expired or used code, or an email with no account) answers `400 INVALID_VERIFICATION_CODE`, the same way.
 
-Whoever already had a password account signs in through the same path: the code proves ownership of the email. The password endpoints below stay in the API only for old app versions; the new app does not use them.
+The code has 6 digits, is valid for 15 minutes and is **single use**. Only the hash (`sha256(userId:code)`) is stored in the database. Five wrong attempts invalidate the code. Each attempt is reserved by a conditional `UPDATE`, so parallel requests do not exceed the limit of 5: do not swap it for read-then-write. If anything fails after the code is checked, the account stays pending and the same code stays valid.
 
-## Signup and email confirmation (by password, legacy)
-
-1. `POST /v1/auth/register` creates the **pending** user (with the default categories) and sends a code by email. It always answers `202 { status: "verification_sent" }`, with no session, and the **same** for a new, pending or already confirmed email (no account enumeration).
-   - Repeated pending signup: the last one wins; only whoever confirms with the code and the active password gets in.
-   - Already confirmed email: a notice is sent by email, with no code.
-2. The code has 6 digits, is valid for 15 minutes and is **single use**. Only the hash (`sha256(userId:code)`) is stored in the database. Five wrong attempts invalidate the code. A wrong password on confirmation does not spend attempts (whoever only knows the victim's email cannot invalidate their code). Each attempt is reserved by a conditional `UPDATE`, so parallel requests do not exceed the limit of 5: do not swap it for read-then-write. Resending respects a minimum interval of 60 seconds.
-3. `POST /v1/auth/verify-email` (`{ email, code, password }`) confirms the account and returns the session. In a **single transaction**: it marks the code as used, sets `emailVerifiedAt` and creates the starter items. If anything fails, the account stays pending and the same code stays valid. Every failure answers the same and takes the same time (it uses a dummy password hash).
-
-## Login and password
-
-- `POST /v1/auth/login`: the attempt is counted **before** the password is checked, so parallel attempts count too. It answers the same (and at the same cost) for a missing email and a wrong password.
-- "Esqueci a senha" (forgot password): always answers `202`, whether or not the email exists. The link carries a single-use secret, valid for 30 minutes (`PASSWORD_RESET_TTL_MINUTES`); only its `sha256` is stored and only the most recent link works. The email goes out in the background, so the response time does not depend on the provider.
-- Changing the password with the link ends all open sessions.
+There is no password sign-in: the code proves ownership of the email, for new and old accounts alike.
 
 ## Social login (Google and Apple)
 
 - The app sends only the ID token; the API validates it **on the server** (issuer, audience, validity). An invalid token never details the reason.
 - First access: creates the account and requires accepting the terms. The account is born confirmed and receives the starter items.
-- Links to the existing account when the email verified by the provider matches. If the password account never confirmed the email, whoever created it did not prove they own it: the account is confirmed (and receives the examples), the old password goes away and the open sessions and codes stop working.
+- Links to the existing account when the email verified by the provider matches. If the account never confirmed the email (it was created by a code request), whoever asked for the code did not prove they own it: the account is confirmed (and receives the examples), and the open sessions and codes stop working.
 - Without an email verified by the provider, it never creates or links.
 
 ## Tokens
@@ -47,15 +35,10 @@ A session is a **family of refresh tokens**: rotation swaps the token and keeps 
 
 Besides the Throttler per-IP limit (`THROTTLE_LIMIT` and `THROTTLE_AUTH_LIMIT`), each account route has **two levels**, stored in Postgres (they hold across instances and survive a deploy). The email + IP level makes whoever abuses lock only themselves; the higher per-email ceiling protects against an attack coming from many IPs without letting a stranger easily lock someone else's account. The count depends only on the email typed (whether or not the account exists), so the excess answers the same (`429`). The key is a hash: no email or IP is stored in the database.
 
-| Route             | per email + IP | per email  |
-| ----------------- | -------------- | ---------- |
-| login             | 5 in 15 min    | 30 in 15 min |
-| forgot password   | 3 in 15 min    | 10 in 1 h  |
-| signup            | 5 in 1 h       | 15 in 1 h  |
-| code resend       | 5 in 1 h       | 15 in 1 h  |
-| confirm email     | 10 in 15 min   | 40 in 15 min |
-
-A correct login resets the errors of that email + IP.
+| Route          | per email + IP | per email    |
+| -------------- | -------------- | ------------ |
+| code request   | 10 in 1 h      | 30 in 1 h    |
+| confirm code   | 10 in 15 min   | 40 in 15 min |
 
 ## Response time and enumeration
 
@@ -63,4 +46,4 @@ The routes that answer the same for an existing and a missing account have a tim
 
 ## Daily cleanup
 
-Every day at 03:30, it removes what only grows: refresh tokens, reset links and confirmation codes **expired for more than 7 days** (a revoked refresh token still within its validity stays, because it is what reveals the reuse of a stolen token) and the attempt-limit counters older than 1 day. It deletes in batches and is idempotent, so two instances together do not get in each other's way. Only the error class and code go to the log.
+Every day at 03:30, it removes what only grows: refresh tokens and confirmation codes **expired for more than 7 days** (a revoked refresh token still within its validity stays, because it is what reveals the reuse of a stolen token) and the attempt-limit counters older than 1 day. It deletes in batches and is idempotent, so two instances together do not get in each other's way. Only the error class and code go to the log.

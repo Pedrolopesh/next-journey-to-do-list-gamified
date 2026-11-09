@@ -10,7 +10,6 @@ import { signOutLocally } from '@/auth/sign-out-local';
 import { Button } from '@/components/button';
 import { CodeInput } from '@/components/code-input';
 import { ScreenFrame } from '@/components/screen-frame';
-import { TextField } from '@/components/text-field';
 import {
   configureGoogle,
   getAppleIdToken,
@@ -28,16 +27,13 @@ import { colors, fontSize, space } from '@/theme';
 class Cancelled extends Error {}
 
 /**
- * Account deletion with re-authentication: the current password (account with a password), the
- * code received by email or a fresh sign-in with Google/Apple (account without a password). Only
- * then does the API delete the account.
+ * Account deletion with re-authentication: the code received by email or a fresh sign-in with
+ * Google/Apple. Only then does the API delete the account.
  */
 export default function DeleteAccountScreen() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: me, isError, refetch } = useMe();
-  const [password, setPassword] = useState('');
-  const [fieldError, setFieldError] = useState<string | null>(null);
   const [codeSent, setCodeSent] = useState(false);
   const [code, setCode] = useState('');
   const [appleAvailable, setAppleAvailable] = useState(false);
@@ -67,16 +63,6 @@ export default function DeleteAccountScreen() {
       await deleteAccount(await getProof());
       await signOutLocally(queryClient);
     });
-
-  const withPassword = (): void => {
-    if (password.length === 0) {
-      setFieldError(t('settings.deletePasswordRequired'));
-      toast.error(t('settings.deletePasswordRequired'));
-      return;
-    }
-    setFieldError(null);
-    void confirm(() => Promise.resolve({ password }));
-  };
 
   const sendCode = (email: string): void => {
     void send.run(async () => {
@@ -121,24 +107,6 @@ export default function DeleteAccountScreen() {
         </>
       ) : me === undefined ? (
         <Button label={t('settings.deleteConfirm')} loading onPress={() => undefined} />
-      ) : me.user.hasPassword ? (
-        <>
-          <TextField
-            label={t('settings.deletePasswordLabel')}
-            value={password}
-            onChangeText={setPassword}
-            autoCapitalize="none"
-            autoComplete="current-password"
-            secret
-            error={fieldError ?? undefined}
-          />
-          <Button
-            label={t('settings.deleteConfirm')}
-            variant="danger"
-            loading={loading}
-            onPress={withPassword}
-          />
-        </>
       ) : (
         <>
           <Text style={styles.body}>{t('settings.deleteWithCode')}</Text>

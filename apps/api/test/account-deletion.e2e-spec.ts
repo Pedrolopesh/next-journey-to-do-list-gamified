@@ -5,17 +5,17 @@ import {
   createTestApp,
   FakeVerifier,
   NOON_09,
-  PASSWORD,
   registerUser,
+  requestCode,
   type TestContext,
   uniqueEmail,
 } from './helpers.js';
 
-const WRONG = 'Errada#1234'; // scan-allow: fake test password
+const WRONG = '000000';
 /** The "now" instant of the test clock, in seconds (for the ID token `iat`). */
 const NOW_S = Math.floor(Date.parse(NOON_09) / 1000);
 
-describe('account deletion requires reauthentication', () => {
+describe('account deletion requires proof of ownership', () => {
   let ctx: TestContext;
   const verifier = new FakeVerifier();
   beforeAll(async () => {
@@ -30,18 +30,21 @@ describe('account deletion requires reauthentication', () => {
   const stillActive = async (userId: string) =>
     (await ctx.prisma.user.findUniqueOrThrow({ where: { id: userId } })).deletedAt === null;
 
-  it('account with a password: the right password deletes', async () => {
+  it('the right email code deletes', async () => {
     const auth = await registerUser(ctx);
-    await del(auth).send({ password: PASSWORD }).expect(204); // scan-allow: fake test password
+    const emailCode = await requestCode(ctx, auth.user.email);
+    await del(auth).send({ emailCode }).expect(204);
     expect(await stillActive(auth.user.id)).toBe(false);
   });
 
-  it('wrong password, no body or a proof of the wrong kind: nothing is deleted and the session stays valid', async () => {
+  it('a wrong code, no body, a password or a proof of the wrong kind: nothing is deleted and the session stays valid', async () => {
     const auth = await registerUser(ctx);
-    const wrong = await del(auth).send({ password: WRONG }).expect(403);
+    await requestCode(ctx, auth.user.email);
+    const wrong = await del(auth).send({ emailCode: WRONG }).expect(403);
     expect(wrong.body.code).toBe('REAUTH_FAILED');
     await del(auth).expect(400);
     await del(auth).send({}).expect(400);
+    await del(auth).send({ password: 'Teste#1234' }).expect(400); // scan-allow: fake test password
     const social = await del(auth).send({ provider: 'google', idToken: 'ok' }).expect(403);
     expect(social.body.code).toBe('REAUTH_FAILED');
     expect(await stillActive(auth.user.id)).toBe(true);
@@ -49,18 +52,20 @@ describe('account deletion requires reauthentication', () => {
     await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
   });
 
-  it('the sixth attempt in 15 minutes is 429, even with the right password', async () => {
+  it('the sixth attempt in 15 minutes is 429, even with the right code', async () => {
     const auth = await registerUser(ctx);
-    for (let i = 0; i < 5; i += 1) await del(auth).send({ password: WRONG }).expect(403);
-    const blocked = await del(auth).send({ password: PASSWORD }).expect(429); // scan-allow: fake password
+    const emailCode = await requestCode(ctx, auth.user.email);
+    for (let i = 0; i < 5; i += 1) await del(auth).send({ emailCode: WRONG }).expect(403);
+    const blocked = await del(auth).send({ emailCode }).expect(429);
     expect(blocked.body.code).toBe('RATE_LIMITED');
     expect(await stillActive(auth.user.id)).toBe(true);
   });
 
-  it('the right password resets the earlier wrong attempts', async () => {
+  it('the right code resets the earlier wrong attempts', async () => {
     const auth = await registerUser(ctx);
-    for (let i = 0; i < 4; i += 1) await del(auth).send({ password: WRONG }).expect(403);
-    await del(auth).send({ password: PASSWORD }).expect(204); // scan-allow: fake test password
+    const emailCode = await requestCode(ctx, auth.user.email);
+    for (let i = 0; i < 4; i += 1) await del(auth).send({ emailCode: WRONG }).expect(403);
+    await del(auth).send({ emailCode }).expect(204);
   });
 
   describe('social-only account', () => {
@@ -81,17 +86,11 @@ describe('account deletion requires reauthentication', () => {
       return { auth: response.body as Awaited<ReturnType<typeof registerUser>>, email };
     };
 
-    it('/me reports that there is no password', async () => {
-      const { auth } = await social();
-      const me = await ctx.http().get('/v1/me').set('authorization', bearer(auth)).expect(200);
-      expect(me.body.user.hasPassword).toBe(false);
-      const withPassword = await registerUser(ctx);
-      const other = await ctx
-        .http()
-        .get('/v1/me')
-        .set('authorization', bearer(withPassword))
-        .expect(200);
-      expect(other.body.user.hasPassword).toBe(true);
+    it('the email code also deletes a social-only account', async () => {
+      const { auth, email } = await social();
+      const emailCode = await requestCode(ctx, email);
+      await del(auth).send({ emailCode }).expect(204);
+      expect(await stillActive(auth.user.id)).toBe(false);
     });
 
     it('the ID token of the linked identity deletes', async () => {
@@ -123,8 +122,6 @@ describe('account deletion requires reauthentication', () => {
       };
       const res = await del(auth).send({ provider: 'google', idToken: 'ok' }).expect(403);
       expect(res.body.code).toBe('REAUTH_FAILED');
-      // A password is not valid for an account that has no password
-      await del(auth).send({ password: PASSWORD }).expect(403); // scan-allow: fake test password
       expect(await stillActive(auth.user.id)).toBe(true);
     });
   });

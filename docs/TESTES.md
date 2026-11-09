@@ -34,7 +34,7 @@ Command:
 pnpm --filter @nextjourney/mobile test:ui
 ```
 
-The `apps/mobile/scripts/ui-tests.mjs` script creates a new test account in the API on every run (random email, password and code, only in memory; nothing stays in the repository), confirms its email straight in the local database (`apps/api/prisma/confirm-test-email.ts`) and saves a known sign-in code (`apps/api/prisma/set-test-code.ts`); both utilities refuse a non-local database. The app signs in by code; the password is only used for the API checks and is passed to Maestro. To run only some flows (the sign-in one always goes first, because it logs into the new account; the following flows depend on the previous ones, so always run them in sequence from 00, without skipping):
+The `apps/mobile/scripts/ui-tests.mjs` script creates a new test account in the API on every run (random email and code, only in memory; nothing stays in the repository), confirms its email straight in the local database (`apps/api/prisma/confirm-test-email.ts`) and saves a known sign-in code (`apps/api/prisma/set-test-code.ts`); both utilities refuse a non-local database. The app signs in by code; To run only some flows (the sign-in one always goes first, because it logs into the new account; the following flows depend on the previous ones, so always run them in sequence from 00, without skipping):
 
 ```bash
 UI_FLOW=.maestro/flows/00-sign-in-and-onboarding.yaml,.maestro/flows/01-create-and-check-task.yaml \

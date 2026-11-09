@@ -46,7 +46,6 @@ export class DataExportService {
         termsVersion: true,
         tutorialSeenAt: true,
         emailVerifiedAt: true,
-        passwordHash: true,
         identities: { select: { provider: true } },
         stats: {
           select: {
@@ -161,12 +160,9 @@ export class DataExportService {
         tutorialSeenAt: isoOrNull(user.tutorialSeenAt),
         emailVerifiedAt: isoOrNull(user.emailVerifiedAt),
         signInMethods: [
-          ...(user.passwordHash ? (['password'] as const) : []),
           // Accounts created by email code have no other way in (every confirmed account can also
           // use the code, but only these are listed here)
-          ...(user.emailVerifiedAt && !user.passwordHash && user.identities.length === 0
-            ? (['email'] as const)
-            : []),
+          ...(user.emailVerifiedAt && user.identities.length === 0 ? (['email'] as const) : []),
           ...user.identities.map((identity) => identity.provider),
         ],
       },

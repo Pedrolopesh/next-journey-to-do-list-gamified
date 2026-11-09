@@ -6,12 +6,11 @@ Tick each item and note the date, version and device in the PR or the release is
 
 ## 1. Account and session
 
-- [ ] Signup with a weak password: the checklist shows what is missing and the button does not submit.
-- [ ] A valid signup leads to onboarding. A repeated email shows a generic message.
-- [ ] Login with a wrong password and with a missing email show the same message.
+- [ ] Sign-in with an invalid email: the field shows the message and the button does not send the code.
+- [ ] A valid email gets a code; a correct code leads to onboarding (new account) or to the Home (existing account).
+- [ ] A wrong code shows an error, and the answer is the same for an email with no account.
 - [ ] Closing and opening the app keeps the login (splash while it checks).
 - [ ] "Sair" (sign out, in Perfil) goes back to the login and leaves no data from the previous account.
-- [ ] "Esqueci a senha" (forgot password): always confirms the send; the link opens the new-password screen and the old password stops working.
 - [ ] With Google/Apple configured: login creates the account on first access and enters the same account afterwards.
 
 ## 2. Onboarding
@@ -83,6 +82,6 @@ Blocks submission to the stores. Go through **every screen and every button** an
 - [ ] On tap, the button shows loading (and does not accept a second tap) or the screen changes at once.
 - [ ] Success: a success toast appears or an obvious visible change.
 - [ ] Error (no network, API down, invalid data): an error toast with clear text appears; the button goes back to normal.
-- [ ] Invalid form (empty fields, weak password, terms not accepted): each field shows its message and the toast warns; the button never "does nothing".
-- [ ] Screens and buttons covered: signup, login, sign in with Google/Apple, forgot password, new password, tutorial, character, story choice, create/edit/delete item, check and undo, categories (create, rename, delete), settings (time zone, reminder), delete account, sign out, "Tentar de novo" buttons.
+- [ ] Invalid form (empty fields, invalid email, incomplete code): each field shows its message and the toast warns; the button never "does nothing".
+- [ ] Screens and buttons covered: email and code sign-in, sign in with Google/Apple, tutorial, character, story choice, create/edit/delete item, check and undo, categories (create, rename, delete), settings (time zone, reminder), delete account, sign out, "Tentar de novo" buttons.
 - [ ] No screen is left idle with no response after a tap. If you find one, it is a blocker.

@@ -37,31 +37,12 @@ export class EmailVerificationService {
   }
 
   /**
-   * Notice (no code) for someone who tries to sign up with an email that already has a confirmed
-   * account.
-   */
-  async sendNotice(user: Recipient): Promise<void> {
-    if (!(await this.reserve(user.id, false))) return;
-    this.mailer.sendInBackground({
-      to: user.email,
-      subject: 'Tentativa de cadastro no Next Journey',
-      text: 'Alguém tentou criar uma conta no Next Journey com este e-mail, que já tem conta. Se foi você, entre com sua senha ou use "Esqueci a senha". Se não foi, ignore este e-mail.',
-    });
-  }
-
-  /**
-   * Consumes the code (single use, 5 attempts). A wrong password does not spend attempts, and each
+   * Consumes the code (single use, 5 attempts). Each
    * attempt is reserved by a conditional UPDATE so parallel requests cannot exceed the limit. With
    * `tx`, the "used" mark joins the caller's transaction, so a rollback keeps the code valid;
    * attempts stay outside it on purpose. Rules: docs/api/autenticacao-e-sessoes.md.
    */
-  async consume(
-    userId: string,
-    code: string,
-    passwordOk: boolean,
-    tx?: Prisma.TransactionClient,
-  ): Promise<boolean> {
-    if (!passwordOk) return false;
+  async consume(userId: string, code: string, tx?: Prisma.TransactionClient): Promise<boolean> {
     const now = this.clock.now();
     const current = await this.prisma.emailVerification.findFirst({
       where: { userId, usedAt: null, expiresAt: { gt: now } },

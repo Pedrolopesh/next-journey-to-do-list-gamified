@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { type DeleteAccountRequest, ERROR_CODES } from '@nextjourney/contracts';
-import * as argon2 from 'argon2';
 import { Logger } from 'nestjs-pino';
 
 import { AppError } from '../../common/app-error.js';
@@ -50,7 +49,7 @@ export class AccountService {
   async requestDeletion(userId: string, proof: DeleteAccountRequest): Promise<void> {
     const user = await this.prisma.user.findFirst({
       where: { id: userId, deletedAt: null },
-      select: { id: true, passwordHash: true },
+      select: { id: true },
     });
     if (!user) throw new AppError(404, ERROR_CODES.NOT_FOUND, 'Usuário não encontrado');
     try {
@@ -70,7 +69,6 @@ export class AccountService {
           deletedAt: now,
           email: `excluida-${userId}@invalid.example`,
           name: 'Conta excluída',
-          passwordHash: null,
           notifyAt: null,
           goals: [],
           ageRange: null,
@@ -87,31 +85,20 @@ export class AccountService {
         data: { revokedAt: now },
       }),
       this.prisma.authIdentity.deleteMany({ where: { userId } }),
-      this.prisma.passwordReset.deleteMany({ where: { userId } }),
     ]);
     this.events.record('account_deleted', { userId });
   }
 
   /**
-   * Second proof before deleting the account (password, email code or a fresh ID token). Every failure is the
+   * Second proof before deleting the account (email code or a fresh ID token). Every failure is the
    * same 403, never 401: the app treats 401 as an ended session. Rules:
    * docs/api/conta-e-privacidade.md.
    */
-  private async confirmOwner(
-    user: { id: string; passwordHash: string | null },
-    proof: DeleteAccountRequest,
-  ): Promise<void> {
+  private async confirmOwner(user: { id: string }, proof: DeleteAccountRequest): Promise<void> {
     await this.rateLimit.hit('delete-account', user.id, REAUTH_LIMIT);
     if ('emailCode' in proof) {
       // The code was sent to the account's own email: whoever has it owns the mailbox.
-      if (!(await this.emailCodes.consume(user.id, proof.emailCode, true))) throw reauthFailed();
-      await this.rateLimit.reset('delete-account', user.id);
-      return;
-    }
-    if (user.passwordHash) {
-      if (!('password' in proof)) throw reauthFailed();
-      const ok = await argon2.verify(user.passwordHash, proof.password).catch(() => false);
-      if (!ok) throw reauthFailed();
+      if (!(await this.emailCodes.consume(user.id, proof.emailCode))) throw reauthFailed();
       await this.rateLimit.reset('delete-account', user.id);
       return;
     }
