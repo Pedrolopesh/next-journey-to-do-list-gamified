@@ -9,4 +9,4 @@
 - [x] Jornada dos demais cenários: cidade (avenida), zumbi (base militar), castelo (tapete), floresta (antes paraíso) e inferno
 - [x] App: posição do personagem pela EXP do nível, portal ao subir de nível e troca de cena só no check seguinte
 - [x] App: ícone de dificuldade à direita e check que também desmarca (sem botão Desfazer)
-- [ ] Medir o desempenho em aparelho real
+- [x] Medir o desempenho em aparelho real (movida para o Plane, NJ-39, para depois de mais funcionalidades; o ADR-0003 vai junto)

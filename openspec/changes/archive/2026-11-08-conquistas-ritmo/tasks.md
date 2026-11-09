@@ -13,4 +13,4 @@
 ## 3. Verificação
 
 - [x] 3.1 lint, typecheck, test, build e e2e
-- [ ] 3.2 Conferir no emulador: várias liberadas aparecem uma por ação
+- [x] 3.2 Conferir no emulador: várias liberadas aparecem uma por ação (2026-11-08: e2e da API "um modal por ação" e fluxo 00 do Maestro no simulador iOS, uma conquista pendente por vez)
