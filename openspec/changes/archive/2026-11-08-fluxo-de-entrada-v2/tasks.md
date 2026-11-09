@@ -28,4 +28,4 @@
 ## 5. Fechamento
 
 - [x] 5.1 Maestro: fluxos de entrada atualizados (fluxo 00 passa; o 01 falha ao digitar o título do item, pendência registrada)
-- [ ] 5.2 `pnpm run verify`, revisão de código e pendências registradas
+- [x] 5.2 `pnpm run verify`, revisão de código e pendências registradas (2026-11-08: verify verde; pendências no Plane, NJ-31 a NJ-41)

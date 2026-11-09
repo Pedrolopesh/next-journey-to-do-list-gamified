@@ -43,5 +43,5 @@
 ## 7. Documentação e verificação
 
 - [x] 7.1 Atualizar `CONTRIBUTING.md` do mobile e `docs/REQUISITOS.MD` (lista de conquistas)
-- [ ] 7.2 Verificar no Android e no iOS: galeria, modal, fila, retroativo e personagem sem peça de recompensa (Android feito; iOS pendente)
-- [ ] 7.3 `pnpm exec turbo run lint typecheck test build` 16/16, e2e da API e `FULL=1 pnpm run security:full`
+- [x] 7.2 Verificar no Android e no iOS: galeria, modal, fila, retroativo e personagem sem peça de recompensa (Android feito; iOS feito em 2026-11-08 no simulador: fluxos 00 a 04 do Maestro, galeria incluída; retroativo coberto pelo e2e da API)
+- [x] 7.3 `pnpm exec turbo run lint typecheck test build` 16/16, e2e da API e `FULL=1 pnpm run security:full` (2026-11-08: turbo 23/23, e2e da API 176 testes e security:full OK)

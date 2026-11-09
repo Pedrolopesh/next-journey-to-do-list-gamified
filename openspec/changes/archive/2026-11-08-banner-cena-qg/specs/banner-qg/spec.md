@@ -26,3 +26,13 @@ No QG, `SET_TIME_OF_DAY` e `SET_CHARACTER` SHALL atualizar a cena na hora, `ITEM
 ### Requirement: Peso e desempenho
 
 O bundle do banner SHALL ficar abaixo de 1,5 MB. O QG SHALL limitar a 30 quadros por segundo, e PAUSE SHALL parar o laço de animação.
+
+#### Scenario: Peso do bundle
+
+- **WHEN** o banner é gerado para o app
+- **THEN** o bundle fica abaixo de 1,5 MB (validado pelo `validate-assets`)
+
+#### Scenario: Pausa e limite de quadros
+
+- **WHEN** o QG está animando e o app envia `PAUSE`
+- **THEN** o laço de animação para, e enquanto roda não passa de 30 quadros por segundo

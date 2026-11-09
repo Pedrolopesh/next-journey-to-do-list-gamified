@@ -9,4 +9,4 @@
 
 - [x] 2.1 e2e: conta só com exemplos libera só "Primeiro passo"; criar de verdade libera
 - [x] 2.2 Dados locais da conta de teste corrigidos (itens marcados, conquistas indevidas removidas)
-- [ ] 2.3 Conferir no aparelho: conta nova, exemplos criados, primeiro check
+- [x] 2.3 Conferir no aparelho: conta nova, exemplos criados, primeiro check (2026-11-08: fluxos 00 e 01 do Maestro no simulador iOS e e2e da API)
