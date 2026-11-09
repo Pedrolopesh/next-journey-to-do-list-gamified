@@ -10,7 +10,6 @@ const BATCH_SIZE = 1000;
 
 type PurgeCounts = {
   refreshTokens: number;
-  passwordResets: number;
   emailVerifications: number;
   rateLimits: number;
 };
@@ -43,7 +42,6 @@ export class AuthCleanupService {
     const limit = new Date(this.clock.now().getTime() - EXPIRED_GRACE_DAYS * DAY_MS);
     return {
       refreshTokens: await this.purgeInBatches(this.prisma.refreshToken, limit),
-      passwordResets: await this.purgeInBatches(this.prisma.passwordReset, limit),
       emailVerifications: await this.purgeInBatches(this.prisma.emailVerification, limit),
       rateLimits: await this.purgeRateLimits(),
     };

@@ -8,65 +8,42 @@ import {
   createItemRequestSchema,
   DEFAULT_GAME_CONFIG,
   deleteAccountRequestSchema,
+  emailConfirmRequestSchema,
+  emailStartRequestSchema,
   ERROR_CODES,
   gameConfigSchema,
   localDateSchema,
-  loginRequestSchema,
-  PASSWORD_RULES,
   patchMeRequestSchema,
   playerStateSchema,
   putStoryRequestSchema,
-  registerRequestSchema,
-  registerResponseSchema,
-  resendVerificationRequestSchema,
   scheduleDaysSchema,
   timezoneSchema,
-  verifyEmailRequestSchema,
 } from './index';
 
 const categoryId = '3f1f4c2e-5a7b-4f3e-9c1d-2b8a6d4e7f10';
-const validRegister = {
-  name: 'Pedro',
-  email: 'pedro@exemplo.com',
-  password: 'Senha#123', // scan-allow: senha falsa de teste
-  confirmPassword: 'Senha#123', // scan-allow: senha falsa de teste
-  acceptedTerms: true,
-  termsVersion: '2026-10-01',
-  timezone: 'America/Sao_Paulo',
-};
-
 describe('auth', () => {
-  it('aceita um cadastro válido', () => {
-    expect(registerRequestSchema.safeParse(validRegister).success).toBe(true);
-  });
-
-  it('rejeita senha sem maiúscula, número ou caractere especial, ou curta', () => {
-    for (const password of ['senha#123', 'Senha#abc', 'Senha1234', 'Se#1']) {
-      expect(
-        registerRequestSchema.safeParse({ ...validRegister, password, confirmPassword: password })
-          .success,
-      ).toBe(false);
-    }
-    expect(PASSWORD_RULES).toHaveLength(4);
-  });
-
-  it('rejeita senhas diferentes, termos não aceitos e fuso inválido', () => {
+  it('o pedido de código exige e-mail válido; fuso e versão dos Termos são opcionais', () => {
+    expect(emailStartRequestSchema.safeParse({ email: 'pedro@exemplo.com' }).success).toBe(true);
     expect(
-      registerRequestSchema.safeParse({
-        ...validRegister,
-        confirmPassword: 'Outra#123' /* scan-allow */,
+      emailStartRequestSchema.safeParse({
+        email: 'pedro@exemplo.com',
+        timezone: 'America/Sao_Paulo',
+        termsVersion: '2026-11-08',
       }).success,
-    ).toBe(false);
+    ).toBe(true);
+    expect(emailStartRequestSchema.safeParse({ email: 'x' }).success).toBe(false);
     expect(
-      registerRequestSchema.safeParse({ ...validRegister, acceptedTerms: false }).success,
-    ).toBe(false);
-    expect(
-      registerRequestSchema.safeParse({ ...validRegister, timezone: 'Marte/Olympus' }).success,
+      emailStartRequestSchema.safeParse({ email: 'pedro@exemplo.com', timezone: 'Marte/Olympus' })
+        .success,
     ).toBe(false);
   });
 
-  it('login exige e-mail válido', () => {
-    expect(loginRequestSchema.safeParse({ email: 'x', password: 'a' }).success).toBe(false);
+  it('confirmação do código: exatamente 6 dígitos', () => {
+    const base = { email: 'a@exemplo.com' };
+    expect(emailConfirmRequestSchema.safeParse({ ...base, code: '012345' }).success).toBe(true);
+    for (const code of ['12345', '1234567', '12345a', '']) {
+      expect(emailConfirmRequestSchema.safeParse({ ...base, code }).success).toBe(false);
+    }
   });
 });
 
@@ -182,31 +159,15 @@ describe('fase 5: categorias, perfil e histórias', () => {
     expect(putStoryRequestSchema.safeParse({ slug: '' }).success).toBe(false);
   });
 
-  it('confirmação de e-mail: código de exatamente 6 dígitos, com a senha', () => {
-    const base = { email: 'a@exemplo.com', password: 'Teste#1234' }; // scan-allow: senha falsa de teste
-    expect(verifyEmailRequestSchema.safeParse({ ...base, code: '012345' }).success).toBe(true);
-    for (const code of ['12345', '1234567', '12345a', '']) {
-      expect(verifyEmailRequestSchema.safeParse({ ...base, code }).success).toBe(false);
-    }
-    expect(verifyEmailRequestSchema.safeParse({ email: base.email, code: '012345' }).success).toBe(
-      false,
-    );
-    expect(resendVerificationRequestSchema.safeParse({ email: 'x' }).success).toBe(false);
-  });
-
-  it('cadastro responde só o status, nunca sessão', () => {
-    expect(registerResponseSchema.safeParse({ status: 'verification_sent' }).success).toBe(true);
-    expect(registerResponseSchema.safeParse({ status: 'ok' }).success).toBe(false);
-  });
-
-  it('exclusão de conta: senha ou provedor com ID token, nunca vazio nem misturado', () => {
-    expect(deleteAccountRequestSchema.safeParse({ password: 'Teste#1234' }).success).toBe(true); // scan-allow: senha falsa
+  it('exclusão de conta: código de e-mail ou provedor com ID token, nunca senha, vazio nem misturado', () => {
+    expect(deleteAccountRequestSchema.safeParse({ emailCode: '012345' }).success).toBe(true);
     expect(
       deleteAccountRequestSchema.safeParse({ provider: 'google', idToken: 'token' }).success,
     ).toBe(true);
     for (const body of [
       {},
-      { password: '' },
+      { password: 'Teste#1234' }, // scan-allow: senha falsa de teste
+      { emailCode: '12345' },
       { provider: 'github', idToken: 'x' },
       { provider: 'apple' },
     ]) {

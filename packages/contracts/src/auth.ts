@@ -2,51 +2,7 @@ import { z } from 'zod';
 
 import { emailInputSchema, timezoneSchema } from './common';
 
-/** Regras da senha, na ordem do checklist visível no cadastro (RF-01). */
-export const PASSWORD_RULES = [
-  { id: 'length', test: (value: string) => value.length >= 8 },
-  { id: 'uppercase', test: (value: string) => /[A-Z]/.test(value) },
-  { id: 'number', test: (value: string) => /\d/.test(value) },
-  { id: 'special', test: (value: string) => /[^A-Za-z0-9]/.test(value) },
-] as const;
-
-export const passwordSchema = z
-  .string()
-  .max(128)
-  .refine((value) => PASSWORD_RULES.every((rule) => rule.test(value)), 'Senha fora das regras');
-
-export const registerRequestSchema = z
-  .object({
-    name: z.string().trim().min(1).max(80),
-    email: emailInputSchema,
-    password: passwordSchema,
-    confirmPassword: z.string(),
-    acceptedTerms: z.literal(true),
-    termsVersion: z.string().min(1),
-    timezone: timezoneSchema,
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ['confirmPassword'],
-    message: 'As senhas não conferem',
-  });
-export type RegisterRequest = z.infer<typeof registerRequestSchema>;
-
-/** Cadastro por senha não cria sessão: a pessoa confirma o e-mail com um código antes de entrar. */
-export const registerResponseSchema = z.object({ status: z.literal('verification_sent') });
-export type RegisterResponse = z.infer<typeof registerResponseSchema>;
-
 export const VERIFICATION_CODE_LENGTH = 6;
-
-/** Confirma o e-mail: o código vale só junto com a senha escolhida no cadastro. */
-export const verifyEmailRequestSchema = z.object({
-  email: emailInputSchema,
-  code: z.string().regex(/^\d{6}$/),
-  password: z.string().min(1).max(128),
-});
-export type VerifyEmailRequest = z.infer<typeof verifyEmailRequestSchema>;
-
-export const resendVerificationRequestSchema = z.object({ email: z.email() });
-export type ResendVerificationRequest = z.infer<typeof resendVerificationRequestSchema>;
 
 /** Passwordless entry: asks for a code (always 202) and trades it for a session. */
 export const emailStartRequestSchema = z.object({
@@ -64,12 +20,6 @@ export const emailConfirmRequestSchema = z.object({
 });
 export type EmailConfirmRequest = z.infer<typeof emailConfirmRequestSchema>;
 
-export const loginRequestSchema = z.object({
-  email: emailInputSchema,
-  password: z.string().min(1).max(128),
-});
-export type LoginRequest = z.infer<typeof loginRequestSchema>;
-
 export const refreshRequestSchema = z.object({ refreshToken: z.string().min(1) });
 export type RefreshRequest = z.infer<typeof refreshRequestSchema>;
 
@@ -82,22 +32,12 @@ export const socialLoginRequestSchema = z.object({
 });
 export type SocialLoginRequest = z.infer<typeof socialLoginRequestSchema>;
 
-/** DELETE /me: prova de que quem pede é a dona da conta (senha, código por e-mail ou ID token novo do provedor). */
+/** DELETE /me: prova de que quem pede é a dona da conta (código por e-mail ou ID token novo do provedor). */
 export const deleteAccountRequestSchema = z.union([
-  z.object({ password: z.string().min(1).max(128) }),
   z.object({ emailCode: z.string().regex(/^\d{6}$/) }),
   z.object({ provider: z.enum(['google', 'apple']), idToken: z.string().min(1) }),
 ]);
 export type DeleteAccountRequest = z.infer<typeof deleteAccountRequestSchema>;
-
-export const forgotPasswordRequestSchema = z.object({ email: z.email() });
-export type ForgotPasswordRequest = z.infer<typeof forgotPasswordRequestSchema>;
-
-export const resetPasswordRequestSchema = z.object({
-  token: z.string().min(1),
-  newPassword: passwordSchema,
-});
-export type ResetPasswordRequest = z.infer<typeof resetPasswordRequestSchema>;
 
 export const authTokensSchema = z.object({
   accessToken: z.string().min(1),
@@ -115,7 +55,7 @@ export const userSummarySchema = z.object({
 });
 export type UserSummary = z.infer<typeof userSummarySchema>;
 
-/** Resposta de cadastro, login e login social. */
+/** Resposta da confirmação do código, do refresh e do login social. */
 export const authResponseSchema = z.object({
   tokens: authTokensSchema,
   user: userSummarySchema,

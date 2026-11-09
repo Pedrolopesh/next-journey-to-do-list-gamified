@@ -7,13 +7,13 @@ Code in `apps/api/src/common`, `config`, `modules/security`, `app.module.ts` and
 Every route is born **protected**; `@Public()` marks the exception. The guard validates the access JWT (fixed algorithm HS256) and checks that the account still exists (primary key lookup, no cache), so a deleted account loses access at once, without waiting for the 15 minutes of the token.
 
 - The user id and the session id are UUIDs: anything else never reaches the database.
-- With `sid`, the session must still be active: ending a device (or changing the password, or signing out) drops the access token at once, in the same query. An old token without `sid` only checks the account.
+- With `sid`, the session must still be active: ending a device (or signing out) drops the access token at once, in the same query. An old token without `sid` only checks the account.
 - A database error in the guard **does not become 401**: it denies with 5xx, because a temporary failure must not log the app out, which treats 401 as an ended session.
 
 ## Errors and validation
 
 - Every error response has the format `{ code, message, requestId }`. A business rule error (`AppError`) has a stable code: the app picks the message by `code`. **5xx never leaks details**; the unexpected error is logged with the stack, without the request body.
-- Input is validated with the contract Zod schema; the error never returns the received value (passwords).
+- Input is validated with the contract Zod schema; the error never returns the received value.
 
 ## Logs
 
@@ -28,11 +28,9 @@ Every route is born **protected**; `@Public()` marks the exception. The guard va
 
 | Event                      | Alert when it exceeds | Window |
 | -------------------------- | --------------------- | ------ |
-| `login_failed`             | 30                    | 5 min  |
 | `rate_limited`             | 100                   | 5 min  |
 | `refresh_reuse_detected`   | 5                     | 10 min |
 | `reauth_failed`            | 10                    | 10 min |
-| `password_reset_requested` | 30                    | 10 min |
 
 The alert goes to the log at `error` level with `alert: true` (once per window) and, if `SECURITY_ALERT_WEBHOOK_URL` is set, in a POST with a short text (type, count, window), with no personal data. A webhook failure does not affect the API. The count is **per instance**.
 
@@ -56,7 +54,6 @@ The API **does not start** if a required one is missing or invalid, and the erro
 | `JWT_ACCESS_SECRET_PREVIOUS`, `JWT_PREVIOUS_KEY_ID`       | previous key, valid until the token ends during a secret rotation     | empty                                          |
 | `ACCESS_TOKEN_TTL_SECONDS`, `REFRESH_TOKEN_TTL_DAYS`      | token validity                                                        | 900, 365                                       |
 | `RESEND_API_KEY`, `MAIL_FROM`                             | transactional email; without a key nothing is sent (development)      | empty                                          |
-| `PASSWORD_RESET_URL`, `PASSWORD_RESET_TTL_MINUTES`        | deep link and validity of the new-password link                       | `nextjourney://reset-password`, 30             |
 | `GOOGLE_CLIENT_IDS`, `APPLE_CLIENT_ID`                    | public social login ids; empty = feature unavailable                  | empty                                          |
 | `CORS_ORIGINS`, `TRUST_PROXY`                             | HTTP layer                                                            | empty, `false`                                 |
 | `THROTTLE_LIMIT`, `THROTTLE_AUTH_LIMIT`                   | requests per minute per IP                                            | 120, 10                                        |

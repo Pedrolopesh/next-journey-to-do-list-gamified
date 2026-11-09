@@ -10,7 +10,7 @@ import { createTestApp, registerUser, type TestContext } from './helpers.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-describe('cleanup of expired tokens, links and codes', () => {
+describe('cleanup of expired tokens and codes', () => {
   let ctx: TestContext;
   beforeAll(async () => {
     ctx = await createTestApp();
@@ -39,13 +39,6 @@ describe('cleanup of expired tokens, links and codes', () => {
     const boundary = await token(EXPIRED_GRACE_DAYS);
     const recentExpired = await token(1);
     const revokedValid = await token(-10, ago(2));
-    const resets = await Promise.all(
-      [EXPIRED_GRACE_DAYS + 1, 1].map((days) =>
-        ctx.prisma.passwordReset.create({
-          data: { userId, tokenHash: randomUUID(), expiresAt: ago(days) },
-        }),
-      ),
-    );
     const codes = await Promise.all(
       [EXPIRED_GRACE_DAYS + 1, 1].map((days) =>
         ctx.prisma.emailVerification.create({
@@ -57,12 +50,8 @@ describe('cleanup of expired tokens, links and codes', () => {
     const counts = await ctx.app.get(AuthCleanupService).purgeExpired();
 
     expect(counts.refreshTokens).toBeGreaterThanOrEqual(1);
-    expect(counts.passwordResets).toBeGreaterThanOrEqual(1);
     expect(counts.emailVerifications).toBeGreaterThanOrEqual(1);
-    const left = async (
-      model: 'refreshToken' | 'passwordReset' | 'emailVerification',
-      ids: string[],
-    ) =>
+    const left = async (model: 'refreshToken' | 'emailVerification', ids: string[]) =>
       (
         await (
           ctx.prisma[model] as unknown as {
@@ -75,12 +64,6 @@ describe('cleanup of expired tokens, links and codes', () => {
     expect(
       await left('refreshToken', [old.id, boundary.id, recentExpired.id, revokedValid.id]),
     ).toEqual([boundary.id, recentExpired.id, revokedValid.id].sort());
-    expect(
-      await left(
-        'passwordReset',
-        resets.map((row) => row.id),
-      ),
-    ).toEqual([resets[1]!.id]);
     expect(
       await left(
         'emailVerification',

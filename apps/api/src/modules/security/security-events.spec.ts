@@ -36,9 +36,9 @@ describe('maskIp', () => {
 describe('SecurityEvents', () => {
   it('records the event with the user id and a masked IP, never the whole IP', () => {
     const { events, logger } = build();
-    events.record('login_failed', { userId: 'u-1', ip: v4(203, 0, 113, 9) });
+    events.record('reauth_failed', { userId: 'u-1', ip: v4(203, 0, 113, 9) });
     const [fields, message] = logger.warn.mock.calls[0] as [Record<string, unknown>, string];
-    expect(fields).toEqual({ security: 'login_failed', userId: 'u-1', ip: '203.0.113.x' });
+    expect(fields).toEqual({ security: 'reauth_failed', userId: 'u-1', ip: '203.0.113.x' });
     expect(message).toBe('evento de segurança');
     expect(JSON.stringify(logger.warn.mock.calls)).not.toContain(v4(203, 0, 113, 9));
   });

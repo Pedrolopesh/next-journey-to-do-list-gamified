@@ -76,7 +76,7 @@ The PR template repeats these items; each must be ticked or confirmed in a short
 
 - Mass assignment (fields such as `role` and `isBlocked` never come from the client), SQL injection (`$queryRaw`), SSRF, path traversal.
 - JWT: validate `exp`, a fixed algorithm, a strong secret outside the code. Rotating refresh token; reuse revokes the family.
-- Account enumeration: login, forgot password and signup answer the same for an existing and a missing email; with a rate limit.
+- Account enumeration: the email-code request answers the same for an existing and a missing email; with a rate limit.
 - Constant-time secret comparison (`crypto.timingSafeEqual`).
 - ReDoS, race conditions (transaction or unique constraint), CORS with an allowlist (never reflect `Origin` with credentials), helmet on.
 - Check idempotency (`checkId`): repeating must not duplicate EXP.

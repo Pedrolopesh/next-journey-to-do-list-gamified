@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { AuthResponse, Session } from '@nextjourney/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { bearer, createTestApp, PASSWORD, registerUser, type TestContext } from './helpers.js';
+import { bearer, createTestApp, loginByCode, registerUser, type TestContext } from './helpers.js';
 
 describe('account sessions', () => {
   let ctx: TestContext;
@@ -14,12 +14,9 @@ describe('account sessions', () => {
     await ctx.app.close();
   });
 
-  const loginAs = async (email: string, device?: string): Promise<AuthResponse> => {
-    let request = ctx.http().post('/v1/auth/login');
-    if (device !== undefined) request = request.set('x-device-name', encodeURIComponent(device));
-    const res = await request.send({ email, password: PASSWORD }).expect(200); // scan-allow: fake password
-    return res.body as AuthResponse;
-  };
+  /** Signs in again by code, the way a second device does; the app sends the name URL-encoded. */
+  const loginAs = (email: string, device?: string): Promise<AuthResponse> =>
+    loginByCode(ctx, email, device === undefined ? undefined : encodeURIComponent(device));
   const list = async (auth: AuthResponse): Promise<Session[]> =>
     (await ctx.http().get('/v1/me/sessions').set('authorization', bearer(auth)).expect(200)).body
       .sessions as Session[];

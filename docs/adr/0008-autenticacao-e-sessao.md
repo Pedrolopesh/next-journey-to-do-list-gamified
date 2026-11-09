@@ -1,5 +1,7 @@
 # ADR-0008: autenticação, tokens e sessão
 
+> Atualização de 2026-11-09: as partes de senha deste registro foram removidas; a entrada é só por código de e-mail, Google e Apple (ver `openspec/specs/email-code-login` e a mudança `remover-endpoints-de-senha`). O texto abaixo é o histórico da decisão original.
+
 - Data: 2026-10-09
 - Status: aceita
 - Fase do plano: Fase 4, passos 7 e 10

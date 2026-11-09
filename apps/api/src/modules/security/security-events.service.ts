@@ -8,14 +8,7 @@ import { ENV, type Env } from '../../config/env.js';
  * Security events with a fixed name. They never carry an email, password, token or request body.
  */
 export type SecurityEventType =
-  | 'login_failed'
-  | 'rate_limited'
-  | 'password_reset_requested'
-  | 'password_reset_completed'
-  | 'refresh_reuse_detected'
-  | 'reauth_failed'
-  | 'account_deleted'
-  | 'data_exported';
+  'rate_limited' | 'refresh_reuse_detected' | 'reauth_failed' | 'account_deleted' | 'data_exported';
 
 type Context = {
   userId?: string;
@@ -30,11 +23,9 @@ type Context = {
  * window).
  */
 const ALERTS: Partial<Record<SecurityEventType, { limit: number; windowMs: number }>> = {
-  login_failed: { limit: 30, windowMs: 5 * 60_000 },
   rate_limited: { limit: 100, windowMs: 5 * 60_000 },
   refresh_reuse_detected: { limit: 5, windowMs: 10 * 60_000 },
   reauth_failed: { limit: 10, windowMs: 10 * 60_000 },
-  password_reset_requested: { limit: 30, windowMs: 10 * 60_000 },
 };
 
 /**

@@ -7,8 +7,7 @@ import {
   check,
   createTestApp,
   FakeVerifier,
-  PASSWORD,
-  registerBody,
+  loginByCode,
   registerUser,
   type TestContext,
   uniqueEmail,
@@ -91,7 +90,7 @@ describe('starter items created by the server', () => {
 
   it('linking a social login to a pending account confirms it and seeds once', async () => {
     const email = uniqueEmail();
-    await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
+    await ctx.http().post('/v1/auth/email/start').send({ email }).expect(202);
     const res = await social(email).expect(200);
     expect(await itemsOf(res.body.user.id)).toHaveLength(TOTAL);
   });
@@ -119,27 +118,19 @@ describe('starter items created by the server', () => {
     );
   });
 
-  it('password login and linking to an already confirmed account do not seed', async () => {
+  it('signing in again by code and linking to an already confirmed account do not seed', async () => {
     const email = uniqueEmail();
     const auth = await registerUser(ctx, email, { story: false });
     await ctx.prisma.item.deleteMany({ where: { userId: auth.user.id } });
-    await ctx
-      .http()
-      .post('/v1/auth/login')
-      .send({ email, password: PASSWORD }) // scan-allow: fake test password
-      .expect(200);
+    await loginByCode(ctx, email);
     await social(email).expect(200);
     expect(await itemsOf(auth.user.id)).toHaveLength(0);
   });
 
   it('a wrong code seeds nothing and the account stays pending', async () => {
     const email = uniqueEmail();
-    await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
-    await ctx
-      .http()
-      .post('/v1/auth/verify-email')
-      .send({ email, code: '000000', password: PASSWORD }) // scan-allow: fake test password
-      .expect(400);
+    await ctx.http().post('/v1/auth/email/start').send({ email }).expect(202);
+    await ctx.http().post('/v1/auth/email/confirm').send({ email, code: '000000' }).expect(400);
     const user = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
     expect(user.emailVerifiedAt).toBeNull();
     expect(await itemsOf(user.id)).toHaveLength(0);
@@ -147,19 +138,19 @@ describe('starter items created by the server', () => {
 
   it('a seeding failure keeps the account pending and the same code valid', async () => {
     const email = uniqueEmail();
-    await ctx.http().post('/v1/auth/register').send(registerBody(email)).expect(202);
+    await ctx.http().post('/v1/auth/email/start').send({ email }).expect(202);
     const code = ctx.mailer.lastVerificationCode(email) ?? '';
-    const body = { email, code, password: PASSWORD }; // scan-allow: fake test password
+    const body = { email, code };
     const spy = vi
       .spyOn(ctx.app.get(StarterItemsService), 'seed')
       .mockRejectedValueOnce(new Error('simulated failure'));
-    await ctx.http().post('/v1/auth/verify-email').send(body).expect(500);
+    await ctx.http().post('/v1/auth/email/confirm').send(body).expect(500);
     spy.mockRestore();
     const pending = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
     expect(pending.emailVerifiedAt).toBeNull();
     expect(await itemsOf(pending.id)).toHaveLength(0);
 
-    await ctx.http().post('/v1/auth/verify-email').send(body).expect(200);
+    await ctx.http().post('/v1/auth/email/confirm').send(body).expect(200);
     expect(await itemsOf(pending.id)).toHaveLength(TOTAL);
   });
 });

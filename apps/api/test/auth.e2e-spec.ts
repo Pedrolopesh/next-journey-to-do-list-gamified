@@ -1,14 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import {
-  bearer,
-  createTestApp,
-  PASSWORD,
-  registerBody,
-  registerUser,
-  type TestContext,
-  uniqueEmail,
-} from './helpers.js';
+import { bearer, createTestApp, registerUser, type TestContext } from './helpers.js';
 
 describe('auth and basic security', () => {
   let ctx: TestContext;
@@ -25,7 +17,7 @@ describe('auth and basic security', () => {
     expect(res.body.info.database.status).toBe('up');
   });
 
-  it('signup creates the user, the 5 default categories and never returns a password hash', async () => {
+  it('the first code sign-in creates the user and the 5 default categories, and returns no secret', async () => {
     const auth = await registerUser(ctx);
     expect(JSON.stringify(auth)).not.toMatch(/hash|password/i);
     const categories = await ctx.prisma.category.findMany({ where: { userId: auth.user.id } });
@@ -36,70 +28,21 @@ describe('auth and basic security', () => {
       'Saúde',
       'Trabalho',
     ]);
-    const stored = await ctx.prisma.user.findUniqueOrThrow({ where: { id: auth.user.id } });
-    expect(stored.passwordHash?.startsWith('$argon2id$')).toBe(true);
   });
 
-  it('a repeated email answers the same as a new email (without revealing that the account exists)', async () => {
-    const email = uniqueEmail();
-    await registerUser(ctx, email);
-    const repeated = await ctx
-      .http()
-      .post('/v1/auth/register')
-      .send({ ...registerBody(email.toUpperCase()), name: 'Outra' })
-      .expect(202);
-    const fresh = await ctx
-      .http()
-      .post('/v1/auth/register')
-      .send(registerBody(uniqueEmail()))
-      .expect(202);
-    expect(repeated.body).toEqual(fresh.body);
-  });
-
-  it('validation does not return the value sent (password) and uses the standard error format', async () => {
+  it('validation does not return the value sent and uses the standard error format', async () => {
     const res = await ctx
       .http()
-      .post('/v1/auth/register')
-      .send({
-        name: 'x',
-        email: 'nao-e-email',
-        password: 'senhaSecretaFraca', // scan-allow: fake test password
-        confirmPassword: 'senhaSecretaFraca', // scan-allow: fake test password
-        acceptedTerms: true,
-        termsVersion: '1',
-        timezone: 'UTC',
-      })
+      .post('/v1/auth/email/start')
+      .send({ email: 'nao-e-um-email-secreto' })
       .expect(400);
     expect(res.body.code).toBe('VALIDATION_ERROR');
     expect(res.body.requestId).toBeTruthy();
-    expect(JSON.stringify(res.body)).not.toContain('senhaSecretaFraca');
+    expect(JSON.stringify(res.body)).not.toContain('nao-e-um-email-secreto');
   });
 
-  it('login: wrong password and a missing email give the SAME response (no enumeration)', async () => {
+  it('a protected route requires the access token', async () => {
     const auth = await registerUser(ctx);
-    const wrongPassword = await ctx
-      .http()
-      .post('/v1/auth/login')
-      .send({ email: auth.user.email, password: 'Errada#1234' }) // scan-allow: fake test password
-      .expect(401);
-    const unknown = await ctx
-      .http()
-      .post('/v1/auth/login')
-      .send({ email: uniqueEmail('naoexiste'), password: 'Errada#1234' }) // scan-allow: fake test password
-      .expect(401);
-    const strip = (body: Record<string, unknown>) => ({ code: body.code, message: body.message });
-    expect(strip(wrongPassword.body)).toEqual(strip(unknown.body));
-  });
-
-  it('login correto devolve tokens; rota protegida exige o access token', async () => {
-    const auth = await registerUser(ctx);
-    const login = await ctx
-      .http()
-      .post('/v1/auth/login')
-      .send({ email: auth.user.email, password: PASSWORD }) // scan-allow: fake test password
-      .expect(200);
-    expect(login.body.tokens.accessToken).toBeTruthy();
-
     await ctx.http().get('/v1/items').expect(401);
     await ctx.http().get('/v1/items').set('authorization', 'Bearer lixo').expect(401);
     await ctx.http().get('/v1/items').set('authorization', bearer(auth)).expect(200);

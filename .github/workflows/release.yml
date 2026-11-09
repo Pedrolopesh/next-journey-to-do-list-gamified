@@ -75,6 +75,4 @@ jobs:
       - name: Smoke tests
         env:
           SMOKE_BASE_URL: ${{ vars.API_URL }}
-          SMOKE_EMAIL: ${{ secrets.SMOKE_EMAIL }}
-          SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
         run: pnpm --filter @nextjourney/smoke smoke

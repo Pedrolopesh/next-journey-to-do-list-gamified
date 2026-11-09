@@ -48,11 +48,11 @@ São **40 requisitos em 10 módulos**. *Obrigatório* bloqueia o lançamento; *D
 
 | ID | Requisito | Prioridade |
 |---|---|---|
-| RF-01 | Cadastro com nome, e-mail, senha e confirmação. A senha exige 8+ caracteres, maiúscula, número e caractere especial, com checklist visível até o envio. | Obrigatório |
-| RF-02 | Login com e-mail e senha, com opção de mostrar ou ocultar a senha. | Obrigatório |
+| RF-01 | Entrada sem senha: e-mail e código de 6 dígitos (a conta nasce no primeiro código confirmado), com termos aceitos e fuso horário. | Obrigatório |
+| RF-02 | Código de e-mail: válido por 15 minutos, uso único, 5 tentativas, reenvio a cada 60 segundos. Não existe senha. | Obrigatório |
 | RF-03 | Login com Google. | Obrigatório |
 | RF-04 | Login com Apple (exigência da App Store quando há login social). | Obrigatório |
-| RF-05 | Recuperação de senha por e-mail, com link de uso único válido por 30 minutos. | Obrigatório |
+| RF-05 | Exclusão de conta com segunda prova: código por e-mail ou ID token do provedor. | Obrigatório |
 | RF-06 | Sessão persistente: o usuário continua logado ao reabrir o app (access + refresh token). | Obrigatório |
 | RF-07 | Logout em Perfil › Conta. | Obrigatório |
 | RF-08 | Exclusão de conta dentro do app, apagando os dados pessoais (exigência da Apple e do Google Play). | Obrigatório |
@@ -217,7 +217,7 @@ Uma tela estática depois de um toque é defeito, mesmo que a lógica esteja cer
 |---|---|
 | Plataformas | iOS e Android a partir das versões mínimas do SDK do Expo usado; iPhone e aparelhos Android de 4 GB de RAM como referência. |
 | Desempenho | Feedback do check em menos de 100 ms; p95 da API abaixo de 300 ms em check e listagens; banner a 60 fps; abertura a frio em menos de 3 s. |
-| Segurança | Senhas com argon2id; access token JWT de 15 min + refresh token de 365 dias (renovado a cada uso) com rotação e revogação; HTTPS obrigatório; rate limit de 5 tentativas de login por minuto por IP e e-mail; ID tokens do Google e da Apple validados no back-end. |
+| Segurança | Códigos e refresh tokens guardados só como hash; access token JWT de 15 min + refresh token de 365 dias (renovado a cada uso) com rotação e revogação; HTTPS obrigatório; rate limit de 5 tentativas de login por minuto por IP e e-mail; ID tokens do Google e da Apple validados no back-end. |
 | Armazenamento no aparelho | Tokens só no SecureStore (Keychain / Keystore); nada sensível no AsyncStorage. |
 | Privacidade (LGPD) | Aceite de Termos e Política no cadastro; exclusão de conta com remoção dos dados pessoais em até 30 dias; logs sem e-mail, senha ou token. |
 | Disponibilidade | 99,5% ao mês; backup diário do PostgreSQL com retenção de 7 dias. |
@@ -273,7 +273,7 @@ O back-end é uma API REST em NestJS que concentra toda a regra de progressão. 
 | Logs | nestjs-pino (pino + pino-http) | Detalhado em [Logs](#logs). |
 | Segurança HTTP | helmet, CORS restrito, `@nestjs/throttler` | Rate limit global e mais rígido nas rotas de autenticação. |
 | Rotinas agendadas | `@nestjs/schedule` | Limpeza de refresh tokens vencidos e remoção definitiva de contas excluídas há 30 dias. |
-| E-mail | Resend | Só para a recuperação de senha na v1. |
+| E-mail | Resend | Código de entrada e de exclusão de conta. |
 | Documentação | `@nestjs/swagger` | OpenAPI em `/docs`, só fora de produção. |
 | Saúde | `@nestjs/terminus` | `GET /health` verifica o banco. |
 | Testes | Jest + `@nestjs/testing` | Detalhado em [Padrões comuns](#9-padrões-comuns-agentsmd-lint-testes-e-pre-commit). |
@@ -282,7 +282,7 @@ O back-end é uma API REST em NestJS que concentra toda a regra de progressão. 
 
 | Módulo | Responsabilidade |
 |---|---|
-| `auth` | Cadastro, login, Google, Apple, refresh, logout, recuperação de senha. |
+| `auth` | Código por e-mail, Google, Apple, refresh, logout. |
 | `users` | Perfil, fuso, passo do onboarding, preferências de notificação, exclusão de conta. |
 | `characters` | Chaves das camadas LPC do personagem e cosméticos liberados. |
 | `categories` | CRUD com as 5 categorias padrão criadas no cadastro. |
@@ -305,10 +305,9 @@ Atraso e sequência dos diários são calculados **na leitura e no check**, a pa
 
 | Tabela | Campos principais |
 |---|---|
-| `users` | id, email (único, opcional para Apple), password_hash, name, timezone, onboarding_step, notify_at, terms_accepted_at, terms_version, created_at, deleted_at |
-| `auth_identities` | id, user_id, provider (password, google, apple), provider_user_id — único por (provider, provider_user_id) |
+| `users` | id, email (único, opcional para Apple), name, timezone, onboarding_step, notify_at, terms_accepted_at, terms_version, created_at, deleted_at |
+| `auth_identities` | id, user_id, provider (google, apple), provider_user_id — único por (provider, provider_user_id) |
 | `refresh_tokens` | id, user_id, token_hash, family_id, expires_at, revoked_at |
-| `password_resets` | id, user_id, token_hash, expires_at, used_at |
 | `characters` | user_id, name, title, skin, hair, outfit, accessory |
 | `user_stats` | user_id, exp_total, level, exp_in_level, coins, total_checks, items_created |
 | `categories` | id, user_id, name, color, position, deleted_at |
@@ -328,7 +327,6 @@ Atraso e sequência dos diários são calculados **na leitura e no check**, a pa
 | `POST /auth/register` · `POST /auth/login` | Cadastro e login por e-mail; devolvem access e refresh token. |
 | `POST /auth/google` · `POST /auth/apple` | Recebem o ID token do provedor, criam ou vinculam o usuário. |
 | `POST /auth/refresh` · `POST /auth/logout` | Rotaciona o refresh token (reuso revoga a família inteira) e encerra a sessão. |
-| `POST /auth/forgot-password` · `POST /auth/reset-password` | Envia o link e troca a senha. Responde sempre 202, exista ou não o e-mail. |
 | `GET /me` · `PATCH /me` · `DELETE /me` | Perfil, estatísticas, personagem, história ativa e onboarding; edição; exclusão da conta. |
 | `PUT /me/character` · `GET /me/cosmetics` | Salva as camadas do personagem; lista os cosméticos liberados. |
 | `GET /stories` · `PUT /me/story` | Catálogo; escolhe ou troca a história ativa. |
@@ -441,7 +439,7 @@ O app é feito em React Native com Expo, usando **development build** (e não o 
 | Dados do servidor | TanStack Query | Cache por tela, update otimista no check, rollback em erro e cache persistido para abrir rápido. |
 | Estado local | Zustand | Sessão, fila offline de checks e fila de modais (nível, conquista, capítulo). |
 | HTTP | axios | Interceptor que injeta o access token e renova pelo refresh token no 401, com uma única renovação por vez. |
-| Formulários | react-hook-form + Zod (`packages/contracts`) | As mesmas regras de validação da API, incluindo o checklist de senha. |
+| Formulários | react-hook-form + Zod (`packages/contracts`) | As mesmas regras de validação da API. |
 | Armazenamento | `expo-secure-store` (tokens) e AsyncStorage (cache e flags) | Nada sensível fora do SecureStore. |
 | Login social | `@react-native-google-signin/google-signin` e `expo-apple-authentication` | O app obtém o ID token e envia para `/auth/google` ou `/auth/apple`. |
 | Banner | `react-native-webview` | Carrega o HTML único do `apps/banner` e conversa por `postMessage` (ver [Projeto 2](#7-projeto-2--banner-appsbanner)). |
@@ -459,7 +457,7 @@ O app é feito em React Native com Expo, usando **development build** (e não o 
 ```
 app/
   _layout.tsx               providers, fontes, splash, redirecionamento
-  (auth)/                   welcome, register, login, forgot-password
+  (auth)/                   welcome, email, code
   (onboarding)/             tutorial, character, story
   (tabs)/_layout.tsx        bottom nav (5 abas, badge em Diários)
   (tabs)/                   index (Home), dailies, todos, habits, profile
