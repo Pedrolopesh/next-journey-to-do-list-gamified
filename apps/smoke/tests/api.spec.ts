@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
+import { randomInt } from 'node:crypto';
 
 import { authResponseSchema, dataExportSchema, meResponseSchema } from '@nextjourney/contracts';
 import { expect, test } from '@playwright/test';
@@ -44,7 +44,7 @@ test.describe('public surface', () => {
 
 // Needs a way to store a known login code for the test account without opening an inbox. Without
 // it, the whole account flow is skipped and nothing is created.
-// SMOKE_CODE_COMMAND is a shell command that receives the email and a 6-digit code as its last two
+// SMOKE_CODE_COMMAND is the path of an executable (run without a shell) that receives the email and a 6-digit code as its last two
 // arguments and must make that code the valid login code of the account (see runbooks/deploy.md).
 const codeCommand = process.env['SMOKE_CODE_COMMAND'];
 
@@ -52,7 +52,7 @@ test.describe.serial('account lifecycle', () => {
   test.skip(!codeCommand, 'set SMOKE_CODE_COMMAND to run the account flow');
 
   const email = `smoke+${Date.now()}@example.invalid`;
-  const knownCode = String(100000 + (randomBytes(4).readUInt32BE() % 900000));
+  const knownCode = String(randomInt(100000, 1000000));
   let started = false;
   let accessToken = '';
   let refreshToken = '';
@@ -64,11 +64,7 @@ test.describe.serial('account lifecycle', () => {
     const context = await playwright.request.newContext(baseURL ? { baseURL } : {});
     if (accessToken) {
       // The login consumed the code; the deletion needs a fresh one
-      const stored = spawnSync(
-        '/bin/sh',
-        ['-c', `${codeCommand ?? ''} "$1" "$2"`, 'code', email, knownCode],
-        { encoding: 'utf8' },
-      );
+      const stored = spawnSync(codeCommand ?? '', [email, knownCode], { encoding: 'utf8' });
       expect(stored.status, stored.stderr).toBe(0);
       const response = await context.delete('/v1/me', {
         headers: { ...JSON_HEADERS, authorization: `Bearer ${accessToken}` },
@@ -93,11 +89,7 @@ test.describe.serial('account lifecycle', () => {
   });
 
   test('the code command stores a known code for the account', () => {
-    const result = spawnSync(
-      '/bin/sh',
-      ['-c', `${codeCommand ?? ''} "$1" "$2"`, 'code', email, knownCode],
-      { encoding: 'utf8' },
-    );
+    const result = spawnSync(codeCommand ?? '', [email, knownCode], { encoding: 'utf8' });
     expect(result.status, result.stderr).toBe(0);
   });
 

@@ -9,14 +9,14 @@ The normal path is the pipeline (`pipeline.md`). This script builds on the host 
 ```bash
 export VPS_HOST=<ip-or-tailnet-name>
 apps/infra/scripts/deploy.sh dev main        # or prd; 3rd argument "seed" on the first run or with a new achievement
-SMOKE_BASE_URL=https://<api-host> SMOKE_CODE_COMMAND=<command-that-stores-a-login-code> pnpm --filter @nextjourney/smoke smoke
+SMOKE_BASE_URL=https://<api-host> SMOKE_CODE_COMMAND=<executable-that-stores-a-login-code> pnpm --filter @nextjourney/smoke smoke
 ```
 
 The script builds the image on the VPS (`nj-build-local`), then `nj-release` runs `prisma migrate deploy` before swapping the API and reloads the unit. The previous tag is kept in `NJ_PREV_TAG`, in `/etc/nextjourney/<env>.env`.
 
 ## Smoke test
 
-`apps/smoke` runs Playwright in API mode (no browser): health, security headers, validation, protected routes and, when `SMOKE_CODE_COMMAND` is set, the account lifecycle (code request, code sign-in, refresh, `me`, data export and deletion by code), with every response checked against the shared contracts. The command receives the test account's email and a 6-digit code as its last two arguments and must make that code the valid login code of the account (the stored value is the SHA-256 of `<user id>:<code>` in `email_verifications`), for example with a one-off SQL statement on the environment database. Without it, the account tests are skipped and nothing is created. The release pipeline does not set it, so it runs only the public checks.
+`apps/smoke` runs Playwright in API mode (no browser): health, security headers, validation, protected routes and, when `SMOKE_CODE_COMMAND` is set, the account lifecycle (code request, code sign-in, refresh, `me`, data export and deletion by code), with every response checked against the shared contracts. The executable (run without a shell) receives the test account's email and a 6-digit code as its two arguments and must make that code the valid login code of the account (the stored value is the SHA-256 of `<user id>:<code>` in `email_verifications`), for example with a one-off SQL statement on the environment database. Without it, the account tests are skipped and nothing is created. The release pipeline does not set it, so it runs only the public checks.
 
 ## Roll back
 
