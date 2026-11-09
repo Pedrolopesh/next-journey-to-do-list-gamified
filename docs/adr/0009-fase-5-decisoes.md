@@ -1,5 +1,7 @@
 # ADR-0009: decisões da Fase 5 (loop completo)
 
+> Atualização de 2026-11-09: a recuperação de senha deste registro foi removida; a entrada é só por código de e-mail, Google e Apple (ver `openspec/specs/email-code-login` e a mudança `remover-endpoints-de-senha`). O texto abaixo é o histórico da decisão original.
+
 - Data: 2026-10-09
 - Status: aceita
 - Fase do plano: Fase 5

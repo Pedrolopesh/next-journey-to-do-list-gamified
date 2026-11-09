@@ -9,7 +9,7 @@ import { pixelSvg } from '../pixel';
 const EXISTING: [string, string, string, boolean][] = [
   ['primary', 'Principal', 'Entrar', false],
   ['secondary', 'Secundário', 'Criar conta', false],
-  ['ghost', 'Texto', 'Esqueci minha senha', false],
+  ['ghost', 'Texto', 'Pular', false],
   ['danger', 'Perigo', 'Sair', false],
   ['primary off', 'Desabilitado', 'Salvar', true],
 ];

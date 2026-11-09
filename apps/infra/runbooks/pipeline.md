@@ -11,7 +11,7 @@ main:          build and push to GHCR (by digest) -> Trivy scan of the pushed im
 ## One-time setup
 
 1. **Package visibility.** After the first push, make the `api` and `api-migrate` packages public in the repository's package settings, so the host can pull without credentials. They contain no secrets.
-2. **Environments.** Create `dev` and `production` under the repository's environments. On `production`, add yourself as a required reviewer. Environment secrets: `SMOKE_EMAIL` and `SMOKE_PASSWORD` (an existing confirmed test account of that environment).
+2. **Environments.** Create `dev` and `production` under the repository's environments. On `production`, add yourself as a required reviewer.
 3. **Variables** (repository): `VPS_HOST` (tailnet address of the host). On each environment, `API_URL` (the public URL of that API).
 4. **Secrets** (repository): `CI_SSH_KEY` (private half of the pipeline key), `VPS_SSH_HOST_KEY` (the host's `known_hosts` line, taken over the tailnet), `TS_OAUTH_CLIENT_ID` and `TS_OAUTH_SECRET` (Tailscale OAuth client with the `auth_keys` write scope for `tag:ci`).
 5. **Tailnet policy.** Declare `tag:ci` in `tagOwners` and grant it SSH (port 22) to the host only.
