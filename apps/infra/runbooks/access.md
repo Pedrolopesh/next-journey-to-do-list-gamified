@@ -46,3 +46,7 @@ These are not done by code:
 ```
 
 Save only with the panel tests passing, and afterwards confirm from every machine that the VPS is still reachable.
+
+## Editor tunnel (VS Code Remote-SSH)
+
+SSH forwarding is off by default. A remote editor needs a tunnel to the server it starts on the loopback, so the SSH configuration allows `AllowTcpForwarding local` with `PermitOpen` limited to the loopback, only for the deploy user and only from the addresses listed in `ssh_forwarding_addresses` (kept in the local inventory, not in Git). Connect as the deploy user through the tailnet address. An empty list disables the tunnel again.
