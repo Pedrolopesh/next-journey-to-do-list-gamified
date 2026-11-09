@@ -22,6 +22,9 @@ import {
   type Item,
   itemSchema,
   type ItemType,
+  type LegalDocument,
+  legalDocumentSchema,
+  type LegalSlug,
   type MeResponse,
   meResponseSchema,
   type PatchMeRequest,
@@ -208,4 +211,10 @@ export async function fetchHome(): Promise<HomeResponse> {
 export async function fetchAchievements(): Promise<Achievement[]> {
   const { data } = await http.get<unknown>('/achievements');
   return z.array(achievementSchema).parse(data);
+}
+
+// --- legal texts (public: no session needed)
+export async function fetchLegalDocument(slug: LegalSlug): Promise<LegalDocument> {
+  const { data } = await http.get<unknown>(`/legal/documents/${slug}`);
+  return legalDocumentSchema.parse(data);
 }

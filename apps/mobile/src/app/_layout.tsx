@@ -91,6 +91,8 @@ function Gate() {
           <Stack.Screen name="history" />
           <Stack.Screen name="settings" />
         </Stack.Protected>
+        {/* The legal texts are public: open from the sign-in screen and from the settings */}
+        <Stack.Screen name="legal/[slug]" />
       </Stack>
       <ProgressionModalHost />
     </>

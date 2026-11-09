@@ -16,6 +16,7 @@ import { CategoriesModule } from './modules/categories/categories.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { HomeModule } from './modules/home/home.module.js';
 import { ItemsModule } from './modules/items/items.module.js';
+import { LegalModule } from './modules/legal/legal.module.js';
 import { MeModule } from './modules/me/me.module.js';
 import { SecurityModule } from './modules/security/security.module.js';
 import { StoriesModule } from './modules/stories/stories.module.js';
@@ -91,6 +92,7 @@ const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
     SecurityModule,
     AuthModule,
     ItemsModule,
+    LegalModule,
     MeModule,
     StoriesModule,
     CategoriesModule,

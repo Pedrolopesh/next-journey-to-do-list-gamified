@@ -11,6 +11,7 @@ export * from './errors';
 export * from './game-config';
 export * from './home';
 export * from './item';
+export * from './legal';
 export * from './player';
 export * from './profile';
 export * from './sessions';

@@ -29,4 +29,5 @@ They complement, without repeating:
 | `modules/stories`, `modules/me`, `modules/home`, `modules/categories` | stories, profile and character, home screen, categories                              |
 | `modules/account`                                                  | deletion, purge and export                                                              |
 | `modules/security`                                                 | security events and alerts                                                              |
+| `modules/legal`                                                    | Terms of Use and Privacy Policy as text (JSON for the app, HTML for the stores)         |
 | `common`, `config`, `prisma`                                       | guard, filters, pipes, clock, environment, database                                     |

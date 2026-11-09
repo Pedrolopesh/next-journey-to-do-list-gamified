@@ -64,6 +64,7 @@ The API **does not start** if a required one is missing or invalid, and the erro
 | `ACCOUNT_PURGE_DAYS`                                      | days until a deleted account is removed for good                      | 30                                             |
 | `SECURITY_ALERT_WEBHOOK_URL`                              | optional notice of an abnormal count (https)                          | empty                                          |
 | `SEED_STARTER_ITEMS`                                      | creates the starter items when the account becomes valid              | `true`                                         |
+| `LEGAL_CONTACT_EMAIL`                                     | contact for data requests, shown in the legal texts; without it the contact section is omitted | empty                          |
 
 ## JWT secret rotation
 

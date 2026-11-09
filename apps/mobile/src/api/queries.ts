@@ -1,4 +1,4 @@
-import type { CheckResult, Item, ItemType, MeResponse } from '@nextjourney/contracts';
+import type { CheckResult, Item, ItemType, LegalSlug, MeResponse } from '@nextjourney/contracts';
 import {
   type QueryClient,
   useInfiniteQuery,
@@ -22,6 +22,7 @@ import {
   fetchHistory,
   fetchHome,
   fetchItems,
+  fetchLegalDocument,
   fetchMe,
   fetchSessions,
   fetchStories,
@@ -45,6 +46,7 @@ export const queryKeys = {
   categories: ['categories'] as const,
   cosmetics: ['cosmetics'] as const,
   sessions: ['sessions'] as const,
+  legal: (slug: LegalSlug) => ['legal', slug] as const,
 };
 
 function useSignedIn(): boolean {
@@ -277,3 +279,11 @@ export function chapterProgress(me: MeResponse | undefined): number {
   const { expInLevel, expForNextLevel } = me.player;
   return Math.min(1, Math.max(0, expInLevel / expForNextLevel));
 }
+
+/** A legal text served by the API. It rarely changes, so it stays fresh for an hour. */
+export const useLegalDocument = (slug: LegalSlug) =>
+  useQuery({
+    queryKey: queryKeys.legal(slug),
+    queryFn: () => fetchLegalDocument(slug),
+    staleTime: 60 * 60 * 1000,
+  });

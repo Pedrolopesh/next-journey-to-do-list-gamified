@@ -1,4 +1,4 @@
-import type { INestApplication } from '@nestjs/common';
+import { type INestApplication, RequestMethod } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
@@ -22,8 +22,10 @@ export function setupApp(app: INestApplication, options: { swagger: boolean }): 
     .map((origin) => origin.trim())
     .filter(Boolean);
   if (origins.length > 0) app.enableCors({ origin: origins, credentials: false });
-  // Versioning: /v1, with health at the root
-  app.setGlobalPrefix('v1', { exclude: ['health'] });
+  // Versioning: /v1, with health and the public legal page (the store URL) at the root
+  app.setGlobalPrefix('v1', {
+    exclude: ['health', { path: 'legal/:slug', method: RequestMethod.GET }],
+  });
 
   if (options.swagger) {
     const document = SwaggerModule.createDocument(

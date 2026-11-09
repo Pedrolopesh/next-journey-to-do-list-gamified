@@ -24,7 +24,7 @@ Prerequisites, once:
 
 - Java 17 or later (`java -version`).
 - Maestro (`~/.maestro/bin/maestro --version`). Official installation: <https://docs.maestro.dev/getting-started/installing-maestro/macos>. The Homebrew package called just `maestro` is a different product; the right one is `mobile-dev-inc/tap/maestro`.
-- An Android emulator **or iOS simulator** open with the development app installed, Metro running and the API up (`PORT=3010 HOST=0.0.0.0`). The flows pass on both (5 of 5 on the iPhone 16 Pro simulator and on the 720x1280 Small_Phone Android emulator).
+- An Android emulator **or iOS simulator** open with the development app installed, Metro running and the API up (`PORT=3010 HOST=0.0.0.0`). The flows pass on iOS (6 of 6 on the iPhone 16 Pro simulator); the first five also passed on the 720x1280 Small_Phone Android emulator.
 - Android emulator: it can run without a window (`emulator -avd Small_Phone -no-window -no-snapshot -gpu swiftshader_indirect`). Use 3-button navigation (`adb shell cmd overlay enable com.android.internal.systemui.navbar.threebutton`): with gesture navigation, Maestro's swipe near the bottom edge goes back to the home screen. Forward the ports with `adb reverse tcp:8081 tcp:8081` and `adb reverse tcp:3010 tcp:3010`, install the development APK and open the app through the Metro link; on the first open tap "Continue" in the developer menu. Only one device open at a time (iOS or Android), because Maestro picks the device by itself.
 - On the iOS simulator, start Metro pointing at the local API (`EXPO_PUBLIC_API_URL=http://localhost:3010 pnpm --filter @nextjourney/mobile exec expo start --dev-client`) and open the app through the Metro link; the app `.env` may be pointing to another environment.
 
@@ -50,6 +50,7 @@ UI_FLOW=.maestro/flows/00-sign-in-and-onboarding.yaml,.maestro/flows/01-create-a
 | 02 uncheck                   | the EXP stays and the coins decrease (the undo rule)                                            |
 | 03 gallery                   | tracks, new goals, progress coming from the server, the detail of an achievement                |
 | 04 history and empty state   | notice at the bottom of Tasks, history, undo, empty state                                       |
+| 05 legal documents         | the Terms of Use and the Privacy Policy open from the settings with the text served by the API |
 
 Conventions:
 

@@ -37,9 +37,25 @@ export default function WelcomeScreen() {
         />
         <Text style={styles.legal}>
           {t('entry.legal.before')}
-          <Text style={styles.underline}>{t('entry.legal.terms')}</Text>
+          <Text
+            style={styles.underline}
+            accessibilityRole="link"
+            onPress={() => {
+              router.push({ pathname: '/legal/[slug]', params: { slug: 'terms' } });
+            }}
+          >
+            {t('entry.legal.terms')}
+          </Text>
           {t('entry.legal.middle')}
-          <Text style={styles.underline}>{t('entry.legal.privacy')}</Text>
+          <Text
+            style={styles.underline}
+            accessibilityRole="link"
+            onPress={() => {
+              router.push({ pathname: '/legal/[slug]', params: { slug: 'privacy' } });
+            }}
+          >
+            {t('entry.legal.privacy')}
+          </Text>
           {t('entry.legal.after')}
         </Text>
       </View>
