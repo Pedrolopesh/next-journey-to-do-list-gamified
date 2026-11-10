@@ -18,5 +18,5 @@
 
 ## 4. Documentação e fechamento
 
-- [x] 4.1 `docs/PRIVACIDADE.md`, `docs/COMO-FUNCIONA.md` e `docs/api/` atualizados; idade como dado estatístico
+- [x] 4.1 `docs/PRIVACIDADE.md`, `docs/HOW-IT-WORKS.md` e `docs/api/` atualizados; idade como dado estatístico
 - [ ] 4.2 `pnpm run verify`, revisão de código e pendências registradas

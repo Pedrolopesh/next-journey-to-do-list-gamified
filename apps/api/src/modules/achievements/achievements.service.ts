@@ -173,7 +173,7 @@ export class AchievementsService {
 
   /**
    * Evaluates the achievements in the action's transaction. Rules (one modal per action, collection
-   * rounds): docs/api/progressao-e-jogo.md.
+   * rounds): docs/api/progression-and-game.md.
    */
   async evaluate(
     tx: Prisma.TransactionClient,

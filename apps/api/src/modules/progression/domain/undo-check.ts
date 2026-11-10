@@ -10,7 +10,7 @@ export type UndoSummary = {
 export type UndoResult = { state: PlayerState; summary: UndoSummary };
 
 /**
- * Unchecks a check. Pure function. Rules: docs/api/progressao-e-jogo.md.
+ * Unchecks a check. Pure function. Rules: docs/api/progression-and-game.md.
  */
 export function undoCheck(
   state: PlayerState,

@@ -7,7 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { UNKNOWN_DEVICE } from './device-name.js';
 
 /**
- * The account's sessions (one per device). Rules: docs/api/autenticacao-e-sessoes.md.
+ * The account's sessions (one per device). Rules: docs/api/authentication-and-sessions.md.
  */
 @Injectable()
 export class SessionsService {

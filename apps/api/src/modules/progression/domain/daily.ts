@@ -17,7 +17,7 @@ function isScheduledOn(daily: Pick<Daily, 'scheduleDays'>, day: LocalDate): bool
 
 /**
  * A daily is overdue when its last scheduled day before today ended without a check. Takes `today`
- * as an argument and never reads the clock. Rules: docs/api/progressao-e-jogo.md.
+ * as an argument and never reads the clock. Rules: docs/api/progression-and-game.md.
  */
 export function isOverdue(daily: Daily, today: LocalDate): boolean {
   for (let i = 1; i <= 7; i += 1) {
@@ -37,7 +37,7 @@ export type DailyHistory = Pick<Daily, 'scheduleDays' | 'createdOn'> & {
 
 /**
  * Streak of consecutive days with a check. Checking an overdue daily today restarts it at 1. Rules:
- * docs/api/progressao-e-jogo.md.
+ * docs/api/progression-and-game.md.
  */
 export function calculateStreak(historico: DailyHistory, today: LocalDate): number {
   const checkedSets = new Set(historico.checkedDays);

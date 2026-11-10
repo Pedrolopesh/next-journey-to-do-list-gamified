@@ -2,7 +2,7 @@ import { rect, scrolled } from './draw';
 import type { ExtraCharacter, Light, SceneDef, SceneEnv } from './types';
 
 /**
- * Shared pieces of the scenery levels (see docs/CENARIOS.md): list of objects per level, a
+ * Shared pieces of the scenery levels (see docs/SCENARIOS.md): list of objects per level, a
  * single way to position them (HQ still or journey scrolling), separation between what goes behind and
  * in front of the character by foot height, and shortcuts to create extras.
  */

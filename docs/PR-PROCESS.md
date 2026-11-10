@@ -31,7 +31,7 @@ Goal: no PR goes up with an error a machine would find, and every PR is easy to 
 - `check` job: PR commits, lint, types, tests, build, API e2e (the PostgreSQL that comes with the runner), OpenSpec, duplication and secret scan.
 - `descricao` job: title in the `type: subject` format and the five template sections; it blocks mentions of AI tools.
 - Official actions with pinned versions; no repository secret in the flow.
-- Outside CI, for now: interface tests (Maestro, they need an emulator). Run them before the PR if you touched a screen (`docs/TESTES.md`).
+- Outside CI, for now: interface tests (Maestro, they need an emulator). Run them before the PR if you touched a screen (`docs/TESTING.md`).
 
 ## 4. Security review, on every front
 

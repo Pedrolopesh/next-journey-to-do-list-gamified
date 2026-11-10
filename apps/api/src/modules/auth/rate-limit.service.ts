@@ -13,7 +13,7 @@ const MINUTE_MS = 60_000;
 
 /**
  * Per-account attempt limits, in two levels. Values and reasons:
- * docs/api/autenticacao-e-sessoes.md.
+ * docs/api/authentication-and-sessions.md.
  */
 export const LIMITS = {
   emailStart: {
@@ -31,7 +31,7 @@ export type LimitRules = { perEmailAndIp: Rule; perEmail: Rule };
 type Rule = { limit: number; windowMs: number };
 
 /**
- * Attempt counter per email stored in Postgres. Rules: docs/api/autenticacao-e-sessoes.md.
+ * Attempt counter per email stored in Postgres. Rules: docs/api/authentication-and-sessions.md.
  */
 @Injectable()
 export class RateLimitService {

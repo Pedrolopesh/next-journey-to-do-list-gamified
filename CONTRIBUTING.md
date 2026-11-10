@@ -1,6 +1,6 @@
 # Contributing to Next Journey
 
-Read this file before any change: stack, rules and checklists. For an overview see `docs/COMO-FUNCIONA.md`; for how to run, see `README.md`.
+Read this file before any change: stack, rules and checklists. For an overview see `docs/HOW-IT-WORKS.md`; for how to run, see `README.md`.
 
 ## Project
 
@@ -12,7 +12,7 @@ Gamified to-do list (dailies, tasks and habits earn EXP and coins and move an LP
 - `packages/contracts`: shared Zod schemas (API, app, banner)
 - `packages/tsconfig`, `packages/eslint-config`: shared configuration
 
-Tests and regression (layers, Maestro for the app UI): `docs/TESTES.md`. Docs: `docs/CENARIOS.md` (rules for building and checking the banner scenes; read it before creating or changing a scene), `docs/COMO-FUNCIONA.md`, `docs/TURBOREPO.md`, `docs/REQUISITOS.MD` (specification), `docs/api/` (how the API works inside).
+Tests and regression (layers, Maestro for the app UI): `docs/TESTING.md`. Docs: `docs/SCENARIOS.md` (rules for building and checking the banner scenes; read it before creating or changing a scene), `docs/HOW-IT-WORKS.md`, `docs/TURBOREPO.md`, `docs/REQUIREMENTS.md` (specification), `docs/api/` (how the API works inside).
 
 ## Stack (FACT, do not change without confirming)
 
@@ -53,7 +53,7 @@ A change that alters behavior, the API contract, the banner protocol or a game r
 7. **Logs without sensitive data:** never email, password, token or request body.
 8. **Dates** in UTC in the database; the user's "day" in the profile time zone; records in ISO 8601.
 9. **New test for a new rule.** A game rule change starts with a test.
-10. **No action leaves the user in the dark (RN-FB).** Every user action in the app shows loading and ends in a success or error toast; failed validation never leaves the button "doing nothing". Use `useAction` and `toast` (`apps/mobile/src/features/feedback`). Details in `docs/REQUISITOS.MD` (section 3) and the store gate in `docs/QA.md` (section 7).
+10. **No action leaves the user in the dark (RN-FB).** Every user action in the app shows loading and ends in a success or error toast; failed validation never leaves the button "doing nothing". Use `useAction` and `toast` (`apps/mobile/src/features/feedback`). Details in `docs/REQUIREMENTS.md` (section 3) and the store gate in `docs/QA.md` (section 7).
 11. **Code in English.** Variable, function, type, new file name, comment and test name in English. Only the text the user sees (`pt-BR.json`) and the product content (sample item titles, category names, scenes) stay in Portuguese. The rule applies to what you write, even inside an old Portuguese file: new identifiers and comments in English, without renaming what already exists (that is separate work, by area). Established public names (routes, columns, contract keys) do not change because of this rule.
 12. **Comment only when the code does not say it by itself.** Comment the non-obvious why (a constraint, a decision, a workaround, a security reason), never what the line does; no commented-out code, no change history ("it used to do X") and no loose TODO: a pending item becomes a GitHub issue. Long explanations, design decisions and business rules go in the documentation (`docs/`, the OpenSpec `design.md`) with a short link in the code. Review the comments in the diff before opening the PR: delete what repeats the code or went stale and move to the documentation what deserves to stay.
 
@@ -137,7 +137,7 @@ This repository is open: whoever clones it sees everything, and what enters Git 
 4. **No `TODO` or `FIXME` in comments.** A pending item becomes an issue or goes in "Risks and pending items" of the PR.
 5. **No co-authorship, tool-generated footer or session URL** in commits or PRs (CI rejects them).
 6. **Never use `git add -A`, `git add .` or `git commit -a` blindly.** Add files by name and check `git status` and `git diff --cached --stat` before each commit; a local file that is not yet in `.gitignore` gets in without warning.
-7. **Documentation follows the code.** Changed behavior, a command, an environment variable or a flow? Update `README.md` and `docs/COMO-FUNCIONA.md` (and whatever else describes it) in the same PR. Documentation that contradicts the code is a defect.
+7. **Documentation follows the code.** Changed behavior, a command, an environment variable or a flow? Update `README.md` and `docs/HOW-IT-WORKS.md` (and whatever else describes it) in the same PR. Documentation that contradicts the code is a defect.
 8. **New or changed GitHub Actions workflow:** actions pinned by SHA, minimal `permissions` declared at the top and no secret in `run:` without going through `env:`.
 9. **Container image:** the base runs `apt-get upgrade` (or equivalent) to close system CVEs; the delivery Trivy scan fails on HIGH or CRITICAL with a fix available.
 10. **Dependency:** exact name checked, lockfile together, `pnpm audit` clean and no license incompatible with the project's MIT. A batch update (Dependabot) only goes in after `pnpm run verify` and opening the app.
@@ -145,7 +145,7 @@ This repository is open: whoever clones it sees everything, and what enters Git 
 12. **New or changed screen:** the Android back button (and gesture) behaves like iOS, every title has a heading role for screen readers, and route names are not repeated by hand in two places.
 13. **OpenSpec:** a behavior change has a proposal with `.openspec.yaml`, `proposal.md`, `tasks.md` and specs (or `skip_specs: true` when there is no spec); `scripts/check-openspec.sh` checks it.
 
-## PR process (MANDATORY; details in `docs/PROCESSO-DE-PR.md`)
+## PR process (MANDATORY; details in `docs/PR-PROCESS.md`)
 
 1. **Green `pnpm run verify`** before opening the PR: commits (commitlint), lint, types, tests, build, API e2e, OpenSpec, duplication (`jscpd`, 2% limit) and `security:full`. CI repeats the steps and also checks the PR title and description.
 2. **Code review of the branch before opening the PR.** Handle the findings; what stays pending goes to an issue and to the "Risks and pending items" section of the PR. Never push technical or security debt without a record.

@@ -4,18 +4,18 @@ How the API (`apps/api`, NestJS + Prisma + PostgreSQL) works inside. These docum
 
 | Document                                                       | Subject                                                                                         |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| [autenticacao-e-sessoes.md](autenticacao-e-sessoes.md)         | email code sign-in, social login, tokens, sessions, attempt limits     |
-| [progressao-e-jogo.md](progressao-e-jogo.md)                   | EXP, levels, coins, chapters, streaks, achievements                                             |
-| [itens-e-checks.md](itens-e-checks.md)                         | items, categories, check and uncheck, history                                                   |
-| [conta-e-privacidade.md](conta-e-privacidade.md)               | account deletion, purge and data export                                                         |
-| [operacao-e-seguranca.md](operacao-e-seguranca.md)             | guard, errors, logs, security events, environment variables                                     |
+| [authentication-and-sessions.md](authentication-and-sessions.md)         | email code sign-in, social login, tokens, sessions, attempt limits     |
+| [progression-and-game.md](progression-and-game.md)                   | EXP, levels, coins, chapters, streaks, achievements                                             |
+| [items-and-checks.md](items-and-checks.md)                         | items, categories, check and uncheck, history                                                   |
+| [account-and-privacy.md](account-and-privacy.md)               | account deletion, purge and data export                                                         |
+| [operations-and-security.md](operations-and-security.md)             | guard, errors, logs, security events, environment variables                                     |
 
 They complement, without repeating:
 
 - decisions and reasons: `docs/adr/` (mainly [ADR-0008](../adr/0008-authentication-and-session.md));
 - per-PR security checklist: [`CONTRIBUTING.md`](../../CONTRIBUTING.md);
 - collected data and retention periods: [`docs/PRIVACIDADE.md`](../PRIVACIDADE.md);
-- product requirements: [`docs/REQUISITOS.MD`](../REQUISITOS.MD);
+- product requirements: [`docs/REQUIREMENTS.md`](../REQUIREMENTS.md);
 - required behavior, per capability: `openspec/specs/`.
 
 ## Module map

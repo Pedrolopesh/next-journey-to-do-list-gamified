@@ -15,7 +15,7 @@ const isoOrNull = (date: Date | null): string | null => (date ? date.toISOString
 
 /**
  * Export of the account's own data, through an allowlist of fields. Rules:
- * docs/api/conta-e-privacidade.md.
+ * docs/api/account-and-privacy.md.
  */
 @Injectable()
 export class DataExportService {

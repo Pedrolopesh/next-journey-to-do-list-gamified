@@ -27,7 +27,7 @@ const UNVERIFIED_ACCOUNT_DAYS = 7;
 
 /**
  * Account deletion: anonymizes at once, deletes for good after the retention period. Rules:
- * docs/api/conta-e-privacidade.md.
+ * docs/api/account-and-privacy.md.
  */
 @Injectable()
 export class AccountService {
@@ -92,7 +92,7 @@ export class AccountService {
   /**
    * Second proof before deleting the account (email code or a fresh ID token). Every failure is the
    * same 403, never 401: the app treats 401 as an ended session. Rules:
-   * docs/api/conta-e-privacidade.md.
+   * docs/api/account-and-privacy.md.
    */
   private async confirmOwner(user: { id: string }, proof: DeleteAccountRequest): Promise<void> {
     await this.rateLimit.hit('delete-account', user.id, REAUTH_LIMIT);

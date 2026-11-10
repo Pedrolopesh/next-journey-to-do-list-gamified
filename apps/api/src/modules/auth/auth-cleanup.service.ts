@@ -28,7 +28,7 @@ export const EXPIRED_GRACE_DAYS = 7;
 /**
  * Daily cleanup. It only deletes what expired more than 7 days ago: a revoked refresh token still
  * within its validity must stay, because it exposes the reuse of a stolen token. Rules:
- * docs/api/autenticacao-e-sessoes.md.
+ * docs/api/authentication-and-sessions.md.
  */
 @Injectable()
 export class AuthCleanupService {

@@ -1,6 +1,6 @@
 /**
  * Guarantees the operation takes at least `ms`, so timing does not reveal whether an account
- * exists. Rules: docs/api/autenticacao-e-sessoes.md.
+ * exists. Rules: docs/api/authentication-and-sessions.md.
  */
 export async function withMinDuration<T>(ms: number, operation: () => Promise<T>): Promise<T> {
   const start = performance.now();

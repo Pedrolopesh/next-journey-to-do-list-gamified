@@ -55,7 +55,7 @@ export type ApplyCheckResult = {
 };
 
 /**
- * Applies a check to the player's state. Pure function. Rules: docs/api/progressao-e-jogo.md.
+ * Applies a check to the player's state. Pure function. Rules: docs/api/progression-and-game.md.
  */
 export function applyCheck(
   state: PlayerState,

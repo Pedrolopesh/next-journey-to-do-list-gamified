@@ -35,7 +35,7 @@ const unauthorized = (): AppError =>
 
 /**
  * Access and refresh tokens, with rotation and reuse detection (reusing a rotated token revokes the
- * whole family). Rules: docs/api/autenticacao-e-sessoes.md.
+ * whole family). Rules: docs/api/authentication-and-sessions.md.
  */
 @Injectable()
 export class TokensService {
@@ -102,7 +102,7 @@ export class TokensService {
 
   /**
    * Checks the access token (signature, validity, issuer, audience, `kid`). Rules:
-   * docs/api/autenticacao-e-sessoes.md.
+   * docs/api/authentication-and-sessions.md.
    */
   async verifyAccessToken(token: string): Promise<{ userId: string; sessionId?: string }> {
     const payload = await this.jwt.verifyAsync<{ sub?: string; sid?: string }>(token, {

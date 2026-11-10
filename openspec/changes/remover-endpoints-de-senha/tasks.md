@@ -22,5 +22,5 @@
 
 ## 5. Documentação e fechamento
 
-- [x] 5.1 `docs/api/`, `docs/PRIVACIDADE.md`, `docs/COMO-FUNCIONA.md`, `.env.example` e texto da Política de Privacidade (`LEGAL_VERSION`)
+- [x] 5.1 `docs/api/`, `docs/PRIVACIDADE.md`, `docs/HOW-IT-WORKS.md`, `.env.example` e texto da Política de Privacidade (`LEGAL_VERSION`)
 - [x] 5.2 `pnpm run verify`, revisão de código e pendências registradas (2026-11-09: verify verde; pendências no Plane, NJ-31 a NJ-41)

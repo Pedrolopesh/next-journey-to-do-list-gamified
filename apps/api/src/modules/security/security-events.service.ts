@@ -41,7 +41,7 @@ export function maskIp(ip: string | undefined): string | undefined {
 
 /**
  * Security event log with sliding-window alerts. Rules and thresholds:
- * docs/api/operacao-e-seguranca.md.
+ * docs/api/operations-and-security.md.
  */
 @Injectable()
 export class SecurityEvents {

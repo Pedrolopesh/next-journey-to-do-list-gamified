@@ -6,7 +6,7 @@
 
 ## Context
 
-The specification left some edge cases open. The solutions below were listed as proposals in "Complementary rules" of the requirements document (`docs/REQUISITOS.MD`). So as not to block Phase 3, they were **implemented as they are and covered by tests**; if one of them changes, its test changes with it.
+The specification left some edge cases open. The solutions below were listed as proposals in "Complementary rules" of the requirements document (`docs/REQUIREMENTS.md`). So as not to block Phase 3, they were **implemented as they are and covered by tests**; if one of them changes, its test changes with it.
 
 ## Decision (how each point is implemented)
 
