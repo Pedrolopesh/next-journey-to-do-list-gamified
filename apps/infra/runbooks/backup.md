@@ -6,13 +6,13 @@ offline and is never on the host, so a compromised host cannot read old backups.
 
 ```
 timer nj-backup@<env> (03:15 UTC) -> pg_dump in the database container -> age -> /var/backups/nextjourney/<env> (7 days)
-                                                                              -> object store <env>/<year>/<month>/ (30 days)
+                                                                              -> object store <env>/<year>/<month>/ (8 days)
 timer nj-backup-watch (hourly)    -> critical alert when no upload for 26 h, one "ok" when it recovers
 ```
 
 ## Setup (once)
 
-1. **Bucket.** Private, no public domain, lifecycle rule that deletes after 30 days and aborts incomplete uploads after 1 day, and a bucket lock of 7 days so objects cannot be deleted or overwritten meanwhile.
+1. **Bucket.** Private, no public domain, lifecycle rule that deletes after 8 days (the privacy policy promises 7 days of backups, and the lock below covers the first 7) and aborts incomplete uploads after 1 day, and a bucket lock of 7 days so objects cannot be deleted or overwritten meanwhile.
 2. **Keys.** An access key restricted to that bucket (object read and write). The provider has no write-only role, so the lock above is what protects old objects from a leaked key.
 3. **age key pair.** Generate it on a trusted workstation, store the private file in the password manager and in an offline copy, then delete it from the disk. Only the public key (`age1...`) goes into the inventory.
 4. **Inventory (local, not in Git).** `backup_age_recipient`, `backup_endpoint`, `backup_bucket`.
