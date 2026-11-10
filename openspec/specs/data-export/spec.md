@@ -22,12 +22,12 @@ O sistema SHALL devolver, para a pessoa autenticada, um JSON com os dados dela: 
 
 ### Requirement: Nada de segredo na exportação
 
-O sistema SHALL NOT incluir na exportação hash de senha, refresh tokens, códigos de confirmação, links de recuperação, contadores de limite nem identificadores internos de provedores.
+O sistema SHALL NOT incluir na exportação refresh tokens, códigos de confirmação, contadores de limite nem identificadores internos de provedores. A lista de formas de entrada SHALL conter somente `email` e os provedores sociais ligados à conta.
 
 #### Scenario: Conteúdo sensível
 
-- **WHEN** a exportação é gerada para uma conta com senha, sessões abertas e login social
-- **THEN** o JSON não contém hash, token, código, nem o identificador do provedor; só quais formas de entrada a conta tem
+- **WHEN** a exportação é gerada para uma conta com sessões abertas e login social
+- **THEN** o JSON não contém token, código, nem o identificador do provedor; só quais formas de entrada a conta tem
 
 ### Requirement: Limite de pedidos
 
