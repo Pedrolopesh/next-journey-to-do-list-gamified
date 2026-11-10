@@ -1,0 +1,189 @@
+#!/bin/bash
+# Restores from the backups in the object store, with no manual steps.
+#   nj-restore test <dev|prd|vault>   Weekly check (a timer runs it): downloads the newest backup, decrypts it and
+#                                     restores it into a throwaway Postgres container (or, for "vault", checks that
+#                                     the snapshot decrypts and holds the vault state). Production is not touched.
+#   nj-restore apply <dev|prd> --yes [--object <key>]
+#                                     Real restore of an environment database: safety dump, API stopped, restore,
+#                                     purge of accounts whose deletion was already due, API started, health check.
+# The age key for this job and the object store keys come from the vault (AppRole nj-restore). If the vault is lost,
+# give them explicitly: NJ_RESTORE_IDENTITY_FILE=<offline age key file> NJ_R2_KEY_ID=... NJ_R2_SECRET=...
+set -euo pipefail
+mode="${1:?usage: nj-restore test <dev|prd|vault> | apply <dev|prd> --yes [--object <key>]}"
+env="${2:?usage: nj-restore test <dev|prd|vault> | apply <dev|prd> --yes [--object <key>]}"
+shift 2
+yes=""
+object=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --yes) yes=1; shift ;;
+    --object) object="${2:?--object needs a key}"; shift 2 ;;
+    *) echo "unknown option: $1" >&2; exit 2 ;;
+  esac
+done
+case "$mode:$env" in
+  test:dev|test:prd|test:vault|apply:dev|apply:prd) ;;
+  *) echo "usage: nj-restore test <dev|prd|vault> | apply <dev|prd> --yes [--object <key>]" >&2; exit 2 ;;
+esac
+
+conf="${NJ_BACKUP_CONF:-/etc/nextjourney/backup.conf}"
+# shellcheck source=/dev/null
+. "$conf"
+: "${BACKUP_ENDPOINT:?missing in $conf}" "${BACKUP_BUCKET:?missing in $conf}"
+state="${NJ_BACKUP_STATE:-/var/lib/nj-backup}"
+backup_dir="${NJ_BACKUP_DIR:-/var/backups/nextjourney}/${env}"
+vault="${NJ_VAULT_ADDR:-https://127.0.0.1:8200}"
+cacert="${NJ_VAULT_CACERT:-/etc/openbao/tls/openbao.crt}"
+conf_dir="${NJ_CONF_DIR:-/etc/nextjourney}"
+notify="${NJ_NOTIFY:-/usr/local/sbin/nj-notify}"
+purge_days="${NJ_PURGE_DAYS:-30}"
+limits=(--connect-timeout 5 --max-time 15)
+token=""
+work=""
+
+cleanup() {
+  [ -n "$work" ] && rm -rf "$work"
+  [ -z "${container:-}" ] || docker rm -f "$container" >/dev/null 2>&1 || true
+  if [ -n "$token" ]; then
+    printf 'header = "X-Vault-Token: %s"\n' "$token" \
+      | curl -sS "${limits[@]}" --cacert "$cacert" -K - -X POST "${vault}/v1/auth/token/revoke-self" >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup EXIT
+
+level=warning
+[ "$mode" = apply ] && level=critical
+fail() {
+  echo "restore ${mode} of ${env} failed: $1" >&2
+  "$notify" "$level" "Restore ${mode} of ${env} failed: $1" >/dev/null 2>&1 || true
+  exit 1
+}
+
+umask 077
+work=$(mktemp -d "${NJ_TMP_DIR:-/run}/nj-restore.XXXXXX")
+
+vault_get() { # vault_get <kv path under nextjourney/>
+  printf 'header = "X-Vault-Token: %s"\n' "$token" \
+    | curl -fsS "${limits[@]}" --cacert "$cacert" -K - "${vault}/v1/kv/data/nextjourney/$1" \
+    | python3 -c 'import json,sys; sys.stdout.write(json.load(sys.stdin)["data"]["data"]["value"])'
+}
+
+# Keys: explicit values win (vault lost), otherwise the vault is asked with the restore AppRole.
+identity="${NJ_RESTORE_IDENTITY_FILE:-}"
+key_id="${NJ_R2_KEY_ID:-}"
+key_secret="${NJ_R2_SECRET:-}"
+if [ -z "$identity" ] || [ -z "$key_id" ] || [ -z "$key_secret" ]; then
+  role_id=$(cat "${conf_dir}/creds/restore/openbao_role_id") || fail "no vault login for restores on this host"
+  secret_id=$(systemd-creds decrypt --name=openbao_secret_id "${conf_dir}/creds/restore/openbao_secret_id.cred" -) \
+    || fail "cannot read the vault login"
+  token=$(printf '%s\n%s\n' "$role_id" "$secret_id" \
+    | python3 -c 'import json,sys; r,s=sys.stdin.read().split(); print(json.dumps({"role_id":r,"secret_id":s}))' \
+    | curl -fsS "${limits[@]}" --cacert "$cacert" -X POST -H 'Content-Type: application/json' --data @- "${vault}/v1/auth/approle/login" \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin)["auth"]["client_token"])') || fail "vault closed or login refused"
+  unset secret_id
+  [ -n "$key_id" ] || key_id=$(vault_get backup/r2_access_key_id) || fail "cannot read the object store key id"
+  [ -n "$key_secret" ] || key_secret=$(vault_get backup/r2_secret_access_key) || fail "cannot read the object store secret"
+  if [ -z "$identity" ]; then
+    identity="${work}/identity"
+    vault_get restore/age_identity >"$identity" || fail "cannot read the restore key"
+  fi
+fi
+
+s3() { # s3 <curl args>: the keys go through standard input, never as arguments
+  printf 'user = "%s:%s"\n' "$key_id" "$key_secret" \
+    | curl -fsS -K - --aws-sigv4 'aws:amz:auto:s3' -H 'x-amz-content-sha256: UNSIGNED-PAYLOAD' "$@"
+}
+
+list_page() { # list_page <continuation token or empty>: prints the next token, then the keys
+  local url="${BACKUP_ENDPOINT}/${BACKUP_BUCKET}?list-type=2&prefix=${env}/"
+  [ -z "$1" ] || url+="&continuation-token=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "$1")"
+  s3 --connect-timeout 10 --max-time 60 "$url" | python3 -c '
+import re, sys
+x = sys.stdin.read()
+t = re.search(r"<NextContinuationToken>([^<]+)</NextContinuationToken>", x)
+print(t.group(1) if t and "<IsTruncated>true</IsTruncated>" in x else "")
+print("\n".join(re.findall(r"<Key>([^<]+)</Key>", x)))'
+}
+
+newest_key() {
+  local next="" page keys=""
+  while :; do
+    page=$(list_page "$next") || return 1
+    next=$(printf '%s\n' "$page" | sed -n 1p)
+    keys+=$'\n'$(printf '%s\n' "$page" | sed 1d)
+    [ -n "$next" ] || break
+  done
+  printf '%s\n' "$keys" | sed '/^$/d' | sort | tail -n 1
+}
+
+# Decrypted bytes of one object on standard output; nothing is written to disk.
+plain() { # plain <object key>
+  s3 --connect-timeout 10 --max-time 900 "${BACKUP_ENDPOINT}/${BACKUP_BUCKET}/$1" | age -d -i "$identity"
+}
+
+[ -n "$object" ] || object=$(newest_key) || fail "cannot list the object store"
+[ -n "$object" ] || fail "no backup found under ${env}/"
+echo "backup used: ${object}"
+
+if [ "$mode" = test ] && [ "$env" = vault ]; then
+  listing=$(plain "$object" | tar -tzf -) || fail "the snapshot does not decrypt or is not a valid archive"
+  printf '%s\n' "$listing" | grep -Eq '(^|/)state\.bin$' || fail "the snapshot has no vault state"
+  date +%s >"${state}/restore-test-${env}.last"
+  echo "restore test ok: vault snapshot decrypts and holds the vault state"
+  exit 0
+fi
+
+db="next-journey-${env}-db-1"
+
+if [ "$mode" = test ]; then
+  image=$(docker inspect -f '{{.Image}}' "$db") || fail "no database container to take the image from"
+  container="nj-restore-test-$$"
+  docker run -d --name "$container" --network none -e POSTGRES_PASSWORD=restore-test "$image" >/dev/null || fail "cannot start the throwaway database"
+  for _ in $(seq 1 60); do docker exec "$container" pg_isready -U postgres >/dev/null 2>&1 && break; sleep 1; done
+  docker exec "$container" createdb -U postgres restored || fail "throwaway database did not start"
+  plain "$object" | docker exec -i "$container" pg_restore -U postgres -d restored --no-owner --exit-on-error \
+    || fail "the backup does not restore (${object})"
+  migrations=$(docker exec "$container" psql -U postgres -d restored -At -c 'select count(*) from _prisma_migrations') \
+    || fail "restored database has no migration history"
+  [ "${migrations:-0}" -ge 1 ] 2>/dev/null || fail "restored database has an empty migration history"
+  users=$(docker exec "$container" psql -U postgres -d restored -At -c 'select count(*) from users') || fail "restored database has no users table"
+  date +%s >"${state}/restore-test-${env}.last"
+  echo "restore test ok: ${migrations} migrations, ${users} users"
+  exit 0
+fi
+
+# ---- apply: real restore of an environment ----
+[ -n "$yes" ] || { echo "this replaces the ${env} database with ${object}; run again with --yes" >&2; exit 2; }
+: "${BACKUP_AGE_RECIPIENT:?missing in $conf}"
+api="next-journey-${env}-api-1"
+port=$(grep -s '^NJ_PORT=' "${conf_dir}/${env}.env" | cut -d= -f2 || true)
+install -d -m 0700 "$backup_dir"
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+safety="${backup_dir}/pre-restore-${stamp}.dump.age"
+
+# 1. Safety dump of what is there now (encrypted like any backup; kept outside the upload pattern)
+docker exec "$db" sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-privileges' \
+  | age -r "$BACKUP_AGE_RECIPIENT" -o "$safety" || fail "safety dump of the current database"
+[ -s "$safety" ] || fail "empty safety dump"
+# 2. Stop the API so nothing writes during the restore
+docker stop "$api" >/dev/null || fail "cannot stop the API"
+# 3. Restore over the environment database
+if ! plain "$object" | docker exec -i "$db" sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --no-owner --exit-on-error'; then
+  fail "restore of ${object} failed; the API stays stopped. The state before is in ${safety}"
+fi
+# 4. Honor deletions requested after the backup (the API job would do it at 03:00; do it before reopening)
+docker exec "$db" sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1' <<SQL >/dev/null || fail "purge of due deletions failed; the API stays stopped"
+delete from users where deleted_at < now() - interval '${purge_days} days';
+delete from users where email_verified_at is null and created_at < now() - interval '7 days'
+  and not exists (select 1 from auth_identities i where i.user_id = users.id);
+SQL
+# 5. Start the API and wait for it
+docker start "$api" >/dev/null || fail "cannot start the API; the database is restored"
+healthy=""
+for _ in $(seq 1 30); do
+  if [ -n "$port" ] && curl -fsS --max-time 3 "http://127.0.0.1:${port}/health" >/dev/null 2>&1; then healthy=1; break; fi
+  sleep 2
+done
+[ -n "$healthy" ] || fail "the API did not become healthy after the restore; the database is restored (safety dump: ${safety})"
+"$notify" ok "Restore of ${env} applied from ${object}. Safety dump of the previous state: ${safety}" >/dev/null 2>&1 || true
+echo "restore applied: ${env} from ${object}; previous state in ${safety}"

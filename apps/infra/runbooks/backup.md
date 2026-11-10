@@ -8,7 +8,8 @@ offline and is never on the host, so a compromised host cannot read old backups.
 timer nj-backup@<env> (03:15 UTC) -> pg_dump in the database container -> age -> /var/backups/nextjourney/<env> (7 days)
                                                                               -> object store <env>/<year>/<month>/ (8 days)
 timer nj-backup@vault (03:15 UTC) -> raft snapshot of the vault (API, AppRole nj-backup) -> age -> same folder layout and bucket (vault/<year>/<month>/)
-timer nj-backup-watch (hourly)    -> critical alert when no upload for 26 h (database or vault snapshot), one "ok" when it recovers
+timer nj-restore-test@<env|vault> (Sun 05:00 UTC) -> newest backup -> decrypt -> throwaway Postgres (or snapshot check) -> pass/fail
+timer nj-backup-watch (hourly)    -> critical alert when no upload for 26 h (database or vault snapshot) or no passing restore test for 9 days, one "ok" when it recovers
 ```
 
 The vault snapshot holds every secret of the applications. It is encrypted with `age` before it leaves the host and is still sealed by the vault itself, so reading it back also needs 3 of the 5 unseal key shares. The shares never go into a backup, the bucket or this repository. A snapshot can only be taken while the vault is open: with the vault sealed the run fails, warns, and the unit retries every 15 minutes (the stale alert covers a longer outage).
@@ -33,6 +34,44 @@ printf %s '<key secret>' | BAO_TOKEN=<admin token> nj-bao kv put kv/nextjourney/
 - The dump and encryption run before the vault is touched, so a sealed vault only delays the upload: the encrypted dump stays on the host for 7 days and the alert fires after 26 hours. Open the vault (`sudo nj-unseal`) and run the unit again: it also uploads every dump still missing from the store, oldest first. A failed run is retried by systemd every 15 minutes (four times).
 - Check the last upload time: `sudo cat /var/lib/nj-backup/prd.last` (epoch seconds).
 
+## Automatic restore (no manual steps)
+
+Two keys can open a backup, and every new backup is encrypted for both:
+
+- **Offline key** (`backup_age_recipient`): in the password manager and an offline copy, never on the host. The last resort if the vault and the host are both lost.
+- **Automation key** (`backup_restore_recipient`): its private half lives in the vault at `kv/nextjourney/restore/age_identity`, readable only by the `nj-restore` AppRole. It lets the host test and apply restores by itself. Backups made before this key was set open only with the offline key.
+
+### Weekly test (automatic)
+
+`nj-restore-test@prd` and `nj-restore-test@vault` run every Sunday at 05:00 UTC. The first downloads the newest database backup from the bucket, decrypts it in memory and restores it into a throwaway Postgres container with no network, then checks the migration history and the users table. The second checks that the newest vault snapshot decrypts and holds the vault state. A pass writes `/var/lib/nj-backup/restore-test-<name>.last`; a failure sends a warning to Discord, and `nj-backup-watch` raises a critical alert after 9 days without a pass.
+
+Run one by hand: `sudo systemctl start nj-restore-test@prd.service` and `sudo journalctl -u nj-restore-test@prd.service`. The last line must be `restore test ok`.
+
+### Applying a restore of an environment (automatic)
+
+```
+sudo nj-restore apply prd --yes                      # newest backup
+sudo nj-restore apply prd --yes --object <key>       # a specific one, key as listed in the bucket
+```
+
+In order: a safety dump of the current database (`pre-restore-<time>.dump.age` in the backup folder), the API container stops, the database is restored over the current one, accounts whose deletion was already due are purged (`docs/BACKUP.md`), the API starts and its health check must pass, then one "ok" message with the safety dump path. If any step fails the API stays stopped, a critical alert names the safety dump, and nothing is retried by itself. Expect to lose at most the time since the last backup (up to 24 hours).
+
+### When the vault is lost too
+
+The host cannot ask the vault for anything, so hand `nj-restore` the keys directly (the offline age file and the object store keys from the password manager):
+
+```
+sudo NJ_RESTORE_IDENTITY_FILE=/path/to/offline-age-file NJ_R2_KEY_ID=... NJ_R2_SECRET=... nj-restore apply prd --yes
+```
+
+To rebuild the vault itself first, see the next section.
+
+### Setup of the automation key (once)
+
+1. Generate a second age key pair on a trusted workstation. Put the public half in the inventory as `backup_restore_recipient` and keep the private half in the password manager.
+2. With an admin token (`nj-openbao-configure` loads the `nj-restore` policy and role): `nj-openbao-approle restore`, then store the private half: `read -rs V; printf %s "$V" | nj-bao kv put kv/nextjourney/restore/age_identity value=-; unset V`.
+3. Apply `app.yml --tags openbao,backup`. Run `sudo systemctl start nj-backup@prd.service` (the first backup for both keys), then `sudo systemctl start nj-restore-test@prd.service` and `nj-restore-test@vault.service`.
+
 ## Restoring the vault from a snapshot
 
 1. Download the newest `vault/<year>/<month>/...snap.age` object and decrypt it on a trusted workstation with the offline age file (the same steps as the database restore).
@@ -40,9 +79,9 @@ printf %s '<key secret>' | BAO_TOKEN=<admin token> nj-bao kv put kv/nextjourney/
 3. Unseal with 3 of the 5 shares of the **original** vault (`sudo nj-unseal`): a restored vault opens with the original shares, not with the new ones.
 4. Check the secrets by hash, without printing them, and check that the AppRoles log in. Only after a snapshot has been restored this way once is it safe to remove the `.cred` files of the application secrets.
 
-## Restore test
+## Manual restore test (workstation, last resort)
 
-On a trusted workstation (never on the host), with the offline age file:
+The weekly test above does this on the host. This script does it from a workstation with the offline age file only:
 
 ```
 NJ_R2_KEY_ID=... NJ_R2_SECRET=... NJ_R2_ENDPOINT=... NJ_R2_BUCKET=... \
@@ -51,7 +90,7 @@ NJ_R2_KEY_ID=... NJ_R2_SECRET=... NJ_R2_ENDPOINT=... NJ_R2_BUCKET=... \
 
 It downloads the newest backup, decrypts it, restores it into a throwaway Postgres container and prints table row counts. Run it after the first backup, then at least monthly, and record the date and the time it took.
 
-## Restoring for real
+## Restoring for real by hand (last resort)
 
-1. Download and decrypt as above (the script shows the steps), stop the API of the environment, restore with `pg_restore --clean --if-exists --no-owner` into the environment database, start the API.
+Prefer `nj-restore apply`. By hand: 1. Download and decrypt as above (the script shows the steps), stop the API of the environment, restore with `pg_restore --clean --if-exists --no-owner` into the environment database, start the API.
 2. After a restore, run the purge of deleted accounts described in `docs/BACKUP.md`, so accounts deleted after the backup do not come back.

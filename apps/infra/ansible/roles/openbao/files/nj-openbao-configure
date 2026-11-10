@@ -9,7 +9,7 @@ dir=/etc/openbao/policies
 
 bao secrets list | grep -q '^kv/' || bao secrets enable -path=kv -version=2 kv
 
-for p in nj-dev nj-prd nj-backup nj-admin; do
+for p in nj-dev nj-prd nj-backup nj-restore nj-admin; do
   bao policy write "$p" - <"${dir}/${p}.hcl" >/dev/null
 done
 
@@ -17,7 +17,7 @@ bao auth list | grep -q '^approle/' || bao auth enable approle
 bao auth list | grep -q '^userpass/' || bao auth enable userpass
 
 # Short-lived tokens; the secret id is long-lived and lives encrypted on the host
-for env in dev prd backup; do
+for env in dev prd backup restore; do
   bao write "auth/approle/role/nj-${env}" token_policies="nj-${env}" token_ttl=2m token_max_ttl=5m \
     secret_id_ttl=0 secret_id_num_uses=0 token_num_uses=0 >/dev/null
 done

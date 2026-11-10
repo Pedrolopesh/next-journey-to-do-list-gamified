@@ -4,5 +4,5 @@ Description=Backup watch
 
 [Service]
 Type=oneshot
-Environment=NJ_BACKUP_STALE_HOURS={{ backup_stale_hours }}
-ExecStart=/usr/local/sbin/nj-backup-watch {{ backup_envs | join(' ') }}
+Environment=NJ_BACKUP_STALE_HOURS={{ backup_stale_hours }} NJ_RESTORE_STALE_HOURS={{ backup_restore_stale_hours }}
+ExecStart=/usr/local/sbin/nj-backup-watch {{ backup_envs | join(' ') }}{% if backup_restore_recipient | length > 0 %} {{ backup_envs | map('regex_replace', '^(.*)$', 'restore-test-\\1') | join(' ') }}{% endif %}
