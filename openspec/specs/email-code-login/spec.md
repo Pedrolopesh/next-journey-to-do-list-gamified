@@ -60,7 +60,7 @@ O sistema SHALL manter a sessão do aparelho enquanto a pessoa usar o app: o ref
 
 ### Requirement: Exclusão de conta por código
 
-O sistema SHALL aceitar em `DELETE /me`, além de senha e ID token de provedor, o código de 6 dígitos recebido por e-mail como prova de posse da conta.
+O sistema SHALL aceitar em `DELETE /me`, como prova de posse da conta, o código de 6 dígitos recebido por e-mail (pedido em `POST /auth/email/start`), valendo para qualquer conta.
 
 #### Scenario: Conta sem senha
 
@@ -70,4 +70,4 @@ O sistema SHALL aceitar em `DELETE /me`, além de senha e ID token de provedor, 
 #### Scenario: Código inválido
 
 - **WHEN** o código enviado está errado ou expirado
-- **THEN** a API responde `400 INVALID_VERIFICATION_CODE` e a conta continua
+- **THEN** a API responde `403 REAUTH_FAILED` e a conta continua
