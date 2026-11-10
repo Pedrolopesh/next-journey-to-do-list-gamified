@@ -1,6 +1,6 @@
 // Validates the banner art (Phase 6): bundle weight, file sizes and palette per sprite.
 // Runs after the build: `pnpm --filter @nextjourney/banner validate:assets`.
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -27,33 +27,39 @@ export function distinctColors(svg) {
   return colors;
 }
 
+/** Reads a file or directory, returning null when it is missing (no check-then-use race). */
+function attempt(read) {
+  try {
+    return read();
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
 /** Returns the list of problems; empty when everything is within the limits. */
 export function validate({ assetsDir, bundlePath, limits = LIMITS }) {
   const problems = [];
 
-  if (existsSync(assetsDir)) {
-    for (const file of readdirSync(assetsDir)) {
-      const path = join(assetsDir, file);
-      const size = statSync(path).size;
-      if (size > limits.assetBytes) {
-        problems.push(`${file}: ${size} bytes passa de ${limits.assetBytes}`);
-      }
-      if (file.endsWith('.svg')) {
-        const colors = distinctColors(readFileSync(path, 'utf8')).size;
-        if (colors > limits.maxColors) {
-          problems.push(`${file}: ${colors} cores passa de ${limits.maxColors}`);
-        }
+  for (const file of attempt(() => readdirSync(assetsDir)) ?? []) {
+    // One read gives both the size and the content, so the file is not checked and then used
+    const content = readFileSync(join(assetsDir, file));
+    if (content.length > limits.assetBytes) {
+      problems.push(`${file}: ${content.length} bytes is over ${limits.assetBytes}`);
+    }
+    if (file.endsWith('.svg')) {
+      const colors = distinctColors(content.toString('utf8')).size;
+      if (colors > limits.maxColors) {
+        problems.push(`${file}: ${colors} colors is over ${limits.maxColors}`);
       }
     }
   }
 
-  if (!existsSync(bundlePath)) {
-    problems.push('dist/index.html não existe: rode o build antes');
-  } else {
-    const size = statSync(bundlePath).size;
-    if (size > limits.bundleBytes) {
-      problems.push(`banner: ${size} bytes passa do limite de ${limits.bundleBytes}`);
-    }
+  const bundle = attempt(() => statSync(bundlePath));
+  if (!bundle) {
+    problems.push('dist/index.html does not exist: run the build first');
+  } else if (bundle.size > limits.bundleBytes) {
+    problems.push(`banner: ${bundle.size} bytes is over the limit of ${limits.bundleBytes}`);
   }
   return problems;
 }
@@ -64,11 +70,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     bundlePath: join(root, 'dist', 'index.html'),
   });
   if (problems.length > 0) {
-    console.error(`validação de assets falhou:\n- ${problems.join('\n- ')}`);
+    console.error(`asset validation failed:\n- ${problems.join('\n- ')}`);
     process.exit(1);
   }
   const kb = Math.round(statSync(join(root, 'dist', 'index.html')).size / 1024);
-  console.log(
-    `assets ok (banner com ${kb} KB, limite ${Math.round(LIMITS.bundleBytes / 1024)} KB)`,
-  );
+  console.log(`assets ok (banner is ${kb} KB, limit ${Math.round(LIMITS.bundleBytes / 1024)} KB)`);
 }

@@ -7,6 +7,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
   # Editing the title/description must not cancel the code run (separate groups)
   group: ci-${{ github.ref }}-${{ github.event.action == 'edited' && 'description' || 'code' }}
