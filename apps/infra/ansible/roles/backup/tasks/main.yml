@@ -1,0 +1,67 @@
+---
+- name: Backup settings are present
+  ansible.builtin.assert:
+    that:
+      - backup_age_recipient is match('^age1')
+      - backup_endpoint is match('^https://')
+      - backup_bucket | length > 0
+    fail_msg: Set backup_age_recipient, backup_endpoint and backup_bucket in the local inventory.
+
+- name: Encryption tool
+  ansible.builtin.apt:
+    name: age
+    state: present
+
+- name: Backup directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    mode: '0700'
+    owner: root
+    group: root
+  loop:
+    - /var/backups/nextjourney
+    - /var/lib/nj-backup
+
+- name: Backup scripts
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '/usr/local/sbin/{{ item }}'
+    mode: '0755'
+    owner: root
+    group: root
+  loop:
+    - nj-backup
+    - nj-backup-watch
+
+- name: Backup settings file (nothing secret in it)
+  ansible.builtin.template:
+    src: backup.conf.j2
+    dest: /etc/nextjourney/backup.conf
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Backup units
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/etc/systemd/system/{{ item }}'
+    mode: '0644'
+    owner: root
+    group: root
+  loop:
+    - nj-backup@.service
+    - nj-backup@.timer
+    - nj-backup-watch.service
+    - nj-backup-watch.timer
+  notify: Reload systemd units
+
+- name: Apply pending unit changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Backup timers enabled
+  ansible.builtin.systemd:
+    name: '{{ item }}'
+    enabled: true
+    state: started
+  loop: "{{ backup_envs | map('regex_replace', '^(.*)$', 'nj-backup@\\1.timer') | list + ['nj-backup-watch.timer'] }}"

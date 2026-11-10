@@ -1,0 +1,13 @@
+---
+# Environments with a daily backup. dev holds only test accounts.
+backup_envs:
+  - prd
+# Public key of the age key pair (the private half is kept offline, never on the host)
+backup_age_recipient: ''
+# Object store (S3 API): endpoint and bucket. Set them in the local inventory.
+backup_endpoint: ''
+backup_bucket: ''
+backup_local_retention_days: 7
+# Time of the daily run (UTC) and how long without a new upload raises the alert
+backup_time: '03:15'
+backup_stale_hours: 26

@@ -1,0 +1,9 @@
+# Managed by Ansible. Database backup of one environment (the instance name).
+[Unit]
+Description=Database backup (%i)
+After=docker.service openbao.service
+Wants=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/nj-backup %i

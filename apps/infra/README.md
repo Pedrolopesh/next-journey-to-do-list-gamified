@@ -30,7 +30,7 @@ internet --443--> nginx (TLS, rate limiting)
 | `tofu/`     | DNS records with OpenTofu                                                           |
 | `scripts/`  | `deploy.sh`, the manual fallback publish                                            |
 | `tests/`    | bats tests for the scripts that gate releases                                       |
-| `runbooks/` | VPS access, API publishing and the delivery pipeline                                |
+| `runbooks/` | VPS access, API publishing, the delivery pipeline and the database backup           |
 | `adr/`      | Architecture decisions for the infrastructure                                       |
 
 ## Usage
