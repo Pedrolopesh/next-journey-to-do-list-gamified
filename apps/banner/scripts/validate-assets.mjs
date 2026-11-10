@@ -42,13 +42,13 @@ export function validate({ assetsDir, bundlePath, limits = LIMITS }) {
   const problems = [];
 
   for (const file of attempt(() => readdirSync(assetsDir)) ?? []) {
-    const path = join(assetsDir, file);
-    const size = statSync(path).size;
-    if (size > limits.assetBytes) {
-      problems.push(`${file}: ${size} bytes is over ${limits.assetBytes}`);
+    // One read gives both the size and the content, so the file is not checked and then used
+    const content = readFileSync(join(assetsDir, file));
+    if (content.length > limits.assetBytes) {
+      problems.push(`${file}: ${content.length} bytes is over ${limits.assetBytes}`);
     }
     if (file.endsWith('.svg')) {
-      const colors = distinctColors(readFileSync(path, 'utf8')).size;
+      const colors = distinctColors(content.toString('utf8')).size;
       if (colors > limits.maxColors) {
         problems.push(`${file}: ${colors} colors is over ${limits.maxColors}`);
       }
