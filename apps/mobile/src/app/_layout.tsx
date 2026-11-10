@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
-import { restoreSession } from '@/api/client';
+import { configError, restoreSession } from '@/api/client';
 import { useMe } from '@/api/queries';
 import { useSessionStore } from '@/auth/session-store';
 import { Button } from '@/components/button';
@@ -100,6 +100,7 @@ function Gate() {
 }
 
 export default function RootLayout() {
+  const { t } = useTranslation();
   const status = useSessionStore((state) => state.status);
   const pathname = usePathname();
   const [queryClient] = useState(
@@ -157,7 +158,7 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    void restoreSession();
+    if (!configError) void restoreSession();
   }, []);
 
   // On sign-out, no data from the previous user stays in cache
@@ -171,6 +172,20 @@ export default function RootLayout() {
       useItemDraftStore.getState().clear();
     }
   }, [status, queryClient]);
+
+  // A build without a valid API URL cannot work: explain it instead of a blank screen or a login
+  // that always fails
+  if (configError) {
+    return (
+      <>
+        <StatusBar style="light" />
+        <Splash>
+          <Text style={styles.configTitle}>{t('config.title')}</Text>
+          <Text style={styles.configMessage}>{t('config.message')}</Text>
+        </Splash>
+      </>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -192,4 +207,11 @@ const styles = StyleSheet.create({
   splashLogo: { width: 128, height: 112 },
   splashTitle: { color: colors.brand.primaryLight, fontSize: fontSize[22], fontWeight: '700' },
   error: { color: colors.status.danger, fontSize: fontSize[13] },
+  configTitle: { color: colors.status.danger, fontSize: fontSize[18], fontWeight: '700' },
+  configMessage: {
+    color: colors.text.secondary,
+    fontSize: fontSize[14],
+    textAlign: 'center',
+    paddingHorizontal: space[24],
+  },
 });
