@@ -71,7 +71,7 @@ vault_get() { # vault_get <kv path under nextjourney/>
 # Keys: explicit values win (vault lost), otherwise the vault is asked with the restore AppRole.
 identity="${NJ_RESTORE_IDENTITY_FILE:-}"
 key_id="${NJ_R2_KEY_ID:-}"
-key_secret="${NJ_R2_SECRET:-}"
+key_secret=${NJ_R2_SECRET:-}
 if [ -z "$identity" ] || [ -z "$key_id" ] || [ -z "$key_secret" ]; then
   role_id=$(cat "${conf_dir}/creds/restore/openbao_role_id") || fail "no vault login for restores on this host"
   secret_id=$(systemd-creds decrypt --name=openbao_secret_id "${conf_dir}/creds/restore/openbao_secret_id.cred" -) \
