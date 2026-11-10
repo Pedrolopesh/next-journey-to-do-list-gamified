@@ -1,9 +1,14 @@
 ---
-# Environments with a daily backup. dev holds only test accounts.
+# Daily backups: the database of each environment (dev holds only test accounts) and "vault", the snapshot of
+# the vault itself, encrypted before it leaves the host.
 backup_envs:
   - prd
+  - vault
 # Public key of the age key pair (the private half is kept offline, never on the host)
 backup_age_recipient: ''
+# Public key of the second age key pair, whose private half lives in the vault so the host can test and apply
+# restores by itself. Empty means backups are readable only with the offline key (no automatic restore).
+backup_restore_recipient: ''
 # Object store (S3 API): endpoint and bucket. Set them in the local inventory.
 backup_endpoint: ''
 backup_bucket: ''
@@ -11,3 +16,6 @@ backup_local_retention_days: 7
 # Time of the daily run (UTC) and how long without a new upload raises the alert
 backup_time: '03:15'
 backup_stale_hours: 26
+# Weekly restore test (UTC) and how long without a passing one raises the alert
+backup_restore_test_time: 'Sun *-*-* 05:00:00'
+backup_restore_stale_hours: 216
