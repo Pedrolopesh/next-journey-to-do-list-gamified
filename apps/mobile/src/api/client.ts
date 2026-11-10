@@ -10,14 +10,29 @@ import { resolveApiUrl } from './api-url';
 import { deviceName } from './device-name';
 import { createHttpClient } from './http';
 
-const API_URL = resolveApiUrl({
-  configured: process.env.EXPO_PUBLIC_API_URL,
-  // Release bundle (__DEV__ false) counts as production even if the manifest variant is missing
-  isProduction: !__DEV__ || Constants.expoConfig?.extra?.appVariant === 'production',
-  platform: Platform.OS,
-});
-export const baseURL = `${API_URL}/v1`;
-log.info('app.api', { baseURL });
+/**
+ * A build with a missing or non-https API URL does not crash on start: it records the problem and
+ * the root layout shows a configuration error screen instead of the app.
+ */
+function resolveConfiguredApiUrl(): string | null {
+  try {
+    return resolveApiUrl({
+      configured: process.env.EXPO_PUBLIC_API_URL,
+      // Release bundle (__DEV__ false) counts as production even if the manifest variant is missing
+      isProduction: !__DEV__ || Constants.expoConfig?.extra?.appVariant === 'production',
+      platform: Platform.OS,
+    });
+  } catch (error) {
+    log.error('app.config', { message: error instanceof Error ? error.message : 'invalid' });
+    return null;
+  }
+}
+
+const API_URL = resolveConfiguredApiUrl();
+/** True when the build has no valid API URL: nothing can work, so the app only explains it. */
+export const configError = API_URL === null;
+export const baseURL = `${API_URL ?? ''}/v1`;
+if (!configError) log.info('app.api', { baseURL });
 
 /** API client with automatic refresh tied to the session. */
 export const http = createHttpClient({

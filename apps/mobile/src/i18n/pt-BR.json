@@ -6,6 +6,10 @@
     "habits": "Hábitos",
     "profile": "Perfil"
   },
+  "config": {
+    "title": "App mal configurado",
+    "message": "Esta versão do app foi gerada sem o endereço do servidor. Instale a versão mais recente ou fale com o suporte."
+  },
   "auth": {
     "welcome": "Boas-vindas",
     "login": "Entrar",
