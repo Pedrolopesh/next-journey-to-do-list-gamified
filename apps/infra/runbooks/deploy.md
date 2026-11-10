@@ -18,6 +18,8 @@ The script builds the image on the VPS (`nj-build-local`), then `nj-release` run
 
 `apps/smoke` runs Playwright in API mode (no browser): health, security headers, validation, protected routes and, when `SMOKE_CODE_COMMAND` is set, the account lifecycle (code request, code sign-in, refresh, `me`, data export and deletion by code), with every response checked against the shared contracts. The executable (run without a shell) receives the test account's email and a 6-digit code as its two arguments and must make that code the valid login code of the account (the stored value is the SHA-256 of `<user id>:<code>` in `email_verifications`), for example with a one-off SQL statement on the environment database. Without it, the account tests are skipped and nothing is created. The release pipeline does not set it, so it runs only the public checks.
 
+With `SMOKE_REAL_EMAIL=1` it also runs the real delivery check (`tests/real-email.spec.ts`): it asks for a sign-in code, reads the email from a throwaway inbox at a temporary mail service (Guerrilla Mail, `sharklasers.com` addresses), signs in and then deletes the account, which needs a second code. The API sends at most one code per address every 60 seconds, so the run takes about 1.5 minutes. It creates a real account in the target environment, depends on a third-party service and is never part of the release pipeline. Use it to confirm that the mail provider is delivering.
+
 ## Roll back
 
 `sudo nj-app-rollback <dev|prd>` on the host switches back to the previous image (see `pipeline.md`). Migrations are not undone; reverting a migration is a separate decision (restore a backup).
