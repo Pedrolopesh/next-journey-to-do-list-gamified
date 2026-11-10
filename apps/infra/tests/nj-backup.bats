@@ -26,6 +26,7 @@ args="$*"; cfg=$(cat)
 case "$args" in
   *approle/login*) [ -e "${T}/vault-down" ] && exit 22; printf '{"auth":{"client_token":"tok"}}' ;;
   *revoke-self*) touch "${T}/revoked" ;;
+  *raft/snapshot*) [ -e "${T}/snapshot-down" ] && exit 22; printf 'snapshot-bytes' ;;
   *r2_access_key_id*) [ -e "${T}/key-missing" ] && exit 22; printf '{"data":{"data":{"value":"AKID"}}}' ;;
   *r2_secret_access_key*) printf '{"data":{"data":{"value":"SECRET"}}}' ;;
   *aws-sigv4*) [ -e "${T}/store-down" ] && exit 22
@@ -45,6 +46,35 @@ S
   [ "$(cat "$file")" = "dump-bytes" ]
   grep -qE 'https://store.test/bucket/prd/[0-9]{4}/[0-9]{2}/nextjourney-prd-.*\.dump\.age' "${T}/upload-args"
   [ -s "${NJ_BACKUP_STATE}/prd.last" ]
+}
+
+@test "vault: the snapshot is encrypted for the public key and uploaded under vault/year/month" {
+  run "$BACKUP" vault
+  [ "$status" -eq 0 ]
+  [ "$(cat "${T}/recipient")" = "age1test" ]
+  file=$(ls "${NJ_BACKUP_DIR}/vault"/nextjourney-vault-*.snap.age)
+  [ "$(cat "$file")" = "snapshot-bytes" ]
+  grep -qE 'https://store.test/bucket/vault/[0-9]{4}/[0-9]{2}/nextjourney-vault-.*\.snap\.age' "${T}/upload-args"
+  [ -s "${NJ_BACKUP_STATE}/vault.last" ]
+  [ -e "${T}/revoked" ]
+}
+
+@test "vault: a closed vault takes no snapshot, fails and warns" {
+  touch "${T}/vault-down"
+  run "$BACKUP" vault
+  [ "$status" -eq 1 ]
+  [ -z "$(ls "${NJ_BACKUP_DIR}/vault" | grep -v '^\.' || true)" ]
+  [ ! -e "${NJ_BACKUP_STATE}/vault.last" ]
+  grep -q '^warning Backup of vault failed' "${T}/notifications"
+}
+
+@test "vault: a failed snapshot leaves no partial file and still revokes the token" {
+  touch "${T}/snapshot-down"
+  run "$BACKUP" vault
+  [ "$status" -eq 1 ]
+  [ -z "$(ls -A "${NJ_BACKUP_DIR}/vault" | grep -v '^\.uploaded$' || true)" ]
+  [ -e "${T}/revoked" ]
+  [ ! -e "${NJ_BACKUP_STATE}/vault.last" ]
 }
 
 @test "the object store keys only go through standard input" {
