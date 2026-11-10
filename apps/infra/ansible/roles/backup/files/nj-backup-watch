@@ -2,14 +2,16 @@
 # Alerts when an environment has no backup uploaded for too long (default 26 h), and once when it recovers.
 # Repeats the critical alert every NJ_BACKUP_REPEAT_HOURS (default 6) while it stays stale.
 # A missing or unreadable state file counts as "never uploaded", so a broken file alerts instead of staying silent.
-# Usage: nj-backup-watch <env>...
+# Names that start with "restore-test-" are the weekly restore tests: they use their own limit (default 216 h = 9 days).
+# Usage: nj-backup-watch <name>...
 set -uo pipefail
 state="${NJ_BACKUP_STATE:-/var/lib/nj-backup}"
 max_age=$(( ${NJ_BACKUP_STALE_HOURS:-26} * 3600 ))
 repeat=$(( ${NJ_BACKUP_REPEAT_HOURS:-6} * 3600 ))
+restore_max_age=$(( ${NJ_RESTORE_STALE_HOURS:-216} * 3600 ))
 notify="${NJ_NOTIFY:-/usr/local/sbin/nj-notify}"
 now=$(date +%s)
-[ "$#" -gt 0 ] || { echo "usage: nj-backup-watch <env>..." >&2; exit 2; }
+[ "$#" -gt 0 ] || { echo "usage: nj-backup-watch <name>..." >&2; exit 2; }
 install -d -m 0700 "$state"
 
 read_epoch() { # read_epoch <file>: the number in the file, or 0
@@ -21,10 +23,18 @@ read_epoch() { # read_epoch <file>: the number in the file, or 0
 for env in "$@"; do
   last=$(read_epoch "${state}/${env}.last")
   alerted="${state}/${env}.alerted"
-  if [ $(( now - last )) -gt "$max_age" ]; then
+  limit="$max_age"
+  [[ "$env" == restore-test-* ]] && limit="$restore_max_age"
+  if [ $(( now - last )) -gt "$limit" ]; then
     prev=$(read_epoch "$alerted")
     if [ $(( now - prev )) -ge "$repeat" ]; then
-      if [ "$last" -eq 0 ]; then
+      if [[ "$env" == restore-test-* ]]; then
+        if [ "$last" -eq 0 ]; then
+          msg="The restore test of ${env#restore-test-} has never passed. Check the nj-restore-test@${env#restore-test-} unit."
+        else
+          msg="The restore test of ${env#restore-test-} has not passed for $(( (now - last) / 3600 )) h. Check the nj-restore-test@${env#restore-test-} unit and the vault."
+        fi
+      elif [ "$last" -eq 0 ]; then
         msg="No backup of ${env} has ever been uploaded. Check the nj-backup@${env} unit."
       else
         msg="No backup of ${env} uploaded for $(( (now - last) / 3600 )) h. Check the nj-backup@${env} unit and the vault."
@@ -32,6 +42,7 @@ for env in "$@"; do
       "$notify" critical "$msg" >/dev/null 2>&1 && echo "$now" >"$alerted"
     fi
   elif [ -e "$alerted" ]; then
-    "$notify" ok "Backup of ${env} is back to normal." >/dev/null 2>&1 && rm -f "$alerted"
+    if [[ "$env" == restore-test-* ]]; then back="The restore test of ${env#restore-test-} is back to normal."; else back="Backup of ${env} is back to normal."; fi
+    "$notify" ok "$back" >/dev/null 2>&1 && rm -f "$alerted"
   fi
 done

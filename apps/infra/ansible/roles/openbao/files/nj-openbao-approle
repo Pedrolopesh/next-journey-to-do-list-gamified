@@ -2,9 +2,9 @@
 # Prepares the vault login of one environment (or of the backup job) on this host: the role id (not a secret) and the secret id,
 # encrypted with systemd-creds. Never prints a value. The token comes from the environment (BAO_TOKEN).
 # Creates once; use --rotate to issue a new secret id.
-# Usage: BAO_TOKEN=... nj-openbao-approle <dev|prd|backup> [--rotate]
+# Usage: BAO_TOKEN=... nj-openbao-approle <dev|prd|backup|restore> [--rotate]
 set -euo pipefail
-env="${1:?usage: nj-openbao-approle <dev|prd|backup> [--rotate]}"
+env="${1:?usage: nj-openbao-approle <dev|prd|backup|restore> [--rotate]}"
 : "${BAO_TOKEN:?BAO_TOKEN must be set}"
 bao() { /usr/local/sbin/nj-bao "$@"; }
 dir="/etc/nextjourney/creds/${env}"

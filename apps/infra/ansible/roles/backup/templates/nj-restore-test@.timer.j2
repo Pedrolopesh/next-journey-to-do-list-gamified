@@ -1,0 +1,11 @@
+# Managed by Ansible. Runs the restore test every week.
+[Unit]
+Description=Weekly restore test (%i)
+
+[Timer]
+OnCalendar={{ backup_restore_test_time }}
+RandomizedDelaySec=20min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
