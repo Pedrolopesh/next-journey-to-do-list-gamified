@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Full verification before opening a PR (the same steps as CI, plus the full secret scan).
-# Stops at the first error. See docs/PROCESSO-DE-PR.md.
+# Stops at the first error. See docs/PR-PROCESS.md.
 #
 #   pnpm run verify                  everything
 #   SKIP_E2E=1 pnpm run verify       without the API e2e tests (no local Postgres)

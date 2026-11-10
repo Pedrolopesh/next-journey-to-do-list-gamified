@@ -15,7 +15,7 @@ export const VERIFICATION_RESEND_INTERVAL_MS = 60_000;
 type Recipient = { id: string; email: string };
 
 /**
- * 6-digit code that proves ownership of the email. Rules: docs/api/autenticacao-e-sessoes.md.
+ * 6-digit code that proves ownership of the email. Rules: docs/api/authentication-and-sessions.md.
  */
 @Injectable()
 export class EmailVerificationService {
@@ -40,7 +40,7 @@ export class EmailVerificationService {
    * Consumes the code (single use, 5 attempts). Each
    * attempt is reserved by a conditional UPDATE so parallel requests cannot exceed the limit. With
    * `tx`, the "used" mark joins the caller's transaction, so a rollback keeps the code valid;
-   * attempts stay outside it on purpose. Rules: docs/api/autenticacao-e-sessoes.md.
+   * attempts stay outside it on purpose. Rules: docs/api/authentication-and-sessions.md.
    */
   async consume(userId: string, code: string, tx?: Prisma.TransactionClient): Promise<boolean> {
     const now = this.clock.now();

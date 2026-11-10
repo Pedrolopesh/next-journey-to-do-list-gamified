@@ -1,5 +1,5 @@
 # Testes de interface do app (Maestro). Rode com `pnpm --filter @nextjourney/mobile test:ui`.
-# The flows share the same account, so they run one at a time and in this order (see docs/TESTES.md).
+# The flows share the same account, so they run one at a time and in this order (see docs/TESTING.md).
 flows:
   - flows/*
 executionOrder:

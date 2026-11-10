@@ -1,6 +1,6 @@
 # Next Journey — how the project works
 
-Updated on 2026-11-05. This document describes **what exists today** in the repository and **how the pieces talk to each other**. Sources: [REQUISITOS.MD](./REQUISITOS.MD) (specification), [TURBOREPO.md](./TURBOREPO.md) (build tool), the specs in `openspec/` and the ADRs in [`adr/`](./adr/README.md).
+Updated on 2026-11-05. This document describes **what exists today** in the repository and **how the pieces talk to each other**. Sources: [REQUIREMENTS.md](./REQUIREMENTS.md) (specification), [TURBOREPO.md](./TURBOREPO.md) (build tool), the specs in `openspec/` and the ADRs in [`adr/`](./adr/README.md).
 
 ## 1. The product in one sentence
 
@@ -81,7 +81,7 @@ Flow of a check:
 
 The `checkId` makes the check **idempotent**: repeating the call (or resending from the offline queue) does not duplicate EXP.
 
-Initial values (kept in the `game_config` table, adjustable without a new build): EXP 5/10/20 and coins 1/2/4 per difficulty (easy/medium/hard); EXP per chapter 200, 400, 600, 800 and 1000 (after chapter 5 the level rises every 1000 and the story stays in the scene of chapter 5); unchecking never takes EXP, only coins (3, 5, 10, 15 and 20 per chapter); each level gained completes a chapter of the active story; a bonus of 10 coins on leveling up; 5 chapters per story; habits with no daily limit of checks; the day rolls over at 00:00 in the profile time zone. The rest of the rules (undo, achievements, edge cases) is in REQUISITOS.MD, section "Regras complementares".
+Initial values (kept in the `game_config` table, adjustable without a new build): EXP 5/10/20 and coins 1/2/4 per difficulty (easy/medium/hard); EXP per chapter 200, 400, 600, 800 and 1000 (after chapter 5 the level rises every 1000 and the story stays in the scene of chapter 5); unchecking never takes EXP, only coins (3, 5, 10, 15 and 20 per chapter); each level gained completes a chapter of the active story; a bonus of 10 coins on leveling up; 5 chapters per story; habits with no daily limit of checks; the day rolls over at 00:00 in the profile time zone. The rest of the rules (undo, achievements, edge cases) is in REQUIREMENTS.md, section "Regras complementares".
 
 ## 6. Stack per project
 
@@ -107,7 +107,7 @@ The full steps are in the [README](../README.md). In short: Node 24, pnpm 11 thr
 ## 9. How the work is done
 
 - Work in phases, with each behavior change having a proposal and a spec in OpenSpec before the code.
-- Each change becomes a small PR with Conventional Commits (`feat(mobile): ...`, `chore: ...`). A PR only goes in with `pnpm run verify` and CI green, a code review and a security scan (see [PROCESSO-DE-PR.md](./PROCESSO-DE-PR.md)).
+- Each change becomes a small PR with Conventional Commits (`feat(mobile): ...`, `chore: ...`). A PR only goes in with `pnpm run verify` and CI green, a code review and a security scan (see [PR-PROCESS.md](./PR-PROCESS.md)).
 - Decisions that are hard to reverse become an ADR in `docs/adr/`. Dates always in ISO 8601.
 
 ## 10. Decisions already made (2026-10-02)

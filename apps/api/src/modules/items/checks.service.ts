@@ -31,7 +31,7 @@ export class ChecksService {
 
   /**
    * Checks an item in a single transaction, idempotent by `checkId`. Rules:
-   * docs/api/itens-e-checks.md.
+   * docs/api/items-and-checks.md.
    */
   async check(userId: string, itemId: string, checkId: string): Promise<CheckResult> {
     const now = this.clock.now();
@@ -67,7 +67,7 @@ export class ChecksService {
         : NO_STORY;
 
       // EXP counts once but the coins are still earned: a to-do once in a lifetime, a daily or
-      // habit once per day. Rules: docs/api/itens-e-checks.md.
+      // habit once per day. Rules: docs/api/items-and-checks.md.
       const expAlreadyEarned =
         (await tx.itemCheck.count({
           where: {
@@ -189,7 +189,7 @@ export class ChecksService {
   }
 
   /**
-   * Unchecks a check; only the coins decrease. Rules: docs/api/progressao-e-jogo.md.
+   * Unchecks a check; only the coins decrease. Rules: docs/api/progression-and-game.md.
    */
   async undo(userId: string, itemId: string, checkId: string): Promise<CheckResult> {
     const now = this.clock.now();

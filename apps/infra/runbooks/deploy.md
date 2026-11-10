@@ -44,7 +44,7 @@ They are stored encrypted in `/etc/nextjourney/creds/<env>/` (ADR-0010).
   unset KEY
   sudo systemctl restart nj-secrets@<env> nj@<env>
   ```
-- **JWT secret rotation:** procedure in `docs/api/operacao-e-seguranca.md`.
+- **JWT secret rotation:** procedure in `docs/api/operations-and-security.md`.
 
 ## VPS reboot
 

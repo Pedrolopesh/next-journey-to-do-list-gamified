@@ -23,7 +23,7 @@ apps/mobile (Expo)  ──REST /v1──▶  apps/api (NestJS + Prisma)  ──�
 packages/contracts: Zod schemas used by all three ends
 ```
 
-Details in [docs/COMO-FUNCIONA.md](docs/COMO-FUNCIONA.md).
+Details in [docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md).
 
 ## How to run
 
@@ -64,10 +64,10 @@ CI repeats these checks on every PR. The API image is scanned (Trivy) and signed
 
 ## Documentation
 
-- [How the project works](docs/COMO-FUNCIONA.md)
-- [How to contribute](CONTRIBUTING.md) and the [PR process](docs/PROCESSO-DE-PR.md)
-- [MVP specification](docs/REQUISITOS.MD)
-- [Tests and regression](docs/TESTES.md) and [QA](docs/QA.md)
+- [How the project works](docs/HOW-IT-WORKS.md)
+- [How to contribute](CONTRIBUTING.md) and the [PR process](docs/PR-PROCESS.md)
+- [MVP specification](docs/REQUIREMENTS.md)
+- [Tests and regression](docs/TESTING.md) and [QA](docs/QA.md)
 - [Architecture decisions (ADRs)](docs/adr/README.md)
 - [API reference](docs/api/README.md)
 - [Turborepo](docs/TURBOREPO.md)

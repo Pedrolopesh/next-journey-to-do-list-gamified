@@ -14,7 +14,7 @@ export type AuthenticatedRequest = Request & { user: { id: string; sessionId?: s
 
 /**
  * Global guard: validates the access JWT and that the account and session still exist. Rules:
- * docs/api/operacao-e-seguranca.md.
+ * docs/api/operations-and-security.md.
  */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -56,7 +56,7 @@ export class JwtAuthGuard implements CanActivate {
     // A database error here must not become a 401: a temporary failure would sign the app out.
     const user = await this.prisma.user.findFirst({
       // With `sid`, the session must still be active, so ending a device drops the token at once.
-      // Rules: docs/api/operacao-e-seguranca.md.
+      // Rules: docs/api/operations-and-security.md.
       where: {
         id: userId,
         deletedAt: null,

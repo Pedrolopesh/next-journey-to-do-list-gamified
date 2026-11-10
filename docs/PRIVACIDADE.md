@@ -42,7 +42,7 @@ A página web pública de pedido de exclusão (exigida pelas lojas) depende da h
 | Cadastro que nunca confirmou o e-mail | Apagado em 7 dias |
 | Refresh token e código de confirmação expirados | Apagados 7 dias depois de expirar |
 | Contadores de limite de tentativas | Até 1 dia |
-| Backup do banco | Retenção de 7 dias (`docs/REQUISITOS.MD`) |
+| Backup do banco | Retenção de 7 dias (`docs/REQUIREMENTS.md`) |
 
 ## Incidente de segurança
 

@@ -22,7 +22,7 @@ There is no password sign-in: the code proves ownership of the email, for new an
 
 ## Tokens
 
-- **Access:** short JWT (HS256, 900 s by default, `ACCESS_TOKEN_TTL_SECONDS`) with a fixed issuer and audience and the session id (`sid`). The `kid` header only chooses which key to try (the current or the previous one, during a secret rotation); the signature decides. Rotation procedure: `docs/api/operacao-e-seguranca.md`, section "JWT secret rotation".
+- **Access:** short JWT (HS256, 900 s by default, `ACCESS_TOKEN_TTL_SECONDS`) with a fixed issuer and audience and the session id (`sid`). The `kid` header only chooses which key to try (the current or the previous one, during a secret rotation); the signature decides. Rotation procedure: `docs/api/operations-and-security.md`, section "JWT secret rotation".
 - **Refresh:** random `<id>.<secret>`, 365 days by default (`REFRESH_TOKEN_TTL_DAYS`), renewed on every rotation: the session only ends with "Sair" (sign out), account deletion, revocation in "Sessões" (sessions) or detected reuse; only the `sha256` of the secret is stored.
 - **Atomic rotation:** on every refresh the token is swapped. The conditional `UPDATE` (`revokedAt` null and still valid) lets only **one** of several simultaneous requests with the same token through; the one that loses is treated as **reuse** and revokes the whole family (a sign of a stolen token). A transaction conflict under concurrency denies (fail closed); any other error (database down) goes on as 5xx, so the app does not treat a temporary failure as an ended session.
 - **Logout** revokes the family of the given refresh token; it is silent if the token is invalid.

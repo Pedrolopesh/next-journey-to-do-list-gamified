@@ -186,7 +186,7 @@ const MAX_LOOKBACK_DAYS = 90;
 /**
  * Consecutive days on which every scheduled daily was done. A day with no scheduled daily is
  * neutral; an incomplete today does not break it yet, an incomplete earlier day does. Rules:
- * docs/api/progressao-e-jogo.md.
+ * docs/api/progression-and-game.md.
  */
 export function countFullDaysStreak(
   dailyHistories: readonly DailyHistoryDays[],
@@ -210,7 +210,7 @@ export function countFullDaysStreak(
 /**
  * Days, within the last `window` days, with 3 or more scheduled dailies all done. Only that window
  * is evaluated because the retroactive lookback is capped: do not widen `window` beyond it. Rules:
- * docs/api/progressao-e-jogo.md.
+ * docs/api/progression-and-game.md.
  */
 export function countPerfectDays(
   dailyHistories: readonly DailyHistoryDays[],

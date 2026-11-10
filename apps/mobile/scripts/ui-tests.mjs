@@ -9,7 +9,7 @@
 //    runs only those flows, in order (the first must be the sign-in one, which logs into the new account).
 //
 // Prerequisites: API running (E2E_API_URL, default http://localhost:3010), Metro running, the development
-// app installed on the emulator/simulator, and Maestro (docs/TESTES.md).
+// app installed on the emulator/simulator, and Maestro (docs/TESTING.md).
 import { spawnSync } from 'node:child_process';
 import { randomInt } from 'node:crypto';
 import { existsSync } from 'node:fs';

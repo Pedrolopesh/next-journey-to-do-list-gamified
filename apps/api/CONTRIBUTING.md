@@ -20,7 +20,7 @@ Every progression rule lives here, as a **pure function with a test**:
 - The types (`PlayerState`, `GameConfig`, `Difficulty`...) come from `@nextjourney/contracts`. Never duplicate them.
 - **Every rule change starts with a test.** Minimum 80% coverage in `domain/` (100% today); `pnpm test:cov` fails below that.
 - The values (EXP, coins, chapters) come from `GameConfig` (the `game_config` table), never hard-coded.
-- The ambiguous rules and how they were resolved are in `docs/adr/0004-ambiguous-game-rules.md` (and in REQUISITOS.MD, "Regras complementares").
+- The ambiguous rules and how they were resolved are in `docs/adr/0004-ambiguous-game-rules.md` (and in REQUIREMENTS.md, "Regras complementares").
 
 ## When controllers and services arrive (Phase 4)
 

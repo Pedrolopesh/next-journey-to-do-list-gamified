@@ -1,6 +1,6 @@
 # Items, categories and checks
 
-Code in `apps/api/src/modules/items` and `modules/categories`. The EXP and coin rules are in [progressao-e-jogo.md](progressao-e-jogo.md).
+Code in `apps/api/src/modules/items` and `modules/categories`. The EXP and coin rules are in [progression-and-game.md](progression-and-game.md).
 
 ## Items
 

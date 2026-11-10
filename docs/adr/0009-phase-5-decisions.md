@@ -20,5 +20,5 @@
 ## Consequences
 
 - More columns and tables; additive migrations and one that replaces the story columns of `user_stats`.
-- Email sign-up still reveals whether the email exists (fixed later; see `docs/api/autenticacao-e-sessoes.md`); sign-in, refresh and "forgot password" do not.
+- Email sign-up still reveals whether the email exists (fixed later; see `docs/api/authentication-and-sessions.md`); sign-in, refresh and "forgot password" do not.
 - Local notifications and the offline queue are left for Phase 7; the reminder time is already stored.
