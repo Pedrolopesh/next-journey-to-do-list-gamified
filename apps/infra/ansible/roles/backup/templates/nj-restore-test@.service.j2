@@ -1,0 +1,13 @@
+# Managed by Ansible. Restore test of one backup kind (the instance name: an environment or vault).
+[Unit]
+Description=Restore test (%i)
+After=docker.service openbao.service
+Wants=docker.service
+StartLimitIntervalSec=6h
+StartLimitBurst=3
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/nj-restore test %i
+Restart=on-failure
+RestartSec=30min

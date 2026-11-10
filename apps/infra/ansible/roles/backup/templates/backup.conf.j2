@@ -1,5 +1,6 @@
 # Managed by Ansible. Settings of the database backup (no secret here: the keys live in the vault).
 BACKUP_AGE_RECIPIENT='{{ backup_age_recipient }}'
+BACKUP_RESTORE_RECIPIENT='{{ backup_restore_recipient }}'
 BACKUP_ENDPOINT='{{ backup_endpoint }}'
 BACKUP_BUCKET='{{ backup_bucket }}'
 BACKUP_LOCAL_RETENTION_DAYS='{{ backup_local_retention_days }}'

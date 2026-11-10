@@ -12,6 +12,9 @@ conf="${NJ_BACKUP_CONF:-/etc/nextjourney/backup.conf}"
 # shellcheck source=/dev/null
 . "$conf"
 : "${BACKUP_AGE_RECIPIENT:?missing in $conf}" "${BACKUP_ENDPOINT:?missing in $conf}" "${BACKUP_BUCKET:?missing in $conf}"
+# Two recipients when the automatic-restore key is configured: the offline key and the one kept in the vault.
+recipients=(-r "$BACKUP_AGE_RECIPIENT")
+[ -z "${BACKUP_RESTORE_RECIPIENT:-}" ] || recipients+=(-r "$BACKUP_RESTORE_RECIPIENT")
 dir="${NJ_BACKUP_DIR:-/var/backups/nextjourney}/${env}"
 state="${NJ_BACKUP_STATE:-/var/lib/nj-backup}"
 retention="${BACKUP_LOCAL_RETENTION_DAYS:-7}"
@@ -63,7 +66,7 @@ if [ "$env" = vault ]; then
   tmp="${dir}/.${name}.part"
   printf 'header = "X-Vault-Token: %s"\n' "$token" \
     | curl -fsS --connect-timeout 5 --max-time 120 --cacert "$cacert" -K - "${vault}/v1/sys/storage/raft/snapshot" \
-    | age -r "$BACKUP_AGE_RECIPIENT" -o "$tmp" || fail "snapshot or encryption"
+    | age "${recipients[@]}" -o "$tmp" || fail "snapshot or encryption"
   [ -s "$tmp" ] || fail "empty snapshot"
 else
   # After a reboot the database container may still be starting.
@@ -76,7 +79,7 @@ else
   tmp="${dir}/.${name}.part"
   # Database credentials are read inside the container; nothing secret crosses this script.
   docker exec "$db" sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-privileges' \
-    | age -r "$BACKUP_AGE_RECIPIENT" -o "$tmp" || fail "dump or encryption"
+    | age "${recipients[@]}" -o "$tmp" || fail "dump or encryption"
   [ -s "$tmp" ] || fail "empty dump"
 fi
 mv "$tmp" "${dir}/${name}"

@@ -48,6 +48,7 @@
   loop:
     - nj-backup
     - nj-backup-watch
+    - nj-restore
 
 - name: Backup settings file (nothing secret in it)
   ansible.builtin.template:
@@ -67,6 +68,8 @@
   loop:
     - nj-backup@.service
     - nj-backup@.timer
+    - nj-restore-test@.service
+    - nj-restore-test@.timer
     - nj-backup-watch.service
     - nj-backup-watch.timer
   notify: Reload systemd units
@@ -80,3 +83,11 @@
     enabled: true
     state: started
   loop: "{{ backup_envs | map('regex_replace', '^(.*)$', 'nj-backup@\\1.timer') | list + ['nj-backup-watch.timer'] }}"
+
+- name: Weekly restore tests enabled (only with the automatic-restore key configured)
+  ansible.builtin.systemd:
+    name: '{{ item }}'
+    enabled: true
+    state: started
+  loop: "{{ backup_envs | map('regex_replace', '^(.*)$', 'nj-restore-test@\\1.timer') | list }}"
+  when: backup_restore_recipient | length > 0
