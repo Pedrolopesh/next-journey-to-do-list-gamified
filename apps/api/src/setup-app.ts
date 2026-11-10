@@ -1,6 +1,7 @@
 import { type INestApplication, RequestMethod } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import type { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 
@@ -14,8 +15,21 @@ export function setupApp(app: INestApplication, options: { swagger: boolean }): 
   // Behind a reverse proxy, trusts the first hop so the rate limit sees the real IP.
   if (env.TRUST_PROXY) (app as NestExpressApplication).set('trust proxy', 1);
 
-  // The Swagger page uses inline scripts, so the CSP only relaxes when it is on.
-  app.use(helmet(options.swagger ? { contentSecurityPolicy: false } : {}));
+  // The content security policy stays on everywhere. The Swagger page (outside production) uses
+  // inline scripts, so only its own path gets a policy that allows them.
+  const strict = helmet();
+  const docs = helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        'script-src': ["'self'", "'unsafe-inline'"],
+      },
+    },
+  });
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const relaxed = options.swagger && (req.path === '/docs' || req.path.startsWith('/docs/'));
+    (relaxed ? docs : strict)(req, res, next);
+  });
 
   // CORS restricted to an explicit list; with no list, no web origin is accepted.
   const origins = env.CORS_ORIGINS.split(',')

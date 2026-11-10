@@ -37,6 +37,6 @@ describe('validate-assets', () => {
   });
 
   it('flags a missing bundle', () => {
-    expect(validate(setup({}, null))[0]).toMatch(/não existe/);
+    expect(validate(setup({}, null))[0]).toMatch(/does not exist/);
   });
 });
