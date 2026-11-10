@@ -3,7 +3,11 @@
 Description=Database backup (%i)
 After=docker.service openbao.service
 Wants=docker.service
+StartLimitIntervalSec=6h
+StartLimitBurst=4
 
 [Service]
 Type=oneshot
 ExecStart=/usr/local/sbin/nj-backup %i
+Restart=on-failure
+RestartSec=15min

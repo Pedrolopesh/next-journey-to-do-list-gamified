@@ -21,9 +21,26 @@ s3() { # s3 <curl args>: keys go through standard input, never as arguments
     | curl -fsS -K - --aws-sigv4 'aws:amz:auto:s3' -H 'x-amz-content-sha256: UNSIGNED-PAYLOAD' "$@"
 }
 
-# Keys are env/year/month/name, so the last one in order is the newest
-key=$(s3 "${NJ_R2_ENDPOINT}/${NJ_R2_BUCKET}?list-type=2&prefix=${env}/" \
-  | python3 -c 'import re,sys; k=re.findall(r"<Key>([^<]+)</Key>", sys.stdin.read()); print(sorted(k)[-1] if k else "")')
+# Keys are env/year/month/name, so the last one in order is the newest. The listing is paged (1000 keys).
+list_page() { # list_page <continuation token or empty>: prints the next token, then the keys
+  local url="${NJ_R2_ENDPOINT}/${NJ_R2_BUCKET}?list-type=2&prefix=${env}/"
+  [ -z "$1" ] || url+="&continuation-token=$(python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "$1")"
+  s3 "$url" | python3 -c '
+import re, sys
+x = sys.stdin.read()
+t = re.search(r"<NextContinuationToken>([^<]+)</NextContinuationToken>", x)
+print(t.group(1) if t and "<IsTruncated>true</IsTruncated>" in x else "")
+print("\n".join(re.findall(r"<Key>([^<]+)</Key>", x)))'
+}
+token=""
+keys=""
+while :; do
+  page=$(list_page "$token")
+  token=$(printf '%s\n' "$page" | sed -n 1p)
+  keys+=$'\n'$(printf '%s\n' "$page" | sed 1d)
+  [ -n "$token" ] || break
+done
+key=$(printf '%s\n' "$keys" | sed '/^$/d' | sort | tail -n 1)
 [ -n "$key" ] || { echo "no backup found for ${env}" >&2; exit 1; }
 echo "newest backup: ${key}"
 

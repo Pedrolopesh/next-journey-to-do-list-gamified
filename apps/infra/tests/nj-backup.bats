@@ -6,7 +6,7 @@ WATCH="${BATS_TEST_DIRNAME}/../ansible/roles/backup/files/nj-backup-watch"
 setup() {
   T="$BATS_TEST_TMPDIR"
   export NJ_BACKUP_CONF="${T}/backup.conf" NJ_BACKUP_DIR="${T}/backups" NJ_BACKUP_STATE="${T}/state" \
-    NJ_CONF_DIR="${T}/conf" NJ_NOTIFY="${T}/bin/notify" T
+    NJ_CONF_DIR="${T}/conf" NJ_NOTIFY="${T}/bin/notify" NJ_BACKUP_DB_WAIT=1 T
   mkdir -p "${T}/bin" "${T}/conf/creds/backup"
   printf "BACKUP_AGE_RECIPIENT='age1test'\nBACKUP_ENDPOINT='https://store.test'\nBACKUP_BUCKET='bucket'\nBACKUP_LOCAL_RETENTION_DAYS='7'\n" >"$NJ_BACKUP_CONF"
   echo role-id >"${T}/conf/creds/backup/openbao_role_id"
@@ -25,10 +25,11 @@ S
 args="$*"; cfg=$(cat)
 case "$args" in
   *approle/login*) [ -e "${T}/vault-down" ] && exit 22; printf '{"auth":{"client_token":"tok"}}' ;;
-  *revoke-self*) ;;
-  *r2_access_key_id*) printf '{"data":{"data":{"value":"AKID"}}}' ;;
+  *revoke-self*) touch "${T}/revoked" ;;
+  *r2_access_key_id*) [ -e "${T}/key-missing" ] && exit 22; printf '{"data":{"data":{"value":"AKID"}}}' ;;
   *r2_secret_access_key*) printf '{"data":{"data":{"value":"SECRET"}}}' ;;
-  *aws-sigv4*) printf '%s\n' "$args" >"${T}/upload-args"; printf '%s\n' "$cfg" >"${T}/upload-config" ;;
+  *aws-sigv4*) [ -e "${T}/store-down" ] && exit 22
+    printf '%s\n' "$args" >>"${T}/upload-args"; printf '%s\n' "$cfg" >"${T}/upload-config" ;;
 esac
 S
   printf '#!/bin/bash\necho "$*" >>"${T}/notifications"\n' >"${T}/bin/notify"
@@ -60,6 +61,39 @@ S
   [ -n "$(ls "${NJ_BACKUP_DIR}/prd"/nextjourney-prd-*.dump.age)" ]
   [ ! -e "${NJ_BACKUP_STATE}/prd.last" ]
   grep -q '^warning Backup of prd failed' "${T}/notifications"
+}
+
+@test "the vault token is revoked even when a key cannot be read" {
+  touch "${T}/key-missing"
+  run "$BACKUP" prd
+  [ "$status" -eq 1 ]
+  [ -e "${T}/revoked" ]
+}
+
+@test "dumps left over from a failed upload go up on the next run, oldest first" {
+  touch "${T}/store-down"
+  run "$BACKUP" prd
+  [ "$status" -eq 1 ]
+  [ ! -e "${NJ_BACKUP_STATE}/prd.last" ]
+  rm "${T}/store-down"
+  sleep 1
+  run "$BACKUP" prd
+  [ "$status" -eq 0 ]
+  [ "$(grep -c 'dump.age' "${T}/upload-args")" -eq 2 ]
+  [ "$(ls "${NJ_BACKUP_DIR}/prd/.uploaded" | wc -l)" -eq 2 ]
+  names=$(awk '{match($0, /nextjourney-prd-[0-9TZ]+/); print substr($0, RSTART, RLENGTH)}' "${T}/upload-args")
+  first=$(printf '%s\n' "$names" | sed -n 1p)
+  second=$(printf '%s\n' "$names" | sed -n 2p)
+  [[ "$first" < "$second" ]]
+}
+
+@test "an uploaded dump is not sent twice" {
+  run "$BACKUP" prd
+  [ "$status" -eq 0 ]
+  sleep 1
+  run "$BACKUP" prd
+  [ "$status" -eq 0 ]
+  [ "$(grep -c 'dump.age' "${T}/upload-args")" -eq 2 ]
 }
 
 @test "an empty dump is refused" {
@@ -94,6 +128,14 @@ S
   run "$WATCH" prd
   [ "$status" -eq 0 ]
   [ ! -e "${T}/notifications" ]
+}
+
+@test "watch: a corrupt state file alerts instead of staying silent" {
+  mkdir -p "$NJ_BACKUP_STATE"
+  printf 'not a number' >"${NJ_BACKUP_STATE}/prd.last"
+  run "$WATCH" prd
+  [ "$status" -eq 0 ]
+  grep -q '^critical No backup of prd has ever been uploaded' "${T}/notifications"
 }
 
 @test "watch: an old backup alerts with the age, and recovery sends one ok" {

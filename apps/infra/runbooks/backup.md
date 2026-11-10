@@ -27,7 +27,7 @@ printf %s '<key secret>' | BAO_TOKEN=<admin token> nj-bao kv put kv/nextjourney/
 
 ## When it fails
 
-- The dump and encryption run before the vault is touched, so a sealed vault only delays the upload: the encrypted dump stays on the host for 7 days and the alert fires after 26 hours. Open the vault (`sudo nj-unseal`) and run the unit again.
+- The dump and encryption run before the vault is touched, so a sealed vault only delays the upload: the encrypted dump stays on the host for 7 days and the alert fires after 26 hours. Open the vault (`sudo nj-unseal`) and run the unit again: it also uploads every dump still missing from the store, oldest first. A failed run is retried by systemd every 15 minutes (four times).
 - Check the last upload time: `sudo cat /var/lib/nj-backup/prd.last` (epoch seconds).
 
 ## Restore test
