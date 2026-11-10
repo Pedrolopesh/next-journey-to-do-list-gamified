@@ -1,0 +1,8 @@
+# Managed by Ansible. Alerts when a backup is overdue.
+[Unit]
+Description=Backup watch
+
+[Service]
+Type=oneshot
+Environment=NJ_BACKUP_STALE_HOURS={{ backup_stale_hours }}
+ExecStart=/usr/local/sbin/nj-backup-watch {{ backup_envs | join(' ') }}

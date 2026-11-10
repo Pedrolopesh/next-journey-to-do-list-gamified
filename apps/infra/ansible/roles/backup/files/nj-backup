@@ -1,0 +1,100 @@
+#!/bin/bash
+# Daily backup of one environment's database: dump, encrypt with age (public key only, so the host cannot
+# read it back), keep the last days on the host, copy to the object store, alert on failure.
+# Dumps that could not be uploaded (sealed vault, store outage) are sent on the next run, oldest first.
+# The object store keys live in the vault (AppRole nj-backup); a sealed vault only delays the upload.
+# Usage: nj-backup <dev|prd>
+set -euo pipefail
+env="${1:?usage: nj-backup <dev|prd>}"
+conf="${NJ_BACKUP_CONF:-/etc/nextjourney/backup.conf}"
+# shellcheck source=/dev/null
+. "$conf"
+: "${BACKUP_AGE_RECIPIENT:?missing in $conf}" "${BACKUP_ENDPOINT:?missing in $conf}" "${BACKUP_BUCKET:?missing in $conf}"
+dir="${NJ_BACKUP_DIR:-/var/backups/nextjourney}/${env}"
+state="${NJ_BACKUP_STATE:-/var/lib/nj-backup}"
+retention="${BACKUP_LOCAL_RETENTION_DAYS:-7}"
+vault="${NJ_VAULT_ADDR:-https://127.0.0.1:8200}"
+cacert="${NJ_VAULT_CACERT:-/etc/openbao/tls/openbao.crt}"
+conf_dir="${NJ_CONF_DIR:-/etc/nextjourney}"
+notify="${NJ_NOTIFY:-/usr/local/sbin/nj-notify}"
+db_wait="${NJ_BACKUP_DB_WAIT:-30}"
+limits=(--connect-timeout 5 --max-time 15)
+token=""
+tmp=""
+
+# The vault token is revoked on every way out, including failures.
+cleanup() {
+  [ -n "$tmp" ] && rm -f "$tmp"
+  if [ -n "$token" ]; then
+    printf 'header = "X-Vault-Token: %s"\n' "$token" \
+      | curl -sS "${limits[@]}" --cacert "$cacert" -K - -X POST "${vault}/v1/auth/token/revoke-self" >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup EXIT
+
+fail() {
+  echo "backup of ${env} failed: $1" >&2
+  "$notify" warning "Backup of ${env} failed: $1" >/dev/null 2>&1 || true
+  exit 1
+}
+
+install -d -m 0700 "$dir" "${dir}/.uploaded" "$state"
+umask 077
+
+# After a reboot the database container may still be starting.
+db="next-journey-${env}-db-1"
+for _ in $(seq 1 "$db_wait"); do
+  docker exec "$db" pg_isready >/dev/null 2>&1 && break
+  sleep 10
+done
+
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+name="nextjourney-${env}-${stamp}.dump.age"
+tmp="${dir}/.${name}.part"
+
+# Database credentials are read inside the container; nothing secret crosses this script.
+docker exec "$db" sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom --no-owner --no-privileges' \
+  | age -r "$BACKUP_AGE_RECIPIENT" -o "$tmp" || fail "dump or encryption"
+[ -s "$tmp" ] || fail "empty dump"
+mv "$tmp" "${dir}/${name}"
+tmp=""
+find "$dir" -name 'nextjourney-*.dump.age' -type f -mtime "+${retention}" -delete
+find "${dir}/.uploaded" -type f -mtime "+${retention}" -delete
+echo "backup ok: ${dir}/${name} ($(wc -c <"${dir}/${name}" | tr -d ' ') bytes)"
+
+# Object store keys: log in with the backup AppRole and read both values.
+vault_get() { # vault_get <name>
+  printf 'header = "X-Vault-Token: %s"\n' "$token" \
+    | curl -fsS "${limits[@]}" --cacert "$cacert" -K - "${vault}/v1/kv/data/nextjourney/backup/$1" \
+    | python3 -c 'import json,sys; sys.stdout.write(json.load(sys.stdin)["data"]["data"]["value"])'
+}
+role_id=$(cat "${conf_dir}/creds/backup/openbao_role_id") || fail "no vault login for backups on this host"
+secret_id=$(systemd-creds decrypt --name=openbao_secret_id "${conf_dir}/creds/backup/openbao_secret_id.cred" -) \
+  || fail "cannot read the vault login"
+token=$(printf '%s\n%s\n' "$role_id" "$secret_id" \
+  | python3 -c 'import json,sys; r,s=sys.stdin.read().split(); print(json.dumps({"role_id":r,"secret_id":s}))' \
+  | curl -fsS "${limits[@]}" --cacert "$cacert" -X POST -H 'Content-Type: application/json' --data @- "${vault}/v1/auth/approle/login" \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["auth"]["client_token"])') || fail "vault closed or login refused (dump kept on the host)"
+unset secret_id
+key_id=$(vault_get r2_access_key_id) || fail "cannot read the object store key id"
+key_secret=$(vault_get r2_secret_access_key) || fail "cannot read the object store secret"
+
+upload() { # upload <file name>: keys go to curl on standard input, never as arguments
+  local file="$1" stamp_part object
+  stamp_part=${file#nextjourney-"${env}"-}
+  object="${env}/${stamp_part:0:4}/${stamp_part:4:2}/${file}"
+  printf 'user = "%s:%s"\n' "$key_id" "$key_secret" \
+    | curl -fsS --connect-timeout 10 --speed-limit 10000 --speed-time 60 -K - --aws-sigv4 'aws:amz:auto:s3' \
+      -H 'x-amz-content-sha256: UNSIGNED-PAYLOAD' -T "${dir}/${file}" "${BACKUP_ENDPOINT}/${BACKUP_BUCKET}/${object}" >/dev/null || return 1
+  : >"${dir}/.uploaded/${file}"
+  echo "uploaded: ${object}"
+}
+
+# Oldest first: dumps left over from earlier failed runs go up before today's.
+pending=$(cd "$dir" && for f in nextjourney-*.dump.age; do [ -e ".uploaded/$f" ] || echo "$f"; done | sort)
+for f in $pending; do
+  upload "$f" || fail "upload of ${f} to the object store (dump kept on the host)"
+done
+unset key_id key_secret
+
+date +%s >"${state}/${env}.last"

@@ -10,6 +10,8 @@
       tags: [release]
     - role: openbao
       tags: [openbao]
+    - role: backup
+      tags: [backup]
     - role: edge
       tags: [edge]
     - role: verify

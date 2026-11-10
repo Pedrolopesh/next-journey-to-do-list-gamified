@@ -1,0 +1,82 @@
+---
+- name: Backup settings are present
+  ansible.builtin.set_fact:
+    backup_configured: "{{ backup_age_recipient is match('^age1') and backup_endpoint is match('^https://') and backup_bucket | length > 0 }}"
+
+- name: Backup is not configured on this host (set backup_age_recipient, backup_endpoint and backup_bucket in the local inventory)
+  ansible.builtin.fail:
+    msg: Backup settings are missing and the backup tag was requested.
+  when: not backup_configured and 'backup' in ansible_run_tags
+
+- name: Skip the backup role when it is not configured
+  ansible.builtin.debug:
+    msg: 'Backup skipped: set backup_age_recipient, backup_endpoint and backup_bucket in the local inventory.'
+  when: not backup_configured
+
+- name: Stop here without backup settings
+  ansible.builtin.meta: end_role
+  when: not backup_configured
+
+- name: Environment names are plain words
+  ansible.builtin.assert:
+    that: backup_envs | select('match', '^[a-z]+$') | list | length == backup_envs | length
+    fail_msg: backup_envs may only contain lowercase letters (dev, prd).
+
+- name: Encryption tool
+  ansible.builtin.apt:
+    name: age
+    state: present
+
+- name: Backup directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    mode: '0700'
+    owner: root
+    group: root
+  loop:
+    - /var/backups/nextjourney
+    - /var/lib/nj-backup
+
+- name: Backup scripts
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '/usr/local/sbin/{{ item }}'
+    mode: '0755'
+    owner: root
+    group: root
+  loop:
+    - nj-backup
+    - nj-backup-watch
+
+- name: Backup settings file (nothing secret in it)
+  ansible.builtin.template:
+    src: backup.conf.j2
+    dest: /etc/nextjourney/backup.conf
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Backup units
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/etc/systemd/system/{{ item }}'
+    mode: '0644'
+    owner: root
+    group: root
+  loop:
+    - nj-backup@.service
+    - nj-backup@.timer
+    - nj-backup-watch.service
+    - nj-backup-watch.timer
+  notify: Reload systemd units
+
+- name: Apply pending unit changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Backup timers enabled
+  ansible.builtin.systemd:
+    name: '{{ item }}'
+    enabled: true
+    state: started
+  loop: "{{ backup_envs | map('regex_replace', '^(.*)$', 'nj-backup@\\1.timer') | list + ['nj-backup-watch.timer'] }}"

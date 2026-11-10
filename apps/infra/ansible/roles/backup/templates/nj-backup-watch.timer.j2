@@ -1,0 +1,10 @@
+# Managed by Ansible.
+[Unit]
+Description=Backup watch every hour
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1h
+
+[Install]
+WantedBy=timers.target

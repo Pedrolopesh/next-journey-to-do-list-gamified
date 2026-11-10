@@ -1,0 +1,13 @@
+# Managed by Ansible. Database backup of one environment (the instance name).
+[Unit]
+Description=Database backup (%i)
+After=docker.service openbao.service
+Wants=docker.service
+StartLimitIntervalSec=6h
+StartLimitBurst=4
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/nj-backup %i
+Restart=on-failure
+RestartSec=15min
