@@ -7,8 +7,11 @@ offline and is never on the host, so a compromised host cannot read old backups.
 ```
 timer nj-backup@<env> (03:15 UTC) -> pg_dump in the database container -> age -> /var/backups/nextjourney/<env> (7 days)
                                                                               -> object store <env>/<year>/<month>/ (8 days)
-timer nj-backup-watch (hourly)    -> critical alert when no upload for 26 h, one "ok" when it recovers
+timer nj-backup@vault (03:15 UTC) -> raft snapshot of the vault (API, AppRole nj-backup) -> age -> same folder layout and bucket (vault/<year>/<month>/)
+timer nj-backup-watch (hourly)    -> critical alert when no upload for 26 h (database or vault snapshot), one "ok" when it recovers
 ```
+
+The vault snapshot holds every secret of the applications. It is encrypted with `age` before it leaves the host and is still sealed by the vault itself, so reading it back also needs 3 of the 5 unseal key shares. The shares never go into a backup, the bucket or this repository. A snapshot can only be taken while the vault is open: with the vault sealed the run fails, warns, and the unit retries every 15 minutes (the stale alert covers a longer outage).
 
 ## Setup (once)
 
@@ -29,6 +32,13 @@ printf %s '<key secret>' | BAO_TOKEN=<admin token> nj-bao kv put kv/nextjourney/
 
 - The dump and encryption run before the vault is touched, so a sealed vault only delays the upload: the encrypted dump stays on the host for 7 days and the alert fires after 26 hours. Open the vault (`sudo nj-unseal`) and run the unit again: it also uploads every dump still missing from the store, oldest first. A failed run is retried by systemd every 15 minutes (four times).
 - Check the last upload time: `sudo cat /var/lib/nj-backup/prd.last` (epoch seconds).
+
+## Restoring the vault from a snapshot
+
+1. Download the newest `vault/<year>/<month>/...snap.age` object and decrypt it on a trusted workstation with the offline age file (the same steps as the database restore).
+2. On a clean host, start an empty vault with the same configuration and initialise it. Then, with a root token of that new vault: `nj-bao operator raft snapshot restore -force <file>`.
+3. Unseal with 3 of the 5 shares of the **original** vault (`sudo nj-unseal`): a restored vault opens with the original shares, not with the new ones.
+4. Check the secrets by hash, without printing them, and check that the AppRoles log in. Only after a snapshot has been restored this way once is it safe to remove the `.cred` files of the application secrets.
 
 ## Restore test
 

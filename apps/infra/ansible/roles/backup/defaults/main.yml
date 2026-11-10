@@ -1,7 +1,9 @@
 ---
-# Environments with a daily backup. dev holds only test accounts.
+# Daily backups: the database of each environment (dev holds only test accounts) and "vault", the snapshot of
+# the vault itself, encrypted before it leaves the host.
 backup_envs:
   - prd
+  - vault
 # Public key of the age key pair (the private half is kept offline, never on the host)
 backup_age_recipient: ''
 # Object store (S3 API): endpoint and bucket. Set them in the local inventory.

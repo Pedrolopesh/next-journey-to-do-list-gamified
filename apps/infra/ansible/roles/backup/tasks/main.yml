@@ -20,7 +20,7 @@
 - name: Environment names are plain words
   ansible.builtin.assert:
     that: backup_envs | select('match', '^[a-z]+$') | list | length == backup_envs | length
-    fail_msg: backup_envs may only contain lowercase letters (dev, prd).
+    fail_msg: backup_envs may only contain lowercase letters (dev, prd, vault).
 
 - name: Encryption tool
   ansible.builtin.apt:
