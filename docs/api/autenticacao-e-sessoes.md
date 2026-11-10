@@ -1,6 +1,6 @@
 # Authentication and sessions
 
-Code in `apps/api/src/modules/auth`. The decisions and reasons are in [ADR-0008](../adr/0008-autenticacao-e-sessao.md); here is what each part does.
+Code in `apps/api/src/modules/auth`. The decisions and reasons are in [ADR-0008](../adr/0008-authentication-and-session.md); here is what each part does.
 
 ## Email code sign-in
 

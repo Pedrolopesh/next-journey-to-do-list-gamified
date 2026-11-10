@@ -12,7 +12,7 @@ How the API (`apps/api`, NestJS + Prisma + PostgreSQL) works inside. These docum
 
 They complement, without repeating:
 
-- decisions and reasons: `docs/adr/` (mainly [ADR-0008](../adr/0008-autenticacao-e-sessao.md));
+- decisions and reasons: `docs/adr/` (mainly [ADR-0008](../adr/0008-authentication-and-session.md));
 - per-PR security checklist: [`CONTRIBUTING.md`](../../CONTRIBUTING.md);
 - collected data and retention periods: [`docs/PRIVACIDADE.md`](../PRIVACIDADE.md);
 - product requirements: [`docs/REQUISITOS.MD`](../REQUISITOS.MD);
