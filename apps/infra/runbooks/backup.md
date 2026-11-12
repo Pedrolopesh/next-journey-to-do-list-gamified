@@ -72,12 +72,33 @@ To rebuild the vault itself first, see the next section.
 2. With an admin token (`nj-openbao-configure` loads the `nj-restore` policy and role): `nj-openbao-approle restore`, then store the private half: `read -rs V; printf %s "$V" | nj-bao kv put kv/nextjourney/restore/age_identity value=-; unset V`.
 3. Apply `app.yml --tags openbao,backup`. Run `sudo systemctl start nj-backup@prd.service` (the first backup for both keys), then `sudo systemctl start nj-restore-test@prd.service` and `nj-restore-test@vault.service`.
 
-## Restoring the vault from a snapshot
+## Proving that the vault can be rebuilt from a snapshot
 
-1. Download the newest `vault/<year>/<month>/...snap.age` object and decrypt it on a trusted workstation with the offline age file (the same steps as the database restore).
+`nj-restore prove vault` does the whole proof on the host, with no second server. Run it from a terminal, as root, after taking a fresh snapshot so nothing changed in between:
+
+```
+sudo systemctl start nj-backup@vault.service
+sudo nj-restore prove vault
+```
+
+What it does by itself:
+
+1. Takes the newest `vault/` snapshot from the object store and decrypts it in memory with the automation key.
+2. Starts a throwaway vault from the same image as the real one: no network, data only in memory, a configuration without secrets.
+3. Restores the snapshot into it. The restored vault is sealed with the **original** key shares.
+4. Asks for key shares (hidden) until it opens: this is the proof that 3 of the 5 shares still open a vault rebuilt from the backup.
+5. Asks for the password of the admin user once (hidden) and logs in to both vaults with it: the login survived the backup.
+6. Compares every secret under `kv/nextjourney` by hash (the values are never printed), and the lists of policies, AppRole roles and admin users.
+7. Removes the throwaway vault, revokes the tokens and writes `vault-restore-proof.last` in the state directory. Any difference fails the proof and names only the paths.
+
+Only after this has passed once is it safe to remove the `.cred` files of the application secrets.
+
+### Restoring the vault for real
+
+1. Download the newest `vault/<year>/<month>/...snap.age` object and decrypt it with an age key that opens it (the automation key, or the offline one if the vault is gone).
 2. On a clean host, start an empty vault with the same configuration and initialise it. Then, with a root token of that new vault: `nj-bao operator raft snapshot restore -force <file>`.
 3. Unseal with 3 of the 5 shares of the **original** vault (`sudo nj-unseal`): a restored vault opens with the original shares, not with the new ones.
-4. Check the secrets by hash, without printing them, and check that the AppRoles log in. Only after a snapshot has been restored this way once is it safe to remove the `.cred` files of the application secrets.
+4. Check that the application secrets read back and that the AppRoles log in.
 
 ## Manual restore test (workstation, last resort)
 
