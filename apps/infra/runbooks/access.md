@@ -50,3 +50,19 @@ Save only with the panel tests passing, and afterwards confirm from every machin
 ## Editor tunnel (VS Code Remote-SSH)
 
 SSH forwarding is off by default. A remote editor needs a tunnel to the server it starts on the loopback, so the SSH configuration allows `AllowTcpForwarding local` with `PermitOpen` limited to the loopback, only for the deploy user and only from the addresses listed in `ssh_forwarding_addresses` (kept in the local inventory, not in Git). Connect as the deploy user through the tailnet address. An empty list disables the tunnel again.
+
+## Closing port 22 to the internet
+
+SSH is reachable only through the tailnet when `firewall_ssh_tailnet_only` is true (an `ufw` rule on the tailnet interface; ports 80 and 443 stay public). The role refuses to apply it unless the run itself comes in through the tailnet.
+
+Before turning it on, all of these must be true:
+
+1. The key-only SSH configuration has run for 48 hours with no problem, and `fail2ban` and the audit service are running.
+2. From every admin machine, on a different network (for example a phone hotspot), `ssh <deploy-user>@<tailnet-name-of-the-host>` works.
+3. The provider console login works.
+4. The Tailscale node key of the host does not expire, and the ACL lets every admin machine reach port 22.
+5. A second SSH session is open, and Ansible is pointed at the tailnet address of the host.
+
+Apply with `ansible-playbook site.yml --tags firewall -e firewall_ssh_tailnet_only=true`, test every admin machine through the tailnet, then run `confirm-access.yml`. After that, reboot once and check that the tailnet comes back by itself, open the vault, and check both environments. A scan from outside (`nmap -Pn -p 22,80,443 <public-address>`) must show port 22 as filtered.
+
+To go back, run the same command with the variable set to false.
