@@ -8,3 +8,4 @@ maxretry = {{ hardening_fail2ban_maxretry }}
 [sshd]
 enabled = true
 mode = aggressive
+journalmatch = _SYSTEMD_UNIT=ssh.service + _COMM=sshd
