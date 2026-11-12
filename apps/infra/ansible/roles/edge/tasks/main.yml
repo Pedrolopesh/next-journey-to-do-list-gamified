@@ -55,6 +55,10 @@
     enabled: true
     state: started
 
+- name: Nginx configuration is valid before it is reloaded
+  ansible.builtin.command: nginx -t
+  changed_when: false
+
 - name: Apply nginx now
   ansible.builtin.meta: flush_handlers
 
@@ -85,6 +89,10 @@
     owner: root
     group: root
   notify: Reload nginx
+
+- name: Nginx configuration with TLS is valid before it is reloaded
+  ansible.builtin.command: nginx -t
+  changed_when: false
 
 - name: Apply nginx with TLS
   ansible.builtin.meta: flush_handlers

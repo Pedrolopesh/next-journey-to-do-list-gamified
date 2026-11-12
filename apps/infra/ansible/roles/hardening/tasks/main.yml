@@ -38,8 +38,8 @@
 
 - name: Kernel and network settings
   ansible.builtin.template:
-    src: 99-nj-hardening.conf.j2
-    dest: /etc/sysctl.d/99-nj-hardening.conf
+    src: 99-zz-nj-hardening.conf.j2
+    dest: /etc/sysctl.d/99-zz-nj-hardening.conf
     mode: '0644'
   notify: Apply sysctl
 
@@ -70,6 +70,15 @@
     name: auditd
     state: started
     enabled: true
+
+- name: Package changes are listed in the log, never in a prompt or a mail
+  ansible.builtin.copy:
+    dest: /etc/apt/listchanges.conf
+    mode: '0644'
+    content: |
+      [apt]
+      frontend=none
+      which=news
 
 - name: Process accounting and system statistics
   ansible.builtin.systemd_service:
