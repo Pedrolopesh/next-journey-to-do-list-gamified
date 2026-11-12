@@ -5,10 +5,8 @@ NAMES="postgres_password database_url jwt_access_secret resend_api_key"
 
 setup() {
   export NJ_RUN_DIR="${BATS_TEST_TMPDIR}/run" NJ_CONF_DIR="${BATS_TEST_TMPDIR}/etc" NJ_NO_CHOWN=1
-  export CREDENTIALS_DIRECTORY="${BATS_TEST_TMPDIR}/creds"
   export NJ_VAULT_ADDR="https://vault.test" NJ_VAULT_CACERT="/dev/null"
-  mkdir -p "$NJ_RUN_DIR" "$CREDENTIALS_DIRECTORY" "${NJ_CONF_DIR}/creds/dev"
-  for n in $NAMES; do printf 'local-%s' "$n" >"${CREDENTIALS_DIRECTORY}/${n}"; done
+  mkdir -p "$NJ_RUN_DIR" "${NJ_CONF_DIR}/creds/dev"
   printf 'role-1' >"${NJ_CONF_DIR}/creds/dev/openbao_role_id"
   : >"${NJ_CONF_DIR}/creds/dev/openbao_secret_id.cred"
 
@@ -40,46 +38,28 @@ S
   OUT="${NJ_RUN_DIR}/nj-dev/secrets"
 }
 
-@test "the local credentials are copied when the source is creds" {
+@test "the values come from the vault" {
   run "$SCRIPT" dev
-  [ "$status" -eq 0 ]
-  for n in $NAMES; do [ "$(cat "${OUT}/${n}")" = "local-${n}" ]; done
-}
-
-@test "the values come from the vault when the source is openbao" {
-  NJ_SECRETS_SOURCE=openbao run "$SCRIPT" dev
   [ "$status" -eq 0 ]
   for n in $NAMES; do [ "$(cat "${OUT}/${n}")" = "vault-${n}" ]; done
 }
 
 @test "files are readable only by their owner" {
-  NJ_SECRETS_SOURCE=openbao run "$SCRIPT" dev
+  run "$SCRIPT" dev
   [ "$status" -eq 0 ]
   for n in $NAMES; do [ "$(stat -c '%a' "${OUT}/${n}" 2>/dev/null || stat -f '%Lp' "${OUT}/${n}")" = 400 ]; done
 }
 
-@test "a sealed vault with the fallback on uses the local credentials" {
-  FAKE_HEALTH=503 NJ_SECRETS_SOURCE=openbao NJ_SECRETS_FALLBACK=yes run "$SCRIPT" dev
-  [ "$status" -eq 0 ]
-  [[ "$output" == *"WARNING"* ]]
-  [ "$(cat "${OUT}/jwt_access_secret")" = "local-jwt_access_secret" ]
-}
-
-@test "a sealed vault without the fallback fails and writes nothing" {
-  FAKE_HEALTH=503 NJ_SECRETS_SOURCE=openbao run "$SCRIPT" dev
+@test "a sealed vault fails and writes nothing (there is no local copy to fall back to)" {
+  FAKE_HEALTH=503 run "$SCRIPT" dev
   [ "$status" -eq 1 ]
   [ -z "$(ls -A "$OUT")" ]
 }
 
 @test "one unreadable secret fails the whole read and writes nothing" {
-  FAKE_FAIL_PATH=database_url NJ_SECRETS_SOURCE=openbao run "$SCRIPT" dev
+  FAKE_FAIL_PATH=database_url run "$SCRIPT" dev
   [ "$status" -eq 1 ]
   [ -z "$(ls -A "$OUT")" ]
-}
-
-@test "an unknown source is rejected" {
-  NJ_SECRETS_SOURCE=vault run "$SCRIPT" dev
-  [ "$status" -eq 2 ]
 }
 
 @test "the environment is required" {
