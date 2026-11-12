@@ -22,6 +22,13 @@
     content: "{{ deploy_user }} ALL=(ALL) NOPASSWD:ALL\n"
     validate: /usr/sbin/visudo -cf %s
 
+- name: Login banner
+  ansible.builtin.copy:
+    dest: '{{ item }}'
+    mode: '0644'
+    content: "Authorized access only. Activity on this system is logged and monitored.\n"
+  loop: [/etc/issue, /etc/issue.net]
+
 - name: SSH daemon configuration (validated before applying)
   ansible.builtin.template:
     src: 10-nextjourney.conf.j2
