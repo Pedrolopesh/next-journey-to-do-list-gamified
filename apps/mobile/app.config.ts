@@ -24,6 +24,8 @@ const config: ExpoConfig = {
     supportsTablet: false,
     // Sign in with Apple (App Store requirement when there is social login)
     usesAppleSignIn: true,
+    // The app only uses HTTPS (exempt encryption): skips the export compliance question on every upload
+    infoPlist: { ITSAppUsesNonExemptEncryption: false },
   },
   android: {
     package: appId,
