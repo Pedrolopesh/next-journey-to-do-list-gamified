@@ -1,6 +1,6 @@
 import type { ExpoConfig } from 'expo/config';
 
-// APP_VARIANT=production comes from the EAS `production` profile (eas.json). Any other value is dev.
+// APP_VARIANT=production comes from the EAS `preview` and `production` profiles (eas.json). Any other value is dev.
 const IS_PROD = process.env.APP_VARIANT === 'production';
 
 // Bundle id and package set on 2026-10-02. Immutable from the first published iOS build.
@@ -24,6 +24,8 @@ const config: ExpoConfig = {
     supportsTablet: false,
     // Sign in with Apple (App Store requirement when there is social login)
     usesAppleSignIn: true,
+    // The app only uses HTTPS (exempt encryption): skips the export compliance question on every upload
+    infoPlist: { ITSAppUsesNonExemptEncryption: false },
   },
   android: {
     package: appId,
@@ -58,7 +60,9 @@ const config: ExpoConfig = {
   // Public values only. EXPO_PUBLIC_* is bundled into the app: never put a secret here.
   extra: {
     appVariant: IS_PROD ? 'production' : 'development',
+    eas: { projectId: '600bfe4d-0d3d-481d-a936-179b0970846b' },
   },
+  owner: 'we-tech-hub',
 };
 
 // The Google Sign-In plugin needs the URL scheme of the iOS client id (public, not a secret).

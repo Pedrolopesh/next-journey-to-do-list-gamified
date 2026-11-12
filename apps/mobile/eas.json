@@ -12,11 +12,32 @@
         "APP_VARIANT": "development"
       }
     },
+    "preview": {
+      "distribution": "internal",
+      "environment": "production",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_VARIANT": "production"
+      }
+    },
     "production": {
       "environment": "production",
       "autoIncrement": true,
       "env": {
         "APP_VARIANT": "production"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      },
+      "ios": {
+        "ascAppId": "6834128534"
       }
     }
   }
