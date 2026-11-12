@@ -58,9 +58,9 @@ const config: ExpoConfig = {
   // Public values only. EXPO_PUBLIC_* is bundled into the app: never put a secret here.
   extra: {
     appVariant: IS_PROD ? 'production' : 'development',
-    eas: { projectId: '630293eb-b098-4164-b3d1-03fa8eb2d70a' },
+    eas: { projectId: '600bfe4d-0d3d-481d-a936-179b0970846b' },
   },
-  owner: 'infra_wetechhub',
+  owner: 'we-tech-hub',
 };
 
 // The Google Sign-In plugin needs the URL scheme of the iOS client id (public, not a secret).
