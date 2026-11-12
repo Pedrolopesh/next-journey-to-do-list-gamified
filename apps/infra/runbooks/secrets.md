@@ -32,13 +32,17 @@ The audit log is declared in the server configuration (this version does not ena
 
 ## Where the secrets come from
 
-Each environment has `secrets-<env>.conf` on the host:
+The vault is the only source. `nj-secrets@<env>` logs in with the AppRole of the environment (`nj-openbao-approle <env>` prepares its login once) and puts the four application secrets in a tmpfs. If the vault is sealed the environment stays down until it is opened: there is no local copy to fall back to.
 
-- `NJ_SECRETS_SOURCE=creds` (default) reads the local encrypted credentials.
-- `NJ_SECRETS_SOURCE=openbao` reads from the vault with the AppRole of the environment (`nj-openbao-approle <env>` prepares its login once).
-- `NJ_SECRETS_FALLBACK=yes` uses the local credentials when the vault cannot be read. Meant for the transition only.
+The local encrypted copies of those four secrets (`postgres_password`, `database_url`, `jwt_access_secret`, `resend_api_key`) were retired after the vault snapshot was proven to rebuild the vault. Ansible moves them to the retired folder (`app_retired_creds_dir`) instead of deleting them; delete that folder when you are sure you will not go back. The vault login files of each environment (`openbao_role_id` and `openbao_secret_id.cred`) stay where they are: they are how the environment opens the vault.
 
-To go back to the local credentials, set the source to `creds` in that file (or the `app_secrets_source` variable) and run `systemctl restart nj-secrets@<env>`.
+### First install on a host with no vault data
+
+A vault restored from a snapshot already holds the secrets. For a brand-new vault with no snapshot, seed it once: run `nj-secrets-init <env>` (creates local copies), then `nj-openbao-import <env>` (copies them into the vault and compares hashes), then run the `app` role again so the copies are moved aside.
+
+### Going back to the local copies (emergency only)
+
+Copy the four files from the retired folder back to `creds/<env>/`, put the four `LoadCredentialEncrypted=` lines back in `nj-secrets@.service` and restore the `from_creds` branch of `nj-materialize` from Git history. Prefer opening the vault.
 
 ## Alerts
 
@@ -75,7 +79,7 @@ Until then, administration is done with `nj-bao` over SSH. Turn the interface of
 | Reboot command until both environments are back, including opening the vault                            | about 2 min                        |
 | Rotating a secret (write in the vault, restart the environment)                                         | 16 s                               |
 
-With `NJ_SECRETS_FALLBACK=no` the environments stay down after a reboot until the vault is opened. That is the intended state once the setup is accepted.
+The environments stay down after a reboot until the vault is opened. That is the intended state.
 
 ## Rotating a secret
 

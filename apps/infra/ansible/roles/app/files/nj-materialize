@@ -2,14 +2,10 @@
 # Runs inside the nj-secrets@<env> unit (root): puts the secrets of an environment in a tmpfs with the
 # right owner (db = uid 999, API = uid 10001). Gone after a reboot or when the unit stops.
 #
-# Source of the values (NJ_SECRETS_SOURCE):
-#   creds    credentials decrypted by systemd (default)
-#   openbao  read from the vault with the AppRole of the environment
-# NJ_SECRETS_FALLBACK=yes uses the local credentials when the vault cannot be read (transition only).
+# The values are read from the vault with the AppRole of the environment. If the vault cannot be read the
+# environment stays without secrets (no local copy to fall back to): it comes up once the vault is open.
 set -euo pipefail
 env="${1:?usage: nj-materialize <dev|prd>}"
-source_kind="${NJ_SECRETS_SOURCE:-creds}"
-fallback="${NJ_SECRETS_FALLBACK:-no}"
 run_dir="${NJ_RUN_DIR:-/run}"
 conf_dir="${NJ_CONF_DIR:-/etc/nextjourney}"
 vault="${NJ_VAULT_ADDR:-https://127.0.0.1:8200}"
@@ -30,11 +26,6 @@ put() { # put <name> <file with the value>
   else
     install -m 0400 -o "$owner" -g "$owner" "$2" "${dst}/$1"
   fi
-}
-
-from_creds() {
-  local src="${CREDENTIALS_DIRECTORY:?must run inside the unit}" n
-  for n in "${names[@]}"; do put "$n" "${src}/${n}"; done
 }
 
 # Every check is explicit (|| return 1): errexit does not apply inside a function used in an if.
@@ -75,18 +66,9 @@ from_vault() {
   rm -rf "$stage"
 }
 
-case "$source_kind" in
-  creds) from_creds ;;
-  openbao)
-    if from_vault; then
-      echo "secrets of ${env} read from the vault"
-    elif [ "$fallback" = yes ]; then
-      echo "WARNING: vault unavailable, using the local credentials of ${env}" >&2
-      from_creds
-    else
-      echo "vault unavailable and no fallback: ${env} stays without secrets" >&2
-      exit 1
-    fi
-    ;;
-  *) echo "NJ_SECRETS_SOURCE must be creds or openbao" >&2; exit 2 ;;
-esac
+if from_vault; then
+  echo "secrets of ${env} read from the vault"
+else
+  echo "vault unavailable: ${env} stays without secrets" >&2
+  exit 1
+fi

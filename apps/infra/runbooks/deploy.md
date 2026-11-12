@@ -31,12 +31,11 @@ sudo systemctl status nj@dev nj@prd           # stack status
 sudo docker ps                                # containers and health
 sudo docker logs -f next-journey-prd-api-1    # API logs
 sudo systemctl restart nj@prd                 # restart the stack
-sudo nj-secrets-init prd                      # create what is missing; never overwrites
 ```
 
 ## Secrets
 
-They are stored encrypted in `/etc/nextjourney/creds/<env>/` (ADR-0010).
+They live in the vault and are read by `nj-secrets@<env>` at start (see `secrets.md`). On a brand-new vault with no snapshot, seed it once as described there.
 
 - **Email provider key:** it starts empty. Without it, the sign-in code is not sent by email. To set it, on the VPS:
   ```bash

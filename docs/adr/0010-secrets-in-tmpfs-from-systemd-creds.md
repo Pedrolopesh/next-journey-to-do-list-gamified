@@ -2,6 +2,7 @@
 
 - Data: 2026-10-26
 - Status: aceita
+- Update (2026-11-12): the values are now read from the vault (ADR-0015) and the local encrypted copies of the application secrets were retired. The tmpfs delivery described here is unchanged; the vault login of each environment is still a `systemd-creds` file.
 
 ## Context
 
