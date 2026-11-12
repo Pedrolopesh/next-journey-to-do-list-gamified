@@ -1,0 +1,75 @@
+---
+- name: Hardening packages
+  ansible.builtin.apt:
+    name: '{{ hardening_packages }}'
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Client packages the host does not need are removed
+  ansible.builtin.apt:
+    name: '{{ hardening_removed_packages }}'
+    state: absent
+    autoremove: true
+    purge: true
+
+- name: Kernel and network settings
+  ansible.builtin.template:
+    src: 90-nj-hardening.conf.j2
+    dest: /etc/sysctl.d/90-nj-hardening.conf
+    mode: '0644'
+  notify: Apply sysctl
+
+- name: Unused protocols and storage drivers cannot be loaded
+  ansible.builtin.copy:
+    dest: /etc/modprobe.d/nj-blocked.conf
+    mode: '0644'
+    content: |
+      {% for module in hardening_blocked_modules %}
+      install {{ module }} /bin/true
+      {% endfor %}
+
+- name: No core dumps
+  ansible.builtin.copy:
+    dest: /etc/security/limits.d/90-nj-nocore.conf
+    mode: '0644'
+    content: "* hard core 0\n"
+
+- name: Audit rules
+  ansible.builtin.template:
+    src: nj.rules.j2
+    dest: /etc/audit/rules.d/nj.rules
+    mode: '0640'
+  notify: Load audit rules
+
+- name: Audit daemon running
+  ansible.builtin.systemd_service:
+    name: auditd
+    state: started
+    enabled: true
+
+- name: Process accounting and system statistics
+  ansible.builtin.systemd_service:
+    name: '{{ item }}'
+    state: started
+    enabled: true
+  loop: [acct, sysstat]
+
+- name: Statistics collection enabled
+  ansible.builtin.lineinfile:
+    path: /etc/default/sysstat
+    regexp: '^ENABLED='
+    line: ENABLED="true"
+
+- name: Brute-force protection for SSH (the tailnet and the listed addresses are never banned)
+  ansible.builtin.template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.d/nj.local
+    mode: '0644'
+  notify: Restart fail2ban
+
+- name: Fail2ban running
+  ansible.builtin.systemd_service:
+    name: fail2ban
+    state: started
+    enabled: true

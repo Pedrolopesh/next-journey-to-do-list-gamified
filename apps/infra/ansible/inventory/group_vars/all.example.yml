@@ -9,6 +9,8 @@ ssh_disable_password_auth: false
 # Admin addresses (tailnet or fixed IPs) allowed to open the editor tunnel (VS Code Remote-SSH) as the
 # deploy user, to the host's loopback only. Empty = SSH forwarding stays fully off.
 ssh_forwarding_addresses: []
+# Fixed admin addresses that fail2ban never bans (the tailnet is always exempt).
+hardening_fail2ban_ignore_ips: []
 app_envs:
   dev:
     port: 3010

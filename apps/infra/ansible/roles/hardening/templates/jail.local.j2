@@ -1,0 +1,10 @@
+[DEFAULT]
+ignoreip = 127.0.0.1/8 ::1 100.64.0.0/10 fd7a:115c:a1e0::/48{% for ip in hardening_fail2ban_ignore_ips %} {{ ip }}{% endfor %}
+
+bantime = {{ hardening_fail2ban_bantime }}
+findtime = {{ hardening_fail2ban_findtime }}
+maxretry = {{ hardening_fail2ban_maxretry }}
+
+[sshd]
+enabled = true
+mode = aggressive

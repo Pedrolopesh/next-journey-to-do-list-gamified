@@ -1,0 +1,16 @@
+-w /etc/passwd -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+-w /etc/sudoers -p wa -k sudoers
+-w /etc/sudoers.d/ -p wa -k sudoers
+-w /etc/ssh/sshd_config -p wa -k sshd
+-w /etc/ssh/sshd_config.d/ -p wa -k sshd
+-w /root/.ssh/ -p wa -k ssh_keys
+-w /home/{{ deploy_user }}/.ssh/ -p wa -k ssh_keys
+-w /etc/ufw/ -p wa -k firewall
+-w /etc/openbao/ -p wa -k vault_config
+-w /etc/nextjourney/ -p wa -k app_config
+-w /etc/systemd/system/ -p wa -k systemd_units
+-a always,exit -F arch=b64 -S init_module,finit_module,delete_module -k kernel_modules
+-a always,exit -F arch=b64 -S settimeofday,clock_settime,adjtimex -k time_change
