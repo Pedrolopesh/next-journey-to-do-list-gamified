@@ -16,6 +16,38 @@
     proto: tcp
   loop: '{{ firewall_tcp_ports }}'
 
+- name: SSH only through the tailnet needs a tailnet interface and a tailnet connection
+  ansible.builtin.assert:
+    that:
+      - firewall_tailnet_iface in ansible_facts['interfaces']
+      - ansible_env['SSH_CONNECTION'] is match('^100\\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\\.')
+    fail_msg: Run this through the tailnet address of the host, with the tailnet interface up, before closing public SSH.
+  when: firewall_ssh_tailnet_only
+
+- name: Public SSH
+  community.general.ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+  when: not firewall_ssh_tailnet_only
+
+- name: SSH through the tailnet interface
+  community.general.ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+    interface: '{{ firewall_tailnet_iface }}'
+    direction: in
+  when: firewall_ssh_tailnet_only
+
+- name: Public SSH rule removed
+  community.general.ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+    delete: true
+  when: firewall_ssh_tailnet_only
+
 - name: 'Docker does not bypass the firewall (DOCKER-USER): drop new connections from the internet to containers'
   ansible.builtin.blockinfile:
     path: /etc/ufw/after.rules

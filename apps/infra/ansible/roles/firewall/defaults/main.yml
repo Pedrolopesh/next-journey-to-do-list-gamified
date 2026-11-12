@@ -1,2 +1,4 @@
-firewall_tcp_ports: [22, 80, 443]
+firewall_tcp_ports: [80, 443]
+firewall_ssh_tailnet_only: false
+firewall_tailnet_iface: tailscale0
 firewall_public_iface: "{{ ansible_facts['default_ipv4']['interface'] }}"
