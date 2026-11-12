@@ -11,7 +11,8 @@ The `hardening` role applies the operating-system layer. SSH and the firewall ha
 | Modules | `dccp`, `sctp`, `rds`, `tipc` and `usb-storage` cannot be loaded |
 | Audit | `auditd` with watches on identity files, sudoers, SSH keys and configuration, firewall, vault and application configuration, systemd units, kernel modules and clock changes |
 | Accounting | process accounting and `sysstat` collection |
-| Packages | `telnet` and `ftp` removed; `debsums`, `apt-show-versions`, `libpam-tmpdir` and Lynis installed |
+| Packages | `telnet` and `ftp` removed, unused dependencies and old kernels purged; `debsums`, `apt-show-versions`, `libpam-tmpdir` and Lynis installed |
+| Accounts | ageing and hashing defaults for new accounts in `login.defs` |
 | SSH | `fail2ban` jail for `sshd` (aggressive mode); the tailnet and the addresses in `hardening_fail2ban_ignore_ips` are never banned |
 | TLS | nginx offers TLS 1.2 and 1.3 only |
 

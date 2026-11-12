@@ -13,3 +13,9 @@ hardening_fail2ban_ignore_ips: []
 hardening_fail2ban_bantime: 1h
 hardening_fail2ban_findtime: 10m
 hardening_fail2ban_maxretry: 5
+hardening_login_defs:
+  PASS_MAX_DAYS: 365
+  PASS_MIN_DAYS: 1
+  PASS_WARN_AGE: 7
+  SHA_CRYPT_MIN_ROUNDS: 65536
+  SHA_CRYPT_MAX_ROUNDS: 100000

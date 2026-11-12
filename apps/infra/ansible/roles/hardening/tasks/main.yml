@@ -13,10 +13,33 @@
     autoremove: true
     purge: true
 
+- name: Unused dependencies and old kernels are removed
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
+
+- name: Password ageing and hashing defaults for new accounts
+  ansible.builtin.lineinfile:
+    path: /etc/login.defs
+    regexp: '^#?\s*{{ item.key }}\b'
+    line: '{{ item.key }}   {{ item.value }}'
+  loop: '{{ hardening_login_defs | dict2items }}'
+
+- name: Leftover configuration of removed packages is purged
+  ansible.builtin.shell: |
+    set -o pipefail
+    packages=$(dpkg -l | awk '/^rc/{print $2}')
+    [ -n "$packages" ] && echo "$packages" | xargs dpkg --purge && echo purged
+    true
+  args:
+    executable: /bin/bash
+  register: hardening_purge
+  changed_when: "'purged' in hardening_purge.stdout"
+
 - name: Kernel and network settings
   ansible.builtin.template:
-    src: 90-nj-hardening.conf.j2
-    dest: /etc/sysctl.d/90-nj-hardening.conf
+    src: 99-nj-hardening.conf.j2
+    dest: /etc/sysctl.d/99-nj-hardening.conf
     mode: '0644'
   notify: Apply sysctl
 
@@ -64,7 +87,7 @@
 - name: Brute-force protection for SSH (the tailnet and the listed addresses are never banned)
   ansible.builtin.template:
     src: jail.local.j2
-    dest: /etc/fail2ban/jail.d/nj.local
+    dest: /etc/fail2ban/jail.local
     mode: '0644'
   notify: Restart fail2ban
 
