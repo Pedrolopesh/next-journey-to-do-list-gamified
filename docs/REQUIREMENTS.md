@@ -692,6 +692,15 @@ npx expo start --dev-client
 
 `ios/` and `android/` are already in `.gitignore` to keep CNG. A new dev build is only needed when a native dependency comes in or `app.config.ts` changes.
 
+#### Test the production configuration before the store
+
+```bash
+eas build --profile preview --platform android    # .apk, internal distribution
+eas build --profile preview --platform ios        # needs the test iPhones registered with eas device:create
+```
+
+The `preview` profile uses the `production` EAS environment and the production variant, so it starts only with an https API URL and shows the configuration error screen otherwise. It does not increment the build number and is never submitted to a store.
+
 ### 10.10 Embed the banner
 
 1. `pnpm --filter banner build` generates the single `index.html`; a Turbo script copies it to `apps/mobile/assets/banner/banner.html`.

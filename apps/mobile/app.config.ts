@@ -1,6 +1,6 @@
 import type { ExpoConfig } from 'expo/config';
 
-// APP_VARIANT=production comes from the EAS `production` profile (eas.json). Any other value is dev.
+// APP_VARIANT=production comes from the EAS `preview` and `production` profiles (eas.json). Any other value is dev.
 const IS_PROD = process.env.APP_VARIANT === 'production';
 
 // Bundle id and package set on 2026-10-02. Immutable from the first published iOS build.
