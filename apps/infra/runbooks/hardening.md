@@ -35,6 +35,7 @@ The line `Hardening index` is the score. The target is 80 or more. Record each m
 | Date | Score | Change |
 | --- | --- | --- |
 | 2026-11-12 | 66 | baseline, before the hardening role |
+| 2026-11-12 | 77 | hardening role, key-only SSH, fail2ban on the right unit, nginx TLS 1.2/1.3 and ciphers; the full package upgrade and the reboot are still to come |
 
 ## Left out on purpose
 

@@ -3,14 +3,14 @@
   ansible.builtin.set_fact:
     backup_configured: "{{ backup_age_recipient is match('^age1') and backup_endpoint is match('^https://') and backup_bucket | length > 0 }}"
 
-- name: Backup is not configured on this host (set backup_age_recipient, backup_endpoint and backup_bucket in the local inventory)
+- name: Backup is not configured on this host (set backup_age_recipient, backup_endpoint and backup_bucket in the inventory)
   ansible.builtin.fail:
     msg: Backup settings are missing and the backup tag was requested.
   when: not backup_configured and 'backup' in ansible_run_tags
 
 - name: Skip the backup role when it is not configured
   ansible.builtin.debug:
-    msg: 'Backup skipped: set backup_age_recipient, backup_endpoint and backup_bucket in the local inventory.'
+    msg: 'Backup skipped: set backup_age_recipient, backup_endpoint and backup_bucket in the inventory.'
   when: not backup_configured
 
 - name: Stop here without backup settings

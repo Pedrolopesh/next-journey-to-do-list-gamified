@@ -9,7 +9,7 @@ backup_age_recipient: ''
 # Public key of the second age key pair, whose private half lives in the vault so the host can test and apply
 # restores by itself. Empty means backups are readable only with the offline key (no automatic restore).
 backup_restore_recipient: ''
-# Object store (S3 API): endpoint and bucket. Set them in the local inventory.
+# Object store (S3 API): endpoint and bucket. Set them in the inventory.
 backup_endpoint: ''
 backup_bucket: ''
 backup_local_retention_days: 7

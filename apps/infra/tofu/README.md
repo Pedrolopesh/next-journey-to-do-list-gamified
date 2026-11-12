@@ -6,7 +6,7 @@
 ```bash
 export HOSTINGER_API_TOKEN=...                   # session only
 export CLOUDFLARE_API_TOKEN=...                  # session only; needs R2 admin on the account, keep it off the server
-cp terraform.tfvars.example terraform.tfvars     # fill in the values (git-ignored)
+cp terraform.tfvars.example terraform.tfvars     # fill in the values
 tofu init && tofu plan                           # the plan only shows changes; nothing changes without `tofu apply`
 ```
 
