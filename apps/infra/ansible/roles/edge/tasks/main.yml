@@ -22,6 +22,14 @@
     group: root
   notify: Reload nginx
 
+- name: Only TLS 1.2 and 1.3 by default (the distribution default still offers 1.0 and 1.1)
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: '^\s*ssl_protocols\b'
+    line: '        ssl_protocols TLSv1.2 TLSv1.3;'
+    validate: nginx -t -c %s
+  notify: Reload nginx
+
 - name: Which environments already have certificates?
   ansible.builtin.stat:
     path: '/etc/letsencrypt/live/{{ item.value.host }}/fullchain.pem'
