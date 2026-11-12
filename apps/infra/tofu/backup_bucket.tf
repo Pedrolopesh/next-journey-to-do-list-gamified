@@ -6,13 +6,27 @@ resource "cloudflare_r2_bucket" "backups" {
   location   = var.backup_bucket_location
 }
 
-# Old backups expire, and uploads that never finished are dropped after a day.
+# Mirrors the rules the bucket already has, so adopting it changes nothing.
+# The default rule is created by Cloudflare on every bucket; the second one expires backups and drops unfinished uploads sooner.
 resource "cloudflare_r2_bucket_lifecycle" "backups" {
   account_id  = var.cloudflare_account_id
   bucket_name = cloudflare_r2_bucket.backups.name
   rules = [
     {
-      id      = "expire-backups"
+      id      = "Default Multipart Abort Rule"
+      enabled = true
+      conditions = {
+        prefix = "" # the provider requires it; an empty prefix means every object, like the empty condition Cloudflare keeps
+      }
+      abort_multipart_uploads_transition = {
+        condition = {
+          type    = "Age"
+          max_age = 604800
+        }
+      }
+    },
+    {
+      id      = "expire-after-8-days"
       enabled = true
       conditions = {
         prefix = ""
@@ -22,13 +36,6 @@ resource "cloudflare_r2_bucket_lifecycle" "backups" {
           type    = "Age"
           max_age = var.backup_retention_days * 86400
         }
-      }
-    },
-    {
-      id      = "abort-incomplete-uploads"
-      enabled = true
-      conditions = {
-        prefix = ""
       }
       abort_multipart_uploads_transition = {
         condition = {
@@ -46,7 +53,7 @@ resource "cloudflare_r2_bucket_lock" "backups" {
   bucket_name = cloudflare_r2_bucket.backups.name
   rules = [
     {
-      id      = "lock-backups"
+      id      = "lock-7-days"
       enabled = true
       prefix  = ""
       condition = {
