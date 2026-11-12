@@ -1,0 +1,15 @@
+hardening_packages:
+  - auditd
+  - fail2ban
+  - lynis
+  - libpam-tmpdir
+  - debsums
+  - apt-show-versions
+  - acct
+  - sysstat
+hardening_removed_packages: [telnet, ftp]
+hardening_blocked_modules: [dccp, sctp, rds, tipc, usb-storage]
+hardening_fail2ban_ignore_ips: []
+hardening_fail2ban_bantime: 1h
+hardening_fail2ban_findtime: 10m
+hardening_fail2ban_maxretry: 5

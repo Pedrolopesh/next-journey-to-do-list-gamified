@@ -4,6 +4,8 @@ limit_req_zone $binary_remote_addr zone=nj_api:10m rate=10r/s;
 limit_req_status 429;
 limit_conn_zone $binary_remote_addr zone=nj_conn:10m;
 
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_prefer_server_ciphers off;
 ssl_session_timeout 1d;
 ssl_session_cache shared:SSL:10m;
 ssl_session_tickets off;
