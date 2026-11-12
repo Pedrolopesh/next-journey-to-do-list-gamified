@@ -4,7 +4,7 @@ The administrator must never be locked out of the VPS. This file contains no IP,
 
 ## Access paths, from the most common to the most drastic
 
-1. SSH by key, through the public IP or the tailnet, from an admin machine (user `deploy`; `root` by key only).
+1. SSH by key, through the public IP or the tailnet, from an admin machine, as the `deploy` user (passwords and `root` login are off; use `sudo -i` for a root shell).
 2. Another admin machine: generate a new key and add it through path 3.
 3. The browser console in the provider panel, with the local root login (password in the password manager). It does not depend on SSH, the firewall or Tailscale.
 4. Recovery mode or operating system reinstall in the provider panel (last resort; a reinstall erases the data).
@@ -19,7 +19,7 @@ The administrator must never be locked out of the VPS. This file contains no IP,
 ## I lost access
 
 1. If the automatic rollback has not fired yet, wait 10 minutes and try again.
-2. From the provider console, run `/usr/local/sbin/nj-rollback.sh` (reverts SSH and the firewall).
+2. From the provider console, run `/usr/local/sbin/nj-rollback.sh` (reverts SSH and the firewall). It removes our SSH file, so the provider default applies again (passwords allowed) until Ansible runs the `ssh` role.
 3. Check `sshd -T | grep -E "passwordauthentication|permitrootlogin|allowusers"` and `ufw status`.
 4. If Tailscale is gone, check `systemctl status tailscaled`. If the node key expired, re-authenticate with `tailscale up` and disable key expiry in the panel.
 
@@ -49,4 +49,4 @@ Save only with the panel tests passing, and afterwards confirm from every machin
 
 ## Editor tunnel (VS Code Remote-SSH)
 
-SSH forwarding is off by default. A remote editor needs a tunnel to the server it starts on the loopback, so the SSH configuration allows `AllowTcpForwarding local` with `PermitOpen` limited to the loopback, only for the deploy user and only from the addresses listed in `ssh_forwarding_addresses` (kept in the local inventory, not in Git). Connect as the deploy user through the tailnet address. An empty list disables the tunnel again.
+SSH forwarding is off by default. A remote editor needs a tunnel to the server it starts on the loopback, so the SSH configuration allows `AllowTcpForwarding local` with `PermitOpen` limited to the loopback, only for the deploy user and only from the addresses listed in `ssh_forwarding_addresses` in the inventory. Connect as the deploy user through the tailnet address. An empty list disables the tunnel again.
