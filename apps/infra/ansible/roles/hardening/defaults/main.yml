@@ -7,6 +7,7 @@ hardening_packages:
   - apt-show-versions
   - acct
   - sysstat
+  - apt-listchanges
 hardening_removed_packages: [telnet, ftp]
 hardening_blocked_modules: [dccp, sctp, rds, tipc, usb-storage]
 hardening_fail2ban_ignore_ips: []
