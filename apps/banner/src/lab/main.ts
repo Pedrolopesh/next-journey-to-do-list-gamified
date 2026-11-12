@@ -11,6 +11,7 @@ import { characterPage } from './pages/character';
 import { dashPage } from './pages/dash';
 import { glowPage } from './pages/glow';
 import { indicatorsPage } from './pages/indicators';
+import { SCENERY_PAGES } from './pages/mapas';
 import { modifiersPage } from './pages/modificadores';
 import { petsPage } from './pages/pets-montarias';
 import { clothesPage } from './pages/roupas-acessorios';
@@ -25,6 +26,7 @@ const PAGES: LabPage[] = [
   indicatorsPage,
   achievementsV2Page,
   scenesPage,
+  ...SCENERY_PAGES,
   characterPage,
   clothesPage,
   accessoriesPage,
