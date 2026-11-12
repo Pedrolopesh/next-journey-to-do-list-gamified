@@ -35,6 +35,9 @@
       "android": {
         "track": "internal",
         "releaseStatus": "draft"
+      },
+      "ios": {
+        "ascAppId": "6834128534"
       }
     }
   }
