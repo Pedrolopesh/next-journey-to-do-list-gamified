@@ -53,6 +53,27 @@ echo "$args" >>"${T}/docker-calls"
 case "$args" in
   "inspect -f"*) echo "sha256:image" ;;
   run*) echo container-id ;;
+  *"bao status"*)
+    n=$(cat "${T}/unsealed" 2>/dev/null || echo 0)
+    if [ "$n" -ge 3 ]; then echo '{"sealed": false}'; else echo '{"sealed": true}'; exit 2; fi ;;
+  *"operator init"*) echo '{"unseal_keys_b64":["tmpkey"],"root_token":"tmproot"}' ;;
+  *"snapshot restore"*) echo 0 >"${T}/unsealed"; [ -e "${T}/snapshot-bad" ] && exit 1 ;;
+  *"sys/unseal"*) cat >/dev/null; n=$(cat "${T}/unsealed" 2>/dev/null || echo 0); echo $((n + 1)) >"${T}/unsealed" ;;
+  *"sh -c cat > /tmp/snapshot"*) cat >"${T}/snapshot-in-container" ;;
+  *"auth/userpass/login"*)
+    cat >/dev/null
+    case "$args" in *nj-restore-proof*) [ -e "${T}/restored-login-refused" ] && exit 2 ;; esac
+    echo token ;;
+  *"token revoke -self"*) echo "$args" >>"${T}/live-revoked" ;;
+  *"kv list -format=json kv/nextjourney/app"*) echo '["db"]' ;;
+  *"kv list -format=json kv/nextjourney"*) echo '["app/","jwt"]' ;;
+  *"kv get -format=json kv/nextjourney/app/db"*) echo '{"data":{"data":{"value":"x"}}}' ;;
+  *"kv get -format=json kv/nextjourney/jwt"*)
+    case "$args" in *nj-restore-proof*) [ -e "${T}/restored-differs" ] && { echo '{"data":{"data":{"value":"other"}}}'; exit 0; } ;; esac
+    echo '{"data":{"data":{"value":"j"}}}' ;;
+  *"policy list"*) echo '["default","nj-admin"]' ;;
+  *"auth/approle/role"*) echo '["dev"]' ;;
+  *"auth/userpass/users"*) echo '["pedro"]' ;;
   *"pg_restore"*) cat >"${T}/restored"; [ -e "${T}/restore-fails" ] && exit 1 ;;
   *"psql"*"_prisma_migrations"*) echo 15 ;;
   *"psql"*"from users"*) echo 8 ;;
@@ -172,4 +193,59 @@ S
   echo $(( $(date +%s) - 10 * 86400 )) >"${NJ_BACKUP_STATE}/restore-test-prd.last"
   run "$WATCH" restore-test-prd
   grep -q '^critical The restore test of prd has not passed for 240 h' "${T}/notifications"
+}
+
+@test "prove: only the vault can be proven" {
+  run "$RESTORE" prove prd </dev/null
+  [ "$status" -eq 2 ]
+}
+
+@test "prove: the snapshot rebuilds the vault, opens with the shares and every secret matches" {
+  run "$RESTORE" prove vault < <(printf 'share1\nshare2\nshare3\nadmin-password\n')
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"secrets compared: 2"* ]]
+  [[ "$output" == *"vault restore proof ok"* ]]
+  [ -s "${NJ_BACKUP_STATE}/vault-restore-proof.last" ]
+  grep -q '^ok Vault restore proof passed' "${T}/notifications"
+  # the throwaway vault has no network, and goes away with the live token revoked
+  grep -q -- '--network none' "${T}/docker-calls"
+  grep -q '^rm -f nj-restore-proof-' "${T}/docker-calls"
+  [ -s "${T}/live-revoked" ]
+  [ -z "$(ls -A "${T}/tmp")" ]
+}
+
+@test "prove: the key shares and the password never appear in any command line" {
+  run "$RESTORE" prove vault < <(printf 'share1\nshare2\nshare3\nadmin-password\n')
+  [ "$status" -eq 0 ]
+  ! grep -q -e 'share1' -e 'admin-password' -e 'tmpkey' "${T}/docker-calls"
+}
+
+@test "prove: a secret that differs fails the proof, shows the path and no value, records nothing" {
+  touch "${T}/restored-differs"
+  run "$RESTORE" prove vault < <(printf 'share1\nshare2\nshare3\nadmin-password\n')
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"PROBLEM different value: kv/nextjourney/jwt"* ]]
+  [[ "$output" != *"other"* ]]
+  [ ! -e "${NJ_BACKUP_STATE}/vault-restore-proof.last" ]
+  grep -q '^warning Restore prove of vault failed' "${T}/notifications"
+}
+
+@test "prove: a snapshot that does not restore fails" {
+  touch "${T}/snapshot-bad"
+  run "$RESTORE" prove vault < <(printf 'share1\nshare2\nshare3\nadmin-password\n')
+  [ "$status" -eq 1 ]
+  [ ! -e "${NJ_BACKUP_STATE}/vault-restore-proof.last" ]
+}
+
+@test "prove: wrong key shares leave the restored vault sealed and fail" {
+  run "$RESTORE" prove vault < <(printf 'share1\n')
+  [ "$status" -eq 1 ]
+  [ ! -e "${NJ_BACKUP_STATE}/vault-restore-proof.last" ]
+}
+
+@test "prove: a restored vault that refuses the admin login fails" {
+  touch "${T}/restored-login-refused"
+  run "$RESTORE" prove vault < <(printf 'share1\nshare2\nshare3\nadmin-password\n')
+  [ "$status" -eq 1 ]
+  grep -q 'does not accept the admin login' <<<"$output$(cat "${T}/notifications")"
 }

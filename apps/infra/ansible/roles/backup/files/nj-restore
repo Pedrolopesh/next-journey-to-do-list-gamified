@@ -6,11 +6,14 @@
 #   nj-restore apply <dev|prd> --yes [--object <key>]
 #                                     Real restore of an environment database: safety dump, API stopped, restore,
 #                                     purge of accounts whose deletion was already due, API started, health check.
+#   nj-restore prove vault            Interactive proof that the newest vault snapshot rebuilds the vault: it is restored
+#                                     into a throwaway vault (no network, memory only), opened with the original key shares
+#                                     and every secret is compared by hash with the running vault. Run it from a terminal.
 # The age key for this job and the object store keys come from the vault (AppRole nj-restore). If the vault is lost,
 # give them explicitly: NJ_RESTORE_IDENTITY_FILE=<offline age key file> NJ_R2_KEY_ID=... NJ_R2_SECRET=...
 set -euo pipefail
-mode="${1:?usage: nj-restore test <dev|prd|vault> | apply <dev|prd> --yes [--object <key>]}"
-env="${2:?usage: nj-restore test <dev|prd|vault> | apply <dev|prd> --yes [--object <key>]}"
+mode="${1:?usage: nj-restore test <dev|prd|vault> | apply <dev|prd> --yes [--object <key>] | prove vault}"
+env="${2:?usage: nj-restore test <dev|prd|vault> | apply <dev|prd> --yes [--object <key>] | prove vault}"
 shift 2
 yes=""
 object=""
@@ -22,8 +25,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 case "$mode:$env" in
-  test:dev|test:prd|test:vault|apply:dev|apply:prd) ;;
-  *) echo "usage: nj-restore test <dev|prd|vault> | apply <dev|prd> --yes [--object <key>]" >&2; exit 2 ;;
+  test:dev|test:prd|test:vault|apply:dev|apply:prd|prove:vault) ;;
+  *) echo "usage: nj-restore test <dev|prd|vault> | apply <dev|prd> --yes [--object <key>] | prove vault" >&2; exit 2 ;;
 esac
 
 conf="${NJ_BACKUP_CONF:-/etc/nextjourney/backup.conf}"
@@ -40,6 +43,8 @@ purge_days="${NJ_PURGE_DAYS:-30}"
 limits=(--connect-timeout 5 --max-time 15)
 token=""
 work=""
+live_token=""
+live_ctr="${NJ_VAULT_CONTAINER:-nj-openbao}"
 
 cleanup() {
   [ -n "$work" ] && rm -rf "$work"
@@ -47,6 +52,10 @@ cleanup() {
   if [ -n "$token" ]; then
     printf 'header = "X-Vault-Token: %s"\n' "$token" \
       | curl -sS "${limits[@]}" --cacert "$cacert" -K - -X POST "${vault}/v1/auth/token/revoke-self" >/dev/null 2>&1 || true
+  fi
+  if [ -n "$live_token" ]; then
+    BAO_TOKEN=$live_token docker exec -e BAO_ADDR=https://127.0.0.1:8200 -e BAO_CACERT=/openbao/tls/openbao.crt -e BAO_TOKEN \
+      "$live_ctr" bao token revoke -self >/dev/null 2>&1 || true
   fi
 }
 trap cleanup EXIT
@@ -124,6 +133,133 @@ plain() { # plain <object key>
 [ -n "$object" ] || object=$(newest_key) || fail "cannot list the object store"
 [ -n "$object" ] || fail "no backup found under ${env}/"
 echo "backup used: ${object}"
+
+if [ "$mode" = prove ]; then
+  admin="${NJ_VAULT_ADMIN:-pedro}"
+  image=$(docker inspect -f '{{.Image}}' "$live_ctr") || fail "cannot read the image of the running vault"
+  # The throwaway vault: same image as the real one, no network, data only in memory, config without secrets.
+  cfg="${work}/proof.hcl"
+  printf '%s\n' 'disable_mlock = true' 'api_addr = "http://127.0.0.1:8300"' 'cluster_addr = "http://127.0.0.1:8301"' \
+    'storage "raft" {' '  path = "/data"' '  node_id = "proof-1"' '}' \
+    'listener "tcp" {' '  address = "127.0.0.1:8300"' '  tls_disable = true' '}' >"$cfg"
+  chmod 644 "$cfg"
+  container="nj-restore-proof-$$"
+  docker run -d --name "$container" --network none --user 100:1000 --entrypoint bao --read-only \
+    --tmpfs /data:size=64m,uid=100,gid=1000 --tmpfs /tmp:size=64m,uid=100,gid=1000 --cap-drop ALL --memory 256m \
+    -v "${cfg}:/cfg/config.hcl:ro" "$image" server -config=/cfg/config.hcl >/dev/null || fail "cannot start the throwaway vault"
+  # pb: no standard input (so nothing queued for the prompts is swallowed); pbi: standard input forwarded.
+  pb() { docker exec -e BAO_ADDR=http://127.0.0.1:8300 -e BAO_TOKEN "$container" bao "$@" </dev/null; }
+  pbi() { docker exec -i -e BAO_ADDR=http://127.0.0.1:8300 -e BAO_TOKEN "$container" bao "$@"; }
+  lbi() { docker exec -i -e BAO_ADDR=https://127.0.0.1:8200 -e BAO_CACERT=/openbao/tls/openbao.crt -e BAO_TOKEN "$live_ctr" bao "$@"; }
+  for _ in $(seq 1 30); do
+    rc=0; pb status >/dev/null 2>&1 || rc=$?
+    [ "$rc" -ne 1 ] && break
+    sleep 1
+  done
+  [ "$rc" -ne 1 ] || fail "the throwaway vault did not start"
+  # A new, empty vault only to receive the snapshot; its key and token die with the container.
+  init=$(pb operator init -key-shares=1 -key-threshold=1 -format=json) || fail "cannot initialise the throwaway vault"
+  tmp_key=$(printf '%s' "$init" | python3 -c 'import json,sys; print(json.load(sys.stdin)["unseal_keys_b64"][0])')
+  tmp_root=$(printf '%s' "$init" | python3 -c 'import json,sys; print(json.load(sys.stdin)["root_token"])')
+  unset init
+  printf '%s' "$tmp_key" | pbi write sys/unseal key=- >/dev/null || fail "cannot open the throwaway vault"
+  plain "$object" | docker exec -i "$container" sh -c 'cat > /tmp/snapshot' || fail "the snapshot does not decrypt (${object})"
+  BAO_TOKEN=$tmp_root pb operator raft snapshot restore -force /tmp/snapshot || fail "the snapshot does not restore (${object})"
+  unset tmp_key tmp_root
+  # After the restore the vault is sealed with the ORIGINAL key shares: this is the part that proves they still work.
+  echo "The snapshot is restored. Type key shares of the ORIGINAL vault (hidden) until it opens."
+  opened=""
+  for _ in $(seq 1 10); do
+    sealed=$(pb status -format=json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("sealed"))' 2>/dev/null || echo True)
+    [ "$sealed" = False ] && { opened=1; break; }
+    read -rsp "Key share: " share || break
+    echo
+    printf '%s' "$share" | pbi write sys/unseal key=- >/dev/null || echo "share rejected" >&2
+    unset share
+  done
+  [ -n "$opened" ] || fail "the restored vault did not open with the key shares given"
+  # The admin login lives inside the snapshot too; the same password must work on both vaults.
+  read -rsp "Password of the vault admin (${admin}): " pw || true
+  echo
+  restored_token=$(printf '%s' "$pw" | pbi write -field=token "auth/userpass/login/${admin}" password=-) \
+    || { unset pw; fail "the restored vault does not accept the admin login"; }
+  live_token=$(printf '%s' "$pw" | lbi write -field=token "auth/userpass/login/${admin}" password=-) \
+    || { unset pw; fail "cannot log in to the running vault"; }
+  unset pw
+  summary=$(RESTORED_TOKEN=$restored_token LIVE_TOKEN=$live_token PROOF_CTR="$container" LIVE_CTR="$live_ctr" python3 - <<'PY'
+import hashlib, json, os, subprocess, sys
+
+def runner(ctr, addr, extra, token):
+    def run(args):
+        env = dict(os.environ, BAO_TOKEN=token)
+        cmd = ["docker", "exec", "-e", "BAO_ADDR=" + addr, "-e", "BAO_TOKEN"] + extra + [ctr, "bao"] + args
+        return subprocess.run(cmd, env=env, stdin=subprocess.DEVNULL, capture_output=True, text=True)
+    return run
+
+restored = runner(os.environ["PROOF_CTR"], "http://127.0.0.1:8300", [], os.environ["RESTORED_TOKEN"])
+live = runner(os.environ["LIVE_CTR"], "https://127.0.0.1:8200", ["-e", "BAO_CACERT=/openbao/tls/openbao.crt"], os.environ["LIVE_TOKEN"])
+
+def names(run, args):
+    r = run(args)
+    if r.returncode not in (0, 2):
+        raise RuntimeError(" ".join(args[:3]))
+    try:
+        v = json.loads(r.stdout or "[]")
+    except ValueError:
+        return []
+    return v if isinstance(v, list) else []
+
+def secrets(run, path):
+    out = {}
+    for k in names(run, ["kv", "list", "-format=json", path]):
+        full = path.rstrip("/") + "/" + k
+        if k.endswith("/"):
+            out.update(secrets(run, full))
+        else:
+            r = run(["kv", "get", "-format=json", full])
+            if r.returncode != 0:
+                raise RuntimeError("cannot read " + full)
+            data = json.loads(r.stdout)["data"]["data"]
+            out[full] = hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
+    return out
+
+bad = []
+a, b = secrets(restored, "kv/nextjourney"), secrets(live, "kv/nextjourney")
+for p in sorted(set(a) | set(b)):
+    if p not in a:
+        bad.append("missing in the restored vault: " + p)
+    elif p not in b:
+        bad.append("only in the restored vault (created after the snapshot?): " + p)
+    elif a[p] != b[p]:
+        bad.append("different value: " + p)
+extra = []
+for label, args in (("policies", ["policy", "list", "-format=json"]),
+                    ("approle roles", ["list", "-format=json", "auth/approle/role"]),
+                    ("admin users", ["list", "-format=json", "auth/userpass/users"])):
+    try:
+        x, y = sorted(names(restored, args)), sorted(names(live, args))
+    except RuntimeError:
+        extra.append(label + ": skipped (no permission to list)")
+        continue
+    if x != y:
+        bad.append(label + " differ")
+    else:
+        extra.append("%s: %d match" % (label, len(x)))
+print("secrets compared: %d" % len(set(a) | set(b)))
+for line in extra:
+    print(line)
+for line in bad:
+    print("PROBLEM " + line)
+sys.exit(1 if bad or not a else 0)
+PY
+  ) && cmp_ok=1 || cmp_ok=""
+  printf '%s\n' "$summary"
+  [ -n "$cmp_ok" ] || fail "the restored vault does not match the running one (details above, no values shown)"
+  date +%s >"${state}/vault-restore-proof.last"
+  "$notify" ok "Vault restore proof passed: the snapshot ${object} rebuilt the vault and every secret matches." >/dev/null 2>&1 || true
+  echo "vault restore proof ok: snapshot rebuilt the vault; the original key shares and the admin login work"
+  exit 0
+fi
 
 if [ "$mode" = test ] && [ "$env" = vault ]; then
   listing=$(plain "$object" | tar -tzf -) || fail "the snapshot does not decrypt or is not a valid archive"
