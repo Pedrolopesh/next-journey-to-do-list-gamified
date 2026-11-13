@@ -1,6 +1,6 @@
 import type { LpcLook, TimeOfDay } from '@nextjourney/contracts';
 
-/** QG scenarios (Home). The ids are the same as in `apps/banner/src/qg/scenes`. */
+/** QG scenarios (Home). The ids are the same as in `apps/web/src/qg/scenes`. */
 export const SCENARIOS = [
   'cabin',
   'beach',
