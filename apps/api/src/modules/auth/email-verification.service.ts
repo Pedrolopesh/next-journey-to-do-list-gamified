@@ -3,6 +3,7 @@ import { createHash, randomInt, timingSafeEqual } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 
 import { Clock } from '../../common/clock.js';
+import { ENV, type Env } from '../../config/env.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { Mailer } from './mailer.js';
@@ -23,10 +24,18 @@ export class EmailVerificationService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(Clock) private readonly clock: Clock,
     @Inject(Mailer) private readonly mailer: Mailer,
+    @Inject(ENV) private readonly env: Env,
   ) {}
+
+  /** The store review account, when configured: its code is fixed and no email is sent. */
+  private isReviewAccount(email: string): boolean {
+    const reviewEmail = this.env.REVIEW_ACCOUNT_EMAIL;
+    return Boolean(reviewEmail) && reviewEmail?.trim().toLowerCase() === email.trim().toLowerCase();
+  }
 
   /** Generates a new code and sends it, unless the last email was sent less than 60 seconds ago. */
   async sendCode(user: Recipient): Promise<void> {
+    if (this.isReviewAccount(user.email)) return;
     const code = await this.reserve(user.id, true);
     if (!code) return;
     this.mailer.sendInBackground({
@@ -43,6 +52,7 @@ export class EmailVerificationService {
    * attempts stay outside it on purpose. Rules: docs/api/authentication-and-sessions.md.
    */
   async consume(userId: string, code: string, tx?: Prisma.TransactionClient): Promise<boolean> {
+    if (await this.matchesReviewCode(userId, code)) return true;
     const now = this.clock.now();
     const current = await this.prisma.emailVerification.findFirst({
       where: { userId, usedAt: null, expiresAt: { gt: now } },
@@ -69,6 +79,17 @@ export class EmailVerificationService {
       data: { usedAt: now },
     });
     return false;
+  }
+
+  /** True only for the review account with its fixed code; the comparison takes constant time. */
+  private async matchesReviewCode(userId: string, code: string): Promise<boolean> {
+    const fixed = this.env.REVIEW_ACCOUNT_CODE;
+    if (!fixed || !this.env.REVIEW_ACCOUNT_EMAIL) return false;
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    return Boolean(user) && this.isReviewAccount(user?.email ?? '') && sameHash(fixed, code);
   }
 
   /**

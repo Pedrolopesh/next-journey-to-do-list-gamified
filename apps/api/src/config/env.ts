@@ -74,6 +74,22 @@ const envSchema = z
     AUTH_MIN_RESPONSE_MS: z.coerce.number().int().min(0).max(5000).default(250),
     /** Days until the final removal of the data of a deleted account. */
     ACCOUNT_PURGE_DAYS: z.coerce.number().int().positive().default(30),
+    /**
+     * Store review account: for this one email the sign-in code is the fixed value below, and no
+     * email is sent. Both or neither. Values come from the environment, never from the repository.
+     */
+    REVIEW_ACCOUNT_EMAIL: z.preprocess(emptyToUndefined, z.string().email().optional()),
+    REVIEW_ACCOUNT_CODE: z.preprocess(
+      emptyToUndefined,
+      z
+        .string()
+        .regex(/^\d{6}$/, 'precisa ter 6 dígitos')
+        .optional(),
+    ),
+  })
+  .refine((env) => Boolean(env.REVIEW_ACCOUNT_EMAIL) === Boolean(env.REVIEW_ACCOUNT_CODE), {
+    path: ['REVIEW_ACCOUNT_CODE'],
+    message: 'o e-mail e o código da conta de revisão precisam ser definidos juntos',
   })
   .refine((env) => Boolean(env.JWT_ACCESS_SECRET_PREVIOUS) === Boolean(env.JWT_PREVIOUS_KEY_ID), {
     path: ['JWT_ACCESS_SECRET_PREVIOUS'],
