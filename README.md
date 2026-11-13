@@ -47,7 +47,7 @@ cd apps/mobile && npx expo run:ios      # or run:android
 
 Without `RESEND_API_KEY` set, the local API writes the sign-in code to the log instead of sending an email.
 
-Art and scene lab: `pnpm --filter @nextjourney/banner dev` and open `/lab.html`.
+Art and scene lab: `pnpm --filter @nextjourney/web dev` and open `/lab.html`.
 
 `.env` files never go to Git; only the `.env.example` files do.
 

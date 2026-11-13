@@ -127,7 +127,7 @@ Real output of `turbo ls`:
 ```
 6 packages (pnpm9)
   @nextjourney/api           apps/api
-  @nextjourney/banner        apps/web
+  @nextjourney/web        apps/web
   @nextjourney/contracts     packages/contracts
   @nextjourney/eslint-config packages/eslint-config
   @nextjourney/mobile        apps/mobile

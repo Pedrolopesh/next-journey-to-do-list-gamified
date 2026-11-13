@@ -64,7 +64,7 @@ sorted by foot height (`levelItems`), never drawn as a block behind everyone.
 
 ## 8. Check protocol (mandatory before saying a scene or level is ready)
 
-Do it in the lab (`pnpm --filter @nextjourney/banner exec vite --port 5173`, then `http://localhost:5173/lab.html#cenarios`):
+Do it in the lab (`pnpm --filter @nextjourney/web exec vite --port 5173`, then `http://localhost:5173/lab.html#cenarios`):
 
 1. For each level: **HQ at the three times** (morning, afternoon, night).
 2. For each level: **journey at at least 3 distinct moments** (the character walking for a few seconds between captures), and by day and by night. A single frame proves nothing: depth and cycle defects only show when things cross.

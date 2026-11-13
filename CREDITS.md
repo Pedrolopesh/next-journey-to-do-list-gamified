@@ -3,7 +3,7 @@
 The code in this repository is licensed under the [MIT](LICENSE) license. The third-party art and sounds listed below are **not** covered by the MIT license: each item follows the license of its author.
 
 All art and sound used in Next Journey must be listed here, with author, license and link.
-The `pnpm --filter @nextjourney/banner validate:assets` script validates technical limits; checking
+The `pnpm --filter @nextjourney/web validate:assets` script validates technical limits; checking
 the licenses below is manual and mandatory before the art is frozen.
 
 ## Current art

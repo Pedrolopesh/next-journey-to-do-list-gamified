@@ -1,5 +1,5 @@
 // Validates the banner art (Phase 6): bundle weight, file sizes and palette per sprite.
-// Runs after the build: `pnpm --filter @nextjourney/banner validate:assets`.
+// Runs after the build: `pnpm --filter @nextjourney/web validate:assets`.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import process from 'node:process';
