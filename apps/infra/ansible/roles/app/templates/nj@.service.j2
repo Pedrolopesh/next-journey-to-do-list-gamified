@@ -10,6 +10,7 @@ Type=oneshot
 RemainAfterExit=yes
 EnvironmentFile={{ app_conf_dir }}/common.env
 EnvironmentFile={{ app_conf_dir }}/%i.env
+EnvironmentFile=-{{ app_conf_dir }}/%i.app.env
 Environment=NJ_ENV=%i NJ_SECRETS_DIR=/run/nj-%i/secrets
 ExecStart=/usr/bin/docker compose -f {{ app_dir }}/compose.yml up -d --remove-orphans --wait --wait-timeout 120
 ExecReload=/usr/bin/docker compose -f {{ app_dir }}/compose.yml up -d --remove-orphans --wait --wait-timeout 120

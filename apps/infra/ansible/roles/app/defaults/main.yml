@@ -1,11 +1,15 @@
 ---
+# apple_client_id (optional) is the bundle id of the app that talks to that environment: the audience of its
+# Sign in with Apple token. Empty means Sign in with Apple is unavailable there.
 app_envs:
   dev:
     port: 3010
     host: api-dev.example.com
+    apple_client_id: ''
   prd:
     port: 3020
     host: api.example.com
+    apple_client_id: ''
 app_dir: /opt/nextjourney
 app_conf_dir: /etc/nextjourney
 # Sender of transactional emails (the domain must be verified at the email provider)

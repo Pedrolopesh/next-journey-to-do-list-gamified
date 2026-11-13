@@ -13,9 +13,11 @@ app_envs:
   dev:
     port: 3010
     host: api-dev.example.com
+    apple_client_id: 'com.example.app.dev' # bundle id of the dev app (Sign in with Apple audience)
   prd:
     port: 3020
     host: api.example.com
+    apple_client_id: 'com.example.app' # bundle id of the production app
 app_mail_from: 'Next Journey <no-reply@example.com>'
 # Public contact for the legal texts and the support page (optional)
 app_legal_contact_email: 'contact@example.com'

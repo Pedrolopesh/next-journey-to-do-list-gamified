@@ -54,7 +54,7 @@ The API **does not start** if a required one is missing or invalid, and the erro
 | `JWT_ACCESS_SECRET_PREVIOUS`, `JWT_PREVIOUS_KEY_ID`       | previous key, valid until the token ends during a secret rotation     | empty                                          |
 | `ACCESS_TOKEN_TTL_SECONDS`, `REFRESH_TOKEN_TTL_DAYS`      | token validity                                                        | 900, 365                                       |
 | `RESEND_API_KEY`, `MAIL_FROM`                             | transactional email; without a key nothing is sent (development)      | empty                                          |
-| `GOOGLE_CLIENT_IDS`, `APPLE_CLIENT_ID`                    | public social login ids; empty = feature unavailable                  | empty                                          |
+| `GOOGLE_CLIENT_IDS`, `APPLE_CLIENT_ID`                    | public social login ids; empty = feature unavailable (Apple: set per environment in the Ansible `app_envs.<env>.apple_client_id`)                  | empty                                          |
 | `CORS_ORIGINS`, `TRUST_PROXY`                             | HTTP layer                                                            | empty, `false`                                 |
 | `THROTTLE_LIMIT`, `THROTTLE_AUTH_LIMIT`                   | requests per minute per IP                                            | 120, 10                                        |
 | `AUTH_MIN_RESPONSE_MS`                                    | time floor of the anti-enumeration routes (0 only outside production, ceiling of 5000) | 250                          |

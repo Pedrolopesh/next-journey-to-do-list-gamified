@@ -44,6 +44,15 @@
     owner: root
     group: root
 
+- name: Per-environment settings that are not secrets (Sign in with Apple audience)
+  ansible.builtin.copy:
+    content: "NJ_APPLE_CLIENT_ID='{{ item.value.apple_client_id | default('') }}'\n"
+    dest: '{{ app_conf_dir }}/{{ item.key }}.app.env'
+    mode: '0644'
+    owner: root
+    group: root
+  loop: '{{ app_envs | dict2items }}'
+
 - name: Helper scripts
   ansible.builtin.copy:
     src: '{{ item }}'
