@@ -298,14 +298,31 @@ body {
   .side h2 {
     display: none;
   }
+  /* One row that scrolls sideways, instead of a tall wall of stretched buttons */
+  .side #menu {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+  }
   .side button {
+    flex: none;
+    width: auto;
+    min-height: 36px;
     margin: 0;
+    white-space: nowrap;
   }
   .side summary {
     display: none;
   }
+  /* Chrome and Safari wrap the items of <details> in a block box: make that box a row too */
   .side-group {
-    display: contents;
+    display: flex;
+    gap: 6px;
+  }
+  .side-group::details-content {
+    display: flex;
+    gap: 6px;
   }
   .side-group > button {
     width: auto;
