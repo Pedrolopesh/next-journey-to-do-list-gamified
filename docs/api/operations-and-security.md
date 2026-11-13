@@ -62,6 +62,7 @@ The API **does not start** if a required one is missing or invalid, and the erro
 | `SECURITY_ALERT_WEBHOOK_URL`                              | optional notice of an abnormal count (https)                          | empty                                          |
 | `SEED_STARTER_ITEMS`                                      | creates the starter items when the account becomes valid              | `true`                                         |
 | `LEGAL_CONTACT_EMAIL`                                     | contact for data requests, shown in the legal texts; without it the contact section is omitted | empty                          |
+| `REVIEW_ACCOUNT_EMAIL`, `REVIEW_ACCOUNT_CODE`             | store review account: fixed 6-digit sign-in code for that one email, no email sent; both or neither | empty                  |
 
 ## JWT secret rotation
 

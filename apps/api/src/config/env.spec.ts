@@ -80,3 +80,25 @@ describe('SEED_STARTER_ITEMS', () => {
     expect(() => loadEnv({ ...base, SEED_STARTER_ITEMS: 'talvez' })).toThrow(/SEED_STARTER_ITEMS/);
   });
 });
+
+describe('store review account', () => {
+  it('is off by default and needs the email and the code together', () => {
+    expect(loadEnv(base).REVIEW_ACCOUNT_EMAIL).toBeUndefined();
+    expect(() => loadEnv({ ...base, REVIEW_ACCOUNT_EMAIL: 'a@exemplo.com' })).toThrow(
+      /REVIEW_ACCOUNT_CODE/,
+    );
+    expect(() => loadEnv({ ...base, REVIEW_ACCOUNT_CODE: '123456' })).toThrow(
+      /REVIEW_ACCOUNT_CODE/,
+    );
+  });
+
+  it('the code must have 6 digits', () => {
+    expect(() =>
+      loadEnv({ ...base, REVIEW_ACCOUNT_EMAIL: 'a@exemplo.com', REVIEW_ACCOUNT_CODE: '12' }),
+    ).toThrow(/REVIEW_ACCOUNT_CODE/);
+    expect(
+      loadEnv({ ...base, REVIEW_ACCOUNT_EMAIL: 'a@exemplo.com', REVIEW_ACCOUNT_CODE: '123456' })
+        .REVIEW_ACCOUNT_CODE,
+    ).toBe('123456');
+  });
+});
