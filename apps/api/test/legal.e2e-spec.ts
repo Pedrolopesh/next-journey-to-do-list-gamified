@@ -38,6 +38,14 @@ describe('legal documents', () => {
     await ctx.http().get('/legal/cookies').expect(404);
   });
 
+  it('serves the public support page outside /v1, with no script', async () => {
+    const res = await ctx.http().get('/support').expect(200);
+    expect(res.headers['content-type']).toContain('text/html');
+    expect(res.text).toContain('<h1>Suporte</h1>');
+    expect(res.text).not.toMatch(/<script/i);
+    await ctx.http().get('/v1/support').expect(404);
+  });
+
   it('keeps the JSON under /v1 only and the page out of it', async () => {
     await ctx.http().get('/v1/legal/privacy').expect(404);
     await ctx.http().get('/legal/documents/privacy').expect(404);

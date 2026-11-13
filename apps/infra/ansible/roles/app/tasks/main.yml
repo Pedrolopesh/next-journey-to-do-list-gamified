@@ -38,7 +38,7 @@
 
 - name: Variables shared by the environments
   ansible.builtin.copy:
-    content: "NJ_MAIL_FROM='{{ app_mail_from }}'\n"
+    content: "NJ_MAIL_FROM='{{ app_mail_from }}'\nNJ_LEGAL_CONTACT_EMAIL='{{ app_legal_contact_email }}'\n"
     dest: '{{ app_conf_dir }}/common.env'
     mode: '0644'
     owner: root

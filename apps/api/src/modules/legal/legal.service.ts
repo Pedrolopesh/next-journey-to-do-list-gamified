@@ -9,7 +9,11 @@ import { buildLegalDocuments } from './legal-documents.js';
 export class LegalService {
   private readonly documents: Record<'terms' | 'privacy', LegalDocument>;
 
+  /** Public contact for data and support requests; only set through the environment. */
+  readonly contactEmail: string | undefined;
+
   constructor(@Inject(ENV) env: Env) {
+    this.contactEmail = env.LEGAL_CONTACT_EMAIL;
     this.documents = buildLegalDocuments({ contactEmail: env.LEGAL_CONTACT_EMAIL });
   }
 

@@ -38,7 +38,7 @@ export function setupApp(app: INestApplication, options: { swagger: boolean }): 
   if (origins.length > 0) app.enableCors({ origin: origins, credentials: false });
   // Versioning: /v1, with health and the public legal page (the store URL) at the root
   app.setGlobalPrefix('v1', {
-    exclude: ['health', { path: 'legal/:slug', method: RequestMethod.GET }],
+    exclude: ['health', 'support', { path: 'legal/:slug', method: RequestMethod.GET }],
   });
 
   if (options.swagger) {
