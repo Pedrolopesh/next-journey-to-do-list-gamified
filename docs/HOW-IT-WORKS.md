@@ -15,7 +15,7 @@ A personal to-do list for iOS and Android where every checked item earns EXP and
 | `packages/contracts`                       | Shared Zod schemas (auth, items, check, stories, character, banner protocol), with tests; built with `tsup`                                                                                                                                                                            |
 | `packages/tsconfig`, `packages/eslint-config` | Ready                                                                                                                                                                                                                                                                               |
 | `apps/api`                                 | NestJS + Prisma + PostgreSQL: email code sign-in, sessions, profile (goals, optional age and gender), items, check, progression, stories, achievements, character, `GET /home`, data export and account deletion; unit and e2e tests                                                   |
-| `apps/banner`                              | Vite + TypeScript: Map scene (CSS) and HQ scene (canvas, 7 scenes, LPC character); a development lab in pages (`lab.html`: buttons, indicators, achievements, scenes, scenery and maps catalog, character and credits) and a debug panel (`dev.html`), both outside the build                                    |
+| `apps/web`                              | Vite + TypeScript: Map scene (CSS) and HQ scene (canvas, 7 scenes, LPC character); a development lab in pages (`lab.html`: buttons, indicators, achievements, scenes, scenery and maps catalog, character and credits) and a debug panel (`dev.html`), both outside the build                                    |
 | `apps/mobile`                              | Expo + React Native: email code sign-in, introduction, character creation, story choice, reminders, Home with the HQ, item tabs (with a draft of the new task), achievements, profile, settings and credits                                                                            |
 | `apps/infra`, `apps/smoke`                 | Containerized server (Ansible, OpenTofu, Docker Compose), delivery pipeline and smoke tests                                                                                                                                                                                            |
 | Environments                               | Two API environments (development and production), on the same version; production only after manual approval                                                                                                                                                                          |
@@ -55,7 +55,7 @@ Package names: scope `@nextjourney/*` (e.g. `@nextjourney/contracts`). A package
        │ postMessage { v:1, type, payload }
        ▼
 ┌───────────────┐
-│ apps/banner   │  runs inside a WebView; never reaches the API
+│ apps/web   │  runs inside a WebView; never reaches the API
 │ Vite + TS     │
 └───────────────┘
         └──────── all import Zod schemas from packages/contracts ────────┘

@@ -5,7 +5,7 @@ import {
   createErrorMessage,
 } from '@nextjourney/contracts';
 
-import type { QgScene } from './qg/scene';
+import type { QgScene } from '../qg/scene';
 import { FADE_MS, HERO_MOVE_MS, type MapScene } from './scene/map';
 
 type Options = {

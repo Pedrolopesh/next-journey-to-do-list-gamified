@@ -2,7 +2,7 @@
   "path": [
     "apps/api/src",
     "apps/mobile/src",
-    "apps/banner/src",
+    "apps/web/src",
     "packages/contracts/src",
     "packages/insignias/src"
   ],

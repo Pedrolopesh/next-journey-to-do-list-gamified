@@ -6,7 +6,7 @@
 **/.env.*
 .git
 apps/mobile
-apps/banner
+apps/web
 apps/infra/ansible
 apps/infra/compose
 apps/infra/tofu

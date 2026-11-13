@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import catalog from '../../../../banner/lab/catalog.json';
+import catalog from '../../../../web/lab/catalog.json';
 import {
   CLOTH_COLORS,
   DEFAULT_LOOK,
