@@ -10,6 +10,8 @@ app_dir: /opt/nextjourney
 app_conf_dir: /etc/nextjourney
 # Sender of transactional emails (the domain must be verified at the email provider)
 app_mail_from: 'Next Journey <no-reply@example.com>'
+# Public contact shown in the legal texts and on the support page (empty: the contact is left out)
+app_legal_contact_email: ''
 # Local encrypted copies of the application secrets, retired now that the vault is the only source. They are moved
 # here (not deleted) and kept until the owner decides to delete them. The vault login files stay where they are.
 app_retired_creds_dir: /var/lib/nj-retired-creds

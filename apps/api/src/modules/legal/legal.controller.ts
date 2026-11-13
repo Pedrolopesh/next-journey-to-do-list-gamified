@@ -3,7 +3,7 @@ import type { LegalDocument } from '@nextjourney/contracts';
 
 import { Public } from '../../common/public.decorator.js';
 import { LegalService } from './legal.service.js';
-import { renderLegalPage } from './legal-page.js';
+import { renderLegalPage, renderSupportPage } from './legal-page.js';
 
 /** The legal texts as structured text, for the app to render (`/v1/legal/documents/:slug`). */
 @Public()
@@ -30,5 +30,18 @@ export class LegalPageController {
   @Header('Content-Type', 'text/html; charset=utf-8')
   page(@Param('slug') slug: string): string {
     return renderLegalPage(this.legal.get(slug));
+  }
+}
+
+/** The public support page (`/support`, outside `/v1`): the support URL the app stores ask for. */
+@Public()
+@Controller('support')
+export class SupportPageController {
+  constructor(@Inject(LegalService) private readonly legal: LegalService) {}
+
+  @Get()
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  page(): string {
+    return renderSupportPage(this.legal.contactEmail);
   }
 }

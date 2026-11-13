@@ -1,21 +1,21 @@
 # Privacidade: mapa de dados coletados
 
-Base para preencher as *Privacy Nutrition Labels* (App Store) e o *Data Safety* (Google Play).
+Base para preencher as _Privacy Nutrition Labels_ (App Store) e o _Data Safety_ (Google Play).
 Revisar a cada funcionalidade nova que colete dado. O repositório é público: aqui ficam só as regras, nunca dados reais nem detalhes de servidor.
 
-| Dado | Para quê | Ligado à identidade | Compartilhado com terceiros |
-|---|---|---|---|
-| Nome, e-mail | Conta e entrada por código | Sim | Resend (envio dos e-mails de código) |
-| ID de login Google/Apple | Login social | Sim | Google/Apple, só na validação do login |
-| Fuso horário | Virada do dia | Sim | Não |
-| Itens, checks, EXP, nível, conquistas, personagem | Funcionamento do jogo | Sim | Não |
-| Horário do lembrete | Notificação local | Sim | Não (agendada no aparelho) |
-| Aparelhos conectados (nome do aparelho, datas de entrada e de último uso) | Lista de sessões da conta | Sim | Não |
-| Meta, faixa etária e gênero (opcionais) e a escolha de receber lembretes | Personalizar a experiência e estatísticas de uso; a pessoa pode pular as perguntas | Sim | Não |
-| Aceite dos Termos (data e versão) | Registro de consentimento | Sim | Não |
-| Código de confirmação do e-mail | Provar a posse do e-mail | Sim (guardado só como hash) | Não |
-| Contadores de tentativas (pedido e confirmação do código) | Frear abuso | Não (só hash do e-mail) | Não |
-| Registros técnicos (requestId, erros, eventos de segurança) | Diagnóstico e detecção de abuso | Sem e-mail ou token; IP com o último número oculto | Sentry (quando ligado) |
+| Dado                                                                      | Para quê                                                                           | Ligado à identidade                                | Compartilhado com terceiros            |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------- |
+| Nome, e-mail                                                              | Conta e entrada por código                                                         | Sim                                                | Resend (envio dos e-mails de código)   |
+| ID de login Google/Apple                                                  | Login social                                                                       | Sim                                                | Google/Apple, só na validação do login |
+| Fuso horário                                                              | Virada do dia                                                                      | Sim                                                | Não                                    |
+| Itens, checks, EXP, nível, conquistas, personagem                         | Funcionamento do jogo                                                              | Sim                                                | Não                                    |
+| Horário do lembrete                                                       | Notificação local                                                                  | Sim                                                | Não (agendada no aparelho)             |
+| Aparelhos conectados (nome do aparelho, datas de entrada e de último uso) | Lista de sessões da conta                                                          | Sim                                                | Não                                    |
+| Meta, faixa etária e gênero (opcionais) e a escolha de receber lembretes  | Personalizar a experiência e estatísticas de uso; a pessoa pode pular as perguntas | Sim                                                | Não                                    |
+| Aceite dos Termos (data e versão)                                         | Registro de consentimento                                                          | Sim                                                | Não                                    |
+| Código de confirmação do e-mail                                           | Provar a posse do e-mail                                                           | Sim (guardado só como hash)                        | Não                                    |
+| Contadores de tentativas (pedido e confirmação do código)                 | Frear abuso                                                                        | Não (só hash do e-mail)                            | Não                                    |
+| Registros técnicos (requestId, erros, eventos de segurança)               | Diagnóstico e detecção de abuso                                                    | Sem e-mail ou token; IP com o último número oculto | Sentry (quando ligado)                 |
 
 ## O que o app **não** coleta
 
@@ -36,13 +36,13 @@ A página web pública de pedido de exclusão (exigida pelas lojas) depende da h
 
 ## Prazos de retenção
 
-| Situação | Prazo |
-|---|---|
-| Conta excluída | Dados pessoais na hora; o restante em até 30 dias |
-| Cadastro que nunca confirmou o e-mail | Apagado em 7 dias |
-| Refresh token e código de confirmação expirados | Apagados 7 dias depois de expirar |
-| Contadores de limite de tentativas | Até 1 dia |
-| Backup do banco e do cofre de segredos | Cópias criptografadas, mantidas por 7 dias e apagadas automaticamente até o 8º dia |
+| Situação                                        | Prazo                                                                              |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Conta excluída                                  | Dados pessoais na hora; o restante em até 30 dias                                  |
+| Cadastro que nunca confirmou o e-mail           | Apagado em 7 dias                                                                  |
+| Refresh token e código de confirmação expirados | Apagados 7 dias depois de expirar                                                  |
+| Contadores de limite de tentativas              | Até 1 dia                                                                          |
+| Backup do banco e do cofre de segredos          | Cópias criptografadas, mantidas por 7 dias e apagadas automaticamente até o 8º dia |
 
 ## Incidente de segurança
 
@@ -50,7 +50,7 @@ Se houver incidente com dados pessoais, o responsável avisa as pessoas afetadas
 
 ## Onde os textos ficam
 
-Os Termos de Uso e a Política de Privacidade são servidos pela própria API, em português: `GET /v1/legal/documents/:slug` (texto estruturado, que o app mostra) e `GET /legal/terms` e `GET /legal/privacy` (páginas HTML públicas; a segunda é a URL da política que as lojas pedem). O código dos textos está em `apps/api/src/modules/legal/`; mudou o texto, sobe `LEGAL_VERSION` em `packages/contracts`.
+Os Termos de Uso e a Política de Privacidade são servidos pela própria API, em português: `GET /v1/legal/documents/:slug` (texto estruturado, que o app mostra) e `GET /legal/terms` e `GET /legal/privacy` (páginas HTML públicas; a segunda é a URL da política que as lojas pedem) e `GET /support` (página pública de suporte, a URL de suporte das lojas; o e-mail vem de `LEGAL_CONTACT_EMAIL`). O código dos textos está em `apps/api/src/modules/legal/`; mudou o texto, sobe `LEGAL_VERSION` em `packages/contracts`.
 
 A faixa etária informada no app é um dado estatístico e opcional: a classificação etária de uso é a configurada na loja de aplicativos.
 
