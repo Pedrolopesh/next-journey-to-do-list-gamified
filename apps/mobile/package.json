@@ -57,7 +57,7 @@
     "zustand": "^5.0.16"
   },
   "devDependencies": {
-    "@nextjourney/banner": "workspace:*",
+    "@nextjourney/web": "workspace:*",
     "@nextjourney/eslint-config": "workspace:*",
     "@testing-library/react-native": "^14.1.0",
     "@types/react": "~19.3.0",
@@ -74,7 +74,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run && jest --ci",
     "test:ui": "node scripts/ui-tests.mjs",
-    "eas-build-post-install": "pnpm --filter \"@nextjourney/banner...\" --filter @nextjourney/insignias build"
+    "eas-build-post-install": "pnpm --filter \"@nextjourney/web...\" --filter @nextjourney/insignias build"
   },
   "private": true
 }

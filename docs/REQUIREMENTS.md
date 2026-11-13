@@ -410,7 +410,7 @@ Every message follows the format `{ v: 1, type, payload }` and is validated with
 
 ### Development
 
-- `pnpm --filter banner dev` opens the page in the browser with a debug panel (`/dev.html`) that fires each message, to work without the app.
+- `pnpm --filter @nextjourney/web dev` opens the page in the browser with a debug panel (`/dev.html`) that fires each message, to work without the app.
 - The banner **makes no network requests and keeps no state of its own**: everything comes from the app. That makes testing easier and avoids divergence from the back end.
 - If the WebView fails or takes more than 2 s to send `READY`, the app shows the static PNG image of the scene.
 
@@ -536,7 +536,7 @@ pnpm exec turbo run typecheck test --filter="...[origin/main]"
 
 ### CONTRIBUTING.md
 
-There is a `CONTRIBUTING.md` at the root, with the monorepo's rules, and one in each app, with what is specific to it. The current content is in the root [CONTRIBUTING.md](../CONTRIBUTING.md) itself (stack, commands, mandatory rules, the security checklist and the requirement of a review and a secret scan before every PR). The per-app files hold the local commands (for example `npx expo start --dev-client`, `pnpm --filter banner dev`) and the specific rules: modules and logs on the API; banner messages always validated by the contract; in the app, nothing sensitive outside SecureStore.
+There is a `CONTRIBUTING.md` at the root, with the monorepo's rules, and one in each app, with what is specific to it. The current content is in the root [CONTRIBUTING.md](../CONTRIBUTING.md) itself (stack, commands, mandatory rules, the security checklist and the requirement of a review and a secret scan before every PR). The per-app files hold the local commands (for example `npx expo start --dev-client`, `pnpm --filter @nextjourney/web dev`) and the specific rules: modules and logs on the API; banner messages always validated by the contract; in the app, nothing sensitive outside SecureStore.
 
 ---
 
@@ -703,7 +703,7 @@ The `preview` profile uses the `production` EAS environment and the production v
 
 ### 10.10 Embed the banner
 
-1. `pnpm --filter banner build` generates the single `index.html`; a Turbo script copies it to `apps/mobile/assets/banner/banner.html`.
+1. `pnpm --filter @nextjourney/web build` generates the single `index.html`; a Turbo script copies it to `apps/mobile/assets/banner/banner.html`.
 2. In `metro.config.js`, add `html` to `resolver.assetExts`.
 3. `BannerView` loads the file with `expo-asset`, reads the content with `expo-file-system` and passes it to the WebView as `source={{ html }}`.
 
