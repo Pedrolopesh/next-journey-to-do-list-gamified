@@ -1,0 +1,91 @@
+.cen-filter {
+  margin-bottom: 12px;
+}
+.cen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  padding: 0 14px 14px;
+}
+.cen-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.cen-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+  max-height: 260px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 0.06);
+  border-radius: 6px;
+  padding: 6px;
+}
+.cen-thumb img {
+  image-rendering: pixelated;
+  max-width: 100%;
+  max-height: 244px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+.cen-size {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.map-panel {
+  margin-bottom: 18px;
+}
+.map-view {
+  overflow: auto;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #000;
+  margin: 8px 0 12px;
+}
+.map-canvas {
+  display: block;
+  image-rendering: pixelated;
+  height: auto;
+}
+.map-view.fit .map-canvas {
+  width: 100%;
+}
+.map-view:not(.fit) .map-canvas {
+  width: auto;
+  min-width: 200%;
+}
+.map-zoom {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.map-sub {
+  margin: 8px 0 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.map-pieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.map-piece {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
