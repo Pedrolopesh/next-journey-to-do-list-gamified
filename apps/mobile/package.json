@@ -73,7 +73,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run && jest --ci",
-    "test:ui": "node scripts/ui-tests.mjs"
+    "test:ui": "node scripts/ui-tests.mjs",
+    "eas-build-post-install": "pnpm --filter \"@nextjourney/banner...\" --filter @nextjourney/insignias build"
   },
   "private": true
 }
