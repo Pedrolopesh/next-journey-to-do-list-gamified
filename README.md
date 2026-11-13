@@ -8,7 +8,7 @@ Gamified to-do list for iOS and Android. Dailies, tasks and habits earn EXP and 
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | API (`apps/api`)                            | Live in development and production, with migrations, unit tests and e2e tests                                                           |
 | App (`apps/mobile`)                         | In development: email code sign-in, character creation, story, items, achievements and profile work; store builds are not published yet |
-| Banner and lab (`apps/banner`)              | Game scenes in a WebView and an art review site (`lab.html`)                                                                            |
+| Banner and lab (`apps/web`)                 | Game scenes in a WebView and an art review site (`lab.html`)                                                                            |
 | Infrastructure (`apps/infra`, `apps/smoke`) | Provisioning and deploy scripts and smoke tests                                                                                         |
 
 There is no admin application in this repository.
@@ -18,7 +18,7 @@ There is no admin application in this repository.
 ```
 apps/mobile (Expo)  ──REST /v1──▶  apps/api (NestJS + Prisma)  ──▶  PostgreSQL
       │
-      └─ postMessage ─▶  apps/banner (Vite, inside a WebView)
+      └─ postMessage ─▶  apps/web (Vite, inside a WebView)
 
 packages/contracts: Zod schemas used by all three ends
 ```

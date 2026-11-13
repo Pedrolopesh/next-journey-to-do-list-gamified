@@ -1,6 +1,6 @@
+import { createQgScene } from '../qg/scene';
 import { listenToApp, sendToApp } from './bridge';
 import { createBannerController } from './controller';
-import { createQgScene } from './qg/scene';
 import { createMapScene } from './scene/map';
 
 const root = document.getElementById('banner');

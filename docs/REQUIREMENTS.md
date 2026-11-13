@@ -10,7 +10,7 @@ Created on 2026-09-28 · Reorganized for reading on 2026-10-03
 4. [Non-functional requirements](#4-non-functional-requirements)
 5. [Architecture and repository organization](#5-architecture-and-repository-organization)
 6. [Project 1 — Back end (apps/api)](#6-project-1--back-end-appsapi)
-7. [Project 2 — Banner (apps/banner)](#7-project-2--banner-appsbanner)
+7. [Project 2 — Banner (apps/web)](#7-project-2--banner-appsbanner)
 8. [Project 3 — App (apps/mobile)](#8-project-3--app-appsmobile)
 9. [Common standards: CONTRIBUTING.md, lint, tests and pre-commit](#9-common-standards-contributingmd-lint-tests-and-pre-commit)
 10. [Step by step: create the app with Expo for iOS and Android](#10-step-by-step-create-the-app-with-expo-for-ios-and-android)
@@ -369,7 +369,7 @@ apps/api/
 
 ---
 
-## 7. Project 2 — Banner (apps/banner)
+## 7. Project 2 — Banner (apps/web)
 
 The web front end is the pixel art banner: an HTML/CSS/TypeScript page, **with no game engine**, that runs inside `react-native-webview` and only reacts to messages from the app. The recommendation is to package it as **a single HTML file** embedded in the app. That way it works offline, ships versioned together with the app and can be updated through EAS Update without going through the store.
 
@@ -415,7 +415,7 @@ Every message follows the format `{ v: 1, type, payload }` and is validated with
 - If the WebView fails or takes more than 2 s to send `READY`, the app shows the static PNG image of the scene.
 
 ```
-apps/banner/
+apps/web/
   src/
     main.ts          listens to messages, validates and dispatches
     scene/           qg.ts, map.ts, state-machine.ts (+ *.test.ts)
@@ -444,7 +444,7 @@ The app is built with React Native and Expo, using a **development build** (not 
 | Forms | react-hook-form + Zod (`packages/contracts`) | The same validation rules as the API. |
 | Storage | `expo-secure-store` (tokens) and AsyncStorage (cache and flags) | Nothing sensitive outside SecureStore. |
 | Social sign-in | `@react-native-google-signin/google-signin` and `expo-apple-authentication` | The app gets the ID token and sends it to `/auth/google` or `/auth/apple`. |
-| Banner | `react-native-webview` | Loads the single HTML of `apps/banner` and talks through `postMessage` (see [Project 2](#7-project-2--banner-appsbanner)). |
+| Banner | `react-native-webview` | Loads the single HTML of `apps/web` and talks through `postMessage` (see [Project 2](#7-project-2--banner-appsbanner)). |
 | Animation and feedback | `react-native-reanimated` + `expo-haptics` | The checkbox pop, the EXP toast, the progress bars and a light vibration on check. |
 | Visual | Design system tokens in `src/theme`, `expo-font` with Inter and Press Start 2P, `@tabler/icons-react-native` | No ready-made UI library; the components follow the Components board. |
 | Notifications | `expo-notifications` | Only scheduled local reminders in v1 (RF-39). |

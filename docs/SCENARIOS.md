@@ -1,6 +1,6 @@
 # Banner scenes: construction and check rules
 
-Applies to creating, changing or reviewing any scene in `apps/banner/src/qg/scenes` (still HQ and the journey with the scrolling scene) and their levels. Each rule below comes from a defect that already appeared and was fixed; the goal is not to repeat it. Read together with `CONTRIBUTING.md`.
+Applies to creating, changing or reviewing any scene in `apps/web/src/qg/scenes` (still HQ and the journey with the scrolling scene) and their levels. Each rule below comes from a defect that already appeared and was fixed; the goal is not to repeat it. Read together with `CONTRIBUTING.md`.
 
 ## 1. How a scene is built
 

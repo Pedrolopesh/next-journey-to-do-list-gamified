@@ -1,4 +1,4 @@
-import '../styles/qg.css';
+import './qg.css';
 
 import type { CharacterLayers } from '@nextjourney/contracts';
 

@@ -7,7 +7,7 @@ Read this file before any change: stack, rules and checklists. For an overview s
 Gamified to-do list (dailies, tasks and habits earn EXP and coins and move an LPC character through a story). **pnpm + Turborepo** monorepo, packages under the `@nextjourney/*` scope.
 
 - `apps/api`: NestJS 11 + Prisma + PostgreSQL
-- `apps/banner`: game layer in Vite + TypeScript, runs in a WebView (Map in CSS, HQ on canvas)
+- `apps/web`: game layer in Vite + TypeScript, runs in a WebView (Map in CSS, HQ on canvas)
 - `apps/mobile`: React Native + Expo, Expo Router
 - `packages/contracts`: shared Zod schemas (API, app, banner)
 - `packages/tsconfig`, `packages/eslint-config`: shared configuration
