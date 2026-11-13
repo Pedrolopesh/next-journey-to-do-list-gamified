@@ -1,6 +1,6 @@
 # Stack of one environment (dev or prd). Required variables, set by the nj@<env> systemd unit:
 #   NJ_ENV, NJ_PORT (loopback), NJ_TAG (image), NJ_SECRETS_DIR (tmpfs), NJ_MAIL_FROM,
-#   NJ_LEGAL_CONTACT_EMAIL (optional)
+#   NJ_LEGAL_CONTACT_EMAIL, NJ_APPLE_CLIENT_ID (optional)
 name: next-journey-${NJ_ENV:?}
 
 x-hardening: &hardening
@@ -45,6 +45,7 @@ services:
       AUTH_MIN_RESPONSE_MS: '250'
       MAIL_FROM: ${NJ_MAIL_FROM:?}
       LEGAL_CONTACT_EMAIL: ${NJ_LEGAL_CONTACT_EMAIL:-}
+      APPLE_CLIENT_ID: ${NJ_APPLE_CLIENT_ID:-}
       JWT_ISSUER: nextjourney-api-${NJ_ENV}
       JWT_AUDIENCE: nextjourney-app-${NJ_ENV}
     user: '10001:10001' # uid with no user on the host: no host user can read the secrets by ownership
