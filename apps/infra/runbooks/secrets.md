@@ -44,6 +44,16 @@ A vault restored from a snapshot already holds the secrets. For a brand-new vaul
 
 Copy the four files from the retired folder back to `creds/<env>/`, put the four `LoadCredentialEncrypted=` lines back in `nj-secrets@.service` and restore the `from_creds` branch of `nj-materialize` from Git history. Prefer opening the vault.
 
+## Store review account (optional secrets)
+
+`review_account_email` and `review_account_code` are optional: if the vault has no value they become empty files and the API treats the review account as not configured. Set both together (the API refuses to start with only one). They go in the vault, never in Git. The 6-digit code is for the store reviewers; remove both entries (and restart the environment) once the store has approved the app.
+
+```
+printf %s '<email>' | BAO_TOKEN=<admin token> nj-bao kv put kv/nextjourney/prd/review_account_email value=-
+printf %s '<6 digits>' | BAO_TOKEN=<admin token> nj-bao kv put kv/nextjourney/prd/review_account_code value=-
+sudo systemctl restart nj-secrets@prd nj@prd
+```
+
 ## Alerts
 
 `nj-vault-watch.timer` runs every 30 seconds and posts to the alerts channel through a webhook that is stored encrypted on the host (it must work while the vault is sealed, so it does not live in the vault):

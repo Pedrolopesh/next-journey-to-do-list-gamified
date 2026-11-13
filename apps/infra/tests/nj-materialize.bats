@@ -62,6 +62,17 @@ S
   [ -z "$(ls -A "$OUT")" ]
 }
 
+@test "optional review account values are written, or left empty when the vault has none" {
+  run "$SCRIPT" dev
+  [ "$status" -eq 0 ]
+  [ "$(cat "${OUT}/review_account_email")" = "vault-review_account_email" ]
+  FAKE_FAIL_PATH=review_account_code run "$SCRIPT" dev
+  [ "$status" -eq 0 ]
+  [ -f "${OUT}/review_account_code" ]
+  [ ! -s "${OUT}/review_account_code" ]
+  [ "$(cat "${OUT}/jwt_access_secret")" = "vault-jwt_access_secret" ]
+}
+
 @test "the environment is required" {
   run "$SCRIPT"
   [ "$status" -ne 0 ]

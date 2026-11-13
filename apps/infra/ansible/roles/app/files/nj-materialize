@@ -13,6 +13,8 @@ limits=(--connect-timeout 5 --max-time 15)
 cacert="${NJ_VAULT_CACERT:-/etc/openbao/tls/openbao.crt}"
 dst="${run_dir}/nj-${env}/secrets"
 names=(postgres_password database_url jwt_access_secret resend_api_key)
+# Optional secrets: a missing value in the vault becomes an empty file (the API treats it as not set)
+optional=(review_account_email review_account_code)
 
 install -d -m 0711 "${run_dir}/nj-${env}"
 install -d -m 0755 "$dst"
@@ -59,10 +61,17 @@ from_vault() {
       | python3 -c 'import json,sys; sys.stdout.write(json.load(sys.stdin)["data"]["data"]["value"])' >"${stage}/${n}" \
       || { echo "could not read ${n}" >&2; rm -rf "$stage"; return 1; }
   done
+  # Read only after every required secret was read, so a missing optional value is not a vault failure
+  for n in "${optional[@]}"; do
+    printf 'header = "X-Vault-Token: %s"\n' "$token" \
+      | curl -fsS "${limits[@]}" --cacert "$cacert" -K - "${vault}/v1/kv/data/nextjourney/${env}/${n}" 2>/dev/null \
+      | python3 -c 'import json,sys; sys.stdout.write(json.load(sys.stdin)["data"]["data"]["value"])' >"${stage}/${n}" 2>/dev/null \
+      || : >"${stage}/${n}"
+  done
   printf 'header = "X-Vault-Token: %s"\n' "$token" \
     | curl -sS "${limits[@]}" --cacert "$cacert" -K - -X POST "${vault}/v1/auth/token/revoke-self" >/dev/null 2>&1 || true
 
-  for n in "${names[@]}"; do put "$n" "${stage}/${n}" || { rm -rf "$stage"; return 1; }; done
+  for n in "${names[@]}" "${optional[@]}"; do put "$n" "${stage}/${n}" || { rm -rf "$stage"; return 1; }; done
   rm -rf "$stage"
 }
 
