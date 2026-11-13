@@ -46,7 +46,7 @@ services:
       JWT_ISSUER: nextjourney-api-${NJ_ENV}
       JWT_AUDIENCE: nextjourney-app-${NJ_ENV}
     user: '10001:10001' # uid with no user on the host: no host user can read the secrets by ownership
-    secrets: [database_url, jwt_access_secret, resend_api_key]
+    secrets: [database_url, jwt_access_secret, resend_api_key, review_account_email, review_account_code]
     ports:
       - '127.0.0.1:${NJ_PORT:?}:3000'
     networks: [internal, edge]
@@ -94,3 +94,6 @@ secrets:
   database_url: { file: '${NJ_SECRETS_DIR:?}/database_url' }
   jwt_access_secret: { file: '${NJ_SECRETS_DIR:?}/jwt_access_secret' }
   resend_api_key: { file: '${NJ_SECRETS_DIR:?}/resend_api_key' }
+  # Optional: empty files when the vault has no value (the entrypoint ignores empty files)
+  review_account_email: { file: '${NJ_SECRETS_DIR:?}/review_account_email' }
+  review_account_code: { file: '${NJ_SECRETS_DIR:?}/review_account_code' }
