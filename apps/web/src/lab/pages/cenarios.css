@@ -102,7 +102,8 @@
 .map-walk .map-canvas {
   flex: none;
   width: auto;
-  height: 384px;
+  height: auto;
+  max-width: none;
   image-rendering: pixelated;
 }
 .map-stages {
@@ -149,6 +150,6 @@
 }
 @media (max-width: 720px) {
   .map-walk .map-canvas {
-    height: 288px;
+    zoom: 0.75;
   }
 }
