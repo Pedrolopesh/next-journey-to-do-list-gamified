@@ -1,8 +1,8 @@
 import '../pages/cenarios.css';
 
-import { h } from '../dom';
+import { choiceGroup, h, row } from '../dom';
 import type { LabPage } from '../page';
-import { loadSheets, MapPainter, rng, type Time } from '../pages/mapas-motor';
+import { loadSheets, MapPainter, rng, TILE, type Time } from '../pages/mapas-motor';
 import { DIRT, GRASS, type Season, terrain } from '../pages/mapas-pecas';
 import {
   type Building,
@@ -13,18 +13,21 @@ import {
   randomBuilding,
 } from './construcoes';
 import { CUSTOM_COUNT } from './custom';
-import { type Kit, KIT_SHEETS, KITS, placeKit } from './kits';
+import { type Kit, kit, KIT_SHEETS, KITS, placeKit } from './kits';
 import {
   type BiomeId,
   BIOMES,
   COLS,
   type LayoutId,
   LAYOUTS,
+  MAX_SCREENS,
   paintRecipe,
   randomRecipe,
   type Recipe,
   RECIPE_SHEETS,
   ROWS,
+  SCREENS,
+  screensOf,
 } from './receita';
 import { ALL_RECIPES, REGIONS } from './regioes';
 
@@ -38,16 +41,27 @@ const SEASON_LABEL: Record<Season, string> = {
   autumn: 'outono',
   winter: 'inverno',
 };
+const SCREEN_PX = COLS * TILE;
 
+/** The whole map of a recipe: its screens painted one after the other on one canvas. */
 function strip(images: Map<string, HTMLImageElement>, recipe: Recipe): HTMLCanvasElement {
+  const parts = screensOf(recipe);
   const canvas = h('canvas', 'map-canvas');
   canvas.setAttribute('aria-label', recipe.title);
-  paintRecipe(new MapPainter(canvas, COLS, ROWS, images, recipe.seed), recipe);
+  canvas.width = parts.length * SCREEN_PX;
+  canvas.height = ROWS * TILE;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('canvas 2d indisponivel');
+  parts.forEach((part, i) => {
+    const piece = document.createElement('canvas');
+    paintRecipe(new MapPainter(piece, COLS, ROWS, images, part.seed), part);
+    ctx.drawImage(piece, i * SCREEN_PX, 0);
+  });
   return canvas;
 }
 
 const recipeLine = (r: Recipe): string =>
-  `${BIOMES[r.biome].name} · ${LAYOUTS[r.layout]} · ${SEASON_LABEL[r.season]} · ${TIME_LABEL[r.time]} · kits: ${r.kits.join(', ')}`;
+  `${BIOMES[r.biome].name} · ${SEASON_LABEL[r.season]} · ${TIME_LABEL[r.time]} · começa em ${LAYOUTS[r.layout].toLowerCase()} · kits: ${r.kits.join(', ')}`;
 
 function button(label: string, onClick: () => void): HTMLButtonElement {
   const b = h('button', 'map-zoom', label);
@@ -56,65 +70,186 @@ function button(label: string, onClick: () => void): HTMLButtonElement {
   return b;
 }
 
-function select<T extends string>(
-  label: string,
-  options: [T, string][],
-  value: T,
-): [HTMLElement, HTMLSelectElement] {
-  const el = h('select', 'map-select');
-  for (const [v, text] of options) {
-    const o = h('option', '', text);
-    o.value = v;
-    el.append(o);
-  }
-  el.value = value;
-  return [h('label', 'map-field', h('span', '', label), el), el];
+/**
+ * The whole map in one glance, under the strip. A tap on it takes the strip to that point.
+ */
+function overview(walk: HTMLElement): HTMLCanvasElement {
+  const mini = h('canvas', 'map-mini');
+  mini.height = 0;
+  mini.onclick = (event) => {
+    const box = mini.getBoundingClientRect();
+    const at = (event.clientX - box.left) / box.width;
+    walk.scrollTo({ left: at * walk.scrollWidth - walk.clientWidth / 2, behavior: 'smooth' });
+  };
+  return mini;
 }
 
-/** Page 1: the journey, 10 regions of 6 maps, each region as one long walk. */
+function drawOverview(mini: HTMLCanvasElement, canvas: HTMLCanvasElement | null): void {
+  mini.width = canvas ? canvas.width / 4 : 0;
+  mini.height = canvas ? canvas.height / 4 : 0;
+  if (!canvas) return;
+  const ctx = mini.getContext('2d');
+  if (!ctx) return;
+  ctx.drawImage(canvas, 0, 0, mini.width, mini.height);
+  // A mark at every seam between two screens
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+  for (let x = SCREEN_PX / 4; x < mini.width; x += SCREEN_PX / 4) ctx.fillRect(x, 0, 1, 6);
+}
+
+/** Stops the walk that is running (only one map walks at a time). */
+let stopWalk: (() => void) | null = null;
+
+/**
+ * Walks the map by itself and, at the end, goes back to its start without a jump: what the
+ * player sees while the stage is not cleared. A copy of the first screens goes after the map
+ * so the turn is seamless.
+ */
+function startWalk(walk: HTMLElement, onStop: () => void): void {
+  stopWalk?.();
+  const canvas = walk.querySelector('canvas');
+  if (!canvas) return;
+  const tail = h('canvas', 'map-canvas');
+  tail.width = 2 * SCREEN_PX;
+  tail.height = canvas.height;
+  const ctx = tail.getContext('2d');
+  for (let x = 0; x < tail.width; x += canvas.width) ctx?.drawImage(canvas, x, 0);
+  walk.append(tail);
+  const share = canvas.width / (canvas.width + tail.width);
+  let position = walk.scrollLeft;
+  let last = performance.now();
+  let frame = 0;
+  const step = (now: number): void => {
+    const lap = walk.scrollWidth * share;
+    position += Math.min(64, now - last) * 0.14;
+    last = now;
+    if (position >= lap) position -= lap;
+    walk.scrollLeft = position;
+    frame = requestAnimationFrame(step);
+  };
+  frame = requestAnimationFrame(step);
+  stopWalk = () => {
+    cancelAnimationFrame(frame);
+    tail.remove();
+    stopWalk = null;
+    onStop();
+  };
+}
+
+function walkButton(walk: HTMLElement): HTMLButtonElement {
+  const b = button('Andar em loop', () => {
+    if (b.getAttribute('aria-pressed') === 'true') return stopWalk?.();
+    b.setAttribute('aria-pressed', 'true');
+    b.textContent = 'Parar';
+    startWalk(walk, () => {
+      b.setAttribute('aria-pressed', 'false');
+      b.textContent = 'Andar em loop';
+    });
+  });
+  b.setAttribute('aria-pressed', 'false');
+  return b;
+}
+
+/** Page 1: the journey, 60 maps one by one, each several screens long. */
 export const journeyPage: LabPage = {
   id: 'mapa-jornada',
   label: 'Jornada: 60 mapas',
   section: SECTION,
   async mount(host) {
+    const total = ALL_RECIPES.length;
     host.append(
-      h('h1', '', 'Jornada: 60 mapas'),
+      h('h1', '', `Jornada: ${total} mapas`),
       h(
         'p',
         'hint',
-        `10 regiões de 6 mapas, todos feitos pela mesma receita (lugar, estação, traçado do caminho, hora, kits e semente). Cada mapa é uma faixa de ${COLS}×${ROWS} blocos: o caminho entra e sai na mesma altura, então os mapas de uma região se emendam. Arraste cada faixa para o lado para andar pela região.`,
+        `10 regiões de 6 mapas, um por um. Cada mapa tem de 4 a 6 telas de ${COLS}×${ROWS} blocos: o mesmo lugar, com o caminho, as construções e os kits em outra ordem a cada tela. O caminho entra e sai na mesma altura em todas, então o fim do mapa emenda no próprio começo e no começo do mapa seguinte. Enquanto a fase não é concluída, o personagem anda em loop dentro do mesmo mapa; ao concluir, atravessa para o próximo. Arraste o mapa para o lado, toque na miniatura para ir a um ponto ou use "Andar em loop".`,
       ),
     );
     const images = await sheets();
+    const pending = new Map<Element, Recipe>();
+    const minis = new Map<Element, HTMLCanvasElement>();
+    const watcher = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const walk = entry.target as HTMLElement;
+          const recipe = pending.get(walk);
+          if (!recipe) continue;
+          if (!entry.isIntersecting) {
+            // Far from the screen: the canvas is released, a long map is heavy to keep
+            if (walk.childElementCount > 1) stopWalk?.();
+            walk.replaceChildren();
+            drawOverview(minis.get(walk) as HTMLCanvasElement, null);
+            continue;
+          }
+          if (walk.firstChild) continue;
+          try {
+            const canvas = strip(images, recipe);
+            walk.append(canvas);
+            drawOverview(minis.get(walk) as HTMLCanvasElement, canvas);
+          } catch (error) {
+            walk.append(h('p', 'hint', `Falhou ${recipe.title}: ${String(error)}`));
+          }
+        }
+      },
+      { rootMargin: '500px 0px' },
+    );
+    let number = 0;
     for (const region of REGIONS) {
-      const walk = h('div', 'map-walk');
-      const list = h('ol', 'map-stages');
       const section = h('section', 'panel map-panel');
-      section.append(h('h2', '', region.name), h('p', 'hint', region.story), walk, list);
+      section.append(h('h2', '', region.name), h('p', 'hint', region.story));
       host.append(section);
       for (const recipe of region.maps) {
-        try {
-          walk.append(strip(images, recipe));
-        } catch (error) {
-          walk.append(h('p', 'hint', `Falhou ${recipe.title}: ${String(error)}`));
-        }
-        list.append(
-          h(
-            'li',
-            '',
-            h('strong', '', recipe.title),
-            ` — ${recipe.about} `,
-            h('span', 'map-recipe', recipeLine(recipe)),
-          ),
+        number++;
+        const next = ALL_RECIPES[number];
+        const screens = recipe.screens ?? SCREENS;
+        const walk = h('div', 'map-walk map-lazy');
+        const mini = overview(walk);
+        const stage = h('article', 'map-stage');
+        stage.id = `mapa-${number}`;
+        const target = number + 1;
+        const links = h(
+          'p',
+          'map-next',
+          'Sem concluir a fase: volta ao começo deste mapa. Concluindo: ',
         );
-        await new Promise((resolve) => setTimeout(resolve));
+        if (next) {
+          const link = h('a', '', `entra no mapa ${target}, ${next.title}`);
+          link.href = `#mapa-${target}`;
+          link.onclick = (event) => {
+            event.preventDefault();
+            document.getElementById(`mapa-${target}`)?.scrollIntoView({ behavior: 'smooth' });
+          };
+          links.append(link, '.');
+        } else links.append('fim da jornada.');
+        stage.append(
+          h('h3', '', `Mapa ${number} de ${total} · ${recipe.title}`),
+          h('p', 'hint', recipe.about),
+          h(
+            'p',
+            'map-recipe',
+            `${screens} telas (${screens * COLS} blocos) · ${recipeLine(recipe)}`,
+          ),
+          h('div', 'map-controls', walkButton(walk)),
+          walk,
+          mini,
+          links,
+        );
+        section.append(stage);
+        minis.set(walk, mini);
+        pending.set(walk, recipe);
+        watcher.observe(walk);
       }
     }
-    host.append(h('p', 'hint', `Total: ${ALL_RECIPES.length} mapas.`));
   },
 };
 
-/** Page 2: the generator, one recipe at a time. */
+const DENSITIES: [string, string][] = [
+  ['0.4', 'Aberto'],
+  ['0.7', 'Leve'],
+  ['1', 'Médio'],
+  ['1.4', 'Cheio'],
+];
+
+/** Page 2: the generator, one recipe at a time, redrawn at every choice. */
 export const generatorPage: LabPage = {
   id: 'mapa-gerador',
   label: 'Gerador de mapas',
@@ -125,91 +260,187 @@ export const generatorPage: LabPage = {
       h(
         'p',
         'hint',
-        'Escolha o lugar e o traçado, ou sorteie. A mesma receita com a mesma semente dá sempre o mesmo mapa; trocar só a semente muda a posição de árvores, kits e construções.',
+        'Toque em qualquer opção e o mapa é refeito na hora. A mesma receita com a mesma semente dá sempre o mesmo mapa; trocar só a semente muda a posição de árvores, kits e construções. Cada lugar só mostra os traçados, as estações e os kits que aceita.',
       ),
     );
     const images = await sheets();
-    let recipe = randomRecipe(1, rng(1), 'vila');
-    const biomeOptions = (Object.keys(BIOMES) as BiomeId[]).map(
-      (id) => [id, BIOMES[id].name] as [BiomeId, string],
-    );
-    const [biomeField, biomeEl] = select('Lugar', biomeOptions, recipe.biome);
-    const [layoutField, layoutEl] = select(
-      'Traçado',
-      Object.entries(LAYOUTS) as [LayoutId, string][],
-      recipe.layout,
-    );
-    const [seasonField, seasonEl] = select(
-      'Estação',
-      Object.entries(SEASON_LABEL) as [Season, string][],
-      recipe.season,
-    );
-    const [timeField, timeEl] = select(
-      'Hora',
-      Object.entries(TIME_LABEL) as [Time, string][],
-      recipe.time,
-    );
+    let recipe: Recipe = { ...randomRecipe(1, rng(1), 'vila'), screens: SCREENS };
     const view = h('div', 'map-walk');
+    const mini = overview(view);
+    const fixed = h('div', 'map-rows');
+    const perPlace = h('div', 'map-rows');
     const info = h('pre', 'map-json');
-    const note = h('p', 'hint');
+    const status = h('p', 'map-recipe');
+    const seedEl = h('input', 'map-select');
+    seedEl.type = 'number';
+    seedEl.inputMode = 'numeric';
 
-    const render = (): void => {
+    const paint = (): void => {
+      stopWalk?.();
+      const at = view.scrollLeft;
+      recipe.title = `${BIOMES[recipe.biome].name} #${recipe.seed}`;
+      const canvas = strip(images, recipe);
+      view.replaceChildren(canvas);
+      view.scrollLeft = at;
+      drawOverview(mini, canvas);
+      const screens = recipe.screens ?? SCREENS;
+      status.textContent = `${recipe.title} · ${screens} ${screens === 1 ? 'tela' : 'telas'} (${screens * COLS} blocos) · ${recipeLine(recipe)}`;
+      seedEl.value = String(recipe.seed);
+      info.textContent = JSON.stringify(recipe, null, 2);
+    };
+    const kitChips = (): HTMLElement => {
+      const chips = h('span', 'chips');
+      for (const id of BIOMES[recipe.biome].kits) {
+        const chip = h('button', 'chip', kit(id).name);
+        chip.type = 'button';
+        chip.setAttribute('aria-pressed', String(recipe.kits.includes(id)));
+        chip.onclick = () => {
+          recipe.kits = recipe.kits.includes(id)
+            ? recipe.kits.filter((k) => k !== id)
+            : [...recipe.kits, id];
+          chip.setAttribute('aria-pressed', String(recipe.kits.includes(id)));
+          paint();
+        };
+        chips.append(chip);
+      }
+      return chips;
+    };
+    /** Rows that depend on the place: only what it accepts is offered. */
+    const placeRows = (): void => {
       const biome = BIOMES[recipe.biome];
-      // What the place does not accept goes back to its first valid option
       if (!biome.layouts.includes(recipe.layout)) recipe.layout = biome.layouts[0] as LayoutId;
       if (!biome.seasons.includes(recipe.season)) recipe.season = biome.seasons[0] as Season;
       recipe.kits = recipe.kits.filter((k) => biome.kits.includes(k));
       if (!recipe.kits.length) recipe.kits = biome.kits.slice(0, 3);
-      biomeEl.value = recipe.biome;
-      layoutEl.value = recipe.layout;
-      seasonEl.value = recipe.season;
-      timeEl.value = recipe.time;
-      note.textContent = `${biome.name} aceita: ${biome.layouts.map((l) => LAYOUTS[l]).join(', ')} · estações: ${biome.seasons.map((s) => SEASON_LABEL[s]).join(', ')} · kits: ${biome.kits.join(', ')}.`;
-      view.replaceChildren(strip(images, recipe));
-      info.textContent = JSON.stringify(recipe, null, 2);
+      perPlace.replaceChildren(
+        row(
+          'Primeira tela',
+          choiceGroup(
+            biome.layouts.map((value) => ({ value, label: LAYOUTS[value] })),
+            () => recipe.layout,
+            (value) => {
+              recipe.layout = value;
+              paint();
+            },
+          ),
+        ),
+        row(
+          'Estação',
+          choiceGroup(
+            biome.seasons.map((value) => ({ value, label: SEASON_LABEL[value] })),
+            () => recipe.season,
+            (value) => {
+              recipe.season = value;
+              paint();
+            },
+          ),
+        ),
+        row('Kits (vários)', kitChips()),
+      );
     };
-    biomeEl.onchange = () => {
-      recipe.biome = biomeEl.value as BiomeId;
-      render();
+    const fixedRows = (): void => {
+      fixed.replaceChildren(
+        row(
+          'Lugar',
+          choiceGroup(
+            (Object.keys(BIOMES) as BiomeId[]).map((value) => ({
+              value,
+              label: BIOMES[value].name,
+            })),
+            () => recipe.biome,
+            (value) => {
+              recipe.biome = value;
+              placeRows();
+              paint();
+            },
+          ),
+        ),
+        row(
+          'Hora',
+          choiceGroup(
+            (Object.keys(TIME_LABEL) as Time[]).map((value) => ({
+              value,
+              label: TIME_LABEL[value],
+            })),
+            () => recipe.time,
+            (value) => {
+              recipe.time = value;
+              paint();
+            },
+          ),
+        ),
+        row(
+          'Telas',
+          choiceGroup(
+            Array.from({ length: MAX_SCREENS }, (_, i) => ({
+              value: String(i + 1),
+              label: String(i + 1),
+            })),
+            () => String(recipe.screens ?? SCREENS),
+            (value) => {
+              recipe.screens = Number(value);
+              paint();
+            },
+          ),
+        ),
+        row(
+          'Vegetação',
+          choiceGroup(
+            DENSITIES.map(([value, label]) => ({ value, label })),
+            () => String(recipe.density),
+            (value) => {
+              recipe.density = Number(value);
+              paint();
+            },
+          ),
+        ),
+      );
     };
-    layoutEl.onchange = () => {
-      recipe.layout = layoutEl.value as LayoutId;
-      render();
+    const all = (): void => {
+      fixedRows();
+      placeRows();
+      paint();
     };
-    seasonEl.onchange = () => {
-      recipe.season = seasonEl.value as Season;
-      render();
+    const reseed = (seed: number): void => {
+      recipe.seed = Math.max(0, Math.round(seed) || 0);
+      paint();
     };
-    timeEl.onchange = () => {
-      recipe.time = timeEl.value as Time;
-      render();
+    seedEl.onchange = () => reseed(Number(seedEl.value));
+    const draw = (biome?: BiomeId): void => {
+      const seed = Math.floor(Math.random() * 100000);
+      recipe = { ...randomRecipe(seed, rng(seed), biome), screens: recipe.screens ?? SCREENS };
+      all();
     };
-    const controls = h(
+    const live = h('div', 'map-live', view, mini, status);
+    const seedRow = row(
+      'Semente',
+      h(
+        'span',
+        'chips',
+        button('−', () => reseed(recipe.seed - 1)),
+        seedEl,
+        button('+', () => reseed(recipe.seed + 1)),
+      ),
+    );
+    const actions = h(
       'div',
       'map-controls',
-      biomeField,
-      layoutField,
-      seasonField,
-      timeField,
-      button('Nova semente', () => {
-        recipe.seed += 1;
-        render();
-      }),
-      button('Sortear tudo', () => {
-        const seed = Math.floor(Math.random() * 100000);
-        recipe = randomRecipe(seed, rng(seed));
-        render();
-      }),
-      button('Sortear neste lugar', () => {
-        const seed = Math.floor(Math.random() * 100000);
-        recipe = randomRecipe(seed, rng(seed), recipe.biome);
-        render();
-      }),
+      walkButton(view),
+      button('Sortear tudo', () => draw()),
+      button('Sortear neste lugar', () => draw(recipe.biome)),
     );
     const section = h('section', 'panel map-panel');
-    section.append(controls, note, view, h('h3', 'map-sub', 'Receita deste mapa'), info);
+    section.append(
+      live,
+      actions,
+      fixed,
+      perPlace,
+      seedRow,
+      h('h3', 'map-sub', 'Receita deste mapa'),
+      info,
+    );
     host.append(section);
-    render();
+    all();
   },
 };
 
@@ -445,7 +676,7 @@ export const reliefPage: LabPage = {
     for (const [title, about, recipe] of demos) {
       const view = h('div', 'map-walk');
       let seed = recipe.seed;
-      const draw = (): void => view.replaceChildren(strip(images, { ...recipe, seed }));
+      const draw = (): void => view.replaceChildren(strip(images, { ...recipe, seed, screens: 1 }));
       const section = h('section', 'panel map-panel');
       section.append(
         h('h2', '', title),

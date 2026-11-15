@@ -2,6 +2,7 @@ import {
   type Cell,
   type MapPainter,
   type Rect,
+  rng,
   type TileSet,
   type Time,
 } from '../pages/mapas-motor';
@@ -91,7 +92,13 @@ export type Recipe = {
   density: number;
   seed: number;
   kits: string[];
+  /** How many screens long the map is (`SCREENS` when absent). */
+  screens?: number;
 };
+
+/** Screens of a map when the recipe does not say: the stage loops, so it has to be long. */
+export const SCREENS = 5;
+export const MAX_SCREENS = 8;
 
 const LAVA = 'base-lava-lava';
 const LAVAROCK = 'base-lava-lavarock';
@@ -658,6 +665,41 @@ export function paintRecipe(p: MapPainter, recipe: Recipe): void {
   if (biome.indoor) paintIndoor(p, recipe);
   else paintOutdoor(p, recipe);
   p.finish(recipe.time, biome.tint, biome.night);
+}
+
+/**
+ * The screens of a map, from left to right. The first is the recipe itself; the others keep the
+ * place, the season and the hour and change the shape of the path, the seed and the order of the
+ * kits (one of them swapped for another of the place). Every screen enters and leaves on
+ * `PATH_ROW`, so the last one joins the first (the stage loops) and the next map.
+ */
+export function screensOf(recipe: Recipe): Recipe[] {
+  const biome = BIOMES[recipe.biome];
+  const count = Math.max(1, Math.min(MAX_SCREENS, recipe.screens ?? SCREENS));
+  const random = rng(recipe.seed * 31 + 7);
+  const out: Recipe[] = [{ ...recipe, screens: 1 }];
+  let last = recipe.layout;
+  for (let i = 1; i < count; i++) {
+    const others = biome.layouts.filter((l) => l !== last);
+    const layout = others.length ? pick(random, others) : last;
+    const kits = [...recipe.kits];
+    for (let k = kits.length - 1; k > 0; k--) {
+      const j = Math.floor(random() * (k + 1));
+      [kits[k], kits[j]] = [kits[j] as string, kits[k] as string];
+    }
+    const spare = biome.kits.filter((k) => !kits.includes(k));
+    if (spare.length && kits.length) kits[kits.length - 1] = pick(random, spare);
+    out.push({
+      ...recipe,
+      id: `${recipe.id}-t${i + 1}`,
+      layout,
+      kits,
+      seed: recipe.seed + i * 101,
+      screens: 1,
+    });
+    last = layout;
+  }
+  return out;
 }
 
 /** A recipe at random: what the automatic generation does, one seed at a time. */

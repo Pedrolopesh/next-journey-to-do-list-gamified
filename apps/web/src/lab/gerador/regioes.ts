@@ -50,6 +50,8 @@ function region(
       density,
       seed: seed + i * 7,
       kits,
+      // 4 to 6 screens: the stage loops until it is cleared, so no map is one screen long
+      screens: 4 + ((seed + i) % 3),
     })),
   };
 }

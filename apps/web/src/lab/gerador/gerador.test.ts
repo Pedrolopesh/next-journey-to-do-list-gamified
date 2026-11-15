@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { rng } from '../pages/mapas-motor';
 import { Grid } from './grade';
 import { KITS } from './kits';
-import { BIOMES, COLS, PATH_ROW, pathRows, randomRecipe } from './receita';
+import { BIOMES, COLS, PATH_ROW, pathRows, randomRecipe, screensOf } from './receita';
 import { ALL_RECIPES, REGIONS } from './regioes';
 
 describe('map generator', () => {
@@ -32,6 +32,25 @@ describe('map generator', () => {
       for (let x = 1; x < COLS; x++) {
         expect(Math.abs((rows[x] as number) - (rows[x - 1] as number))).toBeLessThanOrEqual(1);
       }
+    }
+  });
+
+  it('makes every journey map 4 to 6 screens long, each screen valid for the place', () => {
+    const kits = new Set(KITS.map((k) => k.id));
+    for (const recipe of ALL_RECIPES) {
+      const screens = screensOf(recipe);
+      expect(screens.length, recipe.id).toBeGreaterThanOrEqual(4);
+      expect(screens.length, recipe.id).toBeLessThanOrEqual(6);
+      expect(screens[0]).toMatchObject({ layout: recipe.layout, kits: recipe.kits });
+      expect(screensOf(recipe)).toEqual(screens);
+      const biome = BIOMES[recipe.biome];
+      screens.forEach((screen, i) => {
+        expect(biome.layouts, screen.id).toContain(screen.layout);
+        expect(screen.kits, screen.id).toHaveLength(recipe.kits.length);
+        for (const id of screen.kits) expect(kits.has(id), `${screen.id}: ${id}`).toBe(true);
+        if (i > 0 && biome.layouts.length > 1)
+          expect(screen.layout, screen.id).not.toBe(screens[i - 1]?.layout);
+      });
     }
   });
 

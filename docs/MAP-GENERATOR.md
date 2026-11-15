@@ -6,18 +6,27 @@ is in the app yet: the lab is where the format is validated first.
 
 ## Two families of scenery
 
-| Family    | Where                      | View                           | Art                               |
-| --------- | -------------------------- | ------------------------------ | --------------------------------- |
-| Side view | `apps/web/src/qg/scenes`   | From the side, with parallax   | Drawn in code (see `SCENARIOS.md`) |
-| Top view  | `apps/web/src/lab/gerador` | From above, character in profile | Free LPC sheets plus code props  |
+| Family    | Where                      | View                             | Art                                |
+| --------- | -------------------------- | -------------------------------- | ---------------------------------- |
+| Side view | `apps/web/src/qg/scenes`   | From the side, with parallax     | Drawn in code (see `SCENARIOS.md`) |
+| Top view  | `apps/web/src/lab/gerador` | From above, character in profile | Free LPC sheets plus code props    |
 
 The two do not mix inside one map, because the perspective differs. They share the idea of the
 recipe and the hours of the day.
 
 ## The map
 
-Every map is a strip of 40 x 12 tiles of 32 px. The path is two rows tall and enters and leaves on
-row 7 in every map, so any two maps join end to end and a region is one long walk.
+A map is a row of screens. Every screen is 40 x 12 tiles of 32 px, and the path is two rows tall
+and enters and leaves on row 7 in all of them. So the last screen of a map joins its own first
+screen and the first screen of the next map.
+
+That is what the game needs: the character walks in a loop inside one map until the stage is
+cleared, and only then crosses to the next. A map one screen long would repeat too soon, so the
+maps of the journey are 4 to 6 screens long (`screens` in the recipe, 5 when absent, 8 at most).
+
+`screensOf(recipe)` gives the screens. The first is the recipe itself. The others keep the place,
+the season and the hour, and change the seed, the shape of the path (never the same twice in a
+row) and the order of the kits, with one kit swapped for another of the place.
 
 ## The recipe
 
@@ -33,21 +42,22 @@ type Recipe = {
   density: number; // 0.4 (open) to 1.4 (packed)
   seed: number;
   kits: string[];
+  screens?: number; // how long the map is, in screens
 };
 ```
 
 The same recipe always paints the same map. Changing only the seed moves trees, kits, buildings,
 the river, the lake edge and the waterfall.
 
-| Layer    | Options                                                                                                                                                  |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Place    | 16: village, forest, field, snow, swamp, mountain, beach, city, castle, graveyard, shooting range, apocalypse, hell, dungeon, house interior, castle hall |
-| Layout   | 8: straight, curves, crossing with a bridge, clearing or square, lake shore, street with buildings, cliff with waterfall, corridor (indoor)              |
-| Season   | 3, limited by the place (snow is always winter, hell has no season)                                                                                      |
-| Hour     | 3: morning (warm veil), afternoon, night (dark veil plus lights)                                                                                         |
-| Kits     | 25, each place has its own pool                                                                                                                          |
-| Density  | Scales the number of trees and plants                                                                                                                    |
-| Seed     | Any integer                                                                                                                                              |
+| Layer   | Options                                                                                                                                                   |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Place   | 16: village, forest, field, snow, swamp, mountain, beach, city, castle, graveyard, shooting range, apocalypse, hell, dungeon, house interior, castle hall |
+| Layout  | 8: straight, curves, crossing with a bridge, clearing or square, lake shore, street with buildings, cliff with waterfall, corridor (indoor)               |
+| Season  | 3, limited by the place (snow is always winter, hell has no season)                                                                                       |
+| Hour    | 3: morning (warm veil), afternoon, night (dark veil plus lights)                                                                                          |
+| Kits    | 25, each place has its own pool                                                                                                                           |
+| Density | Scales the number of trees and plants                                                                                                                     |
+| Seed    | Any integer                                                                                                                                               |
 
 Each place declares which layouts, seasons and kits it accepts (`BIOMES` in `receita.ts`). The
 generator page of the lab and the test `gerador.test.ts` enforce it.
@@ -72,7 +82,8 @@ generator page of the lab and the test `gerador.test.ts` enforce it.
 
 ## The first journey
 
-`regioes.ts` holds 60 recipes: 10 regions of 6 maps. Six regions are natural (home village, forest,
+`regioes.ts` holds 60 recipes: 10 regions of 6 maps. The lab shows them one by
+one, each with a miniature of the whole map and a button that walks it in a loop. Six regions are natural (home village, forest,
 rivers and lakes, autumn, snow, mountain) and four are not (online game hub city, dungeon,
 apocalypse with a shooting range, hell). Each region has a line of story that ties the place to the
 habit of doing tasks.
@@ -86,6 +97,8 @@ Limits today:
 
 - The cliff is a straight terrace across the top; it has no plateaus with side walls yet.
 - Lakes on sand have no inner corners in the sheet, so the beach only gets a straight sea.
+- A sprite that crosses the edge of a screen is cut at the seam, because each screen is painted on
+  its own.
 - Indoor maps are a corridor with a wall on top; there are no rooms with side walls or doors.
 - Roofs are drawn in code in three shapes; the roof sheets are not used.
 - The character does not walk on these maps in the lab yet; the path is only painted.
