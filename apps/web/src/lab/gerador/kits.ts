@@ -344,14 +344,14 @@ export const KITS: Kit[] = [
   {
     id: 'lareira',
     name: 'Canto da lareira',
-    about: 'Lareira acesa com mesa e bancos, baú ou barril.',
+    about: 'Lareira acesa com mesa e banco, barris empilhados ou barril.',
     w: 5,
     where: 'dentro',
     slots: [
       [[s(SHEET.fireplace, [0, 13, 95, 75], 0, 0, FIRE)]],
       [
         [s(SHEET.table, [6, 19, 82, 45], 0.2, 2.6), s(SHEET.table, [98, 29, 30, 35], -1.8, 2.7)],
-        [s(SHEET.chest, [0, 0, 94, 64], 2.6, 0.4)],
+        [s(SHEET.chest, [0, 0, 94, 64], 3.3, 0.4)],
         [s(SHEET.barrel, BARREL_A, 2, 0.3), s(SHEET.barrel, BARREL_B, 2.8, 0.5)],
       ],
     ],
@@ -369,8 +369,8 @@ export const KITS: Kit[] = [
   },
   {
     id: 'estante',
-    name: 'Estantes',
-    about: 'Duas ou três estantes lado a lado com baú, feno ou caixas.',
+    name: 'Armários',
+    about: 'Dois ou três armários lado a lado com barris ou caixas.',
     w: 4,
     where: 'dentro',
     slots: [
@@ -378,18 +378,18 @@ export const KITS: Kit[] = [
         [s(SHEET.shelf, [109, 8, 35, 88], -0.6, 0), s(SHEET.shelf, [109, 8, 35, 88], 0.6, 0)],
         [-1.2, 0, 1.2].map((dx) => s(SHEET.shelf, [109, 8, 35, 88], dx, 0)),
       ],
-      [[s(SHEET.chest, [0, 0, 94, 64], 0, 2.4)], hay(2, 0), crates(1.9)],
+      [[s(SHEET.chest, [0, 0, 94, 64], 0, 2.4)], barrels(2.2), crates(1.9)],
     ],
   },
   {
     id: 'quarto',
-    name: 'Canto de guardar',
-    about: 'Armário com baú, barril ou tapete.',
+    name: 'Quarto',
+    about: 'Cama com barris empilhados, barril ou caixas.',
     w: 4,
     where: 'dentro',
     slots: [
       [[s(SHEET.country, [8, 12, 48, 88], 0, 0.2)]],
-      [[s(SHEET.chest, [0, 0, 94, 64], 2.2, 0.5)], barrels(1.6), crates(-1.9)],
+      [[s(SHEET.chest, [0, 0, 94, 64], 2.7, 0.5)], barrels(1.6), crates(-1.9)],
     ],
   },
   {
@@ -401,7 +401,7 @@ export const KITS: Kit[] = [
     slots: [
       [[s(SHEET.table, [6, 19, 82, 45], 0, 0)]],
       [[s(SHEET.table, [98, 29, 30, 35], -2, 0.1)], [s(SHEET.table, [130, 29, 30, 35], 2, 0.1)]],
-      [crates(2.6), barrels(-3), hay(2.9)],
+      [crates(2.9), barrels(-3.1), []],
     ],
   },
   {
