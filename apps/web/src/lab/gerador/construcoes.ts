@@ -69,7 +69,13 @@ function wallTile(
   return [SIDING, x * TILE, (b.wall.shade * 3 + row) * TILE];
 }
 
-function drawRoof(ctx: CanvasRenderingContext2D, b: Building, left: number, top: number): void {
+/** Draws the roof and returns the mouth of the chimney, when there is one (in pixels). */
+function drawRoof(
+  ctx: CanvasRenderingContext2D,
+  b: Building,
+  left: number,
+  top: number,
+): [number, number] | null {
   const [base, dark, lite] = ROOFS[b.roofColor];
   const width = b.w * TILE;
   if (b.roof === 'flat') {
@@ -77,7 +83,7 @@ function drawRoof(ctx: CanvasRenderingContext2D, b: Building, left: number, top:
     ctx.fillRect(left - 2, top - 4, width + 4, 5);
     ctx.fillStyle = dark;
     ctx.fillRect(left - 2, top - 7, width + 4, 3);
-    return;
+    return null;
   }
   const rows = 8;
   const rowH = 6;
@@ -107,7 +113,9 @@ function drawRoof(ctx: CanvasRenderingContext2D, b: Building, left: number, top:
     ctx.fillRect(cx, cy, 4, 22);
     ctx.fillStyle = '#3d2b18';
     ctx.fillRect(cx - 2, cy - 3, 16, 4);
+    return [cx + 6, cy - 3];
   }
+  return null;
 }
 
 /** Queues a building standing on a point (middle of its base, in tiles). */
@@ -148,7 +156,8 @@ export function placeBuilding(
         ctx.fillRect(left + i + 3, top - 16, 10, 2);
       }
     }
-    drawRoof(ctx, b, left, top);
+    const mouth = drawRoof(ctx, b, left, top);
+    if (mouth) p.mark('smoke', mouth[0], mouth[1]);
     if (b.windows !== 'none') {
       const img = images.get(WINDOW) as HTMLImageElement;
       for (let f = 0; f < b.floors; f++) {

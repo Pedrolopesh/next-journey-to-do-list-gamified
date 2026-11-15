@@ -80,6 +80,20 @@ generator page of the lab and the test `gerador.test.ts` enforce it.
 - **Light (`finish` in `mapas-motor.ts`)**. Fires, lamps, torches, crystals, lava and lit windows
   register a light that shows at night. A place may have its own veil (fog, heat).
 
+## Motion
+
+`animacao.ts` moves things over the painted map, a few times per second and only on the stretch
+that is on screen: glints on water and lava, the waterfall coming down, sparks and flicker on
+fires, smoke from chimneys, and what floats in the air (leaves in autumn, snow in winter, embers
+in hell, ash in the apocalypse, fireflies at night). The painter records where those things are
+(`mark` and `light`). It is off for who asked the system for less motion, and the lab has a
+button to turn it on and off.
+
+All the screens of a map are painted by one painter, so a tree or a house at the edge of a
+screen spills over the next, and what stands near one end of the map is drawn again past the
+other end, because the map loops. The cliff stops before each side of its screen and each end
+is buried under rocks, since the sheet has no side wall.
+
 ## The first journey
 
 `regioes.ts` holds 60 recipes: 10 regions of 6 maps. The lab shows them one by
@@ -97,8 +111,6 @@ Limits today:
 
 - The cliff is a straight terrace across the top; it has no plateaus with side walls yet.
 - Lakes on sand have no inner corners in the sheet, so the beach only gets a straight sea.
-- A sprite that crosses the edge of a screen is cut at the seam, because each screen is painted on
-  its own.
 - Indoor maps are a corridor with a wall on top; there are no rooms with side walls or doors.
 - Roofs are drawn in code in three shapes; the roof sheets are not used.
 - The character does not walk on these maps in the lab yet; the path is only painted.

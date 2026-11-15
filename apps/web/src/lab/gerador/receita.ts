@@ -464,6 +464,8 @@ function paintOutdoor(p: MapPainter, recipe: Recipe): void {
   if (fall >= 0) {
     liquid.box(fall - 2, FOOT_ROW, 4, 2);
     reserved.push(box(fall - 3, 0, 6, PATH_ROW));
+    // The rock slides that close each end of the cliff
+    reserved.push(box(0, 0, 4, FOOT_ROW + 1), box(COLS - 4, 0, 4, FOOT_ROW + 1));
   }
   if (biome.ponds) {
     for (let i = 0; i < 5; i++) {
@@ -499,6 +501,8 @@ function paintOutdoor(p: MapPainter, recipe: Recipe): void {
       dunes.box(2 + i * 10 + Math.floor(random() * 3), 1, 5 + Math.floor(random() * 3), 3);
     p.autotile(dunes.tidy().get, { sheet: t, origin: BLOB, inner: [0, 6], fill: GRASS });
     p.autotile((_, y) => y >= ROWS - 2, { sheet: t, origin: [0, 20] });
+    if (season !== 'winter')
+      for (let x = 0; x < COLS; x++) p.mark('water', x * 32, (ROWS - 1) * 32, 32, 32);
     reserved.push(box(0, ROWS - 2.4, COLS, 3));
   }
   if (biome.path === 'boards') {
@@ -511,6 +515,20 @@ function paintOutdoor(p: MapPainter, recipe: Recipe): void {
       ? { sheet: LAVA, origin: [0, 2], inner: [1, 0], fill: OLD_FILL }
       : { sheet: frozen ? terrain('winter-ice') : t, origin: [0, 10], inner: [0, 13], fill: WATER };
   p.autotile(liquid.get, liquidSet);
+  // Open water and lava (not the shore tiles, not ice) can shimmer
+  if (!frozen || biome.ground === 'lavarock') {
+    const kind = biome.ground === 'lavarock' ? 'lava' : 'water';
+    for (let y = 0; y < ROWS; y++)
+      for (let x = 0; x < COLS; x++)
+        if (
+          liquid.get(x, y) &&
+          liquid.get(x - 1, y) &&
+          liquid.get(x + 1, y) &&
+          (y === 0 || liquid.get(x, y - 1)) &&
+          (y === ROWS - 1 || liquid.get(x, y + 1))
+        )
+          p.mark(kind, x * 32, y * 32, 32, 32);
+  }
   if (biome.ground === 'lavarock') {
     for (let y = 0; y < ROWS; y++)
       for (let x = 0; x < COLS; x++)
@@ -660,11 +678,11 @@ function paintOutdoor(p: MapPainter, recipe: Recipe): void {
 }
 
 /** Paints the map of a recipe (the sheets must be loaded in the painter). */
-export function paintRecipe(p: MapPainter, recipe: Recipe): void {
+export function paintRecipe(p: MapPainter, recipe: Recipe, finish = true): void {
   const biome = BIOMES[recipe.biome];
   if (biome.indoor) paintIndoor(p, recipe);
   else paintOutdoor(p, recipe);
-  p.finish(recipe.time, biome.tint, biome.night);
+  if (finish) p.finish(recipe.time, biome.tint, biome.night);
 }
 
 /**

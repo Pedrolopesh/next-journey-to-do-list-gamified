@@ -134,7 +134,7 @@ export const KITS: Kit[] = [
     where: 'fora',
     slots: [
       [crates(-0.6), barrels(-0.6), [...crates(-1), ...barrels(0.5)]],
-      [hay(1.8), [s(SHEET.cart, [1, 0, 30, 31], 1.7, 0.2)], []],
+      [hay(1.8), []],
     ],
   },
   {

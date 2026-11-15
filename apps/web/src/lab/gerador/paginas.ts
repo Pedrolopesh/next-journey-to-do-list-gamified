@@ -4,6 +4,7 @@ import { choiceGroup, h, row } from '../dom';
 import type { LabPage } from '../page';
 import { loadSheets, MapPainter, rng, TILE, type Time } from '../pages/mapas-motor';
 import { DIRT, GRASS, type Season, terrain } from '../pages/mapas-pecas';
+import { airOf, animate, type Glow, motionOn, setMotion } from './animacao';
 import {
   type Building,
   BUILDING_EXAMPLES,
@@ -48,14 +49,27 @@ function strip(images: Map<string, HTMLImageElement>, recipe: Recipe): HTMLCanva
   const parts = screensOf(recipe);
   const canvas = h('canvas', 'map-canvas');
   canvas.setAttribute('aria-label', recipe.title);
-  canvas.width = parts.length * SCREEN_PX;
-  canvas.height = ROWS * TILE;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('canvas 2d indisponivel');
+  // One painter for the whole map: what stands at the edge of a screen spills over the next
+  const painter = new MapPainter(canvas, COLS, ROWS, images, recipe.seed, parts.length);
   parts.forEach((part, i) => {
-    const piece = document.createElement('canvas');
-    paintRecipe(new MapPainter(piece, COLS, ROWS, images, part.seed), part);
-    ctx.drawImage(piece, i * SCREEN_PX, 0);
+    painter.screen(i, part.seed);
+    paintRecipe(painter, part, false);
+  });
+  const biome = BIOMES[recipe.biome];
+  painter.finish(recipe.time, biome.tint, biome.night);
+  const marks = painter.marks;
+  const glows: Glow[] = painter.lights.map((l) => ({
+    x: l.x * TILE,
+    y: l.y * TILE,
+    radius: l.radius * TILE,
+    color: l.color,
+  }));
+  animate(canvas, {
+    marks,
+    glows,
+    air: airOf(recipe),
+    night: recipe.time === 'night',
+    screen: SCREEN_PX,
   });
   return canvas;
 }
@@ -135,6 +149,18 @@ function startWalk(walk: HTMLElement, onStop: () => void): void {
   };
 }
 
+/** Turns the motion of every map of the page on and off. */
+function motionButton(): HTMLButtonElement {
+  const label = (): string => `Animação: ${motionOn() ? 'ligada' : 'desligada'}`;
+  const b = button(label(), () => {
+    setMotion(!motionOn());
+    b.textContent = label();
+    b.setAttribute('aria-pressed', String(motionOn()));
+  });
+  b.setAttribute('aria-pressed', String(motionOn()));
+  return b;
+}
+
 function walkButton(walk: HTMLElement): HTMLButtonElement {
   const b = button('Andar em loop', () => {
     if (b.getAttribute('aria-pressed') === 'true') return stopWalk?.();
@@ -164,6 +190,7 @@ export const journeyPage: LabPage = {
         `10 regiões de 6 mapas, um por um. Cada mapa tem de 4 a 6 telas de ${COLS}×${ROWS} blocos: o mesmo lugar, com o caminho, as construções e os kits em outra ordem a cada tela. O caminho entra e sai na mesma altura em todas, então o fim do mapa emenda no próprio começo e no começo do mapa seguinte. Enquanto a fase não é concluída, o personagem anda em loop dentro do mesmo mapa; ao concluir, atravessa para o próximo. Arraste o mapa para o lado, toque na miniatura para ir a um ponto ou use "Andar em loop".`,
       ),
     );
+    host.append(h('div', 'map-controls', motionButton()));
     const images = await sheets();
     const pending = new Map<Element, Recipe>();
     const minis = new Map<Element, HTMLCanvasElement>();
@@ -426,6 +453,7 @@ export const generatorPage: LabPage = {
       'div',
       'map-controls',
       walkButton(view),
+      motionButton(),
       button('Sortear tudo', () => draw()),
       button('Sortear neste lugar', () => draw(recipe.biome)),
     );

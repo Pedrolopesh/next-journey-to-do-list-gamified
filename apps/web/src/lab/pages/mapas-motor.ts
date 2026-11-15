@@ -7,8 +7,23 @@ export type Rect = readonly [number, number, number, number];
 /** A tile of a sheet: column, row. */
 export type Cell = readonly [number, number];
 
-type Sprite = { depth: number; draw: (ctx: CanvasRenderingContext2D) => void };
-type Lamp = { x: number; y: number; radius: number; color: string };
+type Sprite = {
+  depth: number;
+  /** Middle of the sprite in the whole canvas, and left edge of its screen (pixels). */
+  x: number;
+  left: number;
+  draw: (ctx: CanvasRenderingContext2D) => void;
+};
+export type Lamp = { x: number; y: number; radius: number; color: string };
+
+/** Something that can move in the map (in pixels): the lab animates it over the painted map. */
+export type Mark = {
+  kind: 'water' | 'lava' | 'fall' | 'smoke';
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
 
 export type Time = 'morning' | 'afternoon' | 'night';
 
@@ -43,7 +58,9 @@ export class MapPainter {
   readonly used = new Set<string>();
   private readonly sprites: Sprite[] = [];
   private readonly ctx: CanvasRenderingContext2D;
-  readonly random: () => number;
+  random: () => number;
+  /** Left edge, in pixels, of the screen being painted (see `screen`). */
+  private left = 0;
 
   constructor(
     readonly canvas: HTMLCanvasElement,
@@ -51,8 +68,10 @@ export class MapPainter {
     readonly rows: number,
     private readonly images: Map<string, HTMLImageElement>,
     seed: number,
+    /** Screens side by side: the canvas is this many times `cols` wide. */
+    readonly screens = 1,
   ) {
-    canvas.width = cols * TILE;
+    canvas.width = cols * screens * TILE;
     canvas.height = rows * TILE;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('canvas 2d indisponivel');
@@ -62,6 +81,29 @@ export class MapPainter {
   }
 
   private readonly lamps: Lamp[] = [];
+  /** What can move in this map, recorded while it is painted. */
+  readonly marks: Mark[] = [];
+
+  /** The lights of the map (position and radius in tiles). */
+  get lights(): readonly Lamp[] {
+    return this.lamps;
+  }
+
+  /** Records something that can move (in pixels). */
+  mark(kind: Mark['kind'], x: number, y: number, w = 0, h = 0): void {
+    this.marks.push({ kind, x: x + this.left, y, w, h });
+  }
+
+  /**
+   * Moves the painting to another screen of the map, with its own seed. Everything painted after
+   * this lands on that screen, and what stands near its edge spills over the neighbour, so
+   * nothing is cut at the seam.
+   */
+  screen(index: number, seed: number): void {
+    this.left = index * this.cols * TILE;
+    this.random = rng(seed);
+    this.ctx.setTransform(1, 0, 0, 1, this.left, 0);
+  }
 
   /** Image of a sheet (also records it as used, for the credits). */
   image(sheet: string): HTMLImageElement {
@@ -161,6 +203,8 @@ export class MapPainter {
     const dy = Math.round(y * TILE - sh);
     this.sprites.push({
       depth: y + depthShift,
+      x: dx + sw / 2 + this.left,
+      left: this.left,
       draw: (ctx) => ctx.drawImage(img, sx, sy, sw, sh, dx, dy, sw, sh),
     });
   }
@@ -177,7 +221,12 @@ export class MapPainter {
   ): void {
     const px = Math.round(x * TILE);
     const py = Math.round(y * TILE);
-    this.sprites.push({ depth: y + depthShift, draw: (ctx) => draw(ctx, px, py) });
+    this.sprites.push({
+      depth: y + depthShift,
+      x: px + this.left,
+      left: this.left,
+      draw: (ctx) => draw(ctx, px, py),
+    });
   }
 
   /** Draws on the ground right away, in code. */
@@ -187,7 +236,7 @@ export class MapPainter {
 
   /** A light that shows at night (position and radius in tiles, color as "r,g,b"). */
   light(x: number, y: number, radius: number, color = '255,176,90'): void {
-    this.lamps.push({ x, y, radius, color });
+    this.lamps.push({ x: x + this.left / TILE, y, radius, color });
   }
 
   /** Paints a terrain over every tile where `inside` is true, choosing corners and edges. */
@@ -249,7 +298,19 @@ export class MapPainter {
   finish(time: Time = 'afternoon', tint?: string, night = '#5a66a8'): void {
     const ctx = this.ctx;
     this.sprites.sort((a, b) => a.depth - b.depth);
-    for (const s of this.sprites) s.draw(ctx);
+    // In a map of several screens the last one joins the first (the stage loops), so what
+    // stands near one end is drawn again past the other end
+    const width = this.canvas.width;
+    const reach = 8 * TILE;
+    for (const s of this.sprites) {
+      const turns =
+        this.screens > 1 ? [0, s.x < reach ? width : 0, s.x > width - reach ? -width : 0] : [0];
+      for (const turn of new Set(turns)) {
+        ctx.setTransform(1, 0, 0, 1, s.left + turn, 0);
+        s.draw(ctx);
+      }
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     const veil = (color: string, mode: GlobalCompositeOperation): void => {
       ctx.globalCompositeOperation = mode;
       ctx.fillStyle = color;
