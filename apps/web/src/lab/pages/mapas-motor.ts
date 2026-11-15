@@ -7,7 +7,25 @@ export type Rect = readonly [number, number, number, number];
 /** A tile of a sheet: column, row. */
 export type Cell = readonly [number, number];
 
-type Sprite = { sheet: string; rect: Rect; x: number; y: number; depth: number };
+type Sprite = { depth: number; draw: (ctx: CanvasRenderingContext2D) => void };
+type Lamp = { x: number; y: number; radius: number; color: string };
+
+export type Time = 'morning' | 'afternoon' | 'night';
+
+/**
+ * Tiles of a terrain that follows any shape: a 3x3 block (corners, edges and center) at `origin`
+ * and, when the sheet has them, the four inner corners at `inner` (2x2: the gap is at the
+ * bottom right, bottom left, top right and top left).
+ */
+export type TileSet = {
+  sheet: string;
+  origin: Cell;
+  inner?: Cell;
+  /** Tiles drawn at random in the middle (default: the center of the block). */
+  fill?: readonly Cell[];
+  /** Leaves the middle empty, to show what is painted below. */
+  hollow?: boolean;
+};
 
 /** Deterministic random numbers, so a map always looks the same. */
 export function rng(seed: number): () => number {
@@ -43,7 +61,10 @@ export class MapPainter {
     this.random = rng(seed);
   }
 
-  private image(sheet: string): HTMLImageElement {
+  private readonly lamps: Lamp[] = [];
+
+  /** Image of a sheet (also records it as used, for the credits). */
+  image(sheet: string): HTMLImageElement {
     const img = this.images.get(sheet);
     if (!img) throw new Error(`peca nao carregada: ${sheet}`);
     this.used.add(sheet);
@@ -134,7 +155,67 @@ export class MapPainter {
    * there. Sprites are drawn after the ground, farther ones first.
    */
   stand(sheet: string, rect: Rect, x: number, y: number, depthShift = 0): void {
-    this.sprites.push({ sheet, rect, x, y, depth: y + depthShift });
+    const img = this.image(sheet);
+    const [sx, sy, sw, sh] = rect;
+    const dx = Math.round(x * TILE - sw / 2);
+    const dy = Math.round(y * TILE - sh);
+    this.sprites.push({
+      depth: y + depthShift,
+      draw: (ctx) => ctx.drawImage(img, sx, sy, sw, sh, dx, dy, sw, sh),
+    });
+  }
+
+  /**
+   * Queues something drawn in code (not from a sheet) standing on a point: the function gets the
+   * point in pixels and draws upwards from it.
+   */
+  custom(
+    x: number,
+    y: number,
+    draw: (ctx: CanvasRenderingContext2D, px: number, py: number) => void,
+    depthShift = 0,
+  ): void {
+    const px = Math.round(x * TILE);
+    const py = Math.round(y * TILE);
+    this.sprites.push({ depth: y + depthShift, draw: (ctx) => draw(ctx, px, py) });
+  }
+
+  /** Draws on the ground right away, in code. */
+  ground(draw: (ctx: CanvasRenderingContext2D) => void): void {
+    draw(this.ctx);
+  }
+
+  /** A light that shows at night (position and radius in tiles, color as "r,g,b"). */
+  light(x: number, y: number, radius: number, color = '255,176,90'): void {
+    this.lamps.push({ x, y, radius, color });
+  }
+
+  /** Paints a terrain over every tile where `inside` is true, choosing corners and edges. */
+  autotile(inside: (x: number, y: number) => boolean, set: TileSet): void {
+    const [ox, oy] = set.origin;
+    for (let y = 0; y < this.rows; y++) {
+      for (let x = 0; x < this.cols; x++) {
+        if (!inside(x, y)) continue;
+        const n = inside(x, y - 1);
+        const s = inside(x, y + 1);
+        const w = inside(x - 1, y);
+        const e = inside(x + 1, y);
+        let cell: Cell | null;
+        if (n && s && w && e) {
+          const i = set.inner;
+          if (i && !inside(x + 1, y + 1)) cell = [i[0], i[1]];
+          else if (i && !inside(x - 1, y + 1)) cell = [i[0] + 1, i[1]];
+          else if (i && !inside(x + 1, y - 1)) cell = [i[0], i[1] + 1];
+          else if (i && !inside(x - 1, y - 1)) cell = [i[0] + 1, i[1] + 1];
+          else if (set.hollow) cell = null;
+          else if (set.fill) cell = set.fill[Math.floor(this.random() * set.fill.length)] as Cell;
+          else cell = [ox + 1, oy + 1];
+        } else {
+          cell = [ox + (w ? (e ? 1 : 2) : 0), oy + (n ? (s ? 1 : 2) : 0)];
+        }
+        if (cell) this.tile(set.sheet, cell, x, y);
+      }
+    }
   }
 
   /** Scatters sprites inside a tile area, away from the places already taken. */
@@ -160,42 +241,59 @@ export class MapPainter {
     }
   }
 
-  /** Draws the queued sprites, from back to front. */
-  finish(): void {
+  /**
+   * Draws the queued sprites, from back to front, then the hour of the day: a warm veil in the
+   * morning, and at night a dark blue veil with the lights on top. `tint` is an extra veil of
+   * the place (fog, heat) and `night` the color of its night.
+   */
+  finish(time: Time = 'afternoon', tint?: string, night = '#5a66a8'): void {
+    const ctx = this.ctx;
     this.sprites.sort((a, b) => a.depth - b.depth);
-    for (const s of this.sprites) {
-      const [sx, sy, sw, sh] = s.rect;
-      this.ctx.drawImage(
-        this.image(s.sheet),
-        sx,
-        sy,
-        sw,
-        sh,
-        Math.round(s.x * TILE - sw / 2),
-        Math.round(s.y * TILE - sh),
-        sw,
-        sh,
-      );
+    for (const s of this.sprites) s.draw(ctx);
+    const veil = (color: string, mode: GlobalCompositeOperation): void => {
+      ctx.globalCompositeOperation = mode;
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      ctx.globalCompositeOperation = 'source-over';
+    };
+    if (tint) veil(tint, 'source-over');
+    if (time === 'morning') veil('rgba(255, 190, 120, 0.16)', 'source-over');
+    if (time !== 'night') return;
+    veil(night, 'multiply');
+    ctx.globalCompositeOperation = 'lighter';
+    for (const lamp of this.lamps) {
+      const x = lamp.x * TILE;
+      const y = lamp.y * TILE;
+      const r = lamp.radius * TILE;
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
+      glow.addColorStop(0, `rgba(${lamp.color}, 0.55)`);
+      glow.addColorStop(1, `rgba(${lamp.color}, 0)`);
+      ctx.fillStyle = glow;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
     }
+    ctx.globalCompositeOperation = 'source-over';
   }
 }
 
-/** Loads the sheets of a map (from the lab assets) and waits for all of them. */
+const cache = new Map<string, Promise<HTMLImageElement>>();
+
+function loadSheet(id: string): Promise<HTMLImageElement> {
+  let pending = cache.get(id);
+  if (!pending) {
+    pending = new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error(`nao carregou ${id}`));
+      img.src = `/lab/cenarios/${id}.png`;
+    });
+    cache.set(id, pending);
+  }
+  return pending;
+}
+
+/** Loads the sheets of a map (from the lab assets, once each) and waits for all of them. */
 export async function loadSheets(ids: readonly string[]): Promise<Map<string, HTMLImageElement>> {
   const images = new Map<string, HTMLImageElement>();
-  await Promise.all(
-    ids.map(
-      (id) =>
-        new Promise<void>((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => {
-            images.set(id, img);
-            resolve();
-          };
-          img.onerror = () => reject(new Error(`nao carregou ${id}`));
-          img.src = `/lab/cenarios/${id}.png`;
-        }),
-    ),
-  );
+  await Promise.all(ids.map(async (id) => images.set(id, await loadSheet(id))));
   return images;
 }

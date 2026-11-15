@@ -89,3 +89,66 @@
   border: 1px solid var(--line);
   color: var(--muted);
 }
+
+/* Map generator: strips that scroll sideways, controls and recipe */
+.map-walk {
+  display: flex;
+  overflow-x: auto;
+  border: 1px solid var(--line, #2a2f4a);
+  border-radius: 8px;
+  background: #0d0b16;
+  -webkit-overflow-scrolling: touch;
+}
+.map-walk .map-canvas {
+  flex: none;
+  width: auto;
+  height: 384px;
+  image-rendering: pixelated;
+}
+.map-stages {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.map-recipe {
+  opacity: 0.6;
+  font-size: 12px;
+}
+.map-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+.map-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.map-select {
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line, #2a2f4a);
+  background: #151a30;
+  color: inherit;
+  font: inherit;
+}
+.map-json {
+  overflow-x: auto;
+  padding: 10px;
+  border-radius: 8px;
+  background: #0d0b16;
+  font-size: 12px;
+}
+.map-group {
+  margin: 22px 0 8px;
+}
+@media (max-width: 720px) {
+  .map-walk .map-canvas {
+    height: 288px;
+  }
+}
