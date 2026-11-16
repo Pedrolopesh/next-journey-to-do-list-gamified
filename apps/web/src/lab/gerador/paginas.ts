@@ -75,7 +75,7 @@ function strip(images: Map<string, HTMLImageElement>, recipe: Recipe): HTMLCanva
 }
 
 const recipeLine = (r: Recipe): string =>
-  `${BIOMES[r.biome].name} · ${SEASON_LABEL[r.season]} · ${TIME_LABEL[r.time]} · começa em ${LAYOUTS[r.layout].toLowerCase()} · kits: ${r.kits.join(', ')}`;
+  `${BIOMES[r.biome].name} · ${SEASON_LABEL[r.season]} · ${TIME_LABEL[r.time]} ${airOf(r) === 'rain' ? ' · chuva' : ''} · começa em ${LAYOUTS[r.layout].toLowerCase()} · kits: ${r.kits.join(', ')}`;
 
 function button(label: string, onClick: () => void): HTMLButtonElement {
   const b = h('button', 'map-zoom', label);
@@ -358,6 +358,20 @@ export const generatorPage: LabPage = {
             () => recipe.season,
             (value) => {
               recipe.season = value;
+              paint();
+            },
+          ),
+        ),
+        row(
+          'Clima',
+          choiceGroup(
+            [
+              { value: 'clear' as const, label: 'limpo' },
+              { value: 'rain' as const, label: 'chuva' },
+            ],
+            () => recipe.weather ?? 'clear',
+            (value) => {
+              recipe.weather = value;
               paint();
             },
           ),

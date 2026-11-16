@@ -35,7 +35,7 @@ import { buildingHeight, type BuildingStyle, placeBuilding, randomBuilding } fro
 import { CUSTOM, type CustomId } from './custom';
 import { type Box, box, Grid, inBox, pick } from './grade';
 import { kit, placeKit } from './kits';
-import { cliff, FOOT_ROW, terrace, WATERFALL } from './relevo';
+import { cliff, FOOT_ROW, terrace } from './relevo';
 
 /**
  * A map is a recipe: place, season, shape of the path, hour, how full it is, which kits and a
@@ -80,6 +80,8 @@ export type BiomeId =
   | 'interior'
   | 'salao';
 
+export type Weather = 'clear' | 'rain';
+
 export type Recipe = {
   id: string;
   title: string;
@@ -92,6 +94,8 @@ export type Recipe = {
   density: number;
   seed: number;
   kits: string[];
+  /** Rain over the map (outdoors, and where it is not cold enough to snow). */
+  weather?: Weather;
   /** How many screens long the map is (`SCREENS` when absent). */
   screens?: number;
 };
@@ -345,7 +349,6 @@ export const RECIPE_SHEETS: string[] = [
     cliff(s),
   ]),
   terrain('winter-ice'),
-  WATERFALL,
   LAVA,
   LAVAROCK,
   CEMENT,

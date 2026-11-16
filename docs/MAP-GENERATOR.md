@@ -42,6 +42,7 @@ type Recipe = {
   density: number; // 0.4 (open) to 1.4 (packed)
   seed: number;
   kits: string[];
+  weather?: 'clear' | 'rain';
   screens?: number; // how long the map is, in screens
 };
 ```
@@ -69,6 +70,7 @@ generator page of the lab and the test `gerador.test.ts` enforce it.
   each tile. Grass, lakes, ice and lava use it, so paths curve and lake edges are irregular.
   `Grid.tidy()` removes strips one tile wide, which those pieces cannot draw.
 - **Relief (`relevo.ts`)**. A cliff terrace across the top with waterfall, cave, ladder and vines.
+  The waterfall is drawn in code (water, or ice in winter), not taken from a sheet.
   The cliff sheets only have corner tiles; the straight edge is made of two half tiles.
 - **Buildings (`construcoes.ts`)**. One description (width, floors, wall, roof, door, windows) gives
   one building. Walls, doors and windows come from the sheets; the roof is drawn in code. Five
@@ -85,7 +87,8 @@ generator page of the lab and the test `gerador.test.ts` enforce it.
 `animacao.ts` moves things over the painted map, a few times per second and only on the stretch
 that is on screen: glints on water and lava, the waterfall coming down, sparks and flicker on
 fires, smoke from chimneys, and what floats in the air (leaves in autumn, snow in winter, embers
-in hell, ash in the apocalypse, fireflies at night). The painter records where those things are
+in hell, ash in the apocalypse, fireflies at night). A recipe with `weather: 'rain'` gets rain
+instead, outdoors and where it does not snow: a grey veil, streaks and splashes on the ground. The painter records where those things are
 (`mark` and `light`). It is off for who asked the system for less motion, and the lab has a
 button to turn it on and off.
 

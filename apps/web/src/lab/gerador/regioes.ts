@@ -52,6 +52,8 @@ function region(
       kits,
       // 4 to 6 screens: the stage loops until it is cleared, so no map is one screen long
       screens: 4 + ((seed + i) % 3),
+      // One map in four is under rain (it only shows outdoors, where it does not snow)
+      ...((seed / 100 + i) % 4 === 2 ? { weather: 'rain' as const } : {}),
     })),
   };
 }

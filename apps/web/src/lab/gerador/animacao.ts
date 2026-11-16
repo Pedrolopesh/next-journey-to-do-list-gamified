@@ -11,7 +11,7 @@ import { BIOMES, type Recipe } from './receita';
  * is the same on every screen and continues across the turn of a looping map.
  */
 
-export type Air = 'none' | 'leaves' | 'green' | 'snow' | 'embers' | 'ash' | 'fireflies';
+export type Air = 'none' | 'leaves' | 'green' | 'snow' | 'embers' | 'ash' | 'fireflies' | 'rain';
 
 /** A light of the map, in pixels. */
 export type Glow = { x: number; y: number; radius: number; color: string };
@@ -37,6 +37,7 @@ export function airOf(recipe: Recipe): Air {
   if (recipe.biome === 'inferno') return 'embers';
   if (recipe.biome === 'apocalipse') return 'ash';
   if (recipe.season === 'winter') return 'snow';
+  if (recipe.weather === 'rain') return 'rain';
   if (!biome.trees.length) return 'none';
   if (recipe.season === 'autumn') return 'leaves';
   if (recipe.time === 'night') return 'fireflies';
@@ -51,6 +52,7 @@ const AIR_COUNT: Record<Air, number> = {
   embers: 30,
   ash: 24,
   fireflies: 12,
+  rain: 90,
 };
 const LEAF_COLORS = ['#d9772b', '#c2452d', '#e0a93a', '#a85a24'];
 const GREEN_COLORS = ['#7fbf5a', '#5a9a44', '#a8d06a'];
@@ -79,6 +81,11 @@ class Animator {
     const copy = this.base.getContext('2d');
     const ctx = canvas.getContext('2d');
     if (!copy || !ctx) throw new Error('canvas 2d indisponivel');
+    // Rain greys the whole map, moving or not
+    if (motion.air === 'rain') {
+      ctx.fillStyle = `rgba(48,66,102,${motion.night ? 0.14 : 0.24})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
     copy.drawImage(canvas, 0, 0);
     this.ctx = ctx;
     // The waterfall is a picture: its water is found by color, so only the water moves
@@ -189,6 +196,13 @@ class Animator {
           }
         }
       }
+      // Foam jumping where it hits the pool
+      for (let k = 0; k < 7; k++) {
+        const x = f.x - 4 + fixed(k + 0.2) * (f.w + 4);
+        const y = f.y + f.h - 5 + Math.sin(t * 7 + k * 2.1) * 3;
+        ctx.fillStyle = `rgba(255,255,255,${0.85 * dim})`;
+        ctx.fillRect(Math.round(x), Math.round(y), 3, 2);
+      }
     }
 
     // Fires: sparks going up and a glow that trembles. Lava breathes slowly
@@ -231,6 +245,10 @@ class Animator {
     const height = this.canvas.height;
     const count = Math.round((AIR_COUNT[air] * width) / screen);
     const fade = night ? 0.7 : 1;
+    if (air === 'rain') {
+      this.rain(t, x0, x1, count, fade);
+      return;
+    }
     for (let i = 0; i < count; i++) {
       const a = fixed(i);
       const b = fixed(i + 0.37);
@@ -276,6 +294,36 @@ class Animator {
         else ctx.fillRect(px, py, 2, 3);
         ctx.globalAlpha = 1;
       }
+    }
+  }
+
+  /** Slanted streaks coming down fast, and the small splashes they leave on the ground. */
+  private rain(t: number, x0: number, x1: number, count: number, fade: number): void {
+    const ctx = this.ctx;
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+    ctx.fillStyle = `rgba(206,226,250,${0.6 * fade})`;
+    for (let i = 0; i < count; i++) {
+      const speed = 520 + fixed(i + 0.71) * 160;
+      const y = wrap(fixed(i + 0.37) * (height + 40) + t * speed, height + 40) - 20;
+      const x = wrap(fixed(i) * width - t * speed * 0.28, width);
+      if (x < x0 - 8 || x > x1 + 8) continue;
+      const px = Math.round(x);
+      const py = Math.round(y);
+      for (let s = 0; s < 4; s++) ctx.fillRect(px + s, py - s * 3, 1, 3);
+    }
+    for (let i = 0; i < count / 2; i++) {
+      const clock = t * 2.2 + fixed(i + 0.13) * 5;
+      const turn = Math.floor(clock);
+      const life = clock - turn;
+      const x = Math.round(fixed(i * 3.3 + turn * 0.77) * width);
+      if (x < x0 - 8 || x > x1 + 8) continue;
+      const y = Math.round(24 + fixed(i * 1.7 + turn * 0.31) * (height - 30));
+      const reach = 1 + Math.floor(life * 4);
+      ctx.fillStyle = `rgba(222,238,255,${(1 - life) * 0.7 * fade})`;
+      ctx.fillRect(x - reach - 1, y, 2, 1);
+      ctx.fillRect(x + reach, y, 2, 1);
+      if (life < 0.4) ctx.fillRect(x, y - 2, 1, 2);
     }
   }
 }
