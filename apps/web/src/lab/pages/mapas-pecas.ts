@@ -44,13 +44,13 @@ export const ROUND: Rect[] = [
   [416, 112, 96, 126],
 ];
 export const ROUND_DARK: Rect[] = [
-  [128, 272, 96, 92],
-  [224, 272, 96, 98],
+  [128, 272, 96, 93],
+  [224, 272, 96, 100],
   [320, 272, 96, 126],
 ];
 export const PINES: Rect[] = [
   [128, 386, 96, 108],
-  [224, 386, 96, 108],
+  [224, 386, 96, 114],
   [320, 420, 96, 92],
   [416, 356, 96, 138],
 ];
@@ -65,9 +65,9 @@ export const BUSHES: Rect[] = [
   [160, 0, 32, 32],
 ];
 export const TUFTS: Rect[] = [
-  [256, 32, 32, 32],
-  [288, 32, 32, 32],
-  [320, 32, 32, 32],
+  [256, 22, 32, 42],
+  [288, 22, 32, 42],
+  [320, 22, 32, 29],
 ];
 export const TALL_GRASS: Rect[] = [
   [352, 0, 32, 64],
@@ -113,10 +113,10 @@ export const FOUNTAIN: Rect = [0, 0, 64, 82];
 export const CAMP: Rect = [0, 34, 32, 30];
 export const CAMP_OUT: Rect = [0, 2, 32, 30];
 
-export const FENCE_H: Rect = [8, 0, 77, 32];
+export const FENCE_H: Rect = [8, 96, 77, 32];
 
-export const BARREL_A: Rect = [2, 0, 30, 33];
-export const BARREL_B: Rect = [34, 0, 30, 33];
+export const BARREL_A: Rect = [1, 9, 30, 39];
+export const BARREL_B: Rect = [33, 9, 30, 39];
 export const CRATES: Rect[] = [
   [66, 3, 22, 26],
   [66, 67, 22, 26],

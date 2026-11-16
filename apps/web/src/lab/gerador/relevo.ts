@@ -18,9 +18,11 @@ export const SIDE_GAP = 2;
 /** First row of free ground under the wall. */
 export const FOOT_ROW = LIP_ROW + WALL_ROWS + 1;
 
-const CAVE: Rect = [224, 288, 96, 96];
-const LADDER: Rect = [352, 288, 32, 96];
-const VINES: Rect = [0, 288, 96, 96];
+// What hangs on the wall stops short of the grass at its foot, or it would show as a patch
+const FRINGE = 8;
+const CAVE: Rect = [224, 288, 96, 96 - FRINGE];
+const LADDER: Rect = [352, 288, 32, 96 - FRINGE];
+const VINES: Rect = [0, 288, 96, 96 - FRINGE];
 const FALL: Rect = [0, 0, 96, 160];
 
 export type TerraceExtras = {
@@ -76,18 +78,24 @@ export function terrace(p: MapPainter, season: Season, extras: TerraceExtras): v
   ] as const) {
     const lean = (): number => (p.random() - 0.5) * 0.3;
     const rock = (list: Rect[]): Rect => list[Math.floor(p.random() * list.length)] as Rect;
-    p.stand(SHEET.rocks, rock(big), end - out * 0.2 + lean(), LIP_ROW + 1.5);
-    p.stand(SHEET.rocks, rock(big), end + out * 0.25 + lean(), LIP_ROW + 2.6);
-    p.stand(SHEET.rocks, rock(big), end - out * 0.1 + lean(), foot - 0.1);
-    p.stand(SHEET.rocks, rock(big), end + out * 0.9 + lean(), foot + 0.25);
-    p.stand(SHEET.rocks, rock(small), end + out * 1.7, foot + 0.4);
-    p.stand(SHEET.rocks, rock(small), end - out * 1, foot + 0.5);
-    p.stand(plants(season), rock(BUSHES), end + out * 0.9, LIP_ROW + 1.1);
-    p.stand(plants(season), rock(BUSHES), end + out * 1.4, LIP_ROW + 2.9);
+    // A heap that is narrow at the top of the wall and spreads outwards at its foot
+    p.stand(SHEET.rocks, rock(big), end - out * 0.3 + lean(), LIP_ROW + 1.6);
+    p.stand(SHEET.rocks, rock(big), end + out * 0.3 + lean(), LIP_ROW + 2.5);
+    p.stand(SHEET.rocks, rock(big), end - out * 0.5 + lean(), foot - 0.6);
+    p.stand(SHEET.rocks, rock(big), end + out * 1.2 + lean(), foot - 0.9);
+    p.stand(SHEET.rocks, rock(big), end + out * 0.4 + lean(), foot + 0.1);
+    p.stand(SHEET.rocks, rock(big), end + out * 2 + lean(), foot + 0.2);
+    p.stand(SHEET.rocks, rock(small), end + out * 3, foot + 0.4);
+    p.stand(SHEET.rocks, rock(small), end - out * 1.3, foot + 0.5);
+    p.stand(SHEET.rocks, rock(small), end + out * 1.2, foot + 0.6);
+    p.stand(plants(season), rock(BUSHES), end + out * 1.1, LIP_ROW + 1.3);
+    p.stand(plants(season), rock(BUSHES), end + out * 2.3, LIP_ROW + 2.9);
+    p.stand(plants(season), rock(BUSHES), end - out * 0.2, LIP_ROW + 0.9);
   }
-  for (const x of extras.vines ?? []) p.stand(sheet, VINES, x, foot, -3);
-  if (extras.cave !== undefined) p.stand(sheet, CAVE, extras.cave, foot, -3);
-  if (extras.ladder !== undefined) p.stand(sheet, LADDER, extras.ladder, foot, -3);
+  const hang = foot - FRINGE / TILE;
+  for (const x of extras.vines ?? []) p.stand(sheet, VINES, x, hang, -3);
+  if (extras.cave !== undefined) p.stand(sheet, CAVE, extras.cave, hang, -3);
+  if (extras.ladder !== undefined) p.stand(sheet, LADDER, extras.ladder, hang, -3);
   if (extras.waterfall !== undefined) {
     p.stand(WATERFALL, FALL, extras.waterfall, foot + 1.1, -2);
     if (season !== 'winter')

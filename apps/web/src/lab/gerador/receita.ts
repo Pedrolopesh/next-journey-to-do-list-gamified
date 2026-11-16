@@ -462,10 +462,9 @@ function paintOutdoor(p: MapPainter, recipe: Recipe): void {
   }
   const fall = recipe.layout === 'terraco' ? 8 + Math.floor(random() * 24) : -1;
   if (fall >= 0) {
-    liquid.box(fall - 2, FOOT_ROW, 4, 2);
     reserved.push(box(fall - 3, 0, 6, PATH_ROW));
     // The rock slides that close each end of the cliff
-    reserved.push(box(0, 0, 4, FOOT_ROW + 1), box(COLS - 4, 0, 4, FOOT_ROW + 1));
+    reserved.push(box(0, 0, 5, FOOT_ROW + 1), box(COLS - 5, 0, 5, FOOT_ROW + 1));
   }
   if (biome.ponds) {
     for (let i = 0; i < 5; i++) {
@@ -542,7 +541,7 @@ function paintOutdoor(p: MapPainter, recipe: Recipe): void {
     p.stand(SHEET.fence, [104, 0, 13, 128], river + 4.5, y + 0.4);
   }
   if (fall >= 0) {
-    const others = [4, 12, 20, 28, 36].filter((x) => Math.abs(x - fall) > 5);
+    const others = [7, 13, 20, 27, 33].filter((x) => Math.abs(x - fall) > 5);
     terrace(p, season, {
       waterfall: fall,
       cave: others[0] as number,
