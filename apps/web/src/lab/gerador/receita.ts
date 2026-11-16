@@ -35,6 +35,7 @@ import { buildingHeight, type BuildingStyle, placeBuilding, randomBuilding } fro
 import { CUSTOM, type CustomId } from './custom';
 import { type Box, box, Grid, inBox, pick } from './grade';
 import { kit, placeKit } from './kits';
+import { PART, type Part } from './moveis';
 import { cliff, FOOT_ROW, terrace } from './relevo';
 
 /**
@@ -78,6 +79,8 @@ export type BiomeId =
   | 'inferno'
   | 'masmorra'
   | 'interior'
+  | 'moderna'
+  | 'caverna'
   | 'salao';
 
 export type Weather = 'clear' | 'rain';
@@ -110,6 +113,10 @@ const CEMENT = 'base-sewer-dungeon-cement';
 const DUNGEON = 'base-sewer-dungeon-dungeon';
 const BRICK = 'rev-structure-walls-brick-wall-a';
 const WINDOW = 'rev-structure-windows-stone-windows-a';
+const PAINTED = 'rev-structure-walls-painted-walls';
+const JAGGED = 'rev-structure-walls-jagged-stone-walls';
+const HERRINGBONE = 'rev-structure-floor-herringbone-a';
+const GRITTY = 'rev-structure-floor-gritty-dirt';
 const OLD_FILL: Cell[] = [
   [0, 5],
   [1, 5],
@@ -314,7 +321,7 @@ export const BIOMES: Record<BiomeId, Biome> = {
     trees: [],
     treeCount: [0, 0],
     litter: ['bones', 'rubble'],
-    kits: ['cela', 'tochas', 'cristais', 'carga'],
+    kits: ['cela', 'ossario', 'tochas', 'caldeirao', 'cristais', 'deposito', 'minerio'],
   },
   interior: {
     name: 'Casa por dentro',
@@ -325,7 +332,48 @@ export const BIOMES: Record<BiomeId, Biome> = {
     path: 'none',
     trees: [],
     treeCount: [0, 0],
-    kits: ['lareira', 'cozinha', 'estante', 'quarto', 'balcao'],
+    kits: [
+      'lareira',
+      'bau',
+      'estante',
+      'cozinha',
+      'quarto',
+      'relogio',
+      'jantar',
+      'leitura',
+      'balcao',
+    ],
+  },
+  moderna: {
+    name: 'Casa moderna',
+    indoor: true,
+    seasons: ['summer'],
+    layouts: ['corredor'],
+    ground: 'grass',
+    path: 'none',
+    trees: [],
+    treeCount: [0, 0],
+    kits: [
+      'sala',
+      'cozinha-moderna',
+      'escritorio',
+      'penteadeira',
+      'estante-moderna',
+      'estar',
+      'plantas',
+      'jantar',
+    ],
+  },
+  caverna: {
+    name: 'Caverna e forja',
+    indoor: true,
+    seasons: ['summer'],
+    layouts: ['corredor'],
+    ground: 'grass',
+    path: 'none',
+    trees: [],
+    treeCount: [0, 0],
+    kits: ['minerio', 'forja', 'ferro', 'fundicao', 'carvao', 'amolador', 'cristais', 'deposito'],
   },
   salao: {
     name: 'Salão do castelo',
@@ -336,7 +384,18 @@ export const BIOMES: Record<BiomeId, Biome> = {
     path: 'none',
     trees: [],
     treeCount: [0, 0],
-    kits: ['trono', 'tochas', 'estante', 'lareira'],
+    kits: [
+      'trono',
+      'galeria',
+      'banquete',
+      'armaria',
+      'biblioteca',
+      'conselho',
+      'taca',
+      'emblema',
+      'tochas',
+      'lareira',
+    ],
   },
 };
 
@@ -355,6 +414,10 @@ export const RECIPE_SHEETS: string[] = [
   DUNGEON,
   BRICK,
   WINDOW,
+  PAINTED,
+  JAGGED,
+  HERRINGBONE,
+  GRITTY,
   SHEET.woodFloor,
   SHEET.inside,
   SHEET.diamond,
@@ -379,20 +442,98 @@ export function pathRows(layout: LayoutId, random: () => number): number[] {
   return rows;
 }
 
+type Room = {
+  /** Origin of the 3x3 block of the wall. */
+  wall: [string, Cell];
+  floor: (p: MapPainter) => void;
+  /** What is hung on the wall between the windows or torches. */
+  art: Part[];
+  /** Stains and cracks painted flat on the floor. */
+  stains?: Part[];
+  /** Small things that stand in the gaps between the kits. */
+  filler: Part[];
+};
+
+const WALL_SLOTS = [5, 15, 25, 35];
+const NEAR_SLOTS = [10, 20, 30];
+const WALL_Y = 4.3;
+const NEAR_Y = 11;
+
+const ROOMS: Record<string, Room> = {
+  masmorra: {
+    wall: [DUNGEON, [0, 0]],
+    floor: (p) => p.fill(CEMENT, OLD_FILL, 0, 3, COLS, ROWS - 3),
+    art: [PART.chainA, PART.chainB, PART.webWide, PART.webCorner, PART.moss],
+    stains: [PART.slime, PART.crack, PART.mud, PART.crack],
+    filler: [PART.skull, PART.bonePile, PART.stoneB],
+  },
+  salao: {
+    wall: [BRICK, [3, 0]],
+    floor: (p) => p.fill(CEMENT, OLD_FILL, 0, 3, COLS, ROWS - 3),
+    art: [
+      PART.portrait0,
+      PART.portrait1,
+      PART.portrait2,
+      PART.portrait3,
+      PART.portrait4,
+      PART.portrait5,
+    ],
+    filler: [PART.vaseTall, PART.vaseBlue, PART.vaseTeal],
+  },
+  interior: {
+    wall: [SHEET.inside, [0, 0]],
+    floor: (p) => p.fill(SHEET.woodFloor, [[2, 0]], 0, 3, COLS, ROWS - 3),
+    art: [
+      PART.landscape0,
+      PART.landscape1,
+      PART.landscape2,
+      PART.landscape3,
+      PART.still0,
+      PART.still2,
+      PART.still3,
+      PART.portraitPearl,
+    ],
+    filler: [PART.vaseTall, PART.jar, PART.fernVase, PART.fernBox],
+  },
+  moderna: {
+    wall: [PAINTED, [6, 0]],
+    floor: (p) => {
+      for (let y = 3; y < ROWS; y++)
+        for (let x = 0; x < COLS; x++) p.tile(HERRINGBONE, [2, (y - 3) % 3], x, y);
+    },
+    art: [
+      PART.abstract0,
+      PART.abstract1,
+      PART.abstract2,
+      PART.abstract3,
+      PART.poster0,
+      PART.poster1,
+      PART.mirrorOval,
+      PART.landscape5,
+    ],
+    filler: [PART.bigVase, PART.fernVase, PART.treeVase, PART.treeBox],
+  },
+  caverna: {
+    wall: [JAGGED, [0, 3]],
+    floor: (p) => p.fill(GRITTY, [[1, 1]], 0, 3, COLS, ROWS - 3),
+    art: [PART.toolRackB, PART.webWide, PART.chainA, PART.toolRackC, PART.webCorner],
+    stains: [PART.mud, PART.crack, PART.mud],
+    filler: [PART.stoneA, PART.stoneB, PART.stoneC, PART.stoneD, PART.coalLump, PART.coalTiny],
+  },
+};
+
 function paintIndoor(p: MapPainter, recipe: Recipe): void {
+  const biome = BIOMES[recipe.biome];
+  const room = ROOMS[recipe.biome] as Room;
   const dungeon = recipe.biome === 'masmorra';
   const hall = recipe.biome === 'salao';
+  const cave = recipe.biome === 'caverna';
   p.background('#15121f');
-  if (dungeon || hall) p.fill(CEMENT, OLD_FILL, 0, 3, COLS, ROWS - 3);
-  else p.fill(SHEET.woodFloor, [[2, 0]], 0, 3, COLS, ROWS - 3);
-  const wall: [string, Cell] = dungeon
-    ? [DUNGEON, [0, 0]]
-    : hall
-      ? [BRICK, [3, 0]]
-      : [SHEET.inside, [0, 0]];
+  room.floor(p);
   for (let x = 0; x < COLS; x++) {
     const col = x === 0 ? 0 : x === COLS - 1 ? 2 : 1;
-    for (let y = 0; y < 3; y++) p.tile(wall[0], [wall[1][0] + col, wall[1][1] + y], x, y);
+    for (let y = 0; y < 3; y++)
+      p.tile(room.wall[0], [room.wall[1][0] + col, room.wall[1][1] + y], x, y);
   }
   if (hall) {
     p.ground((ctx) => {
@@ -402,35 +543,83 @@ function paintIndoor(p: MapPainter, recipe: Recipe): void {
       ctx.fillRect(0, PATH_ROW * 32 - 6, COLS * 32, 4);
       ctx.fillRect(0, PATH_ROW * 32 + 66, COLS * 32, 4);
     });
-  } else if (!dungeon) {
+  } else if (recipe.biome === 'interior') {
     p.tiled(SHEET.diamond, [96, 0, 32, 32], 14, PATH_ROW - 1, 12, 4);
   }
-  // What hangs on the wall, at a steady rhythm
+  for (let i = 0; i < Math.round(5 * recipe.density) && room.stains; i++) {
+    const part = pick(p.random, room.stains);
+    p.flat(part[0], part[1], 1 + p.random() * (COLS - 3), 3.4 + p.random() * (ROWS - 5));
+  }
+
+  // The kits of the recipe come first and the room is completed with others of the place, so
+  // that every slot along the wall and on the near side is furnished
+  const spare = biome.kits.filter((id) => !recipe.kits.includes(id));
+  for (let k = spare.length - 1; k > 0; k--) {
+    const j = Math.floor(p.random() * (k + 1));
+    [spare[k], spare[j]] = [spare[j] as string, spare[k] as string];
+  }
+  const wallFree = [...WALL_SLOTS];
+  const nearFree = [...NEAR_SLOTS];
+  const covered: [number, number][] = [];
+  for (const id of [...recipe.kits, ...spare]) {
+    const k = kit(id);
+    const side =
+      k.side ?? (wallFree.length > nearFree.length ? 'wall' : nearFree.length ? 'near' : 'wall');
+    const slots = side === 'wall' ? wallFree : nearFree;
+    const x = slots.shift();
+    if (x === undefined) continue;
+    placeKit(p, k, x + (p.random() - 0.5) * 0.6, side === 'wall' ? WALL_Y : NEAR_Y);
+    if (side === 'wall' && k.high) covered.push([x - k.w / 2 - 0.3, x + k.w / 2 + 0.3]);
+  }
+  const open = (x: number): boolean => !covered.some(([a, b]) => x > a && x < b);
+
+  // What hangs on the wall, at a steady rhythm, where no kit is using the wall
   const windowCol = recipe.time === 'night' ? 0 : 1;
+  let n = 0;
   for (let x = 3; x < COLS; x += 6) {
-    if (dungeon) {
-      p.custom(x + 0.5, 3.2, CUSTOM.torch, -2);
-      p.light(x + 0.5, 2.4, 3.4, '255,150,60');
-    } else if (hall) {
-      p.stand(WINDOW, [windowCol * 32, 0, 32, 96], x + 0.5, 2.9, -2);
-      p.custom(x + 3.5, 3.4, x % 12 === 3 ? CUSTOM.bannerRed : CUSTOM.bannerBlue, -2);
-    } else {
-      p.stand(WINDOW, [windowCol * 32, 96, 32, 32], x + 0.5, 2.2, -2);
+    if (open(x + 0.5)) {
+      if (dungeon) {
+        p.custom(x + 0.5, 3.2, CUSTOM.torch, -2);
+        p.light(x + 0.5, 2.4, 3.4, '255,150,60');
+      } else if (cave) {
+        p.stand(PART.wallTorch[0], PART.wallTorch[1], x + 0.5, 2.7, -2);
+        p.light(x + 0.5, 2.2, 3.4, '255,150,60');
+      } else if (hall) {
+        p.stand(WINDOW, [windowCol * 32, 0, 32, 96], x + 0.5, 2.9, -2);
+      } else {
+        p.stand(WINDOW, [windowCol * 32, 96, 32, 32], x + 0.5, 2.2, -2);
+      }
+    }
+    if (x + 3.5 >= COLS || !open(x + 3.5)) continue;
+    n++;
+    if (hall && n % 2 === 0) {
+      p.custom(x + 3.5, 3.4, n % 4 === 0 ? CUSTOM.bannerRed : CUSTOM.bannerBlue, -2);
+      continue;
+    }
+    const art = pick(p.random, room.art);
+    p.stand(art[0], art[1], x + 3.5, 1.3 + art[1][3] / 64, -2);
+  }
+  if (hall) {
+    for (const x of NEAR_SLOTS) p.custom(x, 6.5, CUSTOM.pillar);
+    for (const x of WALL_SLOTS) p.custom(x, 9.9, CUSTOM.pillar);
+  }
+  // Small things in the gaps between the kits: against the wall and on the near side
+  for (const x of NEAR_SLOTS) {
+    if (p.random() < 0.75 && !hall) {
+      const part = pick(p.random, room.filler);
+      p.stand(part[0], part[1], x + (p.random() - 0.5) * 2, WALL_Y - 0.1 + p.random() * 0.5);
     }
   }
-  if (hall)
-    for (let x = 4; x < COLS; x += 8) for (const y of [6.4, 10.4]) p.custom(x, y, CUSTOM.pillar);
-  // Kits alternate between the wall side and the near side, spread along the room
-  const count = recipe.kits.length;
-  recipe.kits.forEach((id, i) => {
-    const x = ((i + 0.5) * COLS) / count + (p.random() - 0.5);
-    placeKit(p, kit(id), x, i % 2 === 0 ? 4.3 : 11);
-  });
-  const biome = BIOMES[recipe.biome];
-  for (let i = 0; i < Math.round(5 * recipe.density) && biome.litter; i++) {
+  for (const x of WALL_SLOTS) {
+    if (p.random() < 0.6 && !hall) {
+      const part = pick(p.random, room.filler);
+      p.stand(part[0], part[1], x + (p.random() - 0.5) * 2, NEAR_Y + p.random() * 0.5);
+    }
+  }
+  for (let i = 0; i < Math.round(4 * recipe.density) && biome.litter; i++) {
     p.custom(
-      2 + p.random() * (COLS - 4),
-      9.6 + p.random() * 2,
+      pick(p.random, WALL_SLOTS) + (p.random() - 0.5) * 3,
+      10.2 + p.random() * 1.5,
       CUSTOM[pick(p.random, biome.litter)],
     );
   }

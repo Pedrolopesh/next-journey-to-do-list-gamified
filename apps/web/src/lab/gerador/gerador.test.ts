@@ -23,6 +23,15 @@ describe('map generator', () => {
     }
   });
 
+  it('can furnish every slot of an indoor place: four against the wall, three on the near side', () => {
+    for (const [id, biome] of Object.entries(BIOMES)) {
+      if (!biome.indoor) continue;
+      const kits = biome.kits.map((k) => KITS.find((x) => x.id === k));
+      expect(kits.filter((k) => k && k.side !== 'near').length, id).toBeGreaterThanOrEqual(4);
+      expect(kits.filter((k) => k && k.side !== 'wall').length, id).toBeGreaterThanOrEqual(3);
+    }
+  });
+
   it('starts and ends every path on the same row, moving one row at a time', () => {
     for (let seed = 1; seed <= 50; seed++) {
       const rows = pathRows('curva', rng(seed));

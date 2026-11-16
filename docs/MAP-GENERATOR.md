@@ -50,15 +50,15 @@ type Recipe = {
 The same recipe always paints the same map. Changing only the seed moves trees, kits, buildings,
 the river, the lake edge and the waterfall.
 
-| Layer   | Options                                                                                                                                                   |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Place   | 16: village, forest, field, snow, swamp, mountain, beach, city, castle, graveyard, shooting range, apocalypse, hell, dungeon, house interior, castle hall |
-| Layout  | 8: straight, curves, crossing with a bridge, clearing or square, lake shore, street with buildings, cliff with waterfall, corridor (indoor)               |
-| Season  | 3, limited by the place (snow is always winter, hell has no season)                                                                                       |
-| Hour    | 3: morning (warm veil), afternoon, night (dark veil plus lights)                                                                                          |
-| Kits    | 25, each place has its own pool                                                                                                                           |
-| Density | Scales the number of trees and plants                                                                                                                     |
-| Seed    | Any integer                                                                                                                                               |
+| Layer   | Options                                                                                                                                                                                 |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Place   | 18: village, forest, field, snow, swamp, mountain, beach, city, castle, graveyard, shooting range, apocalypse, hell, dungeon, house interior, modern house, cave and forge, castle hall |
+| Layout  | 8: straight, curves, crossing with a bridge, clearing or square, lake shore, street with buildings, cliff with waterfall, corridor (indoor)                                             |
+| Season  | 3, limited by the place (snow is always winter, hell has no season)                                                                                                                     |
+| Hour    | 3: morning (warm veil), afternoon, night (dark veil plus lights)                                                                                                                        |
+| Kits    | 52, each place has its own pool                                                                                                                                                         |
+| Density | Scales the number of trees and plants                                                                                                                                                   |
+| Seed    | Any integer                                                                                                                                                                             |
 
 Each place declares which layouts, seasons and kits it accepts (`BIOMES` in `receita.ts`). The
 generator page of the lab and the test `gerador.test.ts` enforce it.
@@ -75,6 +75,13 @@ generator page of the lab and the test `gerador.test.ts` enforce it.
 - **Buildings (`construcoes.ts`)**. One description (width, floors, wall, roof, door, windows) gives
   one building. Walls, doors and windows come from the sheets; the roof is drawn in code. Five
   styles for the generator: village, city, castle, ruin and snow. Windows light up at night.
+- **Rooms (`paintIndoor` in `receita.ts`, `kits-dentro.ts`, `moveis.ts`)**. An indoor screen has
+  four slots against the back wall and three on the near side. The kits of the recipe take the
+  first slots and the room is completed with other kits of the place, so no slot stays empty.
+  An indoor kit says its side (`wall` or `near`) and whether it uses the wall above it (`high`),
+  in which case no window, torch or picture is hung there. Furniture comes from `PART`, a list of
+  tight rectangles measured on the sheets; rugs are drawn in code. Ores, fires, candles and
+  lamps carry a light that shows at night.
 - **Kits (`kits.ts`)**. A kit is a list of slots and each slot has options; placing a kit picks one
   option per slot. No piece is ever dropped alone on the map.
 - **Code props (`custom.ts`)**. What the free sheets do not have (tombstones, portal, barricades,

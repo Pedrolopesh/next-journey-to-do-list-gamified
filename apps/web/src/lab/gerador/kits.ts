@@ -20,6 +20,8 @@ import {
 } from '../pages/mapas-pecas';
 import { CUSTOM, type CustomId } from './custom';
 import { pick } from './grade';
+import { INDOOR_KITS } from './kits-dentro';
+import { PART_SHEETS } from './moveis';
 
 /**
  * Kits: small groups of pieces that always go together. A kit is a list of slots and each slot
@@ -27,7 +29,7 @@ import { pick } from './grade';
  * twice and no piece is ever dropped alone on the map.
  */
 
-type Piece = {
+export type Piece = {
   /** A sprite of a sheet... */
   s?: readonly [string, Rect];
   /** ...or a prop drawn in code... */
@@ -38,6 +40,8 @@ type Piece = {
   dy: number;
   /** Light at night: radius in tiles and color. */
   glow?: readonly [number, string?];
+  /** Draws it this many tiles further to the front than where it stands (things on a table). */
+  z?: number;
 };
 
 export type Kit = {
@@ -47,6 +51,10 @@ export type Kit = {
   /** Width it takes on the map, in tiles. */
   w: number;
   where: 'fora' | 'dentro' | 'tema';
+  /** Indoors: against the back wall or on the near side of the room (either, when absent). */
+  side?: 'wall' | 'near';
+  /** Indoors: it uses the wall above it, so nothing else is hung there. */
+  high?: boolean;
   slots: Piece[][][];
 };
 
@@ -101,7 +109,7 @@ const fence = (length: number): Piece => ({
   g: (p, x, y) => fenceLine(p, Math.round(x) - length / 2, Math.round(y) - 1, length),
 });
 
-export const KITS: Kit[] = [
+const OUTDOOR_KITS: Kit[] = [
   {
     id: 'acampamento',
     name: 'Acampamento',
@@ -319,6 +327,8 @@ export const KITS: Kit[] = [
     about: 'Trono sobre degraus com estandartes, colunas ou tochas dos lados.',
     w: 5,
     where: 'tema',
+    side: 'wall',
+    high: true,
     slots: [
       [[c('throne', 0)]],
       [
@@ -342,69 +352,6 @@ export const KITS: Kit[] = [
     ],
   },
   {
-    id: 'lareira',
-    name: 'Canto da lareira',
-    about: 'Lareira acesa com mesa e banco, barris empilhados ou barril.',
-    w: 5,
-    where: 'dentro',
-    slots: [
-      [[s(SHEET.fireplace, [0, 13, 95, 75], 0, 0, FIRE)]],
-      [
-        [s(SHEET.table, [6, 19, 82, 45], 0.2, 2.6), s(SHEET.table, [98, 29, 30, 35], -1.8, 2.7)],
-        [s(SHEET.chest, [0, 0, 94, 64], 3.3, 0.4)],
-        [s(SHEET.barrel, BARREL_A, 2, 0.3), s(SHEET.barrel, BARREL_B, 2.8, 0.5)],
-      ],
-    ],
-  },
-  {
-    id: 'cozinha',
-    name: 'Cozinha',
-    about: 'Fogão e bancada com barril, caixa ou mesa.',
-    w: 4,
-    where: 'dentro',
-    slots: [
-      [[s(SHEET.kitchen, [0, 0, 64, 128], 0, 0.2)]],
-      [barrels(1.6), crates(1.6), [s(SHEET.table, [6, 19, 82, 45], 2.4, 2.4)]],
-    ],
-  },
-  {
-    id: 'estante',
-    name: 'Armários',
-    about: 'Dois ou três armários lado a lado com barris ou caixas.',
-    w: 4,
-    where: 'dentro',
-    slots: [
-      [
-        [s(SHEET.shelf, [109, 8, 35, 88], -0.6, 0), s(SHEET.shelf, [109, 8, 35, 88], 0.6, 0)],
-        [-1.2, 0, 1.2].map((dx) => s(SHEET.shelf, [109, 8, 35, 88], dx, 0)),
-      ],
-      [[s(SHEET.chest, [0, 0, 94, 64], 0, 2.4)], barrels(2.2), crates(1.9)],
-    ],
-  },
-  {
-    id: 'quarto',
-    name: 'Quarto',
-    about: 'Cama com barris empilhados, barril ou caixas.',
-    w: 4,
-    where: 'dentro',
-    slots: [
-      [[s(SHEET.country, [8, 12, 48, 88], 0, 0.2)]],
-      [[s(SHEET.chest, [0, 0, 94, 64], 2.7, 0.5)], barrels(1.6), crates(-1.9)],
-    ],
-  },
-  {
-    id: 'balcao',
-    name: 'Balcão',
-    about: 'Mesa de atendimento com bancos e mercadoria.',
-    w: 5,
-    where: 'dentro',
-    slots: [
-      [[s(SHEET.table, [6, 19, 82, 45], 0, 0)]],
-      [[s(SHEET.table, [98, 29, 30, 35], -2, 0.1)], [s(SHEET.table, [130, 29, 30, 35], 2, 0.1)]],
-      [crates(2.9), barrels(-3.1), []],
-    ],
-  },
-  {
     id: 'cela',
     name: 'Cela',
     about: 'Jaula de ferro com palha, ossos ou tocha.',
@@ -414,7 +361,10 @@ export const KITS: Kit[] = [
   },
 ];
 
+export const KITS: Kit[] = [...OUTDOOR_KITS, ...INDOOR_KITS];
+
 export const KIT_SHEETS: string[] = [
+  ...PART_SHEETS,
   PLANTS,
   TREES_AUTUMN,
   SHEET.camp,
@@ -429,10 +379,7 @@ export const KIT_SHEETS: string[] = [
   SHEET.fence,
   SHEET.mushrooms,
   SHEET.fireplace,
-  SHEET.table,
-  SHEET.chest,
   SHEET.kitchen,
-  SHEET.shelf,
   SHEET.country,
 ];
 
@@ -449,7 +396,7 @@ export function placeKit(p: MapPainter, k: Kit, x: number, y: number): void {
       const px = x + piece.dx;
       const py = y + piece.dy;
       if (piece.g) piece.g(p, px, py);
-      if (piece.s) p.stand(piece.s[0], piece.s[1], px, py);
+      if (piece.s) p.stand(piece.s[0], piece.s[1], px, py, piece.z ?? 0);
       if (piece.c) p.custom(px, py, CUSTOM[piece.c]);
       if (piece.glow) p.light(px, py - 0.6, piece.glow[0], piece.glow[1]);
     }
