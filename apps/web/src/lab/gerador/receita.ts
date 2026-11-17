@@ -558,8 +558,18 @@ function paintIndoor(p: MapPainter, recipe: Recipe): void {
     const j = Math.floor(p.random() * (k + 1));
     [spare[k], spare[j]] = [spare[j] as string, spare[k] as string];
   }
-  const wallFree = [...WALL_SLOTS];
-  const nearFree = [...NEAR_SLOTS];
+  // The slots are taken in a different order on each screen, so a kit does not always sit in
+  // the same place
+  const mixed = (slots: number[]): number[] => {
+    const out = [...slots];
+    for (let k = out.length - 1; k > 0; k--) {
+      const j = Math.floor(p.random() * (k + 1));
+      [out[k], out[j]] = [out[j] as number, out[k] as number];
+    }
+    return out;
+  };
+  const wallFree = mixed(WALL_SLOTS);
+  const nearFree = mixed(NEAR_SLOTS);
   const covered: [number, number][] = [];
   for (const id of [...recipe.kits, ...spare]) {
     const k = kit(id);

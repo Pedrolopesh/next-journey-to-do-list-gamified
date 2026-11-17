@@ -631,7 +631,7 @@ export const INDOOR_KITS: Kit[] = [
     where: 'dentro',
     slots: [
       [[f(PART.cauldronLit, 0, 0, { glow: [2.6, '140,255,120'] })]],
-      [[f(PART.roundTableB, 1.5, 0), on(PART.jar, 1.5, 0, 0.8)]],
+      [[f(PART.roundTableB, 1.5, 0), on(PART.skull, 1.5, 0, 0.85)]],
       [
         [f(PART.vaseTall, -1.3, 0), f(PART.jar, -2, 0.2)],
         crates(-2, 0),

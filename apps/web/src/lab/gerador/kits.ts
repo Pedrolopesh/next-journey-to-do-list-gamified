@@ -354,10 +354,13 @@ const OUTDOOR_KITS: Kit[] = [
   {
     id: 'cela',
     name: 'Cela',
-    about: 'Jaula de ferro com palha, ossos ou tocha.',
+    about: 'Jaula de ferro com ossos, entulho ou tocha.',
     w: 4,
     where: 'tema',
-    slots: [[[c('cage', 0)]], [hay(1.9, 0), [c('bones', 1.6, 0.2)], [c('torch', 1.5, 0, FIRE)]]],
+    slots: [
+      [[c('cage', 0)]],
+      [[c('rubble', 1.7, 0.2)], [c('bones', 1.6, 0.2)], [c('torch', 1.5, 0, FIRE)]],
+    ],
   },
 ];
 
