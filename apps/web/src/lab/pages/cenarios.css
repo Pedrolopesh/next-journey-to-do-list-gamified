@@ -89,3 +89,129 @@
   border: 1px solid var(--line);
   color: var(--muted);
 }
+
+/* Map generator: strips that scroll sideways, controls and recipe */
+.map-walk {
+  display: flex;
+  overflow-x: auto;
+  border: 1px solid var(--line, #2a2f4a);
+  border-radius: 8px;
+  background: #0d0b16;
+  -webkit-overflow-scrolling: touch;
+}
+.map-walk .map-canvas {
+  flex: none;
+  width: auto;
+  height: auto;
+  max-width: none;
+  image-rendering: pixelated;
+}
+.map-stages {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.map-recipe {
+  opacity: 0.6;
+  font-size: 12px;
+}
+.map-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+.map-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.map-select {
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line, #2a2f4a);
+  background: #151a30;
+  color: inherit;
+  font: inherit;
+}
+.map-json {
+  overflow-x: auto;
+  padding: 10px;
+  border-radius: 8px;
+  background: #0d0b16;
+  font-size: 12px;
+}
+.map-group {
+  margin: 22px 0 8px;
+}
+.map-lazy {
+  min-height: 386px;
+}
+.map-mini {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 6px;
+  border-radius: 4px;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+.map-stage {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line, #2a2f4a);
+  scroll-margin-top: 70px;
+}
+.map-stage h3 {
+  margin: 0 0 4px;
+}
+.map-next {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+.map-next a {
+  color: inherit;
+}
+.map-zoom[aria-pressed='true'] {
+  background: rgb(var(--c) / 0.22);
+  border-color: rgb(var(--c) / 0.7);
+}
+.map-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.map-rows .chips,
+.map-panel > .row .chips {
+  align-items: center;
+}
+.map-live {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 8px 0;
+  margin-bottom: 8px;
+  background: inherit;
+}
+.map-live .map-recipe {
+  margin: 6px 0 0;
+}
+input.map-select {
+  width: 96px;
+}
+@media (max-width: 720px) {
+  .map-walk .map-canvas {
+    zoom: 0.75;
+  }
+  .map-lazy {
+    min-height: 290px;
+  }
+  .map-live {
+    top: 57px;
+  }
+}

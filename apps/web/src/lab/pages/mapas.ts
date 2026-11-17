@@ -1,9 +1,11 @@
+import { GENERATOR_PAGES } from '../gerador/paginas';
 import type { LabPage } from '../page';
 import { sceneryPage } from './cenarios';
 import { readyMapsPage } from './mapas-prontos';
 
 /** Lab pages of the "Cenários e mapas" menu item: one per kind of scenery piece. */
 export const SCENERY_PAGES: LabPage[] = [
+  ...GENERATOR_PAGES,
   readyMapsPage,
   sceneryPage({
     id: 'mapa-terrenos',
